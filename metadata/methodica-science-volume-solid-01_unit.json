@@ -1,0 +1,27 @@
+{
+  "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/",
+  "title": "מדידת נפח מוצק",
+  "subTopic": "מדידת נפח מוצק",
+  "learningObjective": "יציעו דרכים למדידת נפח מוצקים בעלי צורה לא גאומטרית (לדוגמה: שיטת דחיקת מים)",
+  "targetSector": [
+    "State-General",
+    "State-Religious",
+    "Orthodox",
+    "Arab Sector",
+    "Druze Sector",
+    "Bedouin Sector",
+    "Special Education"
+  ],
+  "targetAudience": [
+    "General",
+    "Excellent",
+    "Disadvantaged Populations",
+    "New Immigrants",
+    "Students with Special Needs",
+    "Students with Language Gaps",
+    "At Risk Students"
+  ],
+  "prerequisiteLearningObjective": [
+    "https://lomdot.education.gov.il/metodica/720active/science/mass-liquid/02/"
+  ]
+}

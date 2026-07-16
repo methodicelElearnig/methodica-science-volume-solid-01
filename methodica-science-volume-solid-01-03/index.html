@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>לומדה — מדידת נפח מוצק · משימת כיתה</title>
+  <link rel="stylesheet" href="css/style.css?v=1">
+</head>
+<body data-subject-theme="science">
+<div id="app">
+
+  <button class="flag-btn" id="flag-btn" type="button" aria-label="מצאתם בעיה?">
+    <span class="flag-btn-icon"></span>
+    <span class="flag-btn-label">מצאתם בעיה?</span>
+  </button>
+
+  <!-- ═══ S0 — Class task (offline notebook synthesis task) ═══ -->
+  <section class="screen active" data-screen="0" id="s0">
+    <div class="task-content">
+      <h1 class="task-title">משימת כיתה: אימון מודל AI למדידת נפח</h1>
+      <p class="task-intro">דמיינו שאתם מלמדים מודל בינה מלאכותית איך למדוד נפח של גופים מוצקים. רשמו במחברת תשובות לשאלות הבאות:</p>
+      <ol class="task-list">
+        <li>איזה מידע המודל צריך לקבל על גוף מוצק? (למשל: האם הוא בעל צורה הנדסית, והאם הוא נכנס למשורה)</li>
+        <li>אילו שאלות המודל צריך לשאול כדי לבחור את שיטת המדידה המתאימה?</li>
+        <li>אילו כללים חשוב ללמד אותו? (עיקרון הדחיקה, השוואה בין הנפח הסופי להתחלתי, שיטת ההצפה לגוף גדול)</li>
+        <li>אילו דוגמאות מוחשיות כדאי לתת לו?</li>
+      </ol>
+      <p class="task-note">אין תשובה נכונה אחת — המשימה מזמינה אתכם לסכם את כל מה שלמדתם ביחידה.</p>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s0-continue" onclick="classTaskDone()">חזרתי</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════ REPORT MODAL ═══════════════ -->
+  <div id="report-modal" class="report-modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+    <div class="report-modal-box">
+      <button class="report-close-btn" onclick="tryCloseReportModal()" aria-label="סגור">&#10005;</button>
+      <h2 class="report-modal-title" id="report-modal-title">דיווח על בעיה</h2>
+      <p class="report-modal-body">משהו לא ברור או לא עובד כמו שצריך? ספרו לנו מה קרה כדי שנטפל.</p>
+      <div class="report-field">
+        <label class="report-label" for="report-type">מה סוג הבעיה <span class="required-star">*</span></label>
+        <select class="report-select" id="report-type">
+          <option value="" disabled selected>בחרו סוג בעיה</option>
+          <option value="technical">תקלה טכנית או שמשהו לא עובד</option>
+          <option value="unclear">משהו לא ברור לי</option>
+          <option value="other">אחר</option>
+        </select>
+      </div>
+      <div class="report-field">
+        <label class="report-label" for="report-text">מה קרה? <span class="required-star">*</span></label>
+        <textarea class="report-textarea" id="report-text" maxlength="250" rows="4" placeholder="תארו את הבעיה..."></textarea>
+        <span class="report-char-count" id="report-char-count">0 / 250</span>
+      </div>
+      <p class="report-error" id="report-error" hidden>נא לבחור סוג בעיה ולתאר מה קרה.</p>
+      <div class="report-actions">
+        <button class="report-submit-btn" onclick="submitReport()">שליחה</button>
+        <button class="report-cancel-btn" onclick="tryCloseReportModal()">ביטול</button>
+      </div>
+      <div class="report-thanks" id="report-thanks" hidden>
+        <p>תודה! הדיווח נשלח. נטפל בהקדם.</p>
+        <button class="report-submit-btn" onclick="forceCloseReportModal()">סגירה</button>
+      </div>
+    </div>
+  </div>
+  <div id="report-confirm-modal" class="report-modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+    <div class="report-modal-box report-confirm-box">
+      <h2 class="report-modal-title" id="confirm-modal-title">בטוח לסגור את החלון?</h2>
+      <p class="report-modal-body">בלחיצה על סגירה לא יישלח דיווח</p>
+      <div class="report-actions">
+        <button class="report-cancel-btn" onclick="forceCloseReportModal()">סגור חלון</button>
+        <button class="report-submit-btn" onclick="backToReportForm()">אני רוצה לדווח</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /#app -->
+<script src="js/main.js?v=1"></script>
+</body>
+</html>

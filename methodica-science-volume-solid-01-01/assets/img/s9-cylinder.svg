@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 480" width="200" height="480" role="img" aria-label="משורה מדורגת">
+  <!-- base foot -->
+  <ellipse cx="100" cy="454" rx="54" ry="13" fill="#e4f1f9" stroke="#7fb8d6" stroke-width="2.5"/>
+  <rect x="86" y="430" width="28" height="20" fill="#e4f1f9" stroke="#7fb8d6" stroke-width="2.5"/>
+  <!-- glass tube -->
+  <rect x="58" y="46" width="84" height="388" rx="7" fill="#eaf5fc" fill-opacity="0.55" stroke="#7fb8d6" stroke-width="2.5"/>
+  <!-- top rim + pour spout -->
+  <path d="M60 46 q-10 -2 -8 -12 q2 -6 10 -4" fill="none" stroke="#7fb8d6" stroke-width="2.5" stroke-linecap="round"/>
+  <ellipse cx="100" cy="46" rx="42" ry="7.5" fill="#f2f9fd" stroke="#7fb8d6" stroke-width="2.5"/>
+  <!-- left highlight streak -->
+  <rect x="68" y="60" width="7" height="360" rx="3.5" fill="#ffffff" opacity="0.5"/>
+  <!-- graduated scale (right side): major ticks + numbers, y = 420 - 3.6*V -->
+  <g stroke="#a85d2a" stroke-width="2" stroke-linecap="round">
+    <line x1="124" y1="60"  x2="138" y2="60"/>
+    <line x1="124" y1="96"  x2="138" y2="96"/>
+    <line x1="124" y1="132" x2="138" y2="132"/>
+    <line x1="124" y1="168" x2="138" y2="168"/>
+    <line x1="124" y1="204" x2="138" y2="204"/>
+    <line x1="124" y1="240" x2="138" y2="240"/>
+    <line x1="124" y1="276" x2="138" y2="276"/>
+    <line x1="124" y1="312" x2="138" y2="312"/>
+    <line x1="124" y1="348" x2="138" y2="348"/>
+    <line x1="124" y1="384" x2="138" y2="384"/>
+  </g>
+  <!-- minor ticks every 5 ml -->
+  <g stroke="#a85d2a" stroke-width="1.3" stroke-linecap="round" opacity="0.8">
+    <line x1="130" y1="78"  x2="138" y2="78"/>
+    <line x1="130" y1="114" x2="138" y2="114"/>
+    <line x1="130" y1="150" x2="138" y2="150"/>
+    <line x1="130" y1="186" x2="138" y2="186"/>
+    <line x1="130" y1="222" x2="138" y2="222"/>
+    <line x1="130" y1="258" x2="138" y2="258"/>
+    <line x1="130" y1="294" x2="138" y2="294"/>
+    <line x1="130" y1="330" x2="138" y2="330"/>
+    <line x1="130" y1="366" x2="138" y2="366"/>
+  </g>
+  <g fill="#a85d2a" font-family="Assistant, Arial, sans-serif" font-size="13" font-weight="700" text-anchor="end">
+    <text x="120" y="64">100</text>
+    <text x="120" y="100">90</text>
+    <text x="120" y="136">80</text>
+    <text x="120" y="172">70</text>
+    <text x="120" y="208">60</text>
+    <text x="120" y="244">50</text>
+    <text x="120" y="280">40</text>
+    <text x="120" y="316">30</text>
+    <text x="120" y="352">20</text>
+    <text x="120" y="388">10</text>
+  </g>
+  <text x="138" y="40" fill="#a85d2a" font-family="Assistant, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="end">ml</text>
+</svg>

@@ -1,0 +1,37 @@
+{
+  "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/",
+  "title": "משימת כיתה",
+  "learningUnitId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/",
+  "componentPurpose": "practice",
+  "isAssessment": false,
+  "manufacture": "methodica",
+  "recommendedAfterFail": [],
+  "isRequired": true,
+  "relativeDifficulty": 3,
+  "order": 3,
+  "depthLevel": "Core Curriculum Basic",
+  "cognitiveLevel": "Applying a Model or Procedure",
+  "languages": ["Hebrew"],
+  "skills": [],
+  "estimatedTimeInMinutes": 2,
+  "createdAt": "2026-07-14T00:00:00.000Z",
+  "updatedAt": "2026-07-14T00:00:00.000Z",
+  "subContent": [
+    {
+      "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/methodica-science-volume-solid-01-03-01/",
+      "title": "משימת כיתה: אימון מודל AI למדידת נפח",
+      "informationToBot": "מטרת הפריט: יישום ידע על שיטות מדידת נפח דרך אימון (מטאפורי) של מודל AI - התלמיד אמור לרכז את הידע שלו ולהעביר אותו כמידע/כללים/דוגמאות. מה התלמיד אמור להבין/לתרגל: (1) איזה מידע המודל צריך על גופים מוצקים (הנדסי vs לא הנדסי, גודל שנכנס/לא נכנס במשורה); (2) אילו שאלות המודל צריך לשאול לבחור שיטת מדידה; (3) אילו כללים חשוב ללמד (כלל דחיקה, השוואה בין נפח סופי להתחלתי, הצפה למי שלא נכנס); (4) אילו דוגמאות מומחשות. כיווני חשיבה ואסטרטגיות: המשימה מבוצעת במחברת - התלמיד כותב את התשובות בכתב יד או במסמך. המשימה מזמינה סינתזה של כל הידע שנלמד ביחידה. טעויות נפוצות: דילוג על אחת השיטות, ניסוח לא ברור של כללים, חוסר דוגמאות. מידע נוסף: משימת חקר/סינתזה שדורשת עבודה מחוץ למחשב, אין תשובה נכונה בודדת - הפלטפורמה רק מאשרת שהלומד חזר. צילום מסך: לא צורף.",
+      "contentType": "Task Inquiry or Project",
+      "mediaFormat": "Interactive content",
+      "questions": [
+        {
+          "questionId": "q1",
+          "questionType": "fill-in",
+          "questionText": "רשמו במחברת: איזה מידע המודל צריך על גופים מוצקים? אילו שאלות עליו לשאול לבחירת שיטה? אילו כללים חשוב ללמד? אילו דוגמאות. לחצו 'חזרתי' להמשך.",
+          "answers": [],
+          "correctAnswers": []
+        }
+      ]
+    }
+  ]
+}

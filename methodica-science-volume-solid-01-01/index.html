@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>לומדה — מדידת נפח מוצק</title>
+  <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
+  <link rel="stylesheet" href="css/style.css?v=5">
+</head>
+<body data-subject-theme="science">
+<div id="app">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       GLOBAL — Report / Issue button (Figma "issue button").
+       Appears on EVERY screen; lives OUTSIDE all .screen divs.
+       ═══════════════════════════════════════════════════════════ -->
+  <button class="flag-btn" id="flag-btn" type="button" aria-label="מצאתם בעיה?">
+    <span class="flag-btn-icon"></span>
+    <span class="flag-btn-label">מצאתם בעיה?</span>
+  </button>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S0 — Screen 03 · TwoOptionSelection · "מי תלווה אותנו בלמידה?"
+       Companion-character choice. Two producer-named characters:
+       orange (holds an empty graduated cylinder / משורה) and
+       turquoise (holds a water jug / קנקן). The character figures
+       are animated GIFs still to be PRODUCED — the .char-slot below
+       is an intentional production placeholder (720 asset rule),
+       not a shipping asset. Do not delete; swap in the GIF later.
+       First screen: NO back button. Selection enables בחרתי.
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen active" data-screen="0" id="s0">
+    <div class="select-content">
+      <div class="select-head">
+        <h1 class="select-title">מי תלווה אותנו בלמידה?</h1>
+        <p class="select-subtitle">בחרו דמות</p>
+      </div>
+
+      <div class="option-cards" role="radiogroup" aria-label="בחרו דמות">
+        <div class="option-card" role="radio" aria-checked="false" tabindex="0"
+             data-value="orange" aria-label="דמות כתומה מחזיקה משורה ריקה" onclick="selectOption(this)">
+          <div class="option-card-img">
+            <img src="assets/img/character-orange-selection.png" alt="דמות כתומה מחזיקה משורה ריקה">
+          </div>
+        </div>
+
+        <div class="option-card" role="radio" aria-checked="false" tabindex="0"
+             data-value="turquoise" aria-label="דמות טורקיז מחזיקה קנקן מים" onclick="selectOption(this)">
+          <div class="option-card-img">
+            <img src="assets/img/character-turquoise-selection.png" alt="דמות טורקיז מחזיקה קנקן מים">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-continue" id="s0-continue" disabled onclick="advanceFromS0()">בחרתי</button>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S1 — Screen 04 · hookOpenQuestion (intro) · "רוני מצאה אוצר?"
+       Scenario image + narration + a companion speech-bubble question.
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="1" id="s1">
+    <div class="hook-content">
+      <h1 class="hook-title">רוני מצאה אוצר?</h1>
+      <div class="hook-stage">
+        <div class="hook-img-frame">
+          <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
+                  data-zoom-src="assets/img/s1-roni-hook.jpeg" data-zoom-alt="רוני כורעת על החוף ומחזיקה תליון זהב בצורת כוכב, לצידה גלאי מתכות">
+            <svg class="img-zoom-btn__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="2"/><path d="M13.2 13.2L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <img src="assets/img/s1-roni-hook.jpeg" alt="רוני כורעת על החוף ומחזיקה תליון זהב בצורת כוכב, לצידה גלאי מתכות">
+        </div>
+        <div class="hook-narration">
+          <p>רוני קיבלה גלאי מתכות חדש והיא מנסה למצוא דברי ערך על חוף הים.</p>
+          <p>היא מצאה תליון בצורת כוכב ורוצה לגלות מאיזו מתכת הוא עשוי.</p>
+          <p>לשם כך עליה למדוד בין השאר את נפח התליון.</p>
+          <div class="hook-bubble">
+            איך רוני יכולה לדעת מה נפח התליון?
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s1-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S2 — Screen 05 · hookOpenQuestion (free text + hint) · slide 5
+       Free-text field; "תנו לי רמז!" becomes active once the learner
+       types something, then reveals the explanation (S3). No scoring.
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="2" id="s2">
+    <div class="hook-content">
+      <div class="hook-stage">
+        <div class="hook-img-frame">
+          <img src="assets/img/s2-roni-think.jpeg" alt="רוני מחזיקה את התליון ביד אחת ומשורה עם מים ביד השנייה">
+        </div>
+        <div class="hook-narration">
+          <p class="hook-open-prompt">חשבו על רעיון או שניים – איך רוני יכולה למדוד את נפח התליון?</p>
+          <label class="hook-open-label" for="s2-open-text">כדי לקבל רמז - כתבו את הרעיונות שלכם כאן:</label>
+          <textarea id="s2-open-text" class="hook-open-textarea" rows="4"
+                    placeholder="כתבו כאן את הרעיונות שלכם…" oninput="hookOpenInput()"></textarea>
+          <button class="btn-hint-primary" id="s2-hint-btn" disabled onclick="hookOpenReveal()">תנו לי רמז!</button>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S3 — Screen 06 · hookOpenQuestion (reveal) · slide 6
+       Displacement-principle explanation via a companion bubble.
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="3" id="s3">
+    <div class="hook-content">
+      <div class="hook-stage">
+        <div class="hook-img-frame">
+          <img src="assets/img/s3-roni-displacement.jpeg" alt="רוני מחזיקה את התליון ומשורה עם מים">
+        </div>
+        <div class="hook-narration">
+          <div class="hook-bubble hook-bubble--reveal">
+            <p>אם נכניס את התליון לתוך כלי עם מים, מפלס המים יעלה.</p>
+            <p>ההפרש בין מפלס המים החדש למפלס המים המקורי שווה לנפח התליון!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s3-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S4 — Screen 07–08 · SingleChoiceQuestionImage (mark-for-feedback)
+       "למה חשוב למדוד נפח של חפץ מוצק?" — tap each image to reveal its
+       feedback. Suitcase + planter are volume-related (correct, green
+       check); apple is a mass distractor. Motivational — no hard gate.
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="4" id="s4">
+    <div class="imgq-content">
+      <div class="imgq-head">
+        <h1 class="imgq-title">למה חשוב למדוד נפח של חפץ מוצק?</h1>
+        <p class="imgq-subtitle">סמנו את התמונות המתאימות</p>
+      </div>
+      <div class="imgq-cards">
+        <!-- RTL: first in DOM renders rightmost -->
+        <button class="imgq-card" type="button" data-value="suitcase" onclick="imgqToggle(this)">
+          <div class="imgq-card-img">
+            <img src="assets/img/s4-opt-suitcase.jpeg" alt="מזוודה פתוחה עם חפצים">
+            <span class="imgq-check" aria-hidden="true"></span>
+          </div>
+          <span class="imgq-card-caption">כדי לדעת אם הקופסה תיכנס במזוודה</span>
+          <p class="imgq-card-feedback">נכון! תכולת המזוודה נמדדת בנפח, אם נדע את נפח הקופסה נוכל לדעת אם היא תיכנס במזוודה!</p>
+        </button>
+        <button class="imgq-card" type="button" data-value="planter" onclick="imgqToggle(this)">
+          <div class="imgq-card-img">
+            <img src="assets/img/s4-opt-planter.jpeg" alt="אדנית עם אדמה וצמח">
+            <span class="imgq-check" aria-hidden="true"></span>
+          </div>
+          <span class="imgq-card-caption">כדי לדעת כמה אדמה למלא באדנית</span>
+          <p class="imgq-card-feedback">נכון! האדנית יכולה להכיל נפח מסוים של אדמה, אם נדע מהו נוכל למלא את האדנית בכמות מדויקת של אדמה!</p>
+        </button>
+        <button class="imgq-card" type="button" data-value="apple" onclick="imgqToggle(this)">
+          <div class="imgq-card-img">
+            <img src="assets/img/s4-opt-apple.jpeg" alt="תפוח על מאזני מטבח דיגיטליים המציגים גרמים">
+            <span class="imgq-check" aria-hidden="true"></span>
+          </div>
+          <span class="imgq-card-caption">כדי לדעת מה מסת התפוח</span>
+          <p class="imgq-card-feedback imgq-card-feedback--wrong">מסת התפוח לא קשורה לנפח, למדנו עליה בשיעורים קודמים.</p>
+        </button>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s4-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S5 — Screen 09 · Archimedes story (King Hiron & the crown)
+       Narrative screen (reuses the hook layout).
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="5" id="s5">
+    <div class="hook-content">
+      <div class="hook-bubble hook-bubble--lead">ידעתם שהשיטה למדידת נפח הומצאה לפני אלפי שנים ביוון העתיקה?</div>
+      <div class="hook-stage">
+        <div class="hook-img-frame">
+          <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
+                  data-zoom-src="assets/img/s5-archimedes-crown.jpeg" data-zoom-alt="המלך הירון וארכימדס בוחנים כתר זהב מעוטר, על השולחן משורת מים וקוביות מתכת">
+            <svg class="img-zoom-btn__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="2"/><path d="M13.2 13.2L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <img src="assets/img/s5-archimedes-crown.jpeg" alt="המלך הירון וארכימדס בוחנים כתר זהב מעוטר">
+        </div>
+        <div class="hook-narration">
+          <p>המלך הירון השני קיבל כתר חדש, אבל הוא חשד שהכתר אינו עשוי מזהב טהור.</p>
+          <p>הוא ביקש מארכימדס לבדוק זאת בלי לגרום לכתר כל נזק.</p>
+          <p>ארכימדס הבין שעליו למדוד תחילה את נפח הכתר, אך צורתו המורכבת והמעוטרת הקשתה עליו למצוא דרך לעשות זאת.</p>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s5-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S6 — Screen 10 · Archimedes story (the bath & "Eureka!")
+       Birth of the water-displacement method.
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="6" id="s6">
+    <div class="hook-content">
+      <div class="hook-stage">
+        <div class="hook-img-frame">
+          <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
+                  data-zoom-src="assets/img/s6-archimedes-bath.jpeg" data-zoom-alt="ארכימדס באמבטיה מחזיק כתר, המים גולשים מהאמבט">
+            <svg class="img-zoom-btn__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="2"/><path d="M13.2 13.2L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <img src="assets/img/s6-archimedes-bath.jpeg" alt="ארכימדס באמבטיה מחזיק כתר, המים גולשים מהאמבט החוצה">
+          <div class="hook-eureka">אאוריקה!<br>מצאתי!</div>
+        </div>
+        <div class="hook-narration">
+          <p>יום אחד, בזמן שרחץ באמבטיה, ארכימדס הבחין שמפלס המים עולה כשהוא נכנס למים.</p>
+          <p>הוא הבין שאפשר למדוד נפח של גוף לפי כמות המים שהוא דוחק החוצה מהכלי בו הוא נמצא, וקרא בהתלהבות: "אאוריקה!" "מצאתי!".</p>
+          <p>כך נולדה שיטת דחיקת המים, המשמשת למדידת נפח של גופים בעלי צורה מורכבת עד היום.</p>
+          <div class="story-note">ארכימדס לא היה גאון יוצא דופן שיודע את התשובות לכל דבר, אלא אדם שראה דברים בצורה שונה מאחרים, כמו בדוגמה של מפלס המים העולים באמבטיה.</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s6-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S7 — Screen 11 · TwoOptionSelection · learning-path choice
+       "איך נמדוד נפח של מוצק?" — read the comic or do the experiments.
+       Both paths teach the same content and merge afterward. The two
+       character figures are unproduced GIFs (placeholder slots).
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="7" id="s7">
+    <div class="select-content">
+      <div class="select-head">
+        <h1 class="select-title">איך נמדוד נפח של מוצק?</h1>
+        <p class="select-subtitle">בחרו איך ללמוד ב-5 הדקות הקרובות:</p>
+      </div>
+      <div class="option-cards" role="radiogroup" aria-label="בחרו מסלול למידה">
+        <!-- RTL: comic first in DOM = rightmost (matches storyboard: right gif = comic) -->
+        <div class="option-card path-card" role="radio" aria-checked="false" tabindex="0"
+             data-value="comic" aria-label="לקרוא קומיקס" onclick="selectPathOption(this)">
+          <div class="option-card-img">
+            <div class="char-slot" data-placeholder="path-comic"><span class="char-slot-label">דמות קוראת<br>קומיקס — GIF להפקה</span></div>
+          </div>
+          <span class="path-card-label">לקרוא קומיקס</span>
+        </div>
+        <div class="option-card path-card" role="radio" aria-checked="false" tabindex="0"
+             data-value="experiments" aria-label="לערוך ניסויים" onclick="selectPathOption(this)">
+          <div class="option-card-img">
+            <div class="char-slot" data-placeholder="path-experiments"><span class="char-slot-label">דמות בחלוק מעבדה<br>עם משורה — GIF להפקה</span></div>
+          </div>
+          <span class="path-card-label">לערוך ניסויים</span>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s7-continue" disabled onclick="advanceFromPathChoice()">בחרתי</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S8 — Screens 12–18 · Comic reader (comic learning path)
+       A 7-page flipbook (data-driven from COMIC in main.js). Comic
+       PANEL ART is still to be PRODUCED — each page shows a labeled
+       art placeholder carrying the storyboard's art direction, with
+       the dialogue rendered as live HTML. Two embedded guess-questions
+       (pages 2 & 5) gate the "next" button (no feedback, per storyboard).
+       A learning-path toggle sits on top (comic ⇄ experiments).
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="8" id="s8">
+    <div class="comic">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <!-- Position-locked: comic on the right, experiments on the left -->
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+
+      <div class="comic-stage" id="comic-stage" aria-live="polite"><!-- rendered by renderComic() --></div>
+
+      <div class="comic-nav">
+        <button class="comic-arrow" id="comic-prev" type="button" onclick="comicPrev()" aria-label="עמוד קודם">›</button>
+        <span class="comic-dots" id="comic-dots"></span>
+        <button class="comic-arrow comic-arrow--next" id="comic-next" type="button" onclick="comicNext()" aria-label="עמוד הבא">‹</button>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S9 — Screens 25–26 · Water-displacement applet (experiments path)
+       Extends the App/ marble-in-cylinder prototype. Drag the marble
+       into the graduated cylinder → the water rises 50→62 mL, the
+       marble sinks, and the displacement explanation is revealed.
+       Uses the engine's scale-safe createPointerDnd for the drag.
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="9" id="s9">
+    <div class="exp">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+
+      <div class="exp-head">
+        <h1 class="exp-title">שיטת ארכימדס – דחיקת מים</h1>
+        <p class="exp-instruction" id="disp-instruction">הכניסו את הגולה אל תוך המשורה.</p>
+      </div>
+
+      <div class="disp-stage">
+        <div class="disp-cylinder-wrap" id="disp-cylinder">
+          <img class="disp-cylinder-img" src="assets/img/s9-cylinder.svg" alt="משורה מדורגת עם מים עד קו 50 מ&quot;ל" draggable="false">
+          <div class="disp-water" id="disp-water"></div>
+          <img class="disp-sunk-marble" id="disp-sunk-marble" src="assets/img/s9-marble.svg" alt="" draggable="false">
+          <div class="disp-badge" id="disp-badge">50 מ"ל</div>
+        </div>
+
+        <div class="disp-marble-zone">
+          <img id="disp-marble" src="assets/img/s9-marble.svg" alt="גולת זכוכית ירוקה — נִתנת לגרירה" draggable="false">
+          <p class="disp-drag-hint" id="disp-drag-hint">גררו אותי למשורה</p>
+        </div>
+
+        <div class="disp-explain" id="disp-explain" hidden>
+          <h2 class="disp-explain-title">מה קרה כאן?</h2>
+          <p>מפלס המים עלה ברגע שהגולה נכנסה למשורה.</p>
+          <p><strong>עיקרון ארכימדס:</strong> כשמכניסים גוף למים, מפלס המים עולה בכמות השווה לנפח הגוף בדיוק.</p>
+          <p class="disp-calc">נפח סופי − נפח מקורי = נפח הגולה<br><strong>62 − 50 = 12 מ"ל</strong></p>
+          <p class="disp-note">העיקרון תקף לגופים שאינם מתמוססים במים. גוף הרגיש למים אפשר לעטוף בשכבת מגן דקה ואטומה למים לפני ההכנסה למשורה.</p>
+        </div>
+      </div>
+
+      <button class="disp-reset" id="disp-reset" type="button" onclick="dispReset()" hidden>מדידה מחדש</button>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s9-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S10 — Screens 19–23 · Aquarium ruler applet + SingleChoiceQuestion
+       Experiments-path ENTRY (geometric method). Drag the ruler onto the
+       cube's highlighted wall → reveals the 10 cm edge, unlocking the
+       volume question (10³ = 1,000 cm³). Full SCQ feedback/hint machinery.
+       The cube is a live SVG placeholder (final art to be produced).
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="10" id="s10">
+    <div class="exp">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+
+      <div class="aq-head">
+        <h1 class="exp-title">מדידת נפח של גוף הנדסי</h1>
+        <p class="aq-instruction">לפניכם אקווריום בצורת קובייה. כמה מים צריך כדי למלא אותו עד הקצה? קרבו את הסרגל לדופן המסומנת בצהוב ובצעו את המדידה.</p>
+      </div>
+
+      <div class="aq-stage">
+        <!-- Cube (drop target) -->
+        <div class="aq-cube-wrap" id="aq-cube">
+          <svg class="aq-cube-svg" viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg" aria-label="אקווריום בצורת קובייה, דופן ימנית מסומנת בצהוב">
+            <!-- water inside (front + top surface) -->
+            <polygon points="40,150 180,150 180,230 40,230" fill="rgba(96,178,222,0.42)"/>
+            <polygon points="40,150 90,110 230,110 180,150" fill="rgba(120,195,232,0.55)"/>
+            <!-- glass faces -->
+            <polygon points="40,90 90,50 230,50 180,90" fill="rgba(205,234,247,0.55)" stroke="#7fb8d6" stroke-width="2.5" stroke-linejoin="round"/>
+            <polygon points="180,90 230,50 230,190 180,230" fill="rgba(191,227,242,0.45)" stroke="#7fb8d6" stroke-width="2.5" stroke-linejoin="round"/>
+            <polygon points="40,90 180,90 180,230 40,230" fill="rgba(220,240,250,0.30)" stroke="#7fb8d6" stroke-width="2.5" stroke-linejoin="round"/>
+            <!-- glass highlight -->
+            <line x1="58" y1="102" x2="58" y2="222" stroke="#ffffff" stroke-width="5" opacity="0.5" stroke-linecap="round"/>
+            <!-- measured wall (front-right vertical edge) highlighted + measure arrows -->
+            <line x1="180" y1="90" x2="180" y2="230" stroke="#ffc21f" stroke-width="6" stroke-linecap="round"/>
+            <path d="M180 96 l-6 8 h12 z M180 224 l-6 -8 h12 z" fill="#ffc21f"/>
+          </svg>
+          <div class="aq-readout hidden" id="aq-readout">דופן = 10 ס"מ</div>
+        </div>
+
+        <!-- Ruler (draggable) -->
+        <div class="aq-ruler-zone">
+          <div class="aq-ruler" id="aq-ruler" aria-label="סרגל מדידה">
+            <svg class="aq-ruler-svg" viewBox="0 0 44 210" width="44" height="210" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="38" height="202" rx="5" fill="#ffe7a0" stroke="#d9a441" stroke-width="2"/>
+              <!-- cm ticks: y = 194 - 12*cm  (0 at bottom … 15 at top) -->
+              <g stroke="#7a5a1e" stroke-linecap="round">
+                <g stroke-width="2">
+                  <line x1="24" y1="194" x2="39" y2="194"/><line x1="24" y1="134" x2="39" y2="134"/>
+                  <line x1="24" y1="74"  x2="39" y2="74"/><line x1="24" y1="14"  x2="39" y2="14"/>
+                </g>
+                <g stroke-width="1.2" opacity="0.8">
+                  <line x1="30" y1="182" x2="39" y2="182"/><line x1="30" y1="170" x2="39" y2="170"/>
+                  <line x1="30" y1="158" x2="39" y2="158"/><line x1="30" y1="146" x2="39" y2="146"/>
+                  <line x1="30" y1="122" x2="39" y2="122"/><line x1="30" y1="110" x2="39" y2="110"/>
+                  <line x1="30" y1="98"  x2="39" y2="98"/><line x1="30" y1="86"  x2="39" y2="86"/>
+                  <line x1="30" y1="62"  x2="39" y2="62"/><line x1="30" y1="50"  x2="39" y2="50"/>
+                  <line x1="30" y1="38"  x2="39" y2="38"/><line x1="30" y1="26"  x2="39" y2="26"/>
+                </g>
+              </g>
+              <g fill="#7a5a1e" font-family="Assistant, Arial, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
+                <text x="15" y="198">0</text><text x="15" y="138">5</text>
+                <text x="13" y="78">10</text><text x="13" y="18">15</text>
+              </g>
+            </svg>
+          </div>
+          <p class="aq-ruler-hint" id="aq-ruler-hint">גררו את הסרגל לדופן הצהובה</p>
+        </div>
+
+        <!-- Answers + lock note -->
+        <div class="aq-answers-col">
+          <div class="scq-answers" id="s10-answers" role="radiogroup" aria-label="כמה מים צריך כדי למלא את האקווריום עד הקצה?">
+            <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s10','a')"><span class="scq-opt-text">100 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+            <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s10','b')"><span class="scq-opt-text">40 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+            <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s10','c')"><span class="scq-opt-text">2,000 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+            <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s10','d')"><span class="scq-opt-text">1,000 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+          </div>
+          <p class="scq-locknote" id="s10-scq-locknote">קרבו את הסרגל לדופן הצהובה ובצעו את המדידה כדי לענות.</p>
+        </div>
+      </div>
+
+      <div class="scq-bar">
+        <div class="scq-bar-main">
+          <button class="scq-check" id="s10-scq-check" type="button" disabled onclick="scqCheck('s10')">צדקתי?</button>
+          <button class="scq-hint" id="s10-scq-hint" type="button" onclick="scqHint('s10')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button>
+        </div>
+        <button class="btn-back" onclick="goBack()">חזרה</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- S10 feedback popup + hint overlay — OUTSIDE .screen so a screen swap never
+       leaves them showing; goTo() closes them by id suffix. -->
+  <div class="scq-popup hidden" id="s10-scq-popup" role="status" aria-live="polite">
+    <div class="scq-popup-header">
+      <button class="scq-popup-close" type="button" onclick="scqClosePopup('s10')" aria-label="סגור">✕</button>
+      <p class="scq-popup-title" id="s10-scq-popup-title"></p>
+    </div>
+    <div class="scq-popup-body" id="s10-scq-popup-body"></div>
+  </div>
+  <div class="scq-hint-overlay hidden" id="s10-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s10')">
+    <div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז">
+      <button class="scq-hint-close" type="button" onclick="scqCloseHint('s10')" aria-label="סגור">✕</button>
+      <h2 class="scq-hint-title">רמז</h2>
+      <p>נסו להיזכר: קיימת נוסחה לחישוב נפח של תיבה או קובייה.</p>
+      <p><strong>נפח = אורך × רוחב × גובה.</strong> בקובייה כל הצלעות שוות.</p>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S11 — Screens 28–29 · Flooding/overflow applet (experiments path)
+       Drag the rock into the brim-full bowl → water overflows into the
+       tray below; spilled water = the rock's volume. CSS/SVG shapes
+       (final art to be produced). Experiments path: S10→S9→S11→merge.
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="11" id="s11">
+    <div class="exp">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+      <div class="exp-head">
+        <h1 class="exp-title">שיטת ההצפה</h1>
+        <p class="exp-instruction" id="flood-instruction">לגוף שאינו נכנס למשורה. הכניסו את האבן לתוך הקערה הגדולה המלאה במים.</p>
+      </div>
+
+      <div class="flood-stage">
+        <div class="flood-scene">
+          <div class="flood-bowl" id="flood-bowl">
+            <div class="flood-bowl-water"></div>
+            <svg class="flood-sunk-rock" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><polygon points="10,58 24,28 48,16 76,24 92,48 84,70 30,74" fill="#8b9099" stroke="#565b63" stroke-width="2.5" stroke-linejoin="round"/><polygon points="24,28 48,16 62,30 40,42" fill="#aab0b8" opacity="0.7"/><polygon points="76,24 92,48 84,70 64,52" fill="#6a7079" opacity="0.6"/></svg>
+            <span class="flood-stream flood-stream--l"></span>
+            <span class="flood-stream flood-stream--r"></span>
+          </div>
+          <div class="flood-tray"><div class="flood-tray-water" id="flood-tray-water"></div></div>
+        </div>
+
+        <div class="flood-rock-zone">
+          <svg class="flood-rock" id="flood-rock" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-label="אבן — נִתנת לגרירה"><polygon points="10,58 24,28 48,16 76,24 92,48 84,70 30,74" fill="#8b9099" stroke="#565b63" stroke-width="2.5" stroke-linejoin="round"/><polygon points="24,28 48,16 62,30 40,42" fill="#aab0b8" opacity="0.7"/><polygon points="76,24 92,48 84,70 64,52" fill="#6a7079" opacity="0.6"/></svg>
+          <p class="flood-hint" id="flood-hint">גררו את האבן לקערה</p>
+        </div>
+
+        <div class="flood-explain" id="flood-explain" hidden>
+          <h2 class="disp-explain-title">מה קרה כאן?</h2>
+          <p>המים בקערה גלשו ברגע שהאבן נכנסה אליה, והמים העודפים התנקזו לכלי האיסוף התחתון.</p>
+          <p class="disp-calc"><strong>כמות המים שגלשו מהקערה = נפח האבן!</strong></p>
+          <p class="disp-note">לגופים קלים שצפים במים אפשר לחבר משקולת שתשקיע אותם — ולהחסיר את נפח המשקולת מהתוצאה הסופית.</p>
+        </div>
+      </div>
+
+      <button class="disp-reset" id="flood-reset" type="button" onclick="floodReset()" hidden>ניסוי מחדש</button>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s11-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S12 — Screen 50 · TransitionScreen (branch merge → practice)
+       Both learning paths (comic / experiments) continue here.
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="12" id="s12">
+    <div class="transition-content">
+      <h1 class="transition-title">כל הכבוד! סיימתם את שלב הלימוד</h1>
+      <p class="transition-sub">עכשיו נעבור לתרגול ונענה על כמה שאלות על מדידת נפח של מוצקים.</p>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s12-continue" onclick="advanceScreen()">לתרגול</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+  <!-- ═══ S13 — Standard practice Q1 (item 05) · stone displacement 73−50=23 ═══ -->
+  <section class="screen" data-screen="13" id="s13">
+    <nav class="progress-question" aria-label="ניווט שאלות">
+      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
+      <div class="progress-question__connector" data-connector="1"></div>
+      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
+      <div class="progress-question__connector" data-connector="2"></div>
+      <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
+      <div class="progress-question__connector" data-connector="3"></div>
+      <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
+      <div class="progress-question__connector" data-connector="4"></div>
+      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
+    </nav>
+    <div class="scq-question scq-question--textonly">
+      <p class="scq-qtext">הילה מילאה משורה במים עד לקו 50 מ"ל, והכניסה פנימה אבן קטנה. גובה המים במשורה עלה ל-73 מ"ל. מה נפח האבן?</p>
+      <div class="scq-answers" id="s13-answers" role="radiogroup" aria-label="מה נפח האבן?">
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s13','a')"><span class="scq-opt-text">73 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s13','b')"><span class="scq-opt-text">50 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s13','c')"><span class="scq-opt-text">23 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s13','d')"><span class="scq-opt-text">123 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+      </div>
+    </div>
+    <div class="scq-bar">
+      <div class="scq-bar-main">
+        <button class="scq-check" id="s13-scq-check" type="button" disabled onclick="scqCheck('s13')">צדקתי?</button>
+        <button class="scq-hint" id="s13-scq-hint" type="button" onclick="scqHint('s13')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button>
+      </div>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+  <div class="scq-popup hidden" id="s13-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s13')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s13-scq-popup-title"></p></div><div class="scq-popup-body" id="s13-scq-popup-body"></div></div>
+  <div class="scq-hint-overlay hidden" id="s13-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s13')"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s13')" aria-label="סגור">✕</button><h2 class="scq-hint-title">רמז</h2><p>נפח הגוף = הקריאה הסופית פחות הקריאה ההתחלתית של מפלס המים.</p></div></div>
+
+  <!-- ═══ S14 — Standard practice Q2 (item 06) · bowling-ball flooding ═══ -->
+  <section class="screen" data-screen="14" id="s14">
+    <nav class="progress-question" aria-label="ניווט שאלות">
+      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
+      <div class="progress-question__connector" data-connector="1"></div>
+      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
+      <div class="progress-question__connector" data-connector="2"></div>
+      <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
+      <div class="progress-question__connector" data-connector="3"></div>
+      <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
+      <div class="progress-question__connector" data-connector="4"></div>
+      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
+    </nav>
+    <div class="scq-question scq-question--textonly">
+      <p class="scq-qtext">במפעל לייצור כדורי באולינג רצו לבדוק את נפח הכדור האחרון שיצא מפס הייצור. איזו שיטה מתאימה למדידת נפח הכדור?</p>
+      <div class="scq-answers" id="s14-answers" role="radiogroup" aria-label="איזו שיטה מתאימה למדידת נפח הכדור?">
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s14','a')"><span class="scq-opt-text">להכניס את הכדור לכלי עם מים ולמדוד כמה מים נשפכו</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s14','b')"><span class="scq-opt-text">להעריך את נפח הכדור לפי העין</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s14','c')"><span class="scq-opt-text">לשקול את הכדור במאזניים ולחלק את המסה ב-2</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s14','d')"><span class="scq-opt-text">למדוד את היקף וקוטר הכדור ולהכפיל זה בזה</span><span class="scq-radio" aria-hidden="true"></span></button>
+      </div>
+    </div>
+    <div class="scq-bar">
+      <div class="scq-bar-main">
+        <button class="scq-check" id="s14-scq-check" type="button" disabled onclick="scqCheck('s14')">צדקתי?</button>
+        <button class="scq-hint" id="s14-scq-hint" type="button" onclick="scqHint('s14')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button>
+      </div>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+  <div class="scq-popup hidden" id="s14-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s14')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s14-scq-popup-title"></p></div><div class="scq-popup-body" id="s14-scq-popup-body"></div></div>
+  <div class="scq-hint-overlay hidden" id="s14-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s14')"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s14')" aria-label="סגור">✕</button><h2 class="scq-hint-title">רמז</h2><p>הכדור גדול מדי כדי להיכנס למשורה — איזו שיטה מתאימה לגופים גדולים?</p></div></div>
+
+  <!-- ═══ S15 — Standard practice Q3 (item 07) · scientific-integrity argument ═══ -->
+  <section class="screen" data-screen="15" id="s15">
+    <nav class="progress-question" aria-label="ניווט שאלות">
+      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
+      <div class="progress-question__connector" data-connector="1"></div>
+      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
+      <div class="progress-question__connector" data-connector="2"></div>
+      <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
+      <div class="progress-question__connector" data-connector="3"></div>
+      <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
+      <div class="progress-question__connector" data-connector="4"></div>
+      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
+    </nav>
+    <!-- ImageHotspotQuestion — reuses the SCQ controller: each kid card is a
+         .scq-opt with data-id + scqSelect, so select/check/feedback are shared.
+         The 4-kids illustration is a production placeholder (per-card avatars). -->
+    <div class="hotspot-question">
+      <p class="scq-qtext">הילדים במעבדה מנסים למדוד נפח של כפית ממתכת. לחצו על הילד שהטיעון שלו מדעי ומבוסס על ראיה.</p>
+      <div class="hotspot-grid" id="s15-answers" role="radiogroup" aria-label="איזה טיעון מדעי ומבוסס על ראיה?">
+        <button class="scq-opt hotspot-card" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s15','a')">
+          <span class="hotspot-avatar" aria-hidden="true">👧</span>
+          <span class="scq-opt-text">מדדתי את הכפית בסרגל, ובכל פעם יצא אורך אחר. החלטתי שהנפח = אורך × רוחב × גובה</span>
+        </button>
+        <button class="scq-opt hotspot-card" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s15','b')">
+          <span class="hotspot-avatar" aria-hidden="true">🧒</span>
+          <span class="scq-opt-text">הסתכלתי על הכפית והערכתי לפי העין שהנפח הוא בערך 20 מ"ל</span>
+        </button>
+        <button class="scq-opt hotspot-card" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s15','c')">
+          <span class="hotspot-avatar" aria-hidden="true">👦</span>
+          <span class="scq-opt-text">הנחתי את הכפית על מאזניים וקיבלתי 25 גרם, לכן הנפח הוא 25</span>
+        </button>
+        <button class="scq-opt hotspot-card" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s15','d')">
+          <span class="hotspot-avatar" aria-hidden="true">🧑</span>
+          <span class="scq-opt-text">הכנסתי את הכפית למשורה עם מים. המים עלו מ-50 ל-70 מ"ל, ולכן נפח הכפית הוא 20 מ"ל</span>
+        </button>
+      </div>
+    </div>
+    <div class="scq-bar">
+      <div class="scq-bar-main">
+        <button class="scq-check" id="s15-scq-check" type="button" disabled onclick="scqCheck('s15')">צדקתי?</button>
+        <button class="scq-hint" id="s15-scq-hint" type="button" onclick="scqHint('s15')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button>
+      </div>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+  <div class="scq-popup hidden" id="s15-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s15')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s15-scq-popup-title"></p></div><div class="scq-popup-body" id="s15-scq-popup-body"></div></div>
+  <div class="scq-hint-overlay hidden" id="s15-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s15')"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s15')" aria-label="סגור">✕</button><h2 class="scq-hint-title">רמז</h2><p>איזה טיעון מבוסס על מדידה ממשית של נפח — לא על הערכה בעין ולא על מסה?</p></div></div>
+
+  <!-- ═══ S16 — Standard practice Q4 (item 09) · crystals flooding conclusion ═══ -->
+  <section class="screen" data-screen="16" id="s16">
+    <nav class="progress-question" aria-label="ניווט שאלות">
+      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
+      <div class="progress-question__connector" data-connector="1"></div>
+      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
+      <div class="progress-question__connector" data-connector="2"></div>
+      <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
+      <div class="progress-question__connector" data-connector="3"></div>
+      <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
+      <div class="progress-question__connector" data-connector="4"></div>
+      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
+    </nav>
+    <div class="scq-question scq-question--textonly">
+      <p class="scq-qtext">אופק ואחיו קיבלו קריסטלים ענקיים. הם מילאו כלי במים עד הקצה, השקיעו קריסטל, אספו את המים שנשפכו ומדדו את נפחם. אופק טוען: "בעזרת כמות המים שנשפכו אפשר לדעת את נפח הקריסטל". האם אופק צודק?</p>
+      <div class="scq-answers" id="s16-answers" role="radiogroup" aria-label="האם אופק צודק?">
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s16','a')"><span class="scq-opt-text">לא, מים שנשפכים מכלי לא יכולים לשמש למדידת נפח</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s16','b')"><span class="scq-opt-text">לא, ניתן להשתמש בשיטה זו רק למדידת גופים הנדסיים</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s16','c')"><span class="scq-opt-text">כן, בגלל שנפח המים שנשפכו שווה למסת הקריסטל</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s16','d')"><span class="scq-opt-text">כן, בגלל שנפח המים שנשפכו שווה לנפח הקריסטל</span><span class="scq-radio" aria-hidden="true"></span></button>
+      </div>
+    </div>
+    <div class="scq-bar">
+      <div class="scq-bar-main">
+        <button class="scq-check" id="s16-scq-check" type="button" disabled onclick="scqCheck('s16')">צדקתי?</button>
+        <button class="scq-hint" id="s16-scq-hint" type="button" onclick="scqHint('s16')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button>
+      </div>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+  <div class="scq-popup hidden" id="s16-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s16')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s16-scq-popup-title"></p></div><div class="scq-popup-body" id="s16-scq-popup-body"></div></div>
+  <div class="scq-hint-overlay hidden" id="s16-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s16')"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s16')" aria-label="סגור">✕</button><h2 class="scq-hint-title">רמז</h2><p>הכלי היה מלא עד הקצה. מה נדחק החוצה בדיוק כשהקריסטל נכנס? שימו לב: נפח, לא מסה.</p></div></div>
+
+
+  <!-- ═══ S17 — Standard practice Q4 (item 08) · DragAndDropQuestion (matching) ═══
+       Flow order: Q3 (S15) → Q4 (this, S17) → Q5 (S16). Board rendered by JS. -->
+  <section class="screen" data-screen="17" id="s17">
+    <nav class="progress-question" aria-label="ניווט שאלות">
+      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
+      <div class="progress-question__connector" data-connector="1"></div>
+      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
+      <div class="progress-question__connector" data-connector="2"></div>
+      <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
+      <div class="progress-question__connector" data-connector="3"></div>
+      <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
+      <div class="progress-question__connector" data-connector="4"></div>
+      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
+    </nav>
+    <div class="dnd-question">
+      <p class="scq-qtext">גררו כל גוף לשיטת מדידת הנפח המתאימה לו.</p>
+      <div class="dnd-board">
+        <div class="dnd-targets" id="s17-ddq-targets"></div>
+        <div class="dnd-source-wrap">
+          <p class="dnd-source-label">גופים למדידה:</p>
+          <div class="dnd-source" id="s17-ddq-source"></div>
+        </div>
+      </div>
+    </div>
+    <div class="scq-bar">
+      <div class="scq-bar-main">
+        <button class="scq-check" id="s17-ddq-check" type="button" disabled onclick="ddqCheck('s17')">בדיקה</button>
+      </div>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+  <div class="scq-popup hidden" id="s17-ddq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="ddqClosePopup('s17')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s17-ddq-popup-title"></p></div><div class="scq-popup-body" id="s17-ddq-popup-body"></div></div>
+
+
+  <!-- ═══ S18 — Warm-up 1 (item 03) · DragAndDropQuestion (task → tool, 5-way) ═══ -->
+  <section class="screen" data-screen="18" id="s18">
+    <div class="dnd-question dnd-question--warmup">
+      <p class="warmup-tag">חימום</p>
+      <p class="scq-qtext">ל-5 מדענים צעירים ניתנו משימות מדידה שונות. התאימו כל משימה לכלי המתאים לה.</p>
+      <div class="dnd-board">
+        <div class="dnd-targets" id="s18-ddq-targets"></div>
+        <div class="dnd-source-wrap">
+          <p class="dnd-source-label">משימות המדידה:</p>
+          <div class="dnd-source" id="s18-ddq-source"></div>
+        </div>
+      </div>
+    </div>
+    <div class="scq-bar">
+      <div class="scq-bar-main"><button class="scq-check" id="s18-ddq-check" type="button" disabled onclick="ddqCheck('s18')">בדיקה</button></div>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+  <div class="scq-popup hidden" id="s18-ddq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="ddqClosePopup('s18')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s18-ddq-popup-title"></p></div><div class="scq-popup-body" id="s18-ddq-popup-body"></div></div>
+
+  <!-- ═══ S19 — Warm-up 2 (item 04) · SingleChoiceQuestion (fill-in) ═══ -->
+  <section class="screen" data-screen="19" id="s19">
+    <!-- DropdownQuestion — reuses the SCQ controller: dropdown options are
+         .scq-opt (dqPick → scqSelect); onFinish colours the trigger. -->
+    <div class="dq-question">
+      <p class="warmup-tag">חימום</p>
+      <p class="scq-qtext">עיקרון דחיקת המים — השלימו את המשפט בעזרת תפריט המילים:</p>
+      <p class="dq-sentence">כדי למדוד נפח של מחדד, נכניס אותו למים שבמשורה ונבדוק כמה הם
+        <span class="dropdown" id="s19-dropdown">
+          <button class="dropdown-trigger" id="s19-dropdown-trigger" type="button" onclick="dqToggle('s19')"><span class="dropdown-trigger-text">בחרו מילה</span><span class="dropdown-caret" aria-hidden="true">▾</span></button>
+          <div class="dropdown-list hidden" id="s19-answers" role="listbox">
+            <button class="scq-opt dropdown-opt" type="button" role="option" data-id="a" onclick="dqPick('s19','a','עלו')">עלו</button>
+            <button class="scq-opt dropdown-opt" type="button" role="option" data-id="b" onclick="dqPick('s19','b','ירדו')">ירדו</button>
+            <button class="scq-opt dropdown-opt" type="button" role="option" data-id="c" onclick="dqPick('s19','c','נעלמו')">נעלמו</button>
+            <button class="scq-opt dropdown-opt" type="button" role="option" data-id="d" onclick="dqPick('s19','d','התקררו')">התקררו</button>
+          </div>
+        </span>.
+      </p>
+    </div>
+    <div class="scq-bar">
+      <div class="scq-bar-main">
+        <button class="scq-check" id="s19-scq-check" type="button" disabled onclick="scqCheck('s19')">צדקתי?</button>
+        <button class="scq-hint" id="s19-scq-hint" type="button" onclick="scqHint('s19')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button>
+      </div>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+  <div class="scq-popup hidden" id="s19-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s19')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s19-scq-popup-title"></p></div><div class="scq-popup-body" id="s19-scq-popup-body"></div></div>
+  <div class="scq-hint-overlay hidden" id="s19-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s19')"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s19')" aria-label="סגור">✕</button><h2 class="scq-hint-title">רמז</h2><p>כשמכניסים גוף מוצק למים הוא תופס מקום בתוך המשורה. מה קורה למפלס המים?</p></div></div>
+
+
+  <!-- ═══ S20 — Screens 30–32 · FlipCardsReveal (real-world uses) · experiments path ═══
+       Carousel/grid of 3 cards; click each to flip (image front → fact back).
+       Continue unlocks once all three are revealed. Card fronts are production
+       placeholders (stock art to be licensed). Flow: S11 flooding → S20 → merge. -->
+  <section class="screen" data-screen="20" id="s20">
+    <div class="exp">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+      <div class="exp-head">
+        <h1 class="exp-title">איך מדידת נפח של מוצק נראית בעולם האמיתי?</h1>
+        <p class="exp-instruction">השיטה של ארכימדס חיה ופועלת עד היום! לחצו על הקלפים כדי לגלות היכן משתמשים בה בתעשייה, במסחר ובמדע.</p>
+      </div>
+      <div class="flip-grid" id="s20-flip">
+        <button class="flip-card" type="button" data-card="metal" onclick="flipCard('s20', this)">
+          <span class="flip-inner">
+            <span class="flip-front"><span class="char-slot flip-ph"><span class="char-slot-label">תעשיית המתכות<br>איור להפקה</span></span></span>
+            <span class="flip-back"><strong>תעשיית המתכות</strong>יצרנים מוודאים שחלקי מתכת עומדים בתקנים על ידי מדידת נפחם בשיטות דחיקת המים וההצפה.</span>
+          </span>
+        </button>
+        <button class="flip-card" type="button" data-card="jewelry" onclick="flipCard('s20', this)">
+          <span class="flip-inner">
+            <span class="flip-front"><span class="char-slot flip-ph"><span class="char-slot-label">זהב ותכשיטים<br>איור להפקה</span></span></span>
+            <span class="flip-back"><strong>זהב ותכשיטים</strong>בחנויות זהב שיטת דחיקת המים מאפשרת למדוד נפח של תכשיטים בעלי צורה מורכבת.</span>
+          </span>
+        </button>
+        <button class="flip-card" type="button" data-card="archaeology" onclick="flipCard('s20', this)">
+          <span class="flip-inner">
+            <span class="flip-front"><span class="char-slot flip-ph"><span class="char-slot-label">ארכיאולוגיה<br>איור להפקה</span></span></span>
+            <span class="flip-back"><strong>ארכיאולוגיה</strong>ארכיאולוגים מודדים נפח של פסלים וחפצים עתיקים בשיטות דחיקת המים וההצפה, מבלי לפגוע בהם.</span>
+          </span>
+        </button>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s20-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S21 — Screen 27 · Guess-question (no feedback) · experiments path ═══
+       Pick any option → a companion bubble appears and Continue unlocks.
+       No correct/incorrect. Flow: displacement S9 → S21 → flooding S11. -->
+  <section class="screen" data-screen="21" id="s21">
+    <div class="exp">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+      <div class="exp-head">
+        <h1 class="exp-title">מדידת נפח לגוף שאינו נכנס במשורה</h1>
+        <p class="exp-instruction">נחשו – איך נמדוד נפח של גופים גדולים שלא נכנסים במשורה?</p>
+      </div>
+      <div class="guess-options" id="s21-guess">
+        <button class="guess-opt" type="button" data-id="a" onclick="guessPick('s21', this)">נשקול אותם</button>
+        <button class="guess-opt" type="button" data-id="b" onclick="guessPick('s21', this)">נמדוד את האורך שלהם</button>
+        <button class="guess-opt" type="button" data-id="c" onclick="guessPick('s21', this)">נכניס אותם לכלי מים גדול אחר</button>
+        <button class="guess-opt" type="button" data-id="d" onclick="guessPick('s21', this)">לא ניתן למדוד נפח של גופים כאלה</button>
+      </div>
+      <div class="hook-bubble guess-bubble hidden" id="s21-guess-bubble">בואו נלמד בדיוק איך לעשות את זה!</div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s21-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S22 — Screens 33–38 · Multi-step measurement applet · experiments path ═══
+       4 steps: (1) drag chess-king → correct vessel (cylinder, 50→65) →
+       (2) type its volume → reveal 15 mL → (3) drag hammer → flooding bowl →
+       (4) type its volume → reveal 250 mL. Wrong vessel bounces back with an
+       error. Numeric inputs have no feedback (gate the step on any value).
+       Flow: flip-cards S20 → S22 → merge. CSS/emoji placeholders (art to produce). -->
+  <section class="screen" data-screen="22" id="s22">
+    <div class="exp">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+      <div class="exp-head">
+        <h1 class="exp-title">בואו נמדוד נפח של חפצים שונים!</h1>
+        <p class="exp-instruction" id="meas-instruction"></p>
+      </div>
+
+      <div class="meas-stage">
+        <div class="meas-vessels">
+          <div class="meas-vessel" id="meas-cyl" data-vessel="cyl">
+            <img class="meas-cyl-img" src="assets/img/s9-cylinder.svg" alt="משורה מדורגת" draggable="false">
+            <div class="meas-badge" id="meas-cyl-badge">50 מ"ל</div>
+            <span class="meas-vessel-label">משורה</span>
+          </div>
+          <div class="meas-vessel" id="meas-bowl" data-vessel="bowl">
+            <div class="meas-bowl"><div class="meas-bowl-water" id="meas-bowl-water"></div></div>
+            <div class="meas-tray"><div class="meas-tray-water" id="meas-tray-water"></div></div>
+            <span class="meas-vessel-label">קערת הצפה + כלי איסוף</span>
+          </div>
+        </div>
+
+        <div class="meas-side">
+          <div class="meas-object-zone" id="meas-object-zone">
+            <div class="meas-object" id="meas-object"><span class="meas-object-icon" id="meas-object-icon">♟</span><span class="meas-object-label" id="meas-object-label">כלי שח-מט</span></div>
+            <p class="meas-obj-hint" id="meas-obj-hint">גררו לכלי המתאים</p>
+          </div>
+          <p class="meas-error hidden" id="meas-error">זאת אינה השיטה הנכונה, נסו שוב!</p>
+          <div class="meas-input-row hidden" id="meas-input-row">
+            <label class="meas-input-label" id="meas-input-label" for="meas-input">הקלידו את נפח הכלי:</label>
+            <span class="meas-input-wrap"><input type="number" id="meas-input" class="meas-input" inputmode="numeric" oninput="measInputChange()"> <span class="meas-input-unit">מ"ל</span></span>
+            <button class="btn-hint-primary meas-confirm" id="meas-confirm" type="button" disabled onclick="measConfirm()">אישור</button>
+          </div>
+          <div class="hook-bubble meas-reveal hidden" id="meas-reveal"></div>
+          <button class="btn-hint-primary meas-next hidden" id="meas-next" type="button" onclick="measNext()">המשך לשלב הבא</button>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s22-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════ Shared image-zoom modal (outside .screen) ═══════════════ -->
+  <div class="img-zoom-modal hidden" id="img-zoom-modal" aria-hidden="true">
+    <div class="img-zoom-modal__backdrop" data-zoom-close="true"></div>
+    <div class="img-zoom-modal__panel" role="dialog" aria-modal="true" aria-label="תצוגת תמונה מוגדלת">
+      <button class="img-zoom-modal__close" type="button" aria-label="סגירת התמונה" data-zoom-close="true"><svg class="img-zoom-modal__close-icon" aria-hidden="true" width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.192 1.192L13.808 13.808M13.808 1.192L1.192 13.808" stroke="currentColor" stroke-width="2.383" stroke-linecap="round"/></svg></button>
+      <div class="img-zoom-modal__stage" id="img-zoom-modal-stage"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ REPORT MODAL ═══════════════════════════════════════ -->
+  <div id="report-modal" class="report-modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+    <div class="report-modal-box">
+      <button class="report-close-btn" onclick="tryCloseReportModal()" aria-label="סגור">&#10005;</button>
+      <h2 class="report-modal-title" id="report-modal-title">דיווח על בעיה</h2>
+      <p class="report-modal-body">משהו לא ברור או לא עובד כמו שצריך? ספרו לנו מה קרה כדי שנטפל.</p>
+      <div class="report-field">
+        <label class="report-label" for="report-type">מה סוג הבעיה <span class="required-star">*</span></label>
+        <select class="report-select" id="report-type">
+          <option value="" disabled selected>בחרו סוג בעיה</option>
+          <option value="technical">תקלה טכנית או שמשהו לא עובד</option>
+          <option value="unclear">משהו לא ברור לי</option>
+          <option value="other">אחר</option>
+        </select>
+      </div>
+      <div class="report-field">
+        <label class="report-label" for="report-text">מה קרה? <span class="required-star">*</span></label>
+        <textarea class="report-textarea" id="report-text" maxlength="250" rows="4" placeholder="תארו את הבעיה..."></textarea>
+        <span class="report-char-count" id="report-char-count">0 / 250</span>
+      </div>
+      <p class="report-error" id="report-error" hidden>נא לבחור סוג בעיה ולתאר מה קרה.</p>
+      <div class="report-actions">
+        <button class="report-submit-btn" onclick="submitReport()">שליחה</button>
+        <button class="report-cancel-btn" onclick="tryCloseReportModal()">ביטול</button>
+      </div>
+      <div class="report-thanks" id="report-thanks" hidden>
+        <p>תודה! הדיווח נשלח. נטפל בהקדם.</p>
+        <button class="report-submit-btn" onclick="forceCloseReportModal()">סגירה</button>
+      </div>
+    </div>
+  </div>
+  <div id="report-confirm-modal" class="report-modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+    <div class="report-modal-box report-confirm-box">
+      <h2 class="report-modal-title" id="confirm-modal-title">בטוח לסגור את החלון?</h2>
+      <p class="report-modal-body">בלחיצה על סגירה לא יישלח דיווח</p>
+      <div class="report-actions">
+        <button class="report-cancel-btn" onclick="forceCloseReportModal()">סגור חלון</button>
+        <button class="report-submit-btn" onclick="backToReportForm()">אני רוצה לדווח</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /#app -->
+<script src="js/main.js?v=2"></script>
+</body>
+</html>
