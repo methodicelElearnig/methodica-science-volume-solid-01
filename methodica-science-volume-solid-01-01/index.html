@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -67,11 +67,9 @@
       <h1 class="hook-title">רוני מצאה אוצר?</h1>
       <div class="hook-stage">
         <div class="hook-img-frame">
-          <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
-                  data-zoom-src="assets/img/s1-roni-hook.jpeg" data-zoom-alt="רוני כורעת על החוף ומחזיקה תליון זהב בצורת כוכב, לצידה גלאי מתכות">
-            <svg class="img-zoom-btn__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="2"/><path d="M13.2 13.2L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          </button>
-          <img src="assets/img/s1-roni-hook.jpeg" alt="רוני כורעת על החוף ומחזיקה תליון זהב בצורת כוכב, לצידה גלאי מתכות">
+          <video id="s1-video" class="hook-video" src="assets/video/s1-roni-hook.mp4"
+                 poster="assets/img/s1-roni-hook.jpeg" autoplay muted playsinline controls preload="metadata"
+                 aria-label="סרטון: רוני מוצאת תליון זהב על חוף הים"></video>
         </div>
         <div class="hook-narration">
           <p>רוני קיבלה גלאי מתכות חדש והיא מנסה למצוא דברי ערך על חוף הים.</p>
@@ -948,6 +946,6 @@
   </div>
 
 </div><!-- /#app -->
-<script src="js/main.js?v=2"></script>
+<script src="js/main.js?v=5"></script>
 </body>
 </html>

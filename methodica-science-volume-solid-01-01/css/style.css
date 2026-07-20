@@ -3261,6 +3261,7 @@ html, body {
   box-shadow: 0 6px 20px rgba(0, 32, 96, 0.12);
 }
 .hook-img-frame img { width: 100%; display: block; }
+.hook-video { width: 100%; display: block; background: #000; }
 .hook-narration {
   flex: 1 1 auto;
   display: flex; flex-direction: column; gap: 14px;

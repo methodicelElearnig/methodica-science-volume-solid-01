@@ -74,13 +74,20 @@ function scqSelect(screen, id) {
   scqOpts(screen).forEach(o => { const sel = o.dataset.id === id; o.classList.toggle('selected', sel); o.setAttribute('aria-checked', sel ? 'true' : 'false'); });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) chk.disabled = false;
 }
+/* Fire-and-forget xAPI — defer the (possibly synchronous) send to a macrotask so it
+   never blocks a click's visual feedback (the browser only paints after the handler
+   returns). Pre-navigation 'completed' sends and init stay synchronous. */
+function xapiSend() {
+  const args = arguments;
+  setTimeout(function () { try { sendStatement720.apply(null, args); } catch (e) {} }, 0);
+}
 function scqCheck(screen) {
   const s = SCQ_REG[screen], cfg = s.cfg;
   if (s.answered) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
   if (!s.sel) return;
   s.attempts++;
   const correct = s.sel === cfg.correctId;
-  try { sendStatement720(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question', { success: !!correct, score: { scaled: correct ? 1 : 0 } }, { questionId: cfg.questionId }); } catch (e) {}
+  xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question', { success: !!correct, score: { scaled: correct ? 1 : 0 } }, { questionId: cfg.questionId });
   if (correct) { scqMark(screen, cfg.correctId, 'correct'); scqShowPopup(screen, 'correct'); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) { scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'wrong2'); scqFinish(screen, false); }
   else { scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); }
@@ -105,7 +112,7 @@ function scqShowPopup(screen, type) {
 function scqClosePopup(screen) { document.getElementById(screen + '-scq-popup')?.classList.add('hidden'); }
 function scqHint(screen) {
   const s = SCQ_REG[screen]; if (!s || s.answered) return;
-  try { sendStatement720('requested.1', 'question', null, { questionId: s.cfg.questionId }); } catch (e) {}
+  xapiSend('requested.1', 'question', null, { questionId: s.cfg.questionId });
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }

@@ -188,6 +188,8 @@ function goTo(n) {
   // Close every feedback popup / hint overlay before the screen swap.
   document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]')
     .forEach(el => el.classList.add('hidden'));
+  // Pause any playing media before leaving the current screen.
+  document.querySelectorAll('video').forEach(v => { try { v.pause(); } catch (e) {} });
   const prev = document.querySelector('.screen.active');
   if (prev) prev.classList.remove('active');
   currentScreen = n;
@@ -207,6 +209,15 @@ function resetScreenState(n) {
     });
     const cont = document.getElementById('s0-continue');
     if (cont) cont.disabled = !saved;
+  }
+  if (n === 1) {
+    // Roni hook — restart the autoplaying video from the beginning on entry.
+    const v = document.getElementById('s1-video');
+    if (v) {
+      try { v.currentTime = 0; } catch (e) {}
+      const p = v.play();
+      if (p && p.catch) p.catch(() => {});
+    }
   }
   if (n === 2) {
     // hookOpenQuestion — restore typed text / hint-button state on return.
@@ -300,6 +311,18 @@ function advanceScreen() {
    TEMPLATE — TwoOptionSelection (S0, character select)
    Single selection stores the choice globally and enables בחרתי.
    ═══════════════════════════════════════════════════════════ */
+/* Fire-and-forget xAPI. The xapiwrapper send can run synchronously on the live
+   host; because the browser only paints AFTER a click handler returns, a blocking
+   send inside a handler delays the visual feedback (button enable, popup, marks).
+   Deferring to a macrotask lets the feedback paint first, then the statement fires.
+   NOTE: navigation-boundary sends that precede window.location.href (goToNextPart's
+   'completed') stay synchronous so they aren't cut off by page unload. */
+function xapiSend() {
+  const args = arguments;
+  setTimeout(function () {
+    try { sendStatement720.apply(null, args); } catch (e) {}
+  }, 0);
+}
 function selectOption(cardEl) {
   document.querySelectorAll('#s0 .option-card').forEach(c => {
     c.classList.remove('selected');
@@ -308,10 +331,10 @@ function selectOption(cardEl) {
   cardEl.classList.add('selected');
   cardEl.setAttribute('aria-checked', 'true');
   window.lomdaState.selectedCharacter = cardEl.dataset.value;
-  try { sendStatement720('selected', 'question', { response: cardEl.dataset.value }, { category: 'learningType' }); } catch(e) {}
   try { localStorage.setItem('lomda_selectedCharacter', cardEl.dataset.value); } catch (e) {}
   const cont = document.getElementById('s0-continue');
-  if (cont) cont.disabled = false;
+  if (cont) cont.disabled = false;   // enable FIRST — instant visual feedback
+  xapiSend('selected', 'question', { response: cardEl.dataset.value }, { category: 'learningType' });
 }
 function advanceFromS0() {
   if (!window.lomdaState.selectedCharacter) return;
@@ -340,7 +363,7 @@ function hookOpenInput() {
 function hookOpenReveal() {
   const ta = document.getElementById('s2-open-text');
   if (ta && ta.value.trim().length === 0) return; // hint gated on input
-  try { sendStatement720('answered.last', 'question', { response: (ta ? ta.value.trim() : '') }); } catch(e) {}
+  xapiSend('answered.last', 'question', { response: (ta ? ta.value.trim() : '') });
   goTo(3);
 }
 
@@ -362,7 +385,7 @@ function imgqToggle(cardEl) {
   imgqRevealed[id] = true;
   cardEl.classList.add('revealed');
   cardEl.classList.add(IMGQ[id].correct ? 'correct' : 'incorrect');
-  try { sendStatement720('selected', 'question', { response: id }, { category: 'why-measure-volume' }); } catch(e) {}
+  xapiSend('selected', 'question', { response: id }, { category: 'why-measure-volume' });
 }
 function imgqEnter() {
   Object.keys(imgqRevealed).forEach(function (id) {
@@ -393,9 +416,9 @@ function selectPathOption(cardEl) {
   cardEl.classList.add('selected');
   cardEl.setAttribute('aria-checked', 'true');
   window.lomdaState.learningPath = cardEl.dataset.value;
-  try { sendStatement720('selected', 'question', { response: cardEl.dataset.value }, { category: 'learningType' }); } catch(e) {}
   const cont = document.getElementById('s7-continue');
-  if (cont) cont.disabled = false;
+  if (cont) cont.disabled = false;   // enable FIRST — instant visual feedback
+  xapiSend('selected', 'question', { response: cardEl.dataset.value }, { category: 'learningType' });
 }
 function advanceFromPathChoice() {
   const path = window.lomdaState.learningPath;
@@ -559,7 +582,7 @@ function comicUpdateNav() {
 }
 function comicPickOption(i) {
   comicAnswers[comicPage] = i;
-  try { sendStatement720('answered.last', 'question', { response: String(i) }, { category: 'comic-guess' }); } catch(e) {}
+  xapiSend('answered.last', 'question', { response: String(i) }, { category: 'comic-guess' });
   document.querySelectorAll('#s8 .comic-q-opt').forEach(function (b, idx) {
     b.classList.toggle('is-picked', idx === i);
   });
@@ -570,7 +593,7 @@ function comicNext() {
   if (page.question && comicAnswers[comicPage] === undefined) return;   // gated
   if (comicPage < COMIC.length - 1) { comicPage++; renderComic(); return; }
   // Last page → leave the comic and continue past the branch to the merge point.
-  try { sendStatement720('completed', 'question', null, { category: 'comic' }); } catch(e) {}
+  xapiSend('completed', 'question', null, { category: 'comic' });
   goTo(MERGE_SCREEN);
 }
 function comicPrev() {
@@ -609,7 +632,7 @@ function dispDrop() {
     const rs = document.getElementById('disp-reset');    if (rs) rs.hidden = false;
     const cont = document.getElementById('s9-continue');  if (cont) cont.disabled = false;
   }, 900);
-  try { sendStatement720('answered.last', 'question', { response: '62' }, { category: 'displacement-applet' }); } catch(e) {}
+  xapiSend('answered.last', 'question', { response: '62' }, { category: 'displacement-applet' });
 }
 function dispReset() {
   dispPlaced = false;
@@ -684,10 +707,8 @@ function scqCheck(screen) {
   if (!s.sel) return;
   s.attempts++;
   const correct = s.sel === cfg.correctId;
-  try {
-    sendStatement720(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question',
-      { success: !!correct, score: { scaled: correct ? 1 : 0 } }, { questionId: cfg.questionId });
-  } catch (e) {}
+  xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question',
+    { success: !!correct, score: { scaled: correct ? 1 : 0 } }, { questionId: cfg.questionId });
   if (correct) { scqMark(screen, cfg.correctId, 'correct'); scqShowPopup(screen, 'correct'); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) {
     scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong');
@@ -718,7 +739,7 @@ function scqShowPopup(screen, type) {
 function scqClosePopup(screen) { document.getElementById(screen + '-scq-popup')?.classList.add('hidden'); }
 function scqHint(screen) {
   const s = SCQ_REG[screen]; if (!s || s.answered) return;
-  try { sendStatement720('requested.1', 'question', null, { questionId: s.cfg.questionId }); } catch (e) {}
+  xapiSend('requested.1', 'question', null, { questionId: s.cfg.questionId });
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
@@ -793,7 +814,7 @@ function aqMeasure() {
   document.getElementById('aq-ruler-hint').textContent = '';
   document.getElementById('aq-readout').classList.remove('hidden');
   scqSetLocked('s10', false);   // unlock the volume question
-  try { sendStatement720('interacted', 'question', { response: '10cm' }, { category: 'aquarium-ruler' }); } catch (e) {}
+  xapiSend('interacted', 'question', { response: '10cm' }, { category: 'aquarium-ruler' });
 }
 function aqReset() {
   aqMeasured = false;
@@ -861,7 +882,7 @@ function floodDrop() {
     const rs = document.getElementById('flood-reset');    if (rs) rs.hidden = false;
     const cont = document.getElementById('s11-continue');  if (cont) cont.disabled = false;
   }, 900);
-  try { sendStatement720('answered.last', 'question', { response: 'overflow' }, { category: 'flooding-applet' }); } catch(e) {}
+  xapiSend('answered.last', 'question', { response: 'overflow' }, { category: 'flooding-applet' });
 }
 function floodReset() {
   floodPlaced = false;
@@ -1088,7 +1109,7 @@ function ddqCheck(screen) {
   const s = DDQ_REG[screen], cfg = s.cfg;
   if (s.checked) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
   const allCorrect = cfg.targets.every(t => cfg.placement[cfg.correctMap[t.id]] === t.id);
-  try { sendStatement720('answered.last', 'question', { success: !!allCorrect, score: { scaled: allCorrect ? 1 : 0 } }, { questionId: cfg.questionId }); } catch (e) {}
+  xapiSend('answered.last', 'question', { success: !!allCorrect, score: { scaled: allCorrect ? 1 : 0 } }, { questionId: cfg.questionId });
   s.checked = true; s.done = true;
   if (!allCorrect) { Object.keys(cfg.correctMap).forEach(tId => { cfg.placement[cfg.correctMap[tId]] = tId; }); }  // reveal correct
   ddqRender(screen);
@@ -1278,7 +1299,7 @@ function guessPick(screen, btn) {
   guessPicked[screen] = btn.dataset.id;
   document.getElementById(screen + '-guess-bubble')?.classList.remove('hidden');
   const cont = document.getElementById(screen + '-continue'); if (cont) cont.disabled = false;
-  try { sendStatement720('answered.last', 'question', { response: btn.dataset.id }, { category: 'guess' }); } catch (e) {}
+  xapiSend('answered.last', 'question', { response: btn.dataset.id }, { category: 'guess' });
 }
 function guessEnter(screen) {
   syncPathToggle();
@@ -1329,7 +1350,7 @@ function measConfirm() {
   const cfg = MEAS[measStep];
   if (!cfg.input) return;
   measRevealed = true;
-  try { sendStatement720('answered.last', 'question', { response: document.getElementById('meas-input').value }, { category: 'measurement-applet' }); } catch (e) {}
+  xapiSend('answered.last', 'question', { response: document.getElementById('meas-input').value }, { category: 'measurement-applet' });
   if (cfg.last) measDone = true;
   measRender();
 }

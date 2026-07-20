@@ -37,7 +37,7 @@ function resetScreenState(n) {
     const el = document.getElementById('s' + n + '-score');
     if (el) el.textContent = 'ענית נכון על ' + peakScore() + ' מתוך ' + PEAK_PARTS + ' סעיפים.';
     // Both end screens are terminal here (final attempt) — report completion + pass/fail.
-    try { sendStatement720('completed', 'onlinelesson', { success: (n === 5), score: { scaled: peakScore() / PEAK_PARTS } }); } catch (e) {}
+    xapiSend('completed', 'onlinelesson', { success: (n === 5), score: { scaled: peakScore() / PEAK_PARTS } });
   }
 }
 document.addEventListener('keydown', e => {
@@ -50,6 +50,14 @@ function goBack() {
 }
 function advanceScreen() { if (currentScreen === 0) peakStart(); }
 
+/* Fire-and-forget xAPI — defer the (possibly synchronous) send to a macrotask so it
+   never blocks a click's visual feedback / screen paint (the browser only paints after
+   the handler returns). Both end-screen 'completed' sends are terminal (no page unload
+   follows), so deferring is safe. Init stays synchronous. */
+function xapiSend() {
+  const args = arguments;
+  setTimeout(function () { try { sendStatement720.apply(null, args); } catch (e) {} }, 0);
+}
 /* ─── Peak assessment ─────────────────────────────────────── */
 function peakStart() { goTo(1); }
 function peakSelect(idx, id, btn) {
@@ -65,7 +73,7 @@ function peakEnter(idx) {
 }
 function peakContinue(idx) {
   if (peakAnswers[idx] === undefined) return;
-  try { sendStatement720('answered.last', 'question', { response: peakAnswers[idx] }, { questionId: PEAK_QID + 'q' + idx }); } catch (e) {}
+  xapiSend('answered.last', 'question', { response: peakAnswers[idx] }, { questionId: PEAK_QID + 'q' + idx });
   if (idx < PEAK_PARTS) { goTo(idx + 1); return; }
   goTo(peakScore() >= PEAK_PASS ? 5 : 6);   // finish
 }
