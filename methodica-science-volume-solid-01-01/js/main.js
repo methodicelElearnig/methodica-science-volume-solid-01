@@ -12,7 +12,9 @@ function shortId(u){ return String(u || "").split("/").pop(); }
 'use strict';
 
 /* ─── Constants ─────────────────────────────────────────── */
-const TOTAL_SCREENS = 23;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice. Bump as screens are added.
+const TOTAL_SCREENS = 29;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice, S23–S28 comic slides 13–18. Bump as screens are added.
+                           // Must equal the live `.screen` count — index_dev.html derives its jump range from that,
+                           // while goTo() rejects n >= TOTAL_SCREENS. The two silently disagree if only one is edited.
 
 /* ─── Global lomda state ────────────────────────────────────
    Single source of truth persisting across every screen. Screens
@@ -77,14 +79,19 @@ document.addEventListener('click', function (e) {
    DnD/matching screens). Ghost clone follows the pointer, scaled
    to the #app transform so it matches the source visually.
    ═══════════════════════════════════════════════════════════ */
+/* Current #app scale factor. Pointer events report SCREEN pixels; everything
+   inside #app is expressed in DESIGN pixels, so any pointer delta used for
+   layout must be divided by this. Shared by createPointerDnd and the comic
+   slider drag. */
+function getAppScale() {
+  const app = document.getElementById('app');
+  const m = app && app.style.transform.match(/scale\(([^)]+)\)/);
+  return m ? parseFloat(m[1]) : 1;
+}
+
 function createPointerDnd(opts) {
   const targets = new Map();
   let active = null;
-  function getAppScale() {
-    const app = document.getElementById('app');
-    const m = app && app.style.transform.match(/scale\(([^)]+)\)/);
-    return m ? parseFloat(m[1]) : 1;
-  }
   function attachSource(elem, dragId) {
     if (!elem || elem.dataset.pdragAttached === '1') {
       if (elem) elem.dataset.pdragId = dragId;
@@ -238,9 +245,11 @@ function resetScreenState(n) {
     const cont = document.getElementById('s7-continue');
     if (cont) cont.disabled = !p;
   }
-  if (n === 8) {
-    // Comic reader — (re)render current page.
-    comicEnter();
+  if (COMIC_SCREENS.indexOf(n) !== -1) {
+    // Comic path (storyboard slides 12–18) — one screen per slide.
+    const cid = 's' + n;
+    if (COMIC_DATA[cid].kind === 'guess') guessEnter(cid);   // guessEnter() calls syncPathToggle() itself
+    else                                  comicSliderEnter(cid);
   }
   if (n === 9) {
     // Displacement applet.
@@ -266,15 +275,31 @@ function resetScreenState(n) {
   if (n === 16) { practiceEnter(4, 's16'); }       // Q5 — SCQ (item 09)
 }
 
-/* ─── Keyboard Navigation ────────────────────────────────── */
+/* ─── Keyboard Navigation ──────────────────────────────────
+   Inside a comic slider the arrows page PANELS; at the edges they fall through
+   to screen navigation (RTL: ArrowLeft = forward). Panel paging deliberately
+   lives here and not in advanceScreen(), because #sN-continue's
+   onclick="advanceScreen()" must always mean "leave this screen" — otherwise a
+   learner who has seen every panel and paged back would get a page-turn. */
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowLeft')  advanceScreen();
-  if (e.key === 'ArrowRight') goBack();
-  if (e.key === 'Escape') { closeImageZoom(); }
+  if (e.key === 'Escape') { closeImageZoom(); return; }
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  // Don't hijack the arrow keys while the learner is typing (#s2-open-text, #meas-input…).
+  if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+
+  const cid = 's' + currentScreen;
+  if (comicHasSlider(cid)) {
+    const st = comicState[cid], last = COMIC_DATA[cid].panels.length - 1;
+    if (e.key === 'ArrowLeft'  && st && st.i < last) { comicSliderNext(cid); return; }
+    if (e.key === 'ArrowRight' && st && st.i > 0)    { comicSliderPrev(cid); return; }
+  }
+  if (e.key === 'ArrowLeft') advanceScreen(); else goBack();
 });
 
 function goBack() {
-  if (currentScreen === 8)  { comicPrev(); return; }   // comic flips pages, then exits to S7
+  // Comic path — purely screen-level; in-slider back-paging is the arrows' job.
+  const cb = COMIC_SCREENS.indexOf(currentScreen);
+  if (cb !== -1) { goTo(cb === 0 ? 7 : COMIC_SCREENS[cb - 1]); return; }
   if (currentScreen === 9)  { goTo(10); return; }       // displacement → back to aquarium (experiments order)
   if (currentScreen === 10) { goTo(7); return; }        // aquarium (experiments entry) → back to path choice
   if (currentScreen === 21) { goTo(9); return; }        // guess-Q → back to displacement
@@ -294,7 +319,16 @@ function advanceScreen() {
   if (currentScreen === 0 && !window.lomdaState.selectedCharacter) return; // must pick a character
   if (currentScreen === 2) { hookOpenReveal(); return; }                   // hook: reveal is the advance
   if (currentScreen === 7) { advanceFromPathChoice(); return; }            // path choice routes itself
-  if (currentScreen === 8) { comicNext(); return; }                        // comic flips pages, then exits
+  const ci = COMIC_SCREENS.indexOf(currentScreen);                         // comic path — gated, then next comic screen
+  if (ci !== -1) {
+    const cid = 's' + currentScreen;
+    if (!comicCanAdvance(cid)) return;                                     // slider: every panel seen · guess: an option picked
+    if (ci === COMIC_SCREENS.length - 1) {                                 // last comic screen → merge point
+      xapiSend('completed', 'question', null, { category: 'comic' });
+      goTo(MERGE_SCREEN); return;
+    }
+    goTo(COMIC_SCREENS[ci + 1]); return;
+  }
   if (currentScreen === 10) return;                                        // aquarium advances via its check button
   if (currentScreen === 9)  { if (!dispPlaced) return; goTo(21); return; } // displacement → guess-Q
   if (currentScreen === 21) { if (!guessPicked['s21']) return; goTo(11); return; }       // guess-Q → flooding
@@ -403,7 +437,13 @@ function imgqEnter() {
    Comic vs. experiments. Both paths teach the same content and
    merge afterward. Choice stored in window.lomdaState.learningPath.
    ═══════════════════════════════════════════════════════════ */
-const COMIC_SCREEN = 8;
+// Comic path (pedagogical order ≠ screen-number order, wired explicitly).
+// One screen per storyboard slide: 12→S8, 13→S23, 14→S24, 15→S25, 16→S26, 17→S27, 18→S28.
+// S23–S28 are appended rather than inserted so S9–S22 keep their ids, which
+// index.html / style.css / every routing branch already reference.
+const COMIC_ENTRY   = 8;
+const COMIC_SCREEN  = COMIC_ENTRY;                     // alias kept for advanceFromPathChoice()
+const COMIC_SCREENS = [8, 23, 24, 25, 26, 27, 28];
 // Experiments path (pedagogical order ≠ screen-number order, wired explicitly):
 //   entry = S10 aquarium (geometric) → S9 displacement → (flooding, tbd)
 const EXPERIMENTS_ENTRY = 10;
@@ -429,11 +469,11 @@ function advanceFromPathChoice() {
 function switchLearningPath(path) {
   window.lomdaState.learningPath = path;
   if (path === 'experiments' && EXPERIMENTS_SCREENS.indexOf(currentScreen) === -1) goTo(EXPERIMENTS_ENTRY);
-  if (path === 'comic'       && currentScreen !== COMIC_SCREEN) goTo(COMIC_SCREEN);
+  if (path === 'comic'       && COMIC_SCREENS.indexOf(currentScreen) === -1)       goTo(COMIC_ENTRY);
   syncPathToggle();
 }
 function syncPathToggle() {
-  const active = (currentScreen === COMIC_SCREEN) ? 'comic' : 'experiments';
+  const active = (COMIC_SCREENS.indexOf(currentScreen) !== -1) ? 'comic' : 'experiments';
   const scope = document.querySelector('.screen.active');
   if (!scope) return;
   scope.querySelectorAll('.path-toggle-opt').forEach(btn => {
@@ -452,153 +492,447 @@ document.addEventListener('keydown', e => {
 });
 
 /* ═══════════════════════════════════════════════════════════
-   COMPONENT — Comic reader (S8, comic learning path)
-   7-page flipbook. Panel art is a PRODUCTION PLACEHOLDER (art
-   still to be drawn) carrying the storyboard's art direction;
-   dialogue is live HTML. Pages 2 & 5 hold a guess-question that
-   gates "next" (no feedback — the comic just continues).
-   ═══════════════════════════════════════════════════════════ */
-const COMIC = [
-  { // 1 — slide 12: modern Archimedes, geometric reminder
-    art: 'ארכימדס בסגנון מודרני במעבדה מודרנית מסתכל אל הלומדים; על השולחן תיבה מלבנית. פאנל נוסף: ארכימדס מודד את התיבה בעזרת סרגל.',
-    blocks: [
-      { t: 'narration', x: 'ארכימדס הגיע עד לימינו כדי ללמד אותנו על השיטות לחישוב נפח שהוא המציא.' },
-      { t: 'speech',    x: 'בואו נתחיל בתזכורת! איך מודדים גוף בעל צורה הנדסית מוגדרת כמו גליל או תיבה?' },
-      { t: 'speech',    x: 'למדידת נפח של תיבה משתמשים בסרגל: מודדים את צלעות התיבה (אורך, רוחב, גובה) ומכפילים.' }
-    ]
-  },
-  { // 2 — slide 13: guess question 1
-    art: 'ארכימדס מציג ללומדים גופים שאינם הנדסיים ושואל שאלת ניחוש.',
-    question: {
-      prompt: 'נחשו: איך נמדוד נפח של גופים שאינם הנדסיים בעלי צורות שונות?',
-      options: ['נשקול אותם', 'נחתוך אותם לחלקים ונמדוד עם סרגל', 'נכניס אותם למים', 'נעריך אותם לפי העין'],
-      footnote: 'בהמשך נלמד בדיוק איך עושים את זה!'
-    }
-  },
-  { // 3 — slide 14: non-geometric bodies + cube example
-    art: 'פאנל: החפצים מפתח, בלוט וגולה (אחד מכל סוג). ארכימדס מודד תיבה ומחשב בראש את הנפח.',
-    blocks: [
-      { t: 'speech',    x: 'אבל מה לגבי גוף שאינו הנדסי, כמו מפתח, בלוט, או גולה?' },
-      { t: 'thought',   x: 'יש לנו קובייה שכל צלע שלה = 10 ס"מ. 10·10·10 = 1,000. נפח הקובייה = 1,000 סמ"ק!' },
-      { t: 'narration', x: 'ככה מודדים נפח של גוף הנדסי.' }
-    ]
-  },
-  { // 4 — slide 15: displacement (marble in cylinder)
-    art: 'ארכימדס מחזיק משורה מלאה במים וגולה. זום על המשורה: הגולה בתוך המים, מפלס המים מגיע ל-62 מ"ל. ארכימדס מרים אצבע ("הבנתי!").',
-    blocks: [
-      { t: 'speech',    x: 'אם נכניס את הגולה למשורה – מפלס המים יעלה!' },
-      { t: 'narration', x: 'ארכימדס ממלא את המשורה ומתעד עד לאן המים מגיעים: 50 מ"ל.' },
-      { t: 'narration', x: 'מפלס המים עלה ל-62 מ"ל.' },
-      { t: 'thought',   x: 'רגע... אז הנפח של הגולה הוא 62? אולי 50? מה צריך לחשב פה?' },
-      { t: 'speech',    x: 'אה! כמות המים החדשה פחות כמות המים המקורית = נפח הגולה!' },
-      { t: 'speech',    x: 'כשמכניסים גוף מוצק למים, מפלס המים שעולה שווה לנפח הגוף בדיוק.' },
-      { t: 'speech',    x: 'אם רוצים למדוד נפח של גוף שעלול להיפגע במים, אפשר לעטוף אותו בשכבת מגן דקה ואטומה למים.' },
-      { t: 'banner',    x: 'זוהי שיטת דחיקת המים!' }
-    ]
-  },
-  { // 5 — slide 16: guess question 2
-    art: 'ארכימדס עומד ליד גוף גדול (למשל אבטיח) שאינו נכנס למשורה.',
-    question: {
-      prompt: 'נחשו: מה לגבי גופים גדולים שלא נכנסים במשורה?',
-      options: ['נשקול אותם', 'נמדוד את האורך שלהם', 'נכניס אותם לכלי מים גדול אחר', 'לא ניתן למדוד נפח של גופים כאלה'],
-      footnote: 'בהמשך נלמד בדיוק איך מודדים את הנפח שלהם.'
-    }
-  },
-  { // 6 — slide 17: flooding method (overflow)
-    art: 'ארכימדס מחזיק אבטיח; קערה גדולה מלאה מים עד הקצה ומתחתיה כלי עמוק; שופך את המים שנשפכו לכלי מדידה (10 ליטר) שמגיע ל-6.4 ליטר; מחזיק משקולת קטנה.',
-    blocks: [
-      { t: 'speech',    x: 'אני שמח ששאלתם מה לגבי גופים שלא נכנסים במשורה.' },
-      { t: 'narration', x: 'ארכימדס מכין קערה גדולה מלאה מים עד הקצה, ומתחתיה כלי עמוק.' },
-      { t: 'speech',    x: 'אם אניח את האבטיח בתוך קערת המים, המים ישפכו, נכון?' },
-      { t: 'narration', x: 'ארכימדס שופך את המים שנשפכו לתוך כלי המדידה.' },
-      { t: 'speech',    x: 'רואים? המים שנשפכו החוצה מגיעים בדיוק ל-6.4 ליטר.' },
-      { t: 'speech',    x: 'כשמכניסים גוף מוצק לקערת מים, המים שנשפכים החוצה שווים לנפח הגוף במדויק!' },
-      { t: 'banner',    x: 'זוהי שיטת ההצפה!' },
-      { t: 'note',      x: 'אם הגוף צף במים אפשר לחבר לו משקולת שתשקיע אותו — ולהחסיר את נפח המשקולת מהתוצאה. השיטה מדויקת רק אם הכלי מלא במים עד הסוף.' }
-    ]
-  },
-  { // 7 — slide 18: granular solids behave like liquids
-    art: 'ארכימדס שופך אורז לכלי מדידה ריק (בלי מים); ברקע תמונת "אאוריקה".',
-    blocks: [
-      { t: 'speech',  x: 'ארכימדס! מה לגבי מוצק שמתנהג כמו נוזל?' },
-      { t: 'speech',  x: 'או! חיכיתי לשאלה הזאת! מוצק בצורת גרגרים או אבקה מתנהג כמו נוזל — לכן ניתן למדוד את הנפח שלו בכלי למדידת נוזלים.' },
-      { t: 'thought', x: 'וכל זה בזכות האמבטיה שעשיתי לפני אלפי שנים... לא רע!' }
-    ]
-  }
-];
-let comicPage = 0;
-let comicAnswers = {};   // pageIndex -> chosen option index
+   COMPONENT — Comic panels (comic learning path)
+   One screen per storyboard slide: S8=12, S23=13(guess), S24=14,
+   S25=15, S26=16(guess), S27=17, S28=18.
 
-function comicEnter() {
-  syncPathToggle();
-  renderComic();
-}
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function renderComic() {
-  const stage = document.getElementById('comic-stage');
-  if (!stage) return;
-  const page = COMIC[comicPage];
-  let html = '<div class="comic-panel"><span class="comic-panel-tag">איור להפקה</span><p class="comic-panel-art">' + esc(page.art) + '</p></div>';
-  html += '<div class="comic-script">';
-  if (page.question) {
-    const q = page.question;
-    const picked = comicAnswers[comicPage];
-    html += '<div class="comic-question"><p class="comic-q-prompt">' + esc(q.prompt) + '</p><div class="comic-q-options">';
-    q.options.forEach(function (opt, i) {
-      html += '<button type="button" class="comic-q-opt' + (picked === i ? ' is-picked' : '') +
-              '" onclick="comicPickOption(' + i + ')">' + esc(opt) + '</button>';
-    });
-    html += '</div><p class="comic-q-foot">' + esc(q.footnote) + '</p></div>';
-  } else {
-    (page.blocks || []).forEach(function (b) {
-      html += '<div class="comic-block comic-' + b.t + '">' + esc(b.x) + '</div>';
-    });
+   Slides 12 and 14 were delivered as single composite frames (two
+   scenes in one file) and show as one static panel. Slides 15/17/18
+   were delivered per panel and show as a horizontal slider.
+
+   ALL dialogue is live HTML (.speech-bubble) overlaid on the art —
+   never baked into the image. Bubbles fade in ~800ms after the panel
+   appears (storyboard: "הלומד רואה רק את התמונה, בועיות הדיבור עולות
+   שנייה אחרי"), staggered in CSS off --k.
+
+   Forward navigation on a slider screen is blocked until every panel
+   has been seen at least once (canonical FlipCardsReveal unlock: the
+   `seen` entries only ever turn true and `done` is sticky, so a
+   learner returning to the screen is not re-gated).
+
+   Bubble geometry: --r / --t are offsets from the panel's PHYSICAL
+   right / top edge, --w is the width, all in % of the panel. Physical
+   on purpose — the art has a fixed physical layout, so anchors must
+   not flip with `direction`. Percentages are safe because .comic-frame
+   is a constant design-pixel box; scaleApp() handles device scaling
+   above it. If the frame is ever made responsive in design coords,
+   these anchors have to be revisited.
+   ═══════════════════════════════════════════════════════════ */
+const COMIC_BUBBLE_DELAY = 800;
+const COMIC_REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+const COMIC_DATA = {
+
+  /* ── S8 · slide 12 · composite: (right) Archimedes addresses the learners,
+        rectangular box on the bench · (left) he measures it with a ruler ── */
+  s8: {
+    slide: 12, kind: 'panels', ratio: 2,
+    panels: [{
+      src: 'assets/img/comic/12.jpg',
+      alt: 'ארכימדס במעבדה עתיקה. מימין הוא עומד ליד תיבת מתכת על השולחן ופונה אל הלומדים, משמאל הוא מודד את התיבה בעזרת סרגל.',
+      bubbles: [
+        { type: 'caption', text: 'ארכימדס הגיע עד לימינו כדי ללמד אותנו על השיטות לחישוב נפח שהוא המציא.' },
+        { type: 'speech', tail: 'down-left', r: 3, t: 5, w: 21,
+          text: 'בואו נתחיל בתזכורת! איך מודדים גוף בעל צורה הנדסית מוגדרת כמו גליל או תיבה?' },
+        { type: 'speech', tail: 'down-left', r: 54, t: 5, w: 23,
+          text: 'למדידת נפח של תיבה משתמשים בסרגל: מודדים את צלעות התיבה (אורך, רוחב, גובה) ומכפילים.' }
+      ]
+    }]
+  },
+
+  /* ── S23 · slide 13 · guess-question. No correct/incorrect feedback —
+        picking any option is what lets the comic continue. ── */
+  s23: { slide: 13, kind: 'guess' },
+
+  /* ── S24 · slide 14 · composite: (right) he measures the box and works the
+        volume out in his head · (left) key, acorn and marble on the bench ── */
+  s24: {
+    slide: 14, kind: 'panels',
+    panels: [{
+      src: 'assets/img/comic/14.jpg',
+      alt: 'מימין ארכימדס מודד תיבה בעזרת סרגל ומחשב את נפחה, משמאל מונחים על השולחן מפתח, בלוט וגולה.',
+      bubbles: [
+        { type: 'narration', r: 27, t: 4, w: 22, text: 'ככה מודדים נפח של גוף הנדסי' },
+        { type: 'thought', tail: 'down-left', r: 3, t: 22, w: 21,
+          text: 'יש לנו קובייה שכל צלע שלה = 10 ס"מ. 10·10·10 = 1,000. נפח הקובייה = 1,000 סמ"ק!' },
+        { type: 'narration', r: 56, t: 6, w: 30,
+          text: 'אבל מה לגבי גוף שאינו הנדסי, כמו מפתח, בלוט, או גולה?' }
+      ]
+    }]
+  },
+
+  /* ── S25 · slide 15 · שיטת דחיקת המים · slider, 5 panels (15a–15e) ── */
+  s25: {
+    slide: 15, kind: 'panels',
+    panels: [
+      { src: 'assets/img/comic/15a.jpg',
+        alt: 'ארכימדס מחזיק משורה מלאה במים וגולה; עיגול הגדלה מראה שמפלס המים עומד על 50 מ"ל.',
+        bubbles: [
+          { type: 'caption', text: 'ארכימדס ממלא את המשורה ומתעד עד לאן המים מגיעים: 50 מ"ל.' },
+          { type: 'speech', tail: 'down-left', r: 3, t: 5, w: 30,
+            text: 'אם נכניס את הגולה למשורה – מפלס המים יעלה!' }
+        ] },
+      { src: 'assets/img/comic/15b.jpg',
+        alt: 'ארכימדס מסתכל אל המשורה וחושב.',
+        bubbles: [
+          { type: 'caption', text: 'מפלס המים עלה ל-62 מ"ל.' },
+          { type: 'thought', tail: 'down-left', r: 3, t: 5, w: 30,
+            text: 'רגע... אז הנפח של הגולה הוא 62? אולי 50? מה צריך לחשב פה?' }
+        ] },
+      { src: 'assets/img/comic/15c.jpg',
+        alt: 'ארכימדס מרים אצבע למעלה בסימן "הבנתי!".',
+        bubbles: [
+          { type: 'speech', tail: 'down-left', r: 3, t: 5, w: 32,
+            text: 'אה! כמות המים החדשה פחות כמות המים המקורית = נפח הגולה!' }
+        ] },
+      { src: 'assets/img/comic/15d.jpg',
+        alt: 'זום על המשורה: הגולה בתוך המים ומפלס המים מגיע ל-62 מ"ל.',
+        bubbles: [
+          { type: 'caption', text: 'מה קרה כאן?' },
+          { type: 'speech', tail: 'down-left', r: 5, t: 6, w: 32,
+            text: 'כשמכניסים גוף מוצק למים, מפלס המים שעולה שווה לנפח הגוף בדיוק.' }
+        ] },
+      { src: 'assets/img/comic/15e.jpg',
+        alt: 'ארכימדס מסתכל אל המצלמה.',
+        bubbles: [
+          { type: 'banner', t: 78, text: 'זוהי שיטת דחיקת המים!' },
+          { type: 'speech', tail: 'down-left', r: 3, t: 5, w: 32,
+            text: 'אם רוצים למדוד נפח של גוף שעלול להיפגע במים, אפשר לעטוף אותו בשכבת מגן דקה ואטומה למים.' }
+        ] }
+    ]
+  },
+
+  /* ── S26 · slide 16 · guess-question (no feedback) ── */
+  s26: { slide: 16, kind: 'guess' },
+
+  /* ── S27 · slide 17 · שיטת ההצפה · slider, 7 panels (17a–17g) ── */
+  s27: {
+    slide: 17, kind: 'panels',
+    panels: [
+      { src: 'assets/img/comic/17a.jpg',
+        alt: 'ארכימדס מחזיק אבטיח.',
+        bubbles: [
+          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 28,
+            text: 'או! אני שמח ששאלתם מה לגבי גופים שלא נכנסים במשורה.' }
+        ] },
+      { src: 'assets/img/comic/17b.jpg',
+        alt: 'ארכימדס מכניס את האבטיח לקערה מלאה במים; מתחת לקערה מגש עמוק שאליו נשפכים המים.',
+        bubbles: [
+          { type: 'caption', text: 'ארכימדס מכין קערה גדולה עם מים מלאים ממש עד לקצה. מתחתיה יש כלי עמוק נוסף.' },
+          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 29,
+            text: 'אם אני אניח את האבטיח בתוך קערת המים, המים ישפכו, נכון?' }
+        ] },
+      { src: 'assets/img/comic/17c.jpg',
+        alt: 'ארכימדס מסתכל על הקערה וחושב.',
+        bubbles: [
+          { type: 'thought', tail: 'down-left', r: 2, t: 5, w: 26,
+            text: 'אוקי... המים נשפכו. מה עכשיו?' }
+        ] },
+      { src: 'assets/img/comic/17d.jpg',
+        alt: 'ארכימדס מחזיק כלי מדידה גדול ומראה אותו לצופים.',
+        bubbles: [
+          { type: 'speech', tail: 'down-left', r: 5, t: 6, w: 28,
+            text: 'רגע! יש לנו פה גם כלי מדידה!' }
+        ] },
+      { src: 'assets/img/comic/17e.jpg',
+        alt: 'ארכימדס שופך את המים מהכלי העמוק לתוך כלי המדידה.',
+        bubbles: [
+          { type: 'caption', text: 'ארכימדס שופך את המים מהכלי העמוק לתוך כלי המדידה.' },
+          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 28,
+            text: 'רואים? המים שנשפכו החוצה מגיעים בדיוק ל 6.4 ליטר' }
+        ] },
+      { src: 'assets/img/comic/17f.jpg',
+        alt: 'זום על כלי המדידה: המים מגיעים ל-6.4 ליטר.',
+        bubbles: [
+          { type: 'caption', text: 'מה קרה כאן?' },
+          { type: 'speech', tail: 'down-left', r: 4, t: 5, w: 30,
+            text: 'שכשמכניסים גוף מוצק לקערת מים, המים שנשפכים החוצה שווים לנפח הגוף במדויק!' },
+          { type: 'note', r: 4, t: 42, w: 30,
+            text: 'זה נכון רק אם הכלי מלא במים ממש עד הסוף.' }
+        ] },
+      { src: 'assets/img/comic/17g.jpg',
+        alt: 'ארכימדס מחזיק משקולת קטנה.',
+        bubbles: [
+          { type: 'banner', t: 80, text: 'זוהי שיטת ההצפה!' },
+          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 30,
+            text: 'אם הגוף שמודדים צף במים, אפשר לחבר לו משקולת שישקע.' },
+          { type: 'note', r: 2, t: 42, w: 30,
+            text: 'כמובן שצריך להחסיר את נפח המשקולת מהתוצאה הסופית' }
+        ] }
+    ]
+  },
+
+  /* ── S28 · slide 18 · מוצק שמתנהג כמו נוזל · slider, 3 panels.
+        18a was never delivered — it ships as a visible production marker and
+        still counts toward the unlock, so the screen stays completable. ── */
+  s28: {
+    slide: 18, kind: 'panels',
+    panels: [
+      { placeholder: 'ארכימדס מסתכל לכיוון של בועת הדיבור ו"מקשיב" — איור להפקה (18a)',
+        alt: 'איור להפקה: ארכימדס מסתכל לכיוון בועת הדיבור ומקשיב.',
+        bubbles: [
+          { type: 'speech', tail: 'down-left', r: 4, t: 8, w: 30,
+            text: 'ארכימדס! מה לגבי מוצק שמתנהג כמו נוזל?' },
+          { type: 'thought', tail: 'down-right', r: 44, t: 40, w: 26,
+            text: 'או! חיכיתי לשאלה הזאת!' }
+        ] },
+      { src: 'assets/img/comic/18b.jpg',
+        alt: 'ארכימדס שופך אורז לתוך כלי מדידה ריק.',
+        bubbles: [
+          { type: 'caption', text: 'ארכימדס שופך אורז לתוך כלי מדידה' },
+          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 30,
+            text: 'מוצק בצורת גרגרים או אבקה מתנהג כמו נוזל! לכן ניתן למדוד את הנפח שלו בכלי למדידת נוזלים.' }
+        ] },
+      { src: 'assets/img/comic/18c.jpg',
+        alt: 'ארכימדס באמבטיה מרים כתר וקורא "אאוריקה".',
+        bubbles: [
+          { type: 'thought', tail: 'down-left', r: 4, t: 6, w: 32,
+            text: 'וכל זה בזכות האמבטיה שעשיתי לפני אלפי שנים... לא רע!' }
+        ] }
+    ]
   }
-  html += '</div>';
-  stage.innerHTML = html;
-  renderComicDots();
-  comicUpdateNav();
+};
+
+/* 's25' -> { i, seen[], done, built, timer, token, reported } */
+const comicState = {};
+
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+function comicHasSlider(screenId) {
+  const cfg = COMIC_DATA[screenId];
+  return !!(cfg && cfg.panels && cfg.panels.length > 1);
 }
-function renderComicDots() {
-  const dots = document.getElementById('comic-dots');
-  if (!dots) return;
-  let h = '';
-  for (let i = 0; i < COMIC.length; i++) {
-    h += '<span class="comic-dot' + (i === comicPage ? ' is-active' : '') + '"></span>';
+
+function comicCanAdvance(screenId) {
+  const cfg = COMIC_DATA[screenId];
+  if (!cfg) return true;
+  if (cfg.kind === 'guess') return !!guessPicked[screenId];
+  const st = comicState[screenId];
+  return !!(st && st.done);
+}
+
+/* One bubble → one .speech-bubble. Docked variants (caption/banner) ignore
+   --r/--t/--w; positioned variants read them. */
+function comicBubbleHtml(b, k) {
+  const type  = b.type || 'speech';
+  const docked = (type === 'caption');   // banner is width-docked but honours --t
+  let cls = 'speech-bubble speech-bubble--' + type;
+  if (b.tail) cls += ' speech-bubble--tail-' + b.tail;
+  let style = '--k:' + k + ';';
+  if (!docked) {
+    style += '--r:' + (b.r != null ? b.r : 5) + '%;'
+           + '--t:' + (b.t != null ? b.t : 5) + '%;'
+           + '--w:' + (b.w != null ? b.w : 30) + '%;';
   }
-  dots.innerHTML = h;
+  return '<div class="' + cls + '" style="' + style + '">'
+       +   '<div class="speech-bubble__frame"><p class="speech-bubble__text">' + esc(b.text) + '</p></div>'
+       +   (b.tail ? '<span class="speech-bubble__tail" aria-hidden="true"></span>' : '')
+       + '</div>';
 }
-function comicUpdateNav() {
-  const next = document.getElementById('comic-next');
-  const page = COMIC[comicPage];
-  const gated = page.question && comicAnswers[comicPage] === undefined;
-  const last = comicPage === COMIC.length - 1;
-  if (next) {
-    next.disabled = !!gated;
-    next.classList.toggle('comic-arrow--finish', last);
-    next.textContent = last ? 'המשך' : '‹';
-    next.setAttribute('aria-label', last ? 'סיום הקומיקס והמשך' : 'עמוד הבא');
+
+/* Idempotent DOM build from COMIC_DATA. Panels are laid out with the physical
+   `right` offset (--i) and paged by translating the track. */
+function comicBuild(screenId) {
+  const cfg = COMIC_DATA[screenId];
+  if (!cfg || cfg.kind === 'guess') return;
+  let st = comicState[screenId];
+  if (!st) {
+    st = comicState[screenId] = {
+      i: 0, seen: new Array(cfg.panels.length).fill(false),
+      done: false, built: false, timer: null, token: 0, reported: false
+    };
   }
-}
-function comicPickOption(i) {
-  comicAnswers[comicPage] = i;
-  xapiSend('answered.last', 'question', { response: String(i) }, { category: 'comic-guess' });
-  document.querySelectorAll('#s8 .comic-q-opt').forEach(function (b, idx) {
-    b.classList.toggle('is-picked', idx === i);
+  if (st.built) return;
+
+  const n     = cfg.panels.length;
+  const track = document.getElementById(screenId + '-track');
+  const dots  = document.getElementById(screenId + '-dots');
+  if (!track) return;
+
+  track.innerHTML = cfg.panels.map(function (p, k) {
+    const media = p.src
+      ? '<img class="comic-panel-img" src="' + p.src + '" alt="' + esc(p.alt || '') + '" draggable="false" decoding="async">'
+      : '<div class="comic-panel-ph">' + esc(p.placeholder || 'איור להפקה') + '</div>';
+    return '<div class="comic-panel" id="' + screenId + '-panel-' + k + '" style="--i:' + k + '"'
+         +      ' role="group" aria-roledescription="פאנל" aria-label="פאנל ' + (k + 1) + ' מתוך ' + n + '">'
+         +   media
+         +   (p.bubbles || []).map(comicBubbleHtml).join('')
+         + '</div>';
+  }).join('');
+
+  if (dots) {
+    dots.innerHTML = n < 2 ? '' : cfg.panels.map(function (p, k) {
+      return '<button class="comic-dot" type="button" role="tab" aria-selected="false"'
+           +        ' aria-label="פאנל ' + (k + 1) + '"'
+           +        ' onclick="comicSliderGo(\'' + screenId + '\', ' + k + ')"></button>';
+    }).join('');
+  }
+
+  // Single-panel screens are static: no arrows, no dots, no drag.
+  const nav = document.getElementById(screenId + '-nav');
+  if (nav) nav.hidden = n < 2;
+  ['-prev', '-next'].forEach(function (sfx) {
+    const b = document.getElementById(screenId + sfx);
+    if (b) b.hidden = n < 2;
   });
-  comicUpdateNav();   // no feedback — just unlock "next"
+  const vp = document.getElementById(screenId + '-viewport');
+  if (vp && n < 2) vp.classList.add('is-static');
+  if (n > 1) comicAttachDrag(screenId);
+
+  st.built = true;
 }
-function comicNext() {
-  const page = COMIC[comicPage];
-  if (page.question && comicAnswers[comicPage] === undefined) return;   // gated
-  if (comicPage < COMIC.length - 1) { comicPage++; renderComic(); return; }
-  // Last page → leave the comic and continue past the branch to the merge point.
-  xapiSend('completed', 'question', null, { category: 'comic' });
-  goTo(MERGE_SCREEN);
+
+/* resetScreenState() hook — restores the panel, the seen/gate state and the
+   bubbles, without animating the restore. */
+function comicSliderEnter(screenId) {
+  syncPathToggle();
+  comicBuild(screenId);
+  const st = comicState[screenId];
+  if (!st) return;
+  comicSliderGo(screenId, st.i, { animate: false });
+  // Warm the next panels so a swipe never lands on a blank frame.
+  COMIC_DATA[screenId].panels.forEach(function (p) { if (p.src) { const im = new Image(); im.src = p.src; } });
 }
-function comicPrev() {
-  if (comicPage > 0) { comicPage--; renderComic(); return; }
-  goTo(7);   // back to the path-choice screen
+
+function comicSliderGo(screenId, i, opts) {
+  const cfg = COMIC_DATA[screenId], st = comicState[screenId];
+  if (!cfg || !st) return;
+  const n = cfg.panels.length;
+  i = Math.max(0, Math.min(n - 1, i));
+
+  const track = document.getElementById(screenId + '-track');
+  if (track) {
+    if (opts && opts.animate === false) {
+      track.style.transition = 'none';
+      track.style.transform  = 'translateX(' + (i * 100) + '%)';
+      void track.offsetWidth;              // flush, then hand the transition back to CSS
+      track.style.transition = '';
+    } else {
+      track.style.transform = 'translateX(' + (i * 100) + '%)';
+    }
+  }
+
+  st.i = i;
+  st.seen[i] = true;
+  const justDone = !st.done && st.seen.every(Boolean);
+  if (justDone) st.done = true;            // sticky — never re-gate on return
+
+  // Keep inactive panels out of the a11y and focus trees. Focusing anything in
+  // an off-screen panel would scroll the clipping box and permanently offset
+  // the strip; scrollLeft = 0 is the belt-and-braces half of that fix.
+  document.querySelectorAll('#' + screenId + ' .comic-panel').forEach(function (p, k) {
+    p.toggleAttribute('inert', k !== i);
+    p.setAttribute('aria-hidden', k !== i ? 'true' : 'false');
+  });
+  const vp = document.getElementById(screenId + '-viewport');
+  if (vp) vp.scrollLeft = 0;
+
+  comicRevealBubbles(screenId, i);
+  comicUpdateNav(screenId);
+
+  if (justDone && !st.reported) {
+    st.reported = true;
+    xapiSend('experienced', 'question', null, { category: 'comic-slide-' + cfg.slide });
+  }
+}
+
+function comicSliderNext(screenId) { const st = comicState[screenId]; if (st) comicSliderGo(screenId, st.i + 1); }
+function comicSliderPrev(screenId) { const st = comicState[screenId]; if (st) comicSliderGo(screenId, st.i - 1); }
+
+/* Exactly one timer per panel — the per-bubble stagger is CSS. Triple-guarded,
+   because the delay outlives a swipe, a goTo() and a path-toggle switch. */
+function comicRevealBubbles(screenId, i) {
+  const st = comicState[screenId];
+  if (!st) return;
+  clearTimeout(st.timer);
+  const token = ++st.token;
+  document.querySelectorAll('#' + screenId + ' .comic-panel.is-revealed')
+          .forEach(function (p) { p.classList.remove('is-revealed'); });
+  st.timer = setTimeout(function () {
+    if (token !== st.token) return;                        // superseded by a newer panel
+    if (currentScreen !== +screenId.slice(1)) return;      // learner navigated away
+    if (st.i !== i) return;                                // learner paged away
+    const p = document.getElementById(screenId + '-panel-' + i);
+    if (p) p.classList.add('is-revealed');
+  }, COMIC_REDUCED_MOTION.matches ? 200 : COMIC_BUBBLE_DELAY);
+}
+
+function comicUpdateNav(screenId) {
+  const cfg = COMIC_DATA[screenId], st = comicState[screenId];
+  if (!cfg || !st) return;
+  const last = cfg.panels.length - 1;
+  const prev = document.getElementById(screenId + '-prev');
+  const next = document.getElementById(screenId + '-next');
+  if (prev) prev.disabled = st.i === 0;
+  if (next) next.disabled = st.i === last;
+  document.querySelectorAll('#' + screenId + '-dots .comic-dot').forEach(function (d, k) {
+    d.classList.toggle('is-active', k === st.i);
+    d.classList.toggle('is-seen', !!st.seen[k]);
+    d.setAttribute('aria-selected', k === st.i ? 'true' : 'false');
+  });
+  const cont = document.getElementById(screenId + '-continue');
+  if (cont) cont.disabled = !st.done;
+}
+
+/* Pointer drag / swipe. clientX is in SCREEN px while the track's transform is
+   in DESIGN px, so every delta is divided by getAppScale(). */
+function comicAttachDrag(screenId) {
+  const vp = document.getElementById(screenId + '-viewport');
+  const track = document.getElementById(screenId + '-track');
+  if (!vp || !track || vp.dataset.dragAttached === '1') return;
+  vp.dataset.dragAttached = '1';
+
+  let on = false, pid = null, startX = 0, startT = 0, lastX = 0, vpW = 1, moved = false;
+
+  vp.addEventListener('pointerdown', function (e) {
+    if (!comicHasSlider(screenId)) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    e.preventDefault();
+    vpW = vp.getBoundingClientRect().width / getAppScale();   // screen px → design px
+    on = true; moved = false; pid = e.pointerId;
+    startX = lastX = e.clientX; startT = performance.now();
+    try { vp.setPointerCapture(pid); } catch (err) {}
+    track.classList.add('is-dragging');
+    vp.classList.add('is-dragging');
+  });
+
+  vp.addEventListener('pointermove', function (e) {
+    if (!on || e.pointerId !== pid) return;
+    const st = comicState[screenId];
+    if (!st) return;
+    const last = COMIC_DATA[screenId].panels.length - 1;
+    let dx = (e.clientX - startX) / getAppScale();
+    if ((st.i === 0 && dx < 0) || (st.i === last && dx > 0)) dx *= 0.32;   // rubber band
+    if (Math.abs(dx) > 4) moved = true;
+    track.style.transform = 'translateX(' + (st.i * vpW + dx) + 'px)';
+    lastX = e.clientX;
+  });
+
+  function settle(e) {
+    if (!on || (e && e.pointerId !== pid)) return;
+    on = false;
+    track.classList.remove('is-dragging');
+    vp.classList.remove('is-dragging');
+    const st = comicState[screenId];
+    if (!st) return;
+    const dx = ((e ? e.clientX : lastX) - startX) / getAppScale();
+    const v  = dx / Math.max(1, performance.now() - startT);   // design px per ms
+    // A flick counts only once it has actually travelled: without the distance
+    // floor, a tap with a few px of jitter divides by a ~1ms elapsed time and
+    // reads as a high-velocity swipe.
+    const fling = Math.abs(dx) > 30 ? v : 0;
+    let target = st.i;
+    if      (dx >  vpW * 0.18 || fling >  0.45) target = st.i + 1;  // RTL: drag right → next
+    else if (dx < -vpW * 0.18 || fling < -0.45) target = st.i - 1;
+    comicSliderGo(screenId, target);        // clamps and restores the % transform
+  }
+  vp.addEventListener('pointerup', settle);
+  vp.addEventListener('pointercancel', settle);
+  // Swallow the synthetic click that ends a drag, so the global zoom/dropdown
+  // click listeners can't fire mid-swipe.
+  vp.addEventListener('click', function (e) {
+    if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; }
+  }, true);
 }
 
 /* ═══════════════════════════════════════════════════════════

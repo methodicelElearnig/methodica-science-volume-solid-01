@@ -283,14 +283,22 @@
 
 
   <!-- ═══════════════════════════════════════════════════════════
-       S8 — Screens 12–18 · Comic reader (comic learning path)
-       A 7-page flipbook (data-driven from COMIC in main.js). Comic
-       PANEL ART is still to be PRODUCED — each page shows a labeled
-       art placeholder carrying the storyboard's art direction, with
-       the dialogue rendered as live HTML. Two embedded guess-questions
-       (pages 2 & 5) gate the "next" button (no feedback, per storyboard).
-       A learning-path toggle sits on top (comic ⇄ experiments).
+       COMIC PATH — storyboard slides 12–18, one screen per slide:
+         S8 = 12 · S23 = 13 (guess) · S24 = 14 · S25 = 15 (slider)
+         S26 = 16 (guess) · S27 = 17 (slider) · S28 = 18 (slider)
+       S23–S28 are appended ids, not inserted ones: S9–S22 already exist
+       and are referenced by id in the CSS and in every routing branch.
+       The order is wired explicitly in COMIC_SCREENS (main.js).
+
+       Panel art is a photo asset; ALL dialogue is live HTML overlaid on
+       it and fades in ~800ms after the panel appears. Panels, bubbles and
+       dots are rendered by comicBuild() from COMIC_DATA.
        ═══════════════════════════════════════════════════════════ -->
+
+  <!-- ═══ S8 — Storyboard slide 12 · single composite frame (no slider):
+       (right) Archimedes addresses the learners, (left) he measures the box.
+       Delivered as one 2:1 file, hence --ratio:2 and a hidden panel nav.
+       Flow: S7 path choice → S8 → S23. ═══ -->
   <section class="screen" data-screen="8" id="s8">
     <div class="comic">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
@@ -299,15 +307,196 @@
         <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
       </div>
 
-      <div class="comic-stage" id="comic-stage" aria-live="polite"><!-- rendered by renderComic() --></div>
+      <!-- RTL row: prev (›) first in DOM = rightmost; next (‹) last = leftmost -->
+      <div class="comic-row">
+        <button class="comic-arrow" id="s8-prev" type="button" onclick="comicSliderPrev('s8')" aria-label="הפאנל הקודם">›</button>
+        <div class="comic-frame" style="--ratio:2">
+          <div class="comic-viewport" id="s8-viewport" role="group" aria-roledescription="לוח קומיקס" aria-label="פאנלים של הסיפור">
+            <div class="comic-track" id="s8-track"><!-- built by comicBuild('s8') --></div>
+          </div>
+        </div>
+        <button class="comic-arrow comic-arrow--next" id="s8-next" type="button" onclick="comicSliderNext('s8')" aria-label="הפאנל הבא">‹</button>
+      </div>
 
-      <div class="comic-nav">
-        <button class="comic-arrow" id="comic-prev" type="button" onclick="comicPrev()" aria-label="עמוד קודם">›</button>
-        <span class="comic-dots" id="comic-dots"></span>
-        <button class="comic-arrow comic-arrow--next" id="comic-next" type="button" onclick="comicNext()" aria-label="עמוד הבא">‹</button>
+      <div class="comic-nav" id="s8-nav">
+        <div class="comic-dots" id="s8-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
       </div>
     </div>
     <div class="nav-bar">
+      <button class="btn-continue" id="s8-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S23 — Storyboard slide 13 · Guess-question inside the comic.
+       Per the storyboard there is NO correct/incorrect feedback — picking any
+       option is simply what lets the comic continue. Flow: S8 → S23 → S24. ═══ -->
+  <section class="screen" data-screen="23" id="s23">
+    <div class="exp">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+      <div class="exp-head">
+        <h1 class="exp-title">מדידת נפח של גוף שאינו הנדסי</h1>
+        <p class="exp-instruction">נחשו: איך נמדוד נפח של גופים שאינם הנדסיים בעלי צורות שונות?</p>
+      </div>
+      <div class="guess-options" id="s23-guess">
+        <button class="guess-opt" type="button" data-id="a" onclick="guessPick('s23', this)">נשקול אותם</button>
+        <button class="guess-opt" type="button" data-id="b" onclick="guessPick('s23', this)">נחתוך אותם לחלקים ונמדוד עם סרגל</button>
+        <button class="guess-opt" type="button" data-id="c" onclick="guessPick('s23', this)">נכניס אותם למים</button>
+        <button class="guess-opt" type="button" data-id="d" onclick="guessPick('s23', this)">נעריך אותם לפי העין</button>
+      </div>
+      <div class="hook-bubble guess-bubble hidden" id="s23-guess-bubble">בהמשך נלמד בדיוק איך עושים את זה!</div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s23-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S24 — Storyboard slide 14 · single composite frame (no slider):
+       (right) he measures the box and works out its volume, (left) key, acorn
+       and marble. Flow: S23 → S24 → S25. ═══ -->
+  <section class="screen" data-screen="24" id="s24">
+    <div class="comic">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+      <div class="comic-row">
+        <button class="comic-arrow" id="s24-prev" type="button" onclick="comicSliderPrev('s24')" aria-label="הפאנל הקודם">›</button>
+        <div class="comic-frame">
+          <div class="comic-viewport" id="s24-viewport" role="group" aria-roledescription="לוח קומיקס" aria-label="פאנלים של הסיפור">
+            <div class="comic-track" id="s24-track"><!-- built by comicBuild('s24') --></div>
+          </div>
+        </div>
+        <button class="comic-arrow comic-arrow--next" id="s24-next" type="button" onclick="comicSliderNext('s24')" aria-label="הפאנל הבא">‹</button>
+      </div>
+      <div class="comic-nav" id="s24-nav">
+        <div class="comic-dots" id="s24-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s24-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S25 — Storyboard slide 15 · שיטת דחיקת המים · slider, 5 panels
+       (15a–15e). Panels slide right-to-left: panel 1 is rightmost and the next
+       panel enters from the left. "המשך" stays disabled until every panel has
+       been seen at least once (sticky on return). Flow: S24 → S25 → S26. ═══ -->
+  <section class="screen" data-screen="25" id="s25">
+    <div class="comic">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+      <div class="comic-row">
+        <button class="comic-arrow" id="s25-prev" type="button" onclick="comicSliderPrev('s25')" aria-label="הפאנל הקודם">›</button>
+        <div class="comic-frame">
+          <div class="comic-viewport" id="s25-viewport" role="group" aria-roledescription="קרוסלת קומיקס" aria-label="פאנלים של הסיפור">
+            <div class="comic-track" id="s25-track"><!-- built by comicBuild('s25') --></div>
+          </div>
+        </div>
+        <button class="comic-arrow comic-arrow--next" id="s25-next" type="button" onclick="comicSliderNext('s25')" aria-label="הפאנל הבא">‹</button>
+      </div>
+      <div class="comic-nav" id="s25-nav">
+        <div class="comic-dots" id="s25-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s25-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S26 — Storyboard slide 16 · Guess-question (no feedback).
+       Flow: S25 → S26 → S27. ═══ -->
+  <section class="screen" data-screen="26" id="s26">
+    <div class="exp">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+      <div class="exp-head">
+        <h1 class="exp-title">מדידת נפח לגוף שאינו נכנס במשורה</h1>
+        <p class="exp-instruction">נחשו: מה לגבי גופים גדולים שלא נכנסים במשורה?</p>
+      </div>
+      <div class="guess-options" id="s26-guess">
+        <button class="guess-opt" type="button" data-id="a" onclick="guessPick('s26', this)">נשקול אותם.</button>
+        <button class="guess-opt" type="button" data-id="b" onclick="guessPick('s26', this)">נמדוד את האורך שלהם.</button>
+        <button class="guess-opt" type="button" data-id="c" onclick="guessPick('s26', this)">נכניס אותם לכלי מים גדול אחר.</button>
+        <button class="guess-opt" type="button" data-id="d" onclick="guessPick('s26', this)">לא ניתן למדוד נפח של גופים כאלה.</button>
+      </div>
+      <div class="hook-bubble guess-bubble hidden" id="s26-guess-bubble">בהמשך נלמד בדיוק איך מודדים את הנפח שלהם.</div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s26-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S27 — Storyboard slide 17 · שיטת ההצפה · slider, 7 panels (17a–17g).
+       Flow: S26 → S27 → S28. ═══ -->
+  <section class="screen" data-screen="27" id="s27">
+    <div class="comic">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+      <div class="comic-row">
+        <button class="comic-arrow" id="s27-prev" type="button" onclick="comicSliderPrev('s27')" aria-label="הפאנל הקודם">›</button>
+        <div class="comic-frame">
+          <div class="comic-viewport" id="s27-viewport" role="group" aria-roledescription="קרוסלת קומיקס" aria-label="פאנלים של הסיפור">
+            <div class="comic-track" id="s27-track"><!-- built by comicBuild('s27') --></div>
+          </div>
+        </div>
+        <button class="comic-arrow comic-arrow--next" id="s27-next" type="button" onclick="comicSliderNext('s27')" aria-label="הפאנל הבא">‹</button>
+      </div>
+      <div class="comic-nav" id="s27-nav">
+        <div class="comic-dots" id="s27-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s27-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S28 — Storyboard slide 18 · מוצק שמתנהג כמו נוזל · slider, 3 panels.
+       Panel 18a was never delivered: it ships as a visible "איור להפקה" marker
+       (see ASSETS-TODO.md A2) and still counts toward the unlock, so the screen
+       stays completable. Last comic screen — "המשך" exits to the merge point.
+       Flow: S27 → S28 → S12 (merge). ═══ -->
+  <section class="screen" data-screen="28" id="s28">
+    <div class="comic">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+      <div class="comic-row">
+        <button class="comic-arrow" id="s28-prev" type="button" onclick="comicSliderPrev('s28')" aria-label="הפאנל הקודם">›</button>
+        <div class="comic-frame">
+          <div class="comic-viewport" id="s28-viewport" role="group" aria-roledescription="קרוסלת קומיקס" aria-label="פאנלים של הסיפור">
+            <div class="comic-track" id="s28-track"><!-- built by comicBuild('s28') --></div>
+          </div>
+        </div>
+        <button class="comic-arrow comic-arrow--next" id="s28-next" type="button" onclick="comicSliderNext('s28')" aria-label="הפאנל הבא">‹</button>
+      </div>
+      <div class="comic-nav" id="s28-nav">
+        <div class="comic-dots" id="s28-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s28-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>

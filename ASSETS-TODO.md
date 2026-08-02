@@ -37,18 +37,47 @@ placeholders in place. Interactive logic is complete; only the visuals are pendi
   **and** wiring onto screens via a character asset-map (see `720-templates` →
   `_global-components.md` → Companion character system).
 
-### A2. Comic reader — 7 panels (`…-01` **S8**)
+### A2. Comic panels (`…-01` **S8, S24, S25, S27, S28**)
 
-Each page currently shows a dashed **"איור להפקה"** panel + art-direction text.
-Produce modern-style Archimedes comic art (modern lab) per page. **Dialogue stays live HTML.**
+Delivered by Ron Reuveni on **27.7.26** as photorealistic art (not illustrated comic
+style) — *"סיימתי לג'נרט את התמונות כריאלסטיות. שמרתי על הנראות לפי מה שכבר קיים בתסריט."*
+Source: `Images/comics/`. Exported to `assets/img/comic/` as JPEG q82 (long edge
+1800 px) — 40 MB of PNG → 3.5 MB. **All dialogue is live HTML overlaid on the art.**
 
-- [ ] Page 1 — Archimedes intro + geometric reminder (box on table, ruler).
-- [ ] Page 2 — guess-question scene (non-geometric bodies).
-- [ ] Page 3 — key / acorn / marble + cube (10·10·10 = 1,000).
-- [ ] Page 4 — marble in cylinder, water 50 → 62 mL.
-- [ ] Page 5 — large-body scene (doesn't fit the cylinder).
-- [ ] Page 6 — watermelon + brim-full bowl overflowing → 6.4 L.
-- [ ] Page 7 — rice poured into a measuring cup + "אאוריקה".
+The comic is no longer one flipbook screen: each storyboard slide is its own screen,
+and slides 15/17/18 are horizontal sliders over their panels (see the `COMIC_SCREENS`
+comment in `js/main.js`).
+
+- [x] **Slide 12** → `12.jpg` (**S8**). One composite frame containing both storyboard
+      panels (right: addresses the learners · left: measures with a ruler). Shown whole
+      at `--ratio:2`, with a bubble over each half — deliberately **not** split.
+- [x] **Slide 14** → `14.jpg` (**S24**). Same composite treatment (right: measures and
+      calculates · left: key / acorn / marble).
+- [x] **Slide 15** → `15a.jpg` … `15e.jpg` (**S25**, 5-panel slider).
+- [x] **Slide 17** → `17a.jpg` … `17g.jpg` (**S27**, 7-panel slider).
+      Source `17F.png` was renamed to lowercase `17f.jpg` — an uppercase letter breaks
+      on any case-sensitive host.
+- [x] **Slide 18** → `18b.jpg`, `18c.jpg` (**S28**, panels 2–3 of 3).
+- [ ] **Slide 18 panel A — NOT DELIVERED.** S28 ships a dashed "איור להפקה" placeholder
+      in its place (it still counts toward the screen's unlock, so the flow is not
+      blocked). Art direction: *"ארכימדס מסתכל לכיוון של בועת הדיבור ו'מקשיב'"* — he
+      hears the off-panel question `ארכימדס! מה לגבי מוצק שמתנהג כמו נוזל?` and thinks
+      `או! חיכיתי לשאלה הזאת!`. Expected path: `assets/img/comic/18a.jpg`.
+
+**Open issues on the delivered art — left exactly as delivered, by decision:**
+
+- [ ] **Generator watermarks retained.** A Gemini sparkle glyph is baked into `17a`,
+      `17c`, `17e` and `17f`; `18c` additionally carries a baked Hebrew line
+      *"נוצר/הופק על ידי בינה מלאכותית"* along its bottom edge. Neither was cropped.
+      Decide whether the MOE delivery requires them removed or requires them kept as an
+      AI-generation disclosure.
+- [ ] **Content conflict on `14.jpg`.** The wall in the right half reads
+      `V = 20 × 15 × 10` / `V = 3000 cm³`, while the storyboard's thought bubble for the
+      same panel says `10·10·10 = 1,000` / `נפח הקובייה = 1,000 סמ"ק`. Both were left
+      unchanged — the bubble text is verbatim from the script. **Needs a content-owner
+      ruling:** re-generate the art, or rewrite the bubble to 20×15×10 = 3,000 סמ"ק.
+- [ ] Two files are not exactly 16:9 (`17f` = 1.833, `18c` = 1.794). The frame uses
+      `object-fit: cover`, so ≤3 % is trimmed at display time; the files are untouched.
 
 ### A3. Interactive-applet illustrations (`…-01`)
 

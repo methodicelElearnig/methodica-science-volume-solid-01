@@ -2216,36 +2216,61 @@ html, body {
 }
 
 /* ── Reusable speech bubble component ──
-   Width and position set via inline style on each instance.
-   Height is content-driven (auto grows with text).
-   Tail position stays attached at bottom center. */
+   Live-HTML dialogue balloon overlaid on comic panel art (never baked into
+   the image). Position/width come from CSS custom properties set inline per
+   instance: --r (offset from the panel's PHYSICAL right), --t (from the top),
+   --w (width), --k (fade-in stagger index).
+
+   Physical right/top on purpose: the panel art has a fixed physical layout,
+   so anchors must not flip with `direction`. The text inside is RTL.
+
+   Layout is `display: block`, NOT a flex column — never add `align-items` here.
+   Under the inherited `direction: rtl`, `align-items: flex-end` resolves to the
+   visual LEFT and silently anchors a shrink-wrapped bubble to the wrong side
+   (see figma-lomda-builder patterns.md "RTL gotcha #4"). `text-align: right`
+   on __text is the only alignment lever this component needs. */
 .speech-bubble {
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 4px;
+  display: block;
   box-sizing: border-box;
-  z-index: 3;            /* stay above the image frame + zoom button */
+  right: var(--r, 6%);
+  top: var(--t, 6%);
+  width: var(--w, 30%);
+  z-index: 3;            /* above the panel image */
+  pointer-events: none;  /* must never swallow a slider swipe */
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-/* Bubble frame: white bg + Subject/500 stroke (same style as the s10 bubble). */
+/* Bubbles fade in ~800ms after the panel appears (storyboard: "הלומד רואה רק
+   את התמונה, בועיות הדיבור עולות שנייה אחרי"). The per-bubble stagger is pure
+   CSS, so the JS side owns exactly one timer per panel. */
+.comic-panel.is-revealed .speech-bubble {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(var(--k, 0) * 180ms);
+}
+
+/* Bubble frame: white bg + Subject/500 stroke. The drop shadow separates it
+   from the dark photorealistic panel art underneath. */
 .speech-bubble__frame {
   background: #fff;
   border: 3px solid var(--subject-500);
   border-radius: 16px;
-  padding: 16px 5px;     /* 8px Figma inset minus the 3px stroke: text column keeps its width */
+  padding: 12px 16px;
   width: 100%;
   box-sizing: border-box;
   position: relative;
   z-index: 1;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
-/* Bubble text: 20px regular, RTL */
+/* Bubble text: RTL, 19px. #303030 on #fff = 12.6:1. */
 .speech-bubble__text {
   font-family: 'Assistant', sans-serif;
-  font-size: 20px;
-  font-weight: 400;
+  font-size: 19px;
+  font-weight: 500;
   color: #303030;
   text-align: right;
   direction: rtl;
@@ -2258,12 +2283,12 @@ html, body {
    Two stacked CSS border-triangles: a blue one whose top edge sits flush on
    the frame's outer border line, and a white one shifted up 4.25px (3px
    perpendicular at 45°) that opens the frame's bottom border across the
-   beak, leaving a continuous 3px outline with no spikes at the corners. */
+   beak, leaving a continuous 3px outline with no spikes at the corners.
+   40×20 keeps the 45° slope, so the 3px×√2 = 4.25px offset still holds. */
 .speech-bubble__tail {
-  width: 56px;
-  height: 28px;
-  position: relative;
-  flex-shrink: 0;
+  width: 40px;
+  height: 20px;
+  position: absolute;
   z-index: 2;            /* white inner triangle must paint over the frame border */
 }
 
@@ -2272,19 +2297,95 @@ html, body {
   content: '';
   position: absolute;
   left: 0;
-  border-left: 28px solid transparent;
-  border-right: 28px solid transparent;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
 }
 
 .speech-bubble__tail::before {
   top: 0;
-  border-top: 28px solid var(--subject-500);
+  border-top: 20px solid var(--subject-500);
 }
 
 .speech-bubble__tail::after {
   top: -4.25px;
-  border-top: 28px solid #fff;
+  border-top: 20px solid #fff;
 }
+
+/* Tail direction — anchored with the PHYSICAL left/right properties so the
+   beak points at the speaker regardless of bidi. The triangle is horizontally
+   symmetric, so scaleX(-1) on the left variants is a no-op for speech and
+   correctly mirrors the trailing circles of a thought bubble. */
+.speech-bubble--tail-down-right .speech-bubble__tail { bottom: -20px; right: 28px; }
+.speech-bubble--tail-down-left  .speech-bubble__tail { bottom: -20px; left:  28px; transform: scaleX(-1); }
+.speech-bubble--tail-up-right   .speech-bubble__tail { top: -20px;    right: 28px; transform: scaleY(-1); }
+.speech-bubble--tail-up-left    .speech-bubble__tail { top: -20px;    left:  28px; transform: scale(-1, -1); }
+
+/* ── Variant: thought bubble (cloud) ──
+   Lobed frame + two trailing circles instead of a beak. */
+.speech-bubble--thought .speech-bubble__frame {
+  border-radius: 46% 54% 48% 52% / 62% 58% 42% 38%;
+  padding: 16px 22px;
+}
+.speech-bubble--thought .speech-bubble__text { font-style: italic; }
+.speech-bubble--thought .speech-bubble__tail { width: 34px; height: 34px; }
+.speech-bubble--thought .speech-bubble__tail::before,
+.speech-bubble--thought .speech-bubble__tail::after {
+  border: 3px solid var(--subject-500);
+  background: #fff;
+  border-radius: 50%;
+  top: auto;
+  left: auto;
+}
+.speech-bubble--thought .speech-bubble__tail::before { width: 18px; height: 18px; top: 0;    right: 0; }
+.speech-bubble--thought .speech-bubble__tail::after  { width: 10px; height: 10px; top: 22px; right: 20px; }
+.speech-bubble--thought.speech-bubble--tail-down-right .speech-bubble__tail,
+.speech-bubble--thought.speech-bubble--tail-down-left  .speech-bubble__tail { bottom: -30px; }
+
+/* ── Variant: narration caption bar ──
+   Docked across the bottom of the panel; ignores --r/--t/--w.
+   White on the flattened worst case (≈#0a2049) ≈ 13:1. */
+.speech-bubble--caption {
+  right: 3%;
+  left: 3%;
+  top: auto;
+  bottom: 4%;
+  width: auto;
+}
+.speech-bubble--caption .speech-bubble__frame {
+  background: rgba(11, 36, 82, 0.9);
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+}
+.speech-bubble--caption .speech-bubble__text { color: #fff; font-weight: 500; }
+
+/* ── Variant: banner ("זוהי שיטת …") — docked across the panel width; --t
+   picks the band (default near the top, ~78% to sit low instead).
+   Subject/800 rather than Subject/500 so white text clears AA. */
+.speech-bubble--banner {
+  right: 10%;
+  left: 10%;
+  top: var(--t, 5%);
+  width: auto;
+}
+.speech-bubble--banner .speech-bubble__frame {
+  background: var(--subject-800);
+  border-color: #fff;
+  border-radius: 1000px;
+  padding: 8px 20px;
+}
+.speech-bubble--banner .speech-bubble__text {
+  color: #fff; font-weight: 800; font-size: 22px; text-align: center;
+}
+
+/* ── Variant: side note (caveats / footnotes inside a panel) ── */
+.speech-bubble--note .speech-bubble__frame {
+  background: #fff8e6;
+  border: 2px solid #f0b400;
+  border-right-width: 6px;
+}
+.speech-bubble--note .speech-bubble__text { font-size: 16px; font-weight: 400; color: #5a4600; }
 
 /* ── Right column ── */
 .s12q-right {
@@ -3438,68 +3539,77 @@ html, body {
 .path-toggle-opt.is-active { background: var(--subject-500); color: #fff; }
 
 /* ═══════════════════════════════════════════════════════
-   COMPONENT — Comic reader (S8)
-   Flipbook: art placeholder panel + live-HTML dialogue script.
+   COMPONENT — Comic panel screens (S8, S24 single · S25, S27, S28 slider)
+   One screen per storyboard slide (12, 14, 15, 17, 18). Panel art is a photo
+   asset; ALL dialogue is live HTML (.speech-bubble) overlaid on it.
+
+   Slider geometry: an absolutely-positioned track whose panels are offset with
+   the PHYSICAL `right` property and paged with `translateX(+i * 100%)`. Both
+   are physical, i.e. immune to `direction`/bidi — so DOM order stays reading
+   order (panel a … g) while the visual order runs right-to-left and the next
+   panel enters from the LEFT, as RTL requires.
+   Deliberately NOT a `direction: rtl` flex track: such a track is sized by its
+   children, so `translateX(100%)` would jump n panels rather than one, and its
+   reverse-direction overflow inside `overflow: hidden` is where the classic
+   focus-scroll ghost-offset bug lives.
+   Deliberately NOT a reversed DOM either: that would make screen readers and
+   Tab traverse the comic backwards and de-sync panels[i] from children[i].
+
+   No `vw`/`vh` anywhere here — #app is transform: scale()-ed, so viewport
+   units do not map to design pixels.
+   No `z-index` on .comic / .comic-frame / .comic-viewport — a stacking context
+   there would trap .path-toggle (z-index 15) behind the frame.
    ═══════════════════════════════════════════════════════ */
 .comic {
   position: absolute; inset: 0;
-  padding: 70px 40px 84px;   /* room for toggle (top) + nav & feedback bar (bottom) */
-  display: flex; flex-direction: column;
+  padding: 70px 40px 90px;   /* room for toggle (top) + feedback bar (bottom) */
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
 }
-.comic-stage {
-  flex: 1 1 auto; min-height: 0;
-  display: flex; direction: rtl; gap: 30px; align-items: stretch;
+/* prev (›) first in DOM = rightmost; next (‹) last = leftmost */
+.comic-row { display: flex; direction: rtl; align-items: center; gap: 18px; }
+.comic-frame {
+  --ratio: 1.7778;           /* per-screen inline override (2 for the slide-12 composite) */
+  height: 480px; aspect-ratio: var(--ratio);
+  max-width: 1040px; flex: none;
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 8px 26px rgba(0, 32, 96, 0.22);
 }
+.comic-viewport {
+  position: relative; width: 100%; height: 100%;
+  overflow: hidden; background: #0b1420;
+  touch-action: pan-y;       /* we own horizontal, the browser keeps vertical */
+  cursor: grab;
+}
+.comic-viewport.is-dragging { cursor: grabbing; }
+.comic-viewport.is-static   { cursor: default; }
+.comic-track {
+  position: absolute; inset: 0;   /* width == viewport ⇒ 100% is exactly one panel */
+  will-change: transform;
+  transition: transform 0.42s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.comic-track.is-dragging { transition: none; }
 .comic-panel {
-  position: relative; flex: 0 0 46%;
-  border: 2px dashed var(--subject-400); border-radius: 16px;
-  background: repeating-linear-gradient(45deg, #eef4f9, #eef4f9 14px, #e3edf5 14px, #e3edf5 28px);
+  position: absolute; top: 0; width: 100%; height: 100%;
+  right: calc(var(--i) * 100%);   /* PHYSICAL right — bidi-immune */
+}
+.comic-panel-img {
+  width: 100%; height: 100%; display: block;
+  object-fit: cover; object-position: center;
+  user-select: none; -webkit-user-drag: none;
+}
+/* Unproduced panel (18a) — a visible production marker, never a silent gap. */
+.comic-panel-ph {
+  width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center; padding: 24px;
-}
-.comic-panel-tag {
-  position: absolute; top: 10px; right: 12px;
-  background: var(--subject-500); color: #fff;
-  font-family: 'Assistant', sans-serif; font-size: 13px; font-weight: 700;
-  padding: 3px 10px; border-radius: 1000px;
-}
-.comic-panel-art {
+  border: 2px dashed var(--subject-400);
+  background: repeating-linear-gradient(45deg, #eef4f9, #eef4f9 14px, #e3edf5 14px, #e3edf5 28px);
   font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 500;
   color: var(--subject-900); text-align: center; direction: rtl; line-height: 1.5;
 }
-.comic-script {
-  flex: 1 1 auto; min-width: 0; overflow-y: auto;
-  display: flex; flex-direction: column; gap: 12px;
-  direction: rtl; text-align: right; padding-left: 6px;
-}
-.comic-block {
-  font-family: 'Assistant', sans-serif; font-size: 19px; line-height: 1.45;
-  border-radius: 14px; padding: 12px 16px;
-}
-.comic-speech    { background: var(--subject-100); border: 2px solid var(--subject-500); color: var(--subject-900); font-weight: 600; }
-.comic-thought   { background: #f3f0ff; border: 2px dashed #9b8cff; color: #3d2f8f; font-weight: 600; }
-.comic-narration { background: #f5f7fa; color: #303030; font-weight: 400; }
-.comic-banner    { background: var(--subject-500); color: #fff; font-weight: 800; font-size: 21px; text-align: center; }
-.comic-note      { background: #fff8e6; border-right: 4px solid #f0b400; color: #5a4600; font-weight: 400; font-size: 17px; }
 
-/* Comic guess-question (pages 2 & 5) — no feedback, just gates next */
-.comic-question { display: flex; flex-direction: column; gap: 14px; }
-.comic-q-prompt { font-family: 'Assistant', sans-serif; font-size: 21px; font-weight: 700; color: var(--subject-900); }
-.comic-q-options { display: flex; flex-direction: column; gap: 10px; }
-.comic-q-opt {
-  text-align: right; direction: rtl; cursor: pointer;
-  font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 500; color: #303030;
-  background: #fff; border: 2px solid #C9CED8; border-radius: 12px; padding: 12px 16px;
-  transition: border-color 0.12s, background 0.12s;
-}
-.comic-q-opt:hover { border-color: var(--subject-500); }
-.comic-q-opt.is-picked { border-color: var(--subject-500); background: var(--subject-100); font-weight: 700; }
-.comic-q-foot { font-family: 'Assistant', sans-serif; font-size: 16px; font-weight: 400; color: #6a7683; }
-
-/* Comic flipbook nav */
-.comic-nav {
-  position: absolute; left: 0; right: 0; bottom: 84px;
-  display: flex; align-items: center; justify-content: center; gap: 22px;
-}
+/* Comic slider nav (arrows sit in .comic-row, dots below the frame) */
+.comic-nav { display: flex; align-items: center; justify-content: center; gap: 22px; }
+.comic-nav[hidden] { display: none; }
 .comic-arrow {
   min-width: 54px; height: 44px; padding: 0 16px;
   background: #fff; color: var(--subject-700);
@@ -3507,13 +3617,22 @@ html, body {
   font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 700; cursor: pointer;
 }
 .comic-arrow:disabled { color: #AEAEAE; border-color: #AEAEAE; cursor: not-allowed; }
-.comic-arrow--finish {
-  background: linear-gradient(180deg, #005FBE 9%, #0059B2 23.36%, #003971 100%);
-  color: #fff; border: none; font-size: 18px; font-weight: 400; padding: 0 32px;
-}
+.comic-arrow[hidden] { display: none; }
 .comic-dots { display: flex; gap: 8px; direction: rtl; }
-.comic-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--subject-200); }
+.comic-dot {
+  width: 10px; height: 10px; padding: 0; border: none; border-radius: 50%;
+  background: var(--subject-200); cursor: pointer;
+}
 .comic-dot.is-active { background: var(--subject-500); }
+.comic-dot.is-seen:not(.is-active) { background: var(--subject-400); }
+
+/* Repo's only reduced-motion block: kill the slide and the bubble lift, keep
+   every state change instant but fully functional. */
+@media (prefers-reduced-motion: reduce) {
+  .comic-track { transition: none; }
+  .speech-bubble { transition: opacity 0.01s linear; transform: none; }
+  .comic-panel.is-revealed .speech-bubble { transform: none; transition-delay: 0s; }
+}
 
 /* ═══════════════════════════════════════════════════════
    APPLET — Water displacement (S9). Ported from App/ prototype.

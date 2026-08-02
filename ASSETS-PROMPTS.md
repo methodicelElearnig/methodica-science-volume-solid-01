@@ -61,7 +61,25 @@ The `selection` pose exists for both. These add the poses the storyboard uses el
 
 ---
 
-## A2. Comic panels — Part 01 S8 (`s8-comic-p1.png` … `s8-comic-p7.png`)
+## A2. Comic panels — Part 01 S8 / S24 / S25 / S27 / S28 ✅ **FULFILLED (27.7.26)**
+Delivered by Ron Reuveni as photorealistic art and wired in as
+`assets/img/comic/{12,14,15a-e,17a-g,18b,18c}.jpg`. The prompts below are superseded —
+keep them only as reference for regeneration. See `ASSETS-TODO.md` §A2 for the delivery
+status and the open issues (retained generator watermarks; the `14.jpg` 3000 cm³ vs
+1,000 סמ"ק conflict).
+
+**Still open — the one panel never delivered:**
+
+- **18a** (**S28**, panel 1 of 3) > match the delivered `18b.jpg` / `18c.jpg` look exactly
+  (attach `18b.jpg` as `REF`): Archimedes in his lab turning his head toward the viewer's
+  right and listening attentively, hand cupped near his ear or an interested lean —
+  reacting to a question asked from outside the panel. 16:9 landscape.
+  **No speech bubbles, no text, no letters, no numbers, no watermark** — the dialogue
+  (`ארכימדס! מה לגבי מוצק שמתנהג כמו נוזל?` and `או! חיכיתי לשאלה הזאת!`) is live HTML.
+  Save as `assets/img/comic/18a.jpg`.
+
+<details><summary>Superseded original prompts (7-panel flipbook)</summary>
+
 Use **[ARCHIMEDES-MODERN]** for all 7 so the character stays identical (attach panel-1 as
 `REF` for panels 2–7). 4:3 landscape. Dialogue is added in code — **no speech bubbles in the art**.
 
@@ -72,6 +90,8 @@ Use **[ARCHIMEDES-MODERN]** for all 7 so the character stays identical (attach p
 - **p5** > [ARCHIMEDES-MODERN] + standing next to a large object (a watermelon) that is clearly too big for the small cylinder, puzzled expression.
 - **p6** > [ARCHIMEDES-MODERN] + a bowl filled with water to the very brim sitting inside a larger deep tray; he lowers a watermelon in and water spills over into the tray.
 - **p7** > [ARCHIMEDES-MODERN] + cheerfully pouring rice / grains from a scoop into an empty measuring cup, celebratory mood.
+
+</details>
 
 ---
 
