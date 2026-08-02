@@ -24,10 +24,12 @@
        S0 — Screen 03 · TwoOptionSelection · "מי תלווה אותנו בלמידה?"
        Companion-character choice. Two producer-named characters:
        orange (holds an empty graduated cylinder / משורה) and
-       turquoise (holds a water jug / קנקן). The character figures
-       are animated GIFs still to be PRODUCED — the .char-slot below
-       is an intentional production placeholder (720 asset rule),
-       not a shipping asset. Do not delete; swap in the GIF later.
+       turquoise (holds a water jug / קנקן). Both ship as static PNGs;
+       the storyboard asks for animated GIFs, which are still to be
+       PRODUCED. The choice made here drives every mascot in the unit
+       via CHARACTER_SLOTS / characterAsset() in js/main.js — every pose
+       currently resolves back to these two files until the real
+       per-pose art lands (add the key to CHARACTER_ASSETS then).
        First screen: NO back button. Selection enables בחרתי.
        ═══════════════════════════════════════════════════════════ -->
   <section class="screen active" data-screen="0" id="s0">
@@ -261,15 +263,19 @@
         <!-- RTL: comic first in DOM = rightmost (matches storyboard: right gif = comic) -->
         <div class="option-card path-card" role="radio" aria-checked="false" tabindex="0"
              data-value="comic" aria-label="לקרוא קומיקס" onclick="selectPathOption(this)">
+          <!-- Storyboard slide 11 draws one orange and one turquoise mascot here,
+               but only because it reuses the slide-3 renders. By this point the
+               character is already chosen, so BOTH cards show the SELECTED one —
+               they differ by pose. src is filled by renderPathCharacters(). -->
           <div class="option-card-img">
-            <div class="char-slot" data-placeholder="path-comic"><span class="char-slot-label">דמות קוראת<br>קומיקס — GIF להפקה</span></div>
+            <img id="s7-img-comic" alt="" aria-hidden="true">
           </div>
           <span class="path-card-label">לקרוא קומיקס</span>
         </div>
         <div class="option-card path-card" role="radio" aria-checked="false" tabindex="0"
              data-value="experiments" aria-label="לערוך ניסויים" onclick="selectPathOption(this)">
           <div class="option-card-img">
-            <div class="char-slot" data-placeholder="path-experiments"><span class="char-slot-label">דמות בחלוק מעבדה<br>עם משורה — GIF להפקה</span></div>
+            <img id="s7-img-experiments" alt="" aria-hidden="true">
           </div>
           <span class="path-card-label">לערוך ניסויים</span>
         </div>
@@ -770,13 +776,18 @@
       <div class="progress-question__connector" data-connector="4"></div>
       <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
     </nav>
-    <div class="scq-question scq-question--textonly">
+    <div class="scq-question scq-question--withimage">
+      <div class="scq-figure" style="flex-basis: 400px">
+        <img src="assets/img/s14-bowling-ball.jpg" alt="כדור באולינג שחור על פס ייצור במפעל">
+      </div>
+      <div class="scq-side">
       <p class="scq-qtext">במפעל לייצור כדורי באולינג רצו לבדוק את נפח הכדור האחרון שיצא מפס הייצור. איזו שיטה מתאימה למדידת נפח הכדור?</p>
       <div class="scq-answers" id="s14-answers" role="radiogroup" aria-label="איזו שיטה מתאימה למדידת נפח הכדור?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s14','a')"><span class="scq-opt-text">להכניס את הכדור לכלי עם מים ולמדוד כמה מים נשפכו</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s14','b')"><span class="scq-opt-text">להעריך את נפח הכדור לפי העין</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s14','c')"><span class="scq-opt-text">לשקול את הכדור במאזניים ולחלק את המסה ב-2</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s14','d')"><span class="scq-opt-text">למדוד את היקף וקוטר הכדור ולהכפיל זה בזה</span><span class="scq-radio" aria-hidden="true"></span></button>
+      </div>
       </div>
     </div>
     <div class="scq-bar">
@@ -803,28 +814,42 @@
       <div class="progress-question__connector" data-connector="4"></div>
       <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
     </nav>
-    <!-- ImageHotspotQuestion — reuses the SCQ controller: each kid card is a
-         .scq-opt with data-id + scqSelect, so select/check/feedback are shared.
-         The 4-kids illustration is a production placeholder (per-card avatars). -->
-    <div class="hotspot-question">
+    <!-- ImageHotspotQuestion (storyboard slide 61) — reuses the SCQ controller.
+         Each option is TWO controls sharing one data-id: the readable bubble
+         beside the photo (the real role="radio") and a ring drawn over the
+         child in the photograph (aria-hidden + tabindex -1, so it is a mouse
+         affordance that does not double-announce). Both carry .scq-opt, so
+         scqSelect()/scqMark() light them up together.
+         Ring --x/--y are % of the photo box, measured off the delivered art;
+         left-to-right the children are a (24%), c (39%), b (57%), d (82%).
+         The two RIGHTMOST children's bubbles go in the first (physically right,
+         under RTL) column so each bubble sits on the same side as its child. -->
+    <div class="hotspot-question hotspot-question--photo">
       <p class="scq-qtext">הילדים במעבדה מנסים למדוד נפח של כפית ממתכת. לחצו על הילד שהטיעון שלו מדעי ומבוסס על ראיה.</p>
-      <div class="hotspot-grid" id="s15-answers" role="radiogroup" aria-label="איזה טיעון מדעי ומבוסס על ראיה?">
-        <button class="scq-opt hotspot-card" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s15','a')">
-          <span class="hotspot-avatar" aria-hidden="true">👧</span>
-          <span class="scq-opt-text">מדדתי את הכפית בסרגל, ובכל פעם יצא אורך אחר. החלטתי שהנפח = אורך × רוחב × גובה</span>
-        </button>
-        <button class="scq-opt hotspot-card" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s15','b')">
-          <span class="hotspot-avatar" aria-hidden="true">🧒</span>
-          <span class="scq-opt-text">הסתכלתי על הכפית והערכתי לפי העין שהנפח הוא בערך 20 מ"ל</span>
-        </button>
-        <button class="scq-opt hotspot-card" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s15','c')">
-          <span class="hotspot-avatar" aria-hidden="true">👦</span>
-          <span class="scq-opt-text">הנחתי את הכפית על מאזניים וקיבלתי 25 גרם, לכן הנפח הוא 25</span>
-        </button>
-        <button class="scq-opt hotspot-card" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s15','d')">
-          <span class="hotspot-avatar" aria-hidden="true">🧑</span>
-          <span class="scq-opt-text">הכנסתי את הכפית למשורה עם מים. המים עלו מ-50 ל-70 מ"ל, ולכן נפח הכפית הוא 20 מ"ל</span>
-        </button>
+      <div class="hotspot-stage" id="s15-answers" role="radiogroup" aria-label="איזה טיעון מדעי ומבוסס על ראיה?">
+        <div class="hotspot-bubbles">
+          <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s15','d')">
+            <span class="scq-opt-text">הכנסתי את הכפית למשורה עם מים. המים עלו מ-50 ל-70 מ"ל, ולכן נפח הכפית הוא 20 מ"ל</span>
+          </button>
+          <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s15','b')">
+            <span class="scq-opt-text">הסתכלתי על הכפית והערכתי לפי העין שהנפח הוא בערך 20 מ"ל</span>
+          </button>
+        </div>
+        <div class="hotspot-photo" style="width: 628px">
+          <img src="assets/img/s15-four-kids.jpg" alt="ארבעה ילדים בחלוקי מעבדה ומשקפי מגן עומדים ליד שולחן במעבדה">
+          <button class="scq-opt hotspot-area" type="button" data-id="d" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','d')" style="--x:82%;--y:58%;--w:13%;--h:46%"></button>
+          <button class="scq-opt hotspot-area" type="button" data-id="b" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','b')" style="--x:57%;--y:58%;--w:13%;--h:46%"></button>
+          <button class="scq-opt hotspot-area" type="button" data-id="c" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','c')" style="--x:39%;--y:58%;--w:13%;--h:46%"></button>
+          <button class="scq-opt hotspot-area" type="button" data-id="a" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','a')" style="--x:24%;--y:58%;--w:13%;--h:46%"></button>
+        </div>
+        <div class="hotspot-bubbles">
+          <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s15','c')">
+            <span class="scq-opt-text">הנחתי את הכפית על מאזניים וקיבלתי 25 גרם, לכן הנפח הוא 25</span>
+          </button>
+          <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s15','a')">
+            <span class="scq-opt-text">מדדתי את הכפית בסרגל, ובכל פעם יצא אורך אחר. החלטתי שהנפח = אורך × רוחב × גובה</span>
+          </button>
+        </div>
       </div>
     </div>
     <div class="scq-bar">
@@ -851,13 +876,18 @@
       <div class="progress-question__connector" data-connector="4"></div>
       <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
     </nav>
-    <div class="scq-question scq-question--textonly">
+    <div class="scq-question scq-question--withimage is-long">
+      <div class="scq-figure" style="flex-basis: 420px">
+        <img src="assets/img/s16-crystals.jpg" alt="קריסטלים גדולים ושקופים מונחים על משטח">
+      </div>
+      <div class="scq-side">
       <p class="scq-qtext">אופק ואחיו קיבלו קריסטלים ענקיים. הם מילאו כלי במים עד הקצה, השקיעו קריסטל, אספו את המים שנשפכו ומדדו את נפחם. אופק טוען: "בעזרת כמות המים שנשפכו אפשר לדעת את נפח הקריסטל". האם אופק צודק?</p>
       <div class="scq-answers" id="s16-answers" role="radiogroup" aria-label="האם אופק צודק?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s16','a')"><span class="scq-opt-text">לא, מים שנשפכים מכלי לא יכולים לשמש למדידת נפח</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s16','b')"><span class="scq-opt-text">לא, ניתן להשתמש בשיטה זו רק למדידת גופים הנדסיים</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s16','c')"><span class="scq-opt-text">כן, בגלל שנפח המים שנשפכו שווה למסת הקריסטל</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s16','d')"><span class="scq-opt-text">כן, בגלל שנפח המים שנשפכו שווה לנפח הקריסטל</span><span class="scq-radio" aria-hidden="true"></span></button>
+      </div>
       </div>
     </div>
     <div class="scq-bar">
@@ -930,7 +960,11 @@
   <section class="screen" data-screen="19" id="s19">
     <!-- DropdownQuestion — reuses the SCQ controller: dropdown options are
          .scq-opt (dqPick → scqSelect); onFinish colours the trigger. -->
-    <div class="dq-question">
+    <div class="dq-question dq-question--withimage">
+      <div class="scq-figure" style="flex-basis: 300px">
+        <img src="assets/img/s19-sharpener.jpg" alt="מחדד עפרונות קטן">
+      </div>
+      <div class="dq-side">
       <p class="warmup-tag">חימום</p>
       <p class="scq-qtext">עיקרון דחיקת המים — השלימו את המשפט בעזרת תפריט המילים:</p>
       <p class="dq-sentence">כדי למדוד נפח של מחדד, נכניס אותו למים שבמשורה ונבדוק כמה הם
@@ -944,6 +978,7 @@
           </div>
         </span>.
       </p>
+      </div>
     </div>
     <div class="scq-bar">
       <div class="scq-bar-main">
@@ -1011,6 +1046,11 @@
       <div class="exp-head">
         <h1 class="exp-title">מדידת נפח לגוף שאינו נכנס במשורה</h1>
         <p class="exp-instruction">נחשו – איך נמדוד נפח של גופים גדולים שלא נכנסים במשורה?</p>
+      </div>
+      <!-- width, not flex-basis: .exp is a COLUMN flex container, where
+           flex-basis would size the height instead. -->
+      <div class="scq-figure" style="width: 420px">
+        <img src="assets/img/s21-large-bodies.jpg" alt="אבן גדולה מונחת ליד משורה קטנה שהיא לא נכנסת לתוכה">
       </div>
       <div class="guess-options" id="s21-guess">
         <button class="guess-opt" type="button" data-id="a" onclick="guessPick('s21', this)">נשקול אותם</button>

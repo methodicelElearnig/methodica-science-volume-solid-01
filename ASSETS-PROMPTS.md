@@ -44,20 +44,46 @@ storyboard art directions. Companion to that file. Generated 2026-07-16.
 
 ---
 
-## A1. Companion-character variations
-The `selection` pose exists for both. These add the poses the storyboard uses elsewhere.
+## A1. Companion-character poses
 
-**Path-choice (S7) — two poses PER character** (storyboard slide 11: right = reading a comic, left = lab-coat + cylinder)
-- `character-{orange|turquoise}-comic.png`
-  > [COMPANION STYLE] + the {orange|turquoise} character happily reading an open comic book held in its hands.  `REF`
-- `character-{orange|turquoise}-experiments.png`
-  > [COMPANION STYLE] + the {orange|turquoise} character wearing a small lab coat, holding an empty graduated glass cylinder, curious expression.  `REF`
+**The code is already wired for all of these** (2.8.26) — every slot renders and every pose name
+below is live in `CHARACTER_SLOTS`. Only the artwork is missing: each pose currently falls back to
+the `selection` image. To land one, drop the file into **every** part's `assets/img/` (the six parts
+share no assets) and add one line to `CHARACTER_ASSETS` in that part's `js/main.js`, e.g.
+`cheer: 'gif'`. See `ASSETS-TODO.md §A1` for the pose→screen map.
 
-**Optional guide poses** (if we later place the companion across screens)
-- `character-{id}-cheer.png` — > [COMPANION STYLE] + the {id} character cheering with both arms up, big happy smile.  `REF`
-- `character-{id}-think.png` — > [COMPANION STYLE] + the {id} character in a thinking pose, one hand near its chin, curious.  `REF`
+Naming: `character-{orange|turquoise}-{pose}.{png|gif}`. **Both colours for every pose.** The
+storyboard asks for animated GIFs; static PNGs work today and can be swapped later under the same
+name (change the extension in `CHARACTER_ASSETS`). Attach the matching `REF` to keep the character
+identical, and always prepend **[COMPANION STYLE]**.
 
-*(Static PNGs are fine; supply GIFs later with the same names if you want motion.)*
+| pose | prompt (after [COMPANION STYLE] + "the {colour} character…") |
+|---|---|
+| `selection` | ✅ **exists** — orange holds an empty graduated cylinder, turquoise a clear water jug |
+| `comic` | happily reading an open comic book held in its hands |
+| `experiments` | wearing a small lab coat, holding an empty graduated glass cylinder, curious |
+| `examine` | holding up a small gold star pendant, examining it closely from all angles |
+| `cylinder-pendant` | the gold star pendant in one hand, a cylinder of water in the other |
+| `toga` | wearing an ancient-Greek toga |
+| `towel` | holding out a folded towel, offering it to someone off-frame |
+| `ask` | one hand raised in a questioning "how do you do this?" gesture |
+| `soap` | holding a small bar of soap |
+| `pingpong` | holding a ping-pong ball |
+| `wet-object` | holding a dripping-wet chess piece, water running off it |
+| `stretch` | wearing a fitness headband, stretching its arms |
+| `start-line` | crouched at a running start line, eager |
+| `notebook` | holding an open notebook and a pen |
+| `dumbbells` | wearing a headband, lifting a small dumbbell in each hand |
+| `run` | running in place in gym clothes, a cylinder in one hand |
+| `panting` | standing in gym clothes, out of breath, hands on knees |
+| `two-fingers` | holding up two fingers |
+| `cheer` | jumping for joy, both arms up, big happy smile |
+| `think` | thinking pose, one hand near its chin, pondering |
+| `party` | blowing a party horn, confetti around it, dancing |
+
+Poses the storyboard shows on slides this build renders as popups rather than screens, so **not
+currently wired** — produce only if those popups grow: `overflow-can` (holding a lab overflow can),
+`headband` (idle, training headband), `encourage` (warm encouraging gesture), `thumbs-up`.
 
 ---
 
@@ -108,7 +134,12 @@ Transparent PNG, single object, straight-on product view, soft shadow.
 ---
 
 ## A4. Other Part-01 art
-- `s15-four-kids.png` — > four cartoon children (diverse) standing in a modern science classroom/lab, each looking slightly different, friendly, waist-up, evenly spaced left-to-right, flat modern illustration style, plain background, **no speech bubbles, no text**. *(Each child's argument is added as live HTML beside them.)*
+- ~~`s15-four-kids.png`~~ ✅ **no longer needed** — sourced from storyboard slide 61 and shipped as
+  `s15-four-kids.jpg`. The four arguments are live HTML in bubbles beside the photo, and each child
+  has a clickable ring over them. Only regenerate if the baked AI-disclosure line along the bottom
+  edge has to go (see `ASSETS-TODO.md §A5`); the brief would be: four diverse children in lab coats
+  and safety goggles behind a lab bench, waist-up, evenly spaced left-to-right, **no speech bubbles,
+  no text, no watermark**, 16:9.
 
 **Flip cards (S20) — prefer licensed stock; storyboard gives Envato links.**
 - `s20-metal.jpg` — Envato: *"closeup of rollers / blanks obtained on a lathe"* — search terms: `metal industry lathe blanks closeup`. AI fallback: > [PHOTO] close-up of freshly machined shiny metal cylinder blanks on a factory lathe.
@@ -138,9 +169,8 @@ Current files are AI-reference images; regenerate only if you want higher qualit
 
 ---
 
-### Filename → screen quick map
-S0 companions (done) · S7 `character-*-comic/experiments` · S8 `s8-comic-p1..7` ·
-S9 `s9-cylinder`,`s9-marble` · S10 `s10-aquarium-cube`,`s10-ruler` · S11 `s11-bowl`,`s11-rock` ·
-S15 `s15-four-kids` · S20 `s20-metal/jewelry/archaeology` · S22 `s22-chess-king`,`s22-hammer` ·
-story `s1-roni-hook`,`s2-roni-think`,`s3-roni-displacement`,`s5-archimedes-crown`,`s6-archimedes-bath` ·
-S4 opts `s4-opt-suitcase/planter/apple`.
+### What is still outstanding
+Only three groups remain unproduced: the **~20 companion poses** (§A1 — wiring is done, art is not),
+the **three S20 flip-card fronts** (§A4), and the optional re-shoots in §B/§C. Everything else —
+comic panels, applet vectors, all question-screen photographs — is in the build.
+See `ASSETS-TODO.md` for per-file status and the open content-owner questions.

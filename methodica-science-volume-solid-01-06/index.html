@@ -25,14 +25,19 @@
   </section>
 
   <section class="screen" data-screen="1" id="s1">
-    <div class="peak-question">
-      <div class="peak-step">סעיף א · 1 מתוך 4</div>
-      <p class="scq-qtext">ארז הניח את האקווריום על כלי איסוף, מילא אותו במים עד הסוף והכניס פנימה את הפסל. את המים שנשפכו הוא אסף ומדד. באיזו שיטה ארז השתמש למדידת נפח הפסל?</p>
-      <div class="peak-options" id="s1-opts" role="radiogroup" aria-label="באיזו שיטה">
-        <button class="peak-opt" type="button" data-id="a" onclick="peakSelect(1,'a',this)">שיטת ההצפה</button>
-        <button class="peak-opt" type="button" data-id="b" onclick="peakSelect(1,'b',this)">שיטת דחיקת המים</button>
-        <button class="peak-opt" type="button" data-id="c" onclick="peakSelect(1,'c',this)">מדידת הפסל בסרגל</button>
-        <button class="peak-opt" type="button" data-id="d" onclick="peakSelect(1,'d',this)">מדידת הפסל במאזניים</button>
+    <div class="peak-question peak-question--withimage">
+      <div class="scq-figure" style="flex-basis: 340px">
+        <img src="assets/img/s0-aquarium-statue.jpg" alt="אקווריום ובתוכו פסל של ספינה טרופה">
+      </div>
+      <div class="peak-side">
+        <div class="peak-step">סעיף א · 1 מתוך 4</div>
+        <p class="scq-qtext">ארז הניח את האקווריום על כלי איסוף, מילא אותו במים עד הסוף והכניס פנימה את הפסל. את המים שנשפכו הוא אסף ומדד. באיזו שיטה ארז השתמש למדידת נפח הפסל?</p>
+        <div class="peak-options" id="s1-opts" role="radiogroup" aria-label="באיזו שיטה">
+          <button class="peak-opt" type="button" data-id="a" onclick="peakSelect(1,'a',this)">שיטת ההצפה</button>
+          <button class="peak-opt" type="button" data-id="b" onclick="peakSelect(1,'b',this)">שיטת דחיקת המים</button>
+          <button class="peak-opt" type="button" data-id="c" onclick="peakSelect(1,'c',this)">מדידת הפסל בסרגל</button>
+          <button class="peak-opt" type="button" data-id="d" onclick="peakSelect(1,'d',this)">מדידת הפסל במאזניים</button>
+        </div>
       </div>
     </div>
     <div class="nav-bar"><button class="btn-continue" id="s1-continue" disabled onclick="peakContinue(1)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>

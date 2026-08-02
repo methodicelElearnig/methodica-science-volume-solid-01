@@ -19,23 +19,45 @@ placeholders in place. Interactive logic is complete; only the visuals are pendi
 
 ## A. Placeholders needing produced art
 
-### A1. Companion-character GIFs — cross-cutting (highest priority)
+### A1. Companion-character poses — cross-cutting (highest priority)
+
+**The wiring is done; only the artwork is outstanding.** (2.8.26) The learner's choice now drives a
+mascot on 22 screens across all six parts, and the S7 path cards. Every pose currently resolves back
+to the one produced image per colour — see "how to land a pose" below.
 
 - [x] **Orange companion — selection image** ✅ `character-orange-selection.png` (fluffy orange
-  character holding an empty graduated cylinder). Placed in `…-01/assets/img/`, white bg made
-  transparent, wired into **S0**. *Static PNG for now — optionally re-supply as an animated GIF later.*
+  character holding an empty graduated cylinder). White bg made transparent, wired into **S0**.
 - [x] **Turquoise companion — selection image** ✅ `character-turquoise-selection.png` (holding a
-  water jug). Placed + transparent + wired into **S0**. *Static PNG; animate later if desired.*
-- [ ] **Additional character variations** still needed for the asset-map (guiding / speaking /
-  watching / cards / watching-video) — only the `selection` variation exists so far.
-- [ ] **Path-choice GIFs** (`…-01` **S7**): character **reading a comic** (right) and character **with cylinder / lab coat** (left). Currently `.char-slot` placeholders.
-- [ ] **Companion presence across all content screens** — *production + implementation item.*
-  Per storyboard ("הדמות שנבחרה תופיע בכל מקומות הדמות לאורך כל הרכיבים"), the selected
-  character should appear/guide throughout. Currently the choice is stored in
-  `window.lomdaState.selectedCharacter` but the companion is **not rendered on content
-  screens**. Needs: context variations of each character (guiding / speaking / watching)
-  **and** wiring onto screens via a character asset-map (see `720-templates` →
-  `_global-components.md` → Companion character system).
+  water jug). Placed + transparent + wired into **S0**.
+- [x] **Both files copied into all six parts' `assets/img/`** — the parts share no assets.
+- [x] **Companion rendering across the unit** ✅ `getCharacter()` / `CHARACTER_ASSETS` /
+  `characterAsset()` / `CHARACTER_SLOTS` / `renderCompanion()` in every part's `js/main.js`,
+  `.companion` in every `css/style.css`. `localStorage.lomda_selectedCharacter` was previously
+  written but never read — parts 02–06 now read it, defaulting to `orange` on a cold deep-link.
+- [x] **Path-choice cards** (`…-01` **S7**) ✅ the dashed `.char-slot` placeholders are gone; both
+  cards now show the **selected** character (the storyboard draws one of each colour there only
+  because it reuses the slide-3 renders — by that point the choice has been made).
+- [ ] **The ~25 produced poses are still missing.** Every slot renders the `selection` pose.
+  Filenames: `character-{orange|turquoise}-{pose}.{png|gif}`. Poses in use, by screen:
+  `comic` + `experiments` (01 S7) · `examine` (01 S1) · `cylinder-pendant` (01 S3) · `toga` (01 S5) ·
+  `towel` (01 S6) · `pingpong` (01 S9) · `soap` (01 S11) · `stretch` (01 S12) · `ask`
+  (01 S21/S23/S26) · `wet-object` (01 S22) · `start-line` (02 S0) · `notebook` (03 S0) ·
+  `dumbbells` (04 S0) · `run` (05 S0) · `cheer` (05 S5) · `think` (05 S6) · `two-fingers` (06 S0) ·
+  `party` (06 S5) · `panting` (06 S6). The storyboard also asks for `overflow-can`, `headband`,
+  `encourage` and `thumbs-up`, which land on popups/screens this build does not have.
+  **How to land a pose:** drop the file in each part's `assets/img/` and add one line to
+  `CHARACTER_ASSETS` in that part's `main.js` (e.g. `cheer: 'gif'`). Nothing else changes.
+  A manifest is used rather than an `<img onerror>` fallback on purpose — `onerror` would fire a
+  real 404 on nearly every screen, and the QA gate for this unit checks the network log for zero 404s.
+- [ ] The storyboard specifies these as **animated GIFs**; the two that exist are static PNGs.
+- [ ] **Deliberate omissions, for the record.** The storyboard puts the mascot on 38 slides. 16 of
+  them are per-question feedback or hint slides that this build renders as `.scq-popup` /
+  `.scq-hint-overlay` cards, not screens (sb55, 144/145, 157/158, 170/171), or applet
+  *result states* that are folded into the live applet screen (sb35/38/39/40/97). A ~190px sprite
+  would dominate the small draggable popup, so it is left out. Revisit if the popups grow.
+- [ ] Positions are adapted, not copied: where the storyboard centres the mascot beneath a block of
+  text, this build centres that text vertically instead, so those slots move to the free edge
+  (`.screen.has-companion` lets a template reserve room — see `.hook-content` / `.peak-intro`).
 
 ### A2. Comic panels (`…-01` **S8, S24, S25, S27, S28**)
 
@@ -108,12 +130,84 @@ comment in `js/main.js`).
 
 ### A4. Other Part-01 placeholders
 
-- [ ] **"4 ילדים במעבדה"** illustration (**S15** ImageHotspot) — currently 4 emoji avatars
-  (👧🧒👦🧑). Produce four children, each with a speech bubble; **argument text stays live HTML**.
+- [x] **"4 ילדים במעבדה"** illustration (**S15** ImageHotspot) ✅ **sourced from the storyboard**
+  (slide 61, `image59.jpeg`) and shipped as `s15-four-kids.jpg`. The emoji card grid is gone: the
+  screen is now the storyboard's composition — one photo with a clickable ring over each child and
+  the four arguments as live-HTML bubbles in columns either side. Correct answer = the rightmost
+  child ("הילד מימין"). ⚠️ The photo carries a baked bottom-edge line
+  *"תוכן שהופק על ידי בינה מלאכותית"* — see the watermark item in §A5.
 - [ ] **Flip-card fronts ×3** (**S20**) — currently dashed "איור להפקה". Produce/license:
   - [ ] תעשיית המתכות (metal lathe) — Envato ref in storyboard slide 30.
   - [ ] זהב ותכשיטים (jewelry & gold coins) — Envato ref.
   - [ ] ארכיאולוגיה (Roman excavation) — Envato ref.
+
+### A5. Storyboard photographs on the question screens ✅ **DONE (2.8.26)**
+
+The storyboard puts a photograph on 14 question screens; the build had exactly one such layout
+(`01 S4`). All of them are now extracted from the deck and wired in, and the image-bearing screens
+follow the storyboard's composition (photo physically left, stem + options right).
+
+Extracted from `ppt/media/` in the storyboard deck, re-encoded **JPEG q80 at ~2× the display box**
+(PNG kept only where the source is a genuine cut-out with alpha). **86 MB of source PNG → 1.43 MB.**
+
+| part | files | KB |
+|---|---|---|
+| 01 | `s14-bowling-ball` `s15-four-kids` `s16-crystals` `s17-{metal-cube,shell,trophy}.png` `s18-task-{water-cup,rubik,watermelon,doll,acorn}` `s19-sharpener` `s21-large-bodies` | 658 |
+| 02 | `s1-bodies` `s2-tom-shirley` `s5-cylinder-{before,after}` | 296 |
+| 04 | `s2-lentils` `s3-gold-measurements` `s4-slime` `s6-marbles` *(the last two reused on S5 / S7–S8)* | 286 |
+| 05 | `s0-figurine` (on S1) · `s3-speaker-{male,female}.svg` | 113 |
+| 06 | `s0-aquarium-statue` (on S1) | 80 |
+
+Two screens were rebuilt rather than just decorated:
+- **01 S15** — see §A4.
+- **02 S5** — the stem said *"בתמונה א'… ובתמונה ב'…"* with **no images on screen at all**. Now two
+  labelled photos with three clickable bands on תמונה ב', per storyboard slide 99.
+  ⚠️ **The answer set grew from 2 options to 3** (a new distractor: the empty glass above the water).
+  Correct answer is unchanged (`b`, the risen region). Popup/hint copy still reads correctly.
+
+Extraction notes for anyone repeating this: the deck is normally open in PowerPoint and holds an
+exclusive lock (`Presentation(path)` throws `PermissionError` — copy the file first), and the mascot
+and flip-card faces are `blipFill` fills on autoshapes, so an extractor walking
+`shape_type == PICTURE` silently misses them.
+
+**Open issues on the extracted art — left exactly as delivered, per the standing rule:**
+
+- [ ] **Generator watermarks retained.** A Gemini sparkle glyph is baked into `s2-tom-shirley`
+      (02) and `s5-cylinder-after` (02, falls outside the square crop at display size).
+      `s15-four-kids` (01) carries a baked Hebrew line *"תוכן שהופק על ידי בינה מלאכותית"* along its
+      bottom edge, and Hebrew lab signage in the background. Same decision as the comic panels:
+      nothing cropped. **Needs the same content-owner ruling** as the §A2 watermarks.
+- [ ] **`05 S3` has three speakers, the storyboard has four.** Slide 153 shows רינה, משה, איריס
+      **and עופר**; this build ships the first three. The two generic role icons the deck provides
+      (ScientistMale / ScientistFemale) are wired to the three that exist. Adding עופר is a content
+      change — **content-owner call.**
+- [ ] **`image26` (storyboard slide 24) has no home.** It illustrates an experiments-path guess
+      question about non-geometric bodies; the build's experiments path has only one guess screen
+      (`01 S21`, which matches slide 27). Not extracted. Either the screen is missing or the
+      storyboard slide is redundant — **content-owner call.**
+- [ ] Storyboard internal inconsistencies noticed while extracting, all pre-existing and untouched:
+      slide 78 vs 79/81/82 (גליל עץ → קוביית עץ) · slide 42 vs 44/45 (בלוט → צדף, and the art swaps
+      acorn → dinosaur) · slide 46 vs 48/49 (מחדד → סיכת נעץ) · slides 92–97 (stem says גוש, the
+      question and feedback both say גליל) · slides 170/171 (`12,50 סמ"ק` should be `1,250`).
+      This build follows its own copy, which is already self-consistent.
+
+### A6. Question-layout bugs fixed in passing (2.8.26)
+
+Two inherited defects surfaced while adding the image layouts. Both affected **every** SCQ screen in
+the unit and are fixed in all six `css/style.css` copies:
+
+- **Questions were 160px off centre.** The base `.scq-question` still carries `right: 40px` from the
+  inherited mass-measure block. `--textonly` sets `left`/`width` but never cleared `right`, and under
+  an RTL containing block an over-constrained `left`/`right`/`width` resolves in favour of `right`.
+  Fixed by clearing `right` on both modifiers.
+- **The stem and options were out of flow.** The same inherited block absolutely positions
+  `.scq-qtext` (`right:0; top:0`) and `.scq-answers` (`right:0; top:100px`) and pins `.scq-opt` to
+  604px. Consequences: the question block measured zero height, so it was never actually centred as
+  a whole, and long option lists ran past the 74px bottom bar — **`02 S3` ended at y=687 against a
+  636 limit.** Fixed by returning both to `position: relative` inside the two modifiers.
+
+Net effect: every question screen shifts slightly and is now genuinely centred and bounded. Verified
+at 1280×710 and at canvas scales 0.63 and 1.27 — 60 screens, 99 images, zero overflow, zero 404s.
 
 ---
 
@@ -131,14 +225,14 @@ comment in `js/main.js`).
 
 ---
 
-## C. Content-implied images (currently text-only) — confirm intent
+## C. Content-implied images — ✅ resolved (2.8.26)
 
-- [ ] **Part 02 · Q1** ("איזה מהגופים **שבתמונה**…") — rendered as text options
-  (לבנה / מפלצת פלסטלינה / קופסת קרטון / קוביית עץ). Storyboard implies an **image of the
-  four bodies**. Add illustration, or reword to drop "שבתמונה".
-- [ ] **Part 02 · Q5** ("בתמונה א' / בתמונה ב'…") — text-only 2-choice. Storyboard shows **two
-  cylinder images** (water level before / after). Add the two images (or an ImageHotspot on them).
-- Parts 03–06 — text-based scenarios; **no image assets required** (optional scenario art only).
+- [x] **Part 02 · Q1** ("איזה מהגופים **שבתמונה**…") ✅ `s1-bodies.jpg` from storyboard slide 78;
+  the stem's "שבתמונה" now refers to something the learner can see.
+- [x] **Part 02 · Q5** ("בתמונה א' / בתמונה ב'…") ✅ both cylinder photos added and the screen
+  rebuilt as a hotspot — see §A5.
+- Parts 03–06 — text-based scenarios. 04/05/06 now carry the storyboard's scenario photographs
+  (lentils, gold, slime, marbles, figurine, aquarium statue); part 03 remains text-only by design.
 
 ---
 
@@ -167,16 +261,19 @@ comment in `js/main.js`).
 | File | Status |
 |---|---|
 | `btn-flag-default.png`, `btn-flag-hover.png`, `icon-idea-blue.svg` | ✅ final (shared 720 components) |
-| `character-orange-selection.png` | ✅ placed & wired (S0); static — optionally animate |
-| `character-turquoise-selection.png` | ✅ placed & wired (S0); static — optionally animate |
+| `character-orange-selection.png` | ✅ wired; **also the stand-in for all ~25 poses** (§A1). Copied into all six parts |
+| `character-turquoise-selection.png` | ✅ same |
+| `s14-bowling-ball.jpg` `s15-four-kids.jpg` `s16-crystals.jpg` | ✅ from storyboard (§A5) |
+| `s17-{metal-cube,shell,trophy}.png` | ✅ from storyboard — PNG, genuine cut-outs (§A5) |
+| `s18-task-{water-cup,rubik,watermelon,doll,acorn}` | ✅ from storyboard (§A5); acorn is PNG (cut-out) |
+| `s19-sharpener.jpg` `s21-large-bodies.jpg` | ✅ from storyboard (§A5) |
 | `s1-roni-hook.jpg` | ⚠️ confirm final (§B) |
 | `s2-roni-think.jpg` | ⚠️ confirm final (§B) |
 | `s3-roni-displacement.jpg` | ⚠️ confirm final (§B) |
 | `s4-opt-suitcase.jpg` / `s4-opt-planter.jpg` / `s4-opt-apple.jpg` | ⚠️ confirm final (§B) |
 | `s5-archimedes-crown.jpg` | ⚠️ confirm final (§B) |
 | `s6-archimedes-bath.jpg` | ❌ re-export without watermark (§B) |
-| `s9-cylinder.png` | ❌ re-produce clean (§A3) |
-| `s9-marble.png` | ❌ re-produce (§A3) |
+| `s9-cylinder.svg` `s9-marble.svg` `s22-chess-king.svg` `s22-hammer.svg` | ✅ hand-authored vectors (§A3). The old `.png` placeholders are deleted |
 
-Parts 02–06 `assets/img/` currently contain only the shared flag/hint icons — all their
-questions are text-based (see §C for two optional Part-02 images).
+Parts 02–06 `assets/img/` are no longer icon-only: each now also holds the two companion PNGs and
+its own storyboard photographs (§A1, §A5). Full per-part file list in §A5.

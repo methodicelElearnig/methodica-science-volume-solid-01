@@ -31,7 +31,67 @@ function goTo(n) {
   const next = document.getElementById('s' + n); if (next) next.classList.add('active');
   resetScreenState(n);
 }
+/* ═══════════════════════════════════════════════════════════
+   COMPONENT — Companion character
+   The learner picks a mascot on part-01 S0; localStorage is the only
+   carrier across parts, so a missing value must never blank the mascot.
+   Slots are per-screen records injected by renderCompanion() rather than
+   authored markup: ~20 slots across six index.html files would have to be
+   kept in sync with every position tweak, and injecting lets the pose
+   resolver run at render time.
+   Offsets are storyboard positions mapped onto this 1280x710 canvas
+   (bottom = 710 - (y + h)), anchored to the nearer PHYSICAL edge so the
+   mascot stays on its intended side when the canvas grows wider than 1280.
+   Where the storyboard centred the mascot under a block of text, the unit
+   centres that text vertically instead, so those slots are moved to the
+   free edge rather than dropped on top of the copy.
+   ═══════════════════════════════════════════════════════════ */
+function getCharacter() {
+  try { return localStorage.getItem('lomda_selectedCharacter') || 'orange'; }
+  catch (e) { return 'orange'; }
+}
+/* Which pose files exist on disk, and in which format. A manifest, not an
+   <img onerror> fallback: onerror would fire a real 404 on nearly every
+   screen and this unit's QA gate checks the network log for zero 404s.
+   Landing a produced GIF is one line here plus the file. */
+const CHARACTER_ASSETS = { selection: 'png' };
+function characterAsset(pose) {
+  const ext = CHARACTER_ASSETS[pose];
+  return 'assets/img/character-' + getCharacter() + '-' +
+         (ext ? pose : 'selection') + '.' + (ext || 'png');
+}
+/* s5 is the SUCCESS end screen and s6 the RETRY one — not the other way round. */
+const CHARACTER_SLOTS = {
+  s0: { pose: 'two-fingers', w: 210, right: 40, bottom: 95 },  /* sb160 */
+  s5: { pose: 'party',       w: 230, left:  30, bottom: 105 }, /* sb173 */
+  s6: { pose: 'panting',     w: 220, left:  30, bottom:  95 }  /* sb172 */
+};
+function renderCompanion(n) {
+  const screen = document.getElementById('s' + n);
+  if (!screen) return;
+  const slot = CHARACTER_SLOTS['s' + n];
+  // Lets a template reserve room for the sprite instead of being drawn over.
+  screen.classList.toggle('has-companion', !!slot);
+  let el = screen.querySelector(':scope > .companion');
+  if (!slot) { if (el) el.remove(); return; }
+  if (!el) {
+    el = document.createElement('img');
+    el.className = 'companion';
+    el.alt = '';                                   // decorative, carries no information
+    el.setAttribute('aria-hidden', 'true');
+    el.draggable = false;
+    screen.appendChild(el);
+  }
+  el.src = characterAsset(slot.pose);
+  el.style.setProperty('--cw', slot.w + 'px');
+  el.classList.toggle('companion--center', slot.center === true);
+  ['left', 'right', 'top', 'bottom'].forEach(function (k) {
+    el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
+  });
+}
+
 function resetScreenState(n) {
+  renderCompanion(n);
   if (n >= 1 && n <= PEAK_PARTS) peakEnter(n);
   if (n === 5 || n === 6) {
     const el = document.getElementById('s' + n + '-score');

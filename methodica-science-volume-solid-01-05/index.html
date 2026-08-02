@@ -26,14 +26,19 @@
 
   <!-- S1–S4 sub-parts injected/handled by JS (single-select, no feedback) -->
   <section class="screen" data-screen="1" id="s1">
-    <div class="peak-question">
-      <div class="peak-step">סעיף א · 1 מתוך 4</div>
-      <p class="scq-qtext">לפסלון מסה 156 גרם. מדידה במשורה לפני הכנסת הפסלון: 50 מ"ל, אחרי: 110 מ"ל. מה נפח הפסלון?</p>
-      <div class="peak-options" id="s1-opts" role="radiogroup" aria-label="נפח הפסלון">
-        <button class="peak-opt" type="button" data-id="a" onclick="peakSelect(1,'a',this)">50 סמ"ק</button>
-        <button class="peak-opt" type="button" data-id="b" onclick="peakSelect(1,'b',this)">60 סמ"ק</button>
-        <button class="peak-opt" type="button" data-id="c" onclick="peakSelect(1,'c',this)">110 סמ"ק</button>
-        <button class="peak-opt" type="button" data-id="d" onclick="peakSelect(1,'d',this)">160 סמ"ק</button>
+    <div class="peak-question peak-question--withimage">
+      <div class="scq-figure" style="flex-basis: 340px">
+        <img src="assets/img/s0-figurine.jpg" alt="פסלון משחק קופסה מפלסטיק מונח ליד משורה עם מים">
+      </div>
+      <div class="peak-side">
+        <div class="peak-step">סעיף א · 1 מתוך 4</div>
+        <p class="scq-qtext">לפסלון מסה 156 גרם. מדידה במשורה לפני הכנסת הפסלון: 50 מ"ל, אחרי: 110 מ"ל. מה נפח הפסלון?</p>
+        <div class="peak-options" id="s1-opts" role="radiogroup" aria-label="נפח הפסלון">
+          <button class="peak-opt" type="button" data-id="a" onclick="peakSelect(1,'a',this)">50 סמ"ק</button>
+          <button class="peak-opt" type="button" data-id="b" onclick="peakSelect(1,'b',this)">60 סמ"ק</button>
+          <button class="peak-opt" type="button" data-id="c" onclick="peakSelect(1,'c',this)">110 סמ"ק</button>
+          <button class="peak-opt" type="button" data-id="d" onclick="peakSelect(1,'d',this)">160 סמ"ק</button>
+        </div>
       </div>
     </div>
     <div class="nav-bar"><button class="btn-continue" id="s1-continue" disabled onclick="peakContinue(1)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
@@ -57,10 +62,15 @@
     <div class="peak-question">
       <div class="peak-step">סעיף ג · 3 מתוך 4</div>
       <p class="scq-qtext">מנהל המעבדה טוען "המדידות מהימנות!". מי מסביר את הטענה בצורה מדעית המבוססת על נתונים?</p>
+      <!-- Storyboard slide 153 gives each speaker an avatar. The deck ships two
+           generic role icons (ScientistMale / ScientistFemale), not portraits,
+           so the female icon serving both women is intended, not a duplicate.
+           NOTE: the storyboard has a FOURTH speaker (עופר) that this build does
+           not — logged in ASSETS-TODO for the content owner, not added here. -->
       <div class="peak-options" id="s3-opts" role="radiogroup" aria-label="הסבר מדעי">
-        <button class="peak-opt" type="button" data-id="a" onclick="peakSelect(3,'a',this)">איריס: שלוש תוצאות המדידה קרובות מאוד זו לזו, מה שמראה שהתוצאות יציבות ואינן מקריות</button>
-        <button class="peak-opt" type="button" data-id="b" onclick="peakSelect(3,'b',this)">משה: כיוון שחוקר מנוסה ביצע את המדידה, אין סיכוי לשגיאת מדידה</button>
-        <button class="peak-opt" type="button" data-id="c" onclick="peakSelect(3,'c',this)">רינה: תוצאות מדידת הנפח גדולות משמעותית מכמות המים ההתחלתית</button>
+        <button class="peak-opt peak-opt--speaker" type="button" data-id="a" onclick="peakSelect(3,'a',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-female.svg" alt="" aria-hidden="true"><span>איריס: שלוש תוצאות המדידה קרובות מאוד זו לזו, מה שמראה שהתוצאות יציבות ואינן מקריות</span></button>
+        <button class="peak-opt peak-opt--speaker" type="button" data-id="b" onclick="peakSelect(3,'b',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-male.svg" alt="" aria-hidden="true"><span>משה: כיוון שחוקר מנוסה ביצע את המדידה, אין סיכוי לשגיאת מדידה</span></button>
+        <button class="peak-opt peak-opt--speaker" type="button" data-id="c" onclick="peakSelect(3,'c',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-female.svg" alt="" aria-hidden="true"><span>רינה: תוצאות מדידת הנפח גדולות משמעותית מכמות המים ההתחלתית</span></button>
       </div>
     </div>
     <div class="nav-bar"><button class="btn-continue" id="s3-continue" disabled onclick="peakContinue(3)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>

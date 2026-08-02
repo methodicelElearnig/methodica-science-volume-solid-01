@@ -39,7 +39,64 @@ function goTo(n) {
   if (next) next.classList.add('active');
   resetScreenState(n);
 }
+/* ═══════════════════════════════════════════════════════════
+   COMPONENT — Companion character
+   The learner picks a mascot on part-01 S0; localStorage is the only
+   carrier across parts, so a missing value must never blank the mascot.
+   Slots are per-screen records injected by renderCompanion() rather than
+   authored markup: ~20 slots across six index.html files would have to be
+   kept in sync with every position tweak, and injecting lets the pose
+   resolver run at render time.
+   Offsets are storyboard positions mapped onto this 1280x710 canvas
+   (bottom = 710 - (y + h)), anchored to the nearer PHYSICAL edge so the
+   mascot stays on its intended side when the canvas grows wider than 1280.
+   Where the storyboard centred the mascot under a block of text, the unit
+   centres that text vertically instead, so those slots are moved to the
+   free edge rather than dropped on top of the copy.
+   ═══════════════════════════════════════════════════════════ */
+function getCharacter() {
+  try { return localStorage.getItem('lomda_selectedCharacter') || 'orange'; }
+  catch (e) { return 'orange'; }
+}
+/* Which pose files exist on disk, and in which format. A manifest, not an
+   <img onerror> fallback: onerror would fire a real 404 on nearly every
+   screen and this unit's QA gate checks the network log for zero 404s.
+   Landing a produced GIF is one line here plus the file. */
+const CHARACTER_ASSETS = { selection: 'png' };
+function characterAsset(pose) {
+  const ext = CHARACTER_ASSETS[pose];
+  return 'assets/img/character-' + getCharacter() + '-' +
+         (ext ? pose : 'selection') + '.' + (ext || 'png');
+}
+const CHARACTER_SLOTS = {
+  s0: { pose: 'start-line', w: 200, right: 40, bottom: 100 }   /* sb77 */
+};
+function renderCompanion(n) {
+  const screen = document.getElementById('s' + n);
+  if (!screen) return;
+  const slot = CHARACTER_SLOTS['s' + n];
+  // Lets a template reserve room for the sprite instead of being drawn over.
+  screen.classList.toggle('has-companion', !!slot);
+  let el = screen.querySelector(':scope > .companion');
+  if (!slot) { if (el) el.remove(); return; }
+  if (!el) {
+    el = document.createElement('img');
+    el.className = 'companion';
+    el.alt = '';                                   // decorative, carries no information
+    el.setAttribute('aria-hidden', 'true');
+    el.draggable = false;
+    screen.appendChild(el);
+  }
+  el.src = characterAsset(slot.pose);
+  el.style.setProperty('--cw', slot.w + 'px');
+  el.classList.toggle('companion--center', slot.center === true);
+  ['left', 'right', 'top', 'bottom'].forEach(function (k) {
+    el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
+  });
+}
+
 function resetScreenState(n) {
+  renderCompanion(n);
   if (n === 1) practiceEnter(0, 's1');
   if (n === 2) practiceEnter(1, 's2');
   if (n === 3) practiceEnter(2, 's3');
@@ -92,7 +149,10 @@ function scqCheck(screen) {
   else if (s.attempts >= cfg.maxAttempts) { scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'wrong2'); scqFinish(screen, false); }
   else { scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); }
 }
-function scqMark(screen, id, cls) { const o = document.querySelector('#' + screen + ' .scq-opt[data-id="' + id + '"]'); if (o) { o.classList.remove('selected'); o.classList.add(cls); } }
+// querySelectorAll, not querySelector: an image-hotspot option is two elements
+// sharing one data-id (the readable text option + the band drawn over the photo)
+// and both must take the correct/wrong state. Single-element options unaffected.
+function scqMark(screen, id, cls) { document.querySelectorAll('#' + screen + ' .scq-opt[data-id="' + id + '"]').forEach(o => { o.classList.remove('selected'); o.classList.add(cls); }); }
 function scqFinish(screen, isCorrect) {
   const s = SCQ_REG[screen]; s.answered = true; s.done = true;
   scqOpts(screen).forEach(o => { o.disabled = true; });

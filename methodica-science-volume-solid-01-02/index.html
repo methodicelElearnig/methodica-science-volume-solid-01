@@ -40,13 +40,18 @@
       <div class="progress-question__connector" data-connector="5"></div>
       <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 6</span></div>
     </nav>
-    <div class="scq-question scq-question--textonly">
+    <div class="scq-question scq-question--withimage">
+      <div class="scq-figure" style="flex-basis: 430px">
+        <img src="assets/img/s1-bodies.jpg" alt="ארבעה גופים על שולחן: לבנה, מפלצת פלסטלינה, קופסת קרטון וקוביית עץ">
+      </div>
+      <div class="scq-side">
       <p class="scq-qtext">איזה מהגופים הבאים אינו בעל צורה הנדסית מוגדרת?</p>
       <div class="scq-answers" id="s1-answers" role="radiogroup" aria-label="איזה גוף אינו בעל צורה הנדסית מוגדרת?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s1','a')"><span class="scq-opt-text">לבנה</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s1','b')"><span class="scq-opt-text">מפלצת פלסטלינה</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s1','c')"><span class="scq-opt-text">קופסת קרטון</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s1','d')"><span class="scq-opt-text">קוביית עץ</span><span class="scq-radio" aria-hidden="true"></span></button>
+      </div>
       </div>
     </div>
     <div class="scq-bar">
@@ -75,11 +80,22 @@
       <div class="progress-question__connector" data-connector="5"></div>
       <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 6</span></div>
     </nav>
-    <div class="scq-question scq-question--textonly">
+    <div class="scq-question scq-question--withimage">
+      <!-- Storyboard slide 83 attaches a named bubble to each child. The two
+           quotes are already live HTML in the stem, so the photo only carries
+           the NAME pills — repeating the quotes over the art would duplicate
+           the same text twice on one screen. -->
+      <div class="scq-figure" style="flex-basis: 470px">
+        <img src="assets/img/s2-tom-shirley.jpg" alt="שני ילדים בחלוקי מעבדה עומדים משני צדי שולחן ועליו מפלצת פלסטלינה ירוקה">
+        <span class="figure-tag" style="--x:28%;--y:20%">שירלי</span>
+        <span class="figure-tag" style="--x:73%;--y:17%">תום</span>
+      </div>
+      <div class="scq-side">
       <p class="scq-qtext">מי מהילדים צודק?<br><span class="scq-qsub">שירלי: "כדי למדוד נפח של גוף ללא צורה הנדסית מוגדרת יש להשתמש בשיטת דחיקת המים".<br>תום: "…יש להשתמש במאזניים וסרגל".</span></p>
       <div class="scq-answers" id="s2-answers" role="radiogroup" aria-label="מי צודק?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s2','a')"><span class="scq-opt-text">תום צודק</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s2','b')"><span class="scq-opt-text">שירלי צודקת</span><span class="scq-radio" aria-hidden="true"></span></button>
+      </div>
       </div>
     </div>
     <div class="scq-bar">
@@ -178,11 +194,35 @@
       <div class="progress-question__connector" data-connector="5"></div>
       <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 6</span></div>
     </nav>
-    <div class="scq-question scq-question--textonly">
+    <!-- Storyboard slide 99 — two labelled cylinder photos, three clickable bands
+         stacked down תמונה ב'. Each option is TWO controls sharing one data-id:
+         the readable text option and the band over the photo (aria-hidden +
+         tabindex -1, a mouse affordance that must not double-announce). Both
+         carry .scq-opt so scqSelect()/scqMark() light them up together.
+         Band --y values are measured against the delivered art: the water
+         surface sits at ~44%, the original 30 mL level at ~66%, the base at ~85%.
+         The stem used to reference two images that were never rendered. -->
+    <div class="scq-question scq-question--withimage">
+      <div class="hotspot-pair">
+        <div class="scq-figure scq-figure--square" style="flex-basis: 296px; width: 296px">
+          <img src="assets/img/s5-cylinder-before.jpg" alt="משורה עם מים על שולחן, ולידה בובת מפלצת ירוקה קטנה">
+          <span class="scq-figure__label">תמונה א'</span>
+        </div>
+        <div class="hotspot-photo hotspot-photo--square" style="width: 296px">
+          <img src="assets/img/s5-cylinder-after.jpg" alt="אותה משורה לאחר שבובת המפלצת הוכנסה למים">
+          <span class="scq-figure__label">תמונה ב'</span>
+          <button class="scq-opt hotspot-area hotspot-area--band" type="button" data-id="c" aria-hidden="true" tabindex="-1" onclick="scqSelect('s5','c')" style="--x:50%;--y:34%;--w:20%;--h:19%"></button>
+          <button class="scq-opt hotspot-area hotspot-area--band" type="button" data-id="b" aria-hidden="true" tabindex="-1" onclick="scqSelect('s5','b')" style="--x:50%;--y:55%;--w:20%;--h:22%"></button>
+          <button class="scq-opt hotspot-area hotspot-area--band" type="button" data-id="a" aria-hidden="true" tabindex="-1" onclick="scqSelect('s5','a')" style="--x:50%;--y:75%;--w:20%;--h:19%"></button>
+        </div>
+      </div>
+      <div class="scq-side">
       <p class="scq-qtext">בתמונה א' רואים את מפלס המים לפני שהכניסו בובת מפלצת, ובתמונה ב' אחרי. איזה אזור בתמונה ב' מראה שגובה המים עלה?</p>
       <div class="scq-answers" id="s5-answers" role="radiogroup" aria-label="איזה אזור מראה את העלייה?">
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s5','a')"><span class="scq-opt-text">אזור המים ההתחלתי בתמונה ב'</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s5','c')"><span class="scq-opt-text">האזור הריק שמעל מפלס המים בתמונה ב'</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s5','b')"><span class="scq-opt-text">אזור העלייה — התוספת שמעל המפלס המקורי בתמונה ב'</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s5','a')"><span class="scq-opt-text">אזור המים ההתחלתי בתמונה ב'</span><span class="scq-radio" aria-hidden="true"></span></button>
+      </div>
       </div>
     </div>
     <div class="scq-bar">

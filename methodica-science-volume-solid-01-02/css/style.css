@@ -3945,3 +3945,218 @@ html, body {
 .meas-confirm, .meas-next { min-width: 120px; }
 .meas-reveal { max-width: 380px; text-align: center; }
 .meas-reveal::after { right: 50%; transform: translateX(50%); }
+
+/* ═══════════════════════════════════════════════════════
+   STORYBOARD IMAGE LAYOUTS + COMPANION CHARACTER
+   Added when the storyboard artwork was wired into the question
+   screens. One identical block in all six parts — the parts share no
+   files, and keeping the copies byte-identical makes them diffable.
+   Some parts use only a subset; the unused rules cost ~2 KB.
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Image + question ─────────────────────────────────────
+   Storyboard shape: photo on the physical LEFT, stem and options on the
+   physical RIGHT. Sibling modifier of .scq-question--textonly, NOT a layer
+   on top of it — both reset the same properties on the base .scq-question
+   (which is still the legacy absolute top:139px/right:40px/width:1188px rule).
+   The direction:ltr wrapper is what pins the photo left under RTL:
+   justify-content:flex-end then packs toward the physical right, and the
+   inner .scq-side flips back to rtl for the Hebrew. */
+/* Both layout modifiers set left + width, but the base .scq-question further up
+   this file still carries right:40px from the inherited mass-measure block.
+   With a RTL containing block an over-constrained left/right/width resolves in
+   favour of ight, which was silently pushing every text-only question 160px
+   off centre. Clearing ight lets left:50% + translateX(-50%) actually centre. */
+.scq-question--textonly,
+.scq-question--withimage { right: auto; }
+
+.scq-question--withimage {
+  position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%);
+  width: 1140px; height: auto;
+  display: flex; flex-direction: row; align-items: center; justify-content: flex-end;
+  gap: 28px; direction: ltr;
+}
+.scq-question--withimage > .scq-side {
+  flex: 1 1 auto; min-width: 0; direction: rtl;
+  display: flex; flex-direction: column; align-items: stretch; gap: 18px;
+}
+.scq-question--withimage .scq-qtext {
+  width: 100%; font-family: 'Assistant', sans-serif; font-size: 23px; font-weight: 700;
+  color: var(--subject-900); text-align: right; direction: rtl; line-height: 1.4;
+}
+.scq-question--withimage .scq-answers { width: 100%; }
+/* The inherited mass-measure block absolutely positions .scq-qtext (right:0;
+   top:0) and .scq-answers (right:0; top:100px) and pins .scq-opt to 604px.
+   Both modifiers lay their children out in flow, so the children have to be
+   put back in flow — otherwise they escape the flex column entirely: the
+   options would overlap the photo, the parent would measure zero height, and
+   a long option list would run past the 74px bottom bar (part 02 S3 did). */
+.scq-question--textonly > .scq-qtext,
+.scq-question--textonly > .scq-answers,
+.scq-question--withimage .scq-qtext,
+.scq-question--withimage .scq-answers {
+  position: relative; right: auto; top: auto; padding-top: 0;
+}
+.scq-question--textonly .scq-opt,
+.scq-question--withimage .scq-opt { width: 100%; }
+/* Long stem or 4 tall options — tighten so the last option clears the 74px bar */
+.scq-question--withimage.is-long .scq-qtext   { font-size: 21px; }
+.scq-question--withimage.is-long .scq-side    { gap: 12px; }
+.scq-question--withimage.is-long .scq-answers { gap: 9px; }
+.scq-question--withimage.is-long .scq-opt     { padding: 10px 16px; }
+.scq-question--withimage.is-long .scq-opt-text { font-size: 17px; line-height: 1.35; }
+
+/* ── Framed photo ─────────────────────────────────────────
+   Width is set per screen with an inline flex-basis; every storyboard
+   display box is a different size and a class per size would be noise. */
+.scq-figure {
+  position: relative;              /* anchor for .img-zoom-btn and __label */
+  flex: 0 0 auto; align-self: center;
+  border: 3px solid rgba(201, 206, 216, 0.4); border-radius: 16px;
+  overflow: hidden; background: #fff;
+}
+.scq-figure > img { width: 100%; height: auto; display: block; }
+/* Fixed-ratio variant — the source is cropped to the frame (object-fit: cover) */
+.scq-figure--square { aspect-ratio: 1; }
+.scq-figure--square > img { height: 100%; object-fit: cover; }
+/* Caption pill — storyboard slide 99 labels its two photos */
+.scq-figure__label {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  min-width: 96px; padding: 3px 14px; border-radius: 999px;
+  background: var(--subject-800); color: #fff;
+  font-family: 'Assistant', sans-serif; font-size: 17px; font-weight: 700;
+  text-align: center; white-space: nowrap; pointer-events: none; z-index: 2;
+}
+
+/* ── Image hotspot ────────────────────────────────────────
+   Each option is TWO controls sharing one data-id: the readable
+   .hotspot-bubble (the real role="radio") and a .hotspot-area ring drawn over
+   the photograph (aria-hidden, tabindex -1 — a mouse affordance that must not
+   double-announce). Both carry .scq-opt, so scqSelect()/scqMark() toggle their
+   state together with no per-screen code.
+   Rings are positioned in % of the photo box with PHYSICAL left/top —
+   bidi-immune, the same rule the comic panels follow. Never inset-inline. */
+/* The emoji-card variant is 820px wide; the photo variant needs room for the
+   photo plus a bubble column on each side. */
+.hotspot-question--photo { width: 1160px; }
+.hotspot-stage {
+  display: flex; direction: rtl; align-items: center; justify-content: center; gap: 20px;
+  width: 100%;
+}
+.hotspot-bubbles { display: flex; flex-direction: column; gap: 14px; width: 236px; flex: 0 0 236px; }
+.hotspot-photo {
+  position: relative; flex: 0 0 auto; display: block;
+  border-radius: 16px; overflow: hidden; box-shadow: 0 6px 20px rgba(0, 32, 96, 0.12);
+}
+.hotspot-photo > img { width: 100%; height: auto; display: block; }
+
+.hotspot-area {
+  position: absolute; left: var(--x); top: var(--y);
+  width: var(--w); height: var(--h); transform: translate(-50%, -50%);
+  display: block; padding: 0; gap: 0;
+  background: transparent; border: 3px solid rgba(255, 255, 255, 0.55); border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 32, 96, 0.25);
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.hotspot-area:hover:not(:disabled),
+.hotspot-area:focus-visible { border-color: var(--subject-500); background: rgba(1, 157, 229, 0.20); }
+.hotspot-area.selected { border-color: var(--subject-500); background: rgba(1, 157, 229, 0.30); }
+.hotspot-area.correct  { border-color: #2e9b57; background: rgba(46, 155, 87, 0.32); }
+.hotspot-area.wrong    { border-color: #d64550; background: rgba(214, 69, 80, 0.32); }
+.hotspot-area--band    { border-radius: 10px; }
+
+/* Square-cropped hotspot photo (storyboard slide 99 frames a landscape shot
+   as a square). Must come AFTER .hotspot-photo > img to win the cascade. */
+.hotspot-photo--square { aspect-ratio: 1; border: 3px solid rgba(201, 206, 216, 0.4); }
+.hotspot-photo--square > img { height: 100%; object-fit: cover; }
+
+/* Small name pill pinned over a point in a photo — storyboard slide 83 labels
+   which child is which. Physical left/top in % of the frame, bidi-immune. */
+.figure-tag {
+  position: absolute; left: var(--x); top: var(--y); transform: translate(-50%, -50%);
+  padding: 3px 12px; border-radius: 999px;
+  background: rgba(0, 32, 96, 0.82); color: #fff;
+  font-family: 'Assistant', sans-serif; font-size: 15px; font-weight: 700;
+  white-space: nowrap; pointer-events: none; z-index: 2;
+}
+
+/* The readable half of an option: a bubble beside the photo. */
+.hotspot-bubble {
+  display: block; width: 100%; text-align: right; direction: rtl;
+  border-radius: 16px; padding: 12px 16px;
+  font-size: 16px; font-weight: 500; line-height: 1.35; color: #303030;
+}
+
+/* Two labelled photos side by side (storyboard slide 99) */
+.hotspot-pair { display: flex; direction: rtl; align-items: center; justify-content: center; gap: 18px; }
+
+/* ── Photo inside a drag pill ─────────────────────────────
+   Emitted by ddqRender() when a registered item carries an `img`. */
+.dnd-pill--img { flex-direction: column; gap: 6px; padding: 8px 12px; }
+.dnd-pill-img {
+  width: var(--pw, 84px); height: auto; display: block; border-radius: 6px;
+  pointer-events: none; user-select: none; -webkit-user-drag: none;
+}
+.dnd-question--warmup .dnd-pill--img { padding: 6px 10px; }
+
+/* ── Image beside the cloze sentence (S19) ────────────────── */
+.dq-question--withimage {
+  width: 1060px; flex-direction: row; align-items: center; justify-content: flex-end;
+  gap: 28px; direction: ltr;
+}
+.dq-question--withimage > .dq-side {
+  flex: 1 1 auto; min-width: 0; direction: rtl;
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+}
+
+/* ── Image beside the peak-assessment intro (parts 05/06) ─── */
+.peak-intro--withimage {
+  width: 1080px; flex-direction: row; align-items: center; justify-content: flex-end;
+  gap: 28px; direction: ltr; text-align: right;
+}
+.peak-intro--withimage > .peak-side {
+  flex: 1 1 auto; min-width: 0; direction: rtl;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 14px; text-align: right;
+}
+
+/* Peak-assessment question with the scenario photo beside it (parts 05/06).
+   .peak-question is a centred column; this flips it to the same ltr row +
+   rtl inner column as .scq-question--withimage. */
+.peak-question--withimage {
+  width: 1100px; flex-direction: row; align-items: center; justify-content: flex-end;
+  gap: 28px; direction: ltr;
+}
+.peak-question--withimage > .peak-side {
+  flex: 1 1 auto; min-width: 0; direction: rtl;
+  display: flex; flex-direction: column; align-items: stretch; gap: 14px;
+}
+.peak-question--withimage .scq-qtext { text-align: right; }
+.peak-question--withimage .peak-step { align-self: flex-start; }
+
+/* Speaker option — generic role icon beside the quote (storyboard slide 153). */
+.peak-opt--speaker { display: flex; align-items: center; gap: 14px; }
+.peak-speaker-ico  { flex: 0 0 auto; width: 40px; height: 40px; opacity: 0.7; }
+
+/* ── Companion character ──────────────────────────────────
+   The mascot the learner chose on part-01 S0, injected by renderCompanion().
+   Decorative: pointer-events:none so it can never eat a click, and z-index 8
+   so it sits UNDER the 74px .screen::after bar (z-index 9). A sprite whose
+   feet overrun the floor is then clipped by the opaque white bar instead of
+   colliding with .btn-continue / .btn-back (12), .progress-question (13) or
+   .scq-bar / .path-toggle (15) — no collision math, no stacking-context fight.
+   Offsets are set inline from the slot record; only the centering is a class. */
+/* A screen with a mascot slot gets has-companion, so a template can make room
+   rather than be painted over. The hook story screens use the full 1120px width
+   by default; the storyboard narrows the narration column on exactly the slides
+   where the mascot stands at the right edge. */
+.screen.has-companion .hook-content { width: 920px; left: calc(50% - 100px); }
+/* .peak-intro is 820px centred (230-1050); the mascot stands at 1030+, so shift
+   the copy left rather than let the two clip corners. */
+.screen.has-companion .peak-intro { left: calc(50% - 110px); }
+
+.companion {
+  position: absolute; z-index: 8;
+  width: var(--cw, 190px); height: auto; display: block;
+  pointer-events: none; user-select: none; -webkit-user-drag: none;
+}
+.companion--center { left: 50%; transform: translateX(-50%); }

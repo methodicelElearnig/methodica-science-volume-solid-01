@@ -205,7 +205,84 @@ function goTo(n) {
   resetScreenState(n);
 }
 
+/* ═══════════════════════════════════════════════════════════
+   COMPONENT — Companion character
+   The learner picks a mascot on part-01 S0; localStorage is the only
+   carrier across parts, so a missing value must never blank the mascot.
+   Slots are per-screen records injected by renderCompanion() rather than
+   authored markup: ~20 slots across six index.html files would have to be
+   kept in sync with every position tweak, and injecting lets the pose
+   resolver run at render time.
+   Offsets are storyboard positions mapped onto this 1280x710 canvas
+   (bottom = 710 - (y + h)), anchored to the nearer PHYSICAL edge so the
+   mascot stays on its intended side when the canvas grows wider than 1280.
+   Where the storyboard centred the mascot under a block of text, the unit
+   centres that text vertically instead, so those slots are moved to the
+   free edge rather than dropped on top of the copy.
+   ═══════════════════════════════════════════════════════════ */
+function getCharacter() {
+  try { return localStorage.getItem('lomda_selectedCharacter') || 'orange'; }
+  catch (e) { return 'orange'; }
+}
+/* Which pose files exist on disk, and in which format. A manifest, not an
+   <img onerror> fallback: onerror would fire a real 404 on nearly every
+   screen and this unit's QA gate checks the network log for zero 404s.
+   Landing a produced GIF is one line here plus the file. */
+const CHARACTER_ASSETS = { selection: 'png' };
+function characterAsset(pose) {
+  const ext = CHARACTER_ASSETS[pose];
+  return 'assets/img/character-' + getCharacter() + '-' +
+         (ext ? pose : 'selection') + '.' + (ext || 'png');
+}
+const CHARACTER_SLOTS = {
+  s1:  { pose: 'examine',          w: 162, right: 61, bottom: 142 },  /* sb4  */
+  s3:  { pose: 'cylinder-pendant', w: 220, right: 42, bottom: 198 },  /* sb6  */
+  s5:  { pose: 'toga',             w: 178, right: 43, top:     31 },  /* sb9  */
+  s6:  { pose: 'towel',            w: 178, right: 49, bottom:  96 },  /* sb10 */
+  s9:  { pose: 'pingpong',         w: 160, right: 30, bottom:  95 },  /* sb26 */
+  s11: { pose: 'soap',             w: 160, right: 30, bottom:  97 },  /* sb29 */
+  s12: { pose: 'stretch',          w: 200, right: 40, bottom:  89 },  /* sb41 */
+  s21: { pose: 'ask',              w: 160, left:  40, bottom:  90 },  /* sb27 */
+  s22: { pose: 'wet-object',       w: 150, left:  30, bottom: 100 },  /* sb35/38 */
+  s23: { pose: 'ask',              w: 179, right: 50, bottom: 200 },  /* sb13 */
+  s26: { pose: 'ask',              w: 179, right: 50, bottom: 200 }   /* sb16 */
+};
+/* S7's two path cards are the mascot in two poses. Not a CHARACTER_SLOTS entry:
+   these sit inside the option cards as content, not as a floating sprite. */
+function renderPathCharacters() {
+  const c = document.getElementById('s7-img-comic');
+  const e = document.getElementById('s7-img-experiments');
+  if (c) c.src = characterAsset('comic');
+  if (e) e.src = characterAsset('experiments');
+}
+function renderCompanion(n) {
+  const screen = document.getElementById('s' + n);
+  if (!screen) return;
+  const slot = CHARACTER_SLOTS['s' + n];
+  // Lets a template reserve room for the sprite instead of being drawn over —
+  // the storyboard's narration column is narrower on exactly these screens.
+  screen.classList.toggle('has-companion', !!slot);
+  let el = screen.querySelector(':scope > .companion');
+  if (!slot) { if (el) el.remove(); return; }
+  if (!el) {
+    el = document.createElement('img');
+    el.className = 'companion';
+    el.alt = '';                                   // decorative, carries no information
+    el.setAttribute('aria-hidden', 'true');
+    el.draggable = false;
+    screen.appendChild(el);
+  }
+  el.src = characterAsset(slot.pose);
+  el.style.setProperty('--cw', slot.w + 'px');
+  el.classList.toggle('companion--center', slot.center === true);
+  ['left', 'right', 'top', 'bottom'].forEach(function (k) {
+    el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
+  });
+}
+
 function resetScreenState(n) {
+  renderCompanion(n);
+  if (n === 7) renderPathCharacters();
   if (n === 0) {
     // TwoOptionSelection — restore the saved choice on return.
     const saved = window.lomdaState.selectedCharacter;
@@ -1051,8 +1128,11 @@ function scqCheck(screen) {
   } else { scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); }
 }
 function scqMark(screen, id, cls) {
-  const o = document.querySelector('#' + screen + ' .scq-opt[data-id="' + id + '"]');
-  if (o) { o.classList.remove('selected'); o.classList.add(cls); }
+  // querySelectorAll, not querySelector: an image-hotspot option is two elements
+  // sharing one data-id (the readable bubble + the ring over the photo) and both
+  // must take the correct/wrong state. Single-element options are unaffected.
+  document.querySelectorAll('#' + screen + ' .scq-opt[data-id="' + id + '"]')
+    .forEach(o => { o.classList.remove('selected'); o.classList.add(cls); });
 }
 function scqFinish(screen, isCorrect) {
   const s = SCQ_REG[screen];
@@ -1409,7 +1489,22 @@ function ddqMakePill(screen, itemId) {
   if (!s.checked) pill.type = 'button';
   pill.className = 'dnd-pill';
   pill.dataset.item = itemId;
-  pill.textContent = it.label;
+  // An item may carry storyboard art: {img, alt, w?}. The photo stacks above the
+  // label and travels with the pill into the drop target, so the learner keeps
+  // seeing what they placed. Text-only items are unaffected.
+  if (it.img) {
+    pill.classList.add('dnd-pill--img');
+    const im = document.createElement('img');
+    im.className = 'dnd-pill-img';
+    im.src = it.img;
+    im.alt = '';                       // the label right below carries the meaning
+    if (it.w) im.style.setProperty('--pw', it.w + 'px');
+    const cap = document.createElement('span');
+    cap.textContent = it.label;
+    pill.appendChild(im); pill.appendChild(cap);
+  } else {
+    pill.textContent = it.label;
+  }
   if (!s.checked) s.dnd.attachSource(pill, itemId);
   return pill;
 }
@@ -1502,9 +1597,9 @@ function practiceEnterDnD(idx, screen) {
 registerPracticeDnD(3, {
   questionId: QID + 'methodica-science-volume-solid-01-01-08/q1',
   items: [
-    { id: 'metal-cube', label: 'קוביית מתכת' },
-    { id: 'shell',      label: 'צדפה' },
-    { id: 'goblet',     label: 'גביע גדול' }
+    { id: 'metal-cube', label: 'קוביית מתכת', img: 'assets/img/s17-metal-cube.png', w: 96 },
+    { id: 'shell',      label: 'צדפה',        img: 'assets/img/s17-shell.png',      w: 92 },
+    { id: 'goblet',     label: 'גביע גדול',   img: 'assets/img/s17-trophy.png',     w: 86 }
   ],
   targets: [
     { id: 't-ruler',    label: 'מדידה הנדסית בעזרת סרגל' },
@@ -1526,11 +1621,14 @@ ddqRegister({
   screen: 's18',
   questionId: QID + 'methodica-science-volume-solid-01-01-03/q1',
   items: [
-    { id: 'wu-cup',   label: 'כמה מים יש בכוס?' },
-    { id: 'wu-cube',  label: 'מה אורך הצלע של הקובייה?' },
-    { id: 'wu-melon', label: 'מה המסה של האבטיח?' },
-    { id: 'wu-shell', label: 'מהו הנפח של הצדף הקטן?' },
-    { id: 'wu-doll',  label: 'מהו הנפח של בובת הפלסטיק הגדולה?' }
+    // Storyboard slide 42 puts a small photo inside each task card. The שדף photo
+    // is the one from S17 (slide 42 illustrates this task with a בלוט, which the
+    // script later renamed to צדף — reusing S17's shell keeps art and copy agreed).
+    { id: 'wu-cup',   label: 'כמה מים יש בכוס?',                    img: 'assets/img/s18-task-water-cup.jpg',  w: 72 },
+    { id: 'wu-cube',  label: 'מה אורך הצלע של הקובייה?',            img: 'assets/img/s18-task-rubik.jpg',      w: 66 },
+    { id: 'wu-melon', label: 'מה המסה של האבטיח?',                  img: 'assets/img/s18-task-watermelon.jpg', w: 64 },
+    { id: 'wu-shell', label: 'מהו הנפח של הצדף הקטן?',              img: 'assets/img/s17-shell.png',           w: 68 },
+    { id: 'wu-doll',  label: 'מהו הנפח של בובת הפלסטיק הגדולה?',    img: 'assets/img/s18-task-doll.jpg',       w: 90 }
   ],
   targets: [
     { id: 'wt-pour',     label: 'מזיגה למשורה' },
