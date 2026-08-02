@@ -40,8 +40,9 @@
         </div>
       </div>
     </div>
-    <div class="nav-bar"><button class="btn-continue" id="s1-continue" disabled onclick="peakContinue(1)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="nav-bar"><button class="scq-hint peak-hint" id="s1-hint" type="button" onclick="peakHint(1)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s1-continue" disabled onclick="peakContinue(1)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
+  <div class="scq-hint-overlay hidden" id="s1-hint-overlay" onclick="if(event.target===this)peakCloseHint(1)"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="peakCloseHint(1)" aria-label="סגור">✕</button><h2 class="scq-hint-title">הפסל לא נכנס למשורה</h2><p>איזו שיטה מאפשרת למדוד נפח של גוף מוצק שאינו נכנס במשורה?</p></div></div>
 
   <section class="screen" data-screen="2" id="s2">
     <div class="peak-question">
@@ -54,8 +55,9 @@
         <button class="peak-opt" type="button" data-id="d" onclick="peakSelect(2,'d',this)">12.5 סמ"ק השווים ל-0.0125 ליטר</button>
       </div>
     </div>
-    <div class="nav-bar"><button class="btn-continue" id="s2-continue" disabled onclick="peakContinue(2)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="nav-bar"><button class="scq-hint peak-hint" id="s2-hint" type="button" onclick="peakHint(2)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s2-continue" disabled onclick="peakContinue(2)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
+  <div class="scq-hint-overlay hidden" id="s2-hint-overlay" onclick="if(event.target===this)peakCloseHint(2)"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="peakCloseHint(2)" aria-label="סגור">✕</button><h2 class="scq-hint-title">תזכורת!</h2><p>למדנו ביחידות קודמות ש: 1 מ"ל = 1 סמ"ק, ו-1,000 מ"ל = 1 ליטר.</p></div></div>
 
   <section class="screen" data-screen="3" id="s3">
     <div class="peak-question">
@@ -68,8 +70,9 @@
         <button class="peak-opt" type="button" data-id="d" onclick="peakSelect(3,'d',this)">בגלל שהפסל עשוי מתכת וכבד, הוא דוחק הרבה מים החוצה</button>
       </div>
     </div>
-    <div class="nav-bar"><button class="btn-continue" id="s3-continue" disabled onclick="peakContinue(3)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="nav-bar"><button class="scq-hint peak-hint" id="s3-hint" type="button" onclick="peakHint(3)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s3-continue" disabled onclick="peakContinue(3)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
+  <div class="scq-hint-overlay hidden" id="s3-hint-overlay" onclick="if(event.target===this)peakCloseHint(3)"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="peakCloseHint(3)" aria-label="סגור">✕</button><h2 class="scq-hint-title">חשבו</h2><p>על מה מבוססות השיטות למדידת נפח שאותן למדנו ביחידה?</p></div></div>
 
   <section class="screen" data-screen="4" id="s4">
     <div class="peak-question">
@@ -79,10 +82,12 @@
         <button class="peak-opt" type="button" data-id="a" onclick="peakSelect(4,'a',this)">בשיטת ההצפה נאספו בממוצע 1,250 מ"ל מים, ונפח המים שנדחק שווה לנפח הגוף שהוכנס למים</button>
         <button class="peak-opt" type="button" data-id="b" onclick="peakSelect(4,'b',this)">נפח הפסל הוא כ-1,250 סמ"ק, משום שכל גוף שמכניסים למים דוחק מים וכך ניתן לדעת את נפחו</button>
         <button class="peak-opt" type="button" data-id="c" onclick="peakSelect(4,'c',this)">נפח הפסל הוא כ-1,250 סמ"ק, משום שהפסל נראה גדול ותופס מקום רב באקווריום</button>
+        <button class="peak-opt" type="button" data-id="d" onclick="peakSelect(4,'d',this)">נפח הפסל הוא כ-1,250 סמ"ק, משום שהמוכרת בחנות העריכה שזהו נפחו והיא בעלת ניסיון רב בתחום</button>
       </div>
     </div>
-    <div class="nav-bar"><button class="btn-continue" id="s4-continue" disabled onclick="peakContinue(4)">סיום</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="nav-bar"><button class="scq-hint peak-hint" id="s4-hint" type="button" onclick="peakHint(4)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s4-continue" disabled onclick="peakContinue(4)">סיום</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
+  <div class="scq-hint-overlay hidden" id="s4-hint-overlay" onclick="if(event.target===this)peakCloseHint(4)"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="peakCloseHint(4)" aria-label="סגור">✕</button><h2 class="scq-hint-title">איך אנחנו יודעים שהטענה נכונה?</h2><p>בטיעון מדעי נחפש ממצא שנמדד בניסוי או בתצפית.</p></div></div>
 
   <!-- S5 success / S6 failure — both TERMINAL (מועד ב is the last attempt) -->
   <section class="screen" data-screen="5" id="s5">

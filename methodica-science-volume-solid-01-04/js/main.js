@@ -324,7 +324,7 @@ if (window.parent !== window) { window.parent.postMessage({ type: 'DEV_READY', t
 
 /* ═══ xAPI ═══ */
 (function initXAPI() {
-  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') { console.log('[xAPI] skipped on localhost (dev)'); return; }
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') { return; }
   var CDN = 'https://lomdot.education.gov.il/metodica/720active/common/';
   function loadScript(src, cb) { var s = document.createElement('script'); s.src = src; s.onload = cb; s.onerror = function () { cb(); }; document.head.appendChild(s); }
   function poll(cb) { if (window.jsXAPI_MetadataReady) cb(); else setTimeout(function () { poll(cb); }, 200); }

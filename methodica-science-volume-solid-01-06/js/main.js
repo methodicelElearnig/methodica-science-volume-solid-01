@@ -25,7 +25,7 @@ window.addEventListener('resize', scaleApp); scaleApp();
 
 function goTo(n) {
   if (n < 0 || n >= TOTAL_SCREENS) return;
-  document.querySelectorAll('[id$="-popup"]').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
   const prev = document.querySelector('.screen.active'); if (prev) prev.classList.remove('active');
   currentScreen = n;
   const next = document.getElementById('s' + n); if (next) next.classList.add('active');
@@ -118,6 +118,20 @@ function xapiSend() {
   const args = arguments;
   setTimeout(function () { try { sendStatement720.apply(null, args); } catch (e) {} }, 0);
 }
+/* ─── Peak hints (storyboard gives every sub-part its own hint slide) ───
+   Not the scq* hint machinery: that is keyed on SCQ_REG, which the peak
+   components do not use. The overlay id ends in -hint-overlay so goTo()
+   closes it on navigation, the same convention as the other parts. */
+function peakHint(idx) {
+  const ov = document.getElementById('s' + idx + '-hint-overlay');
+  if (!ov) return;
+  ov.classList.remove('hidden');
+  xapiSend('requested.1', 'question', null, { questionId: PEAK_QID + 'q' + idx });
+}
+function peakCloseHint(idx) {
+  document.getElementById('s' + idx + '-hint-overlay')?.classList.add('hidden');
+}
+
 /* ─── Peak assessment ─────────────────────────────────────── */
 function peakStart() { goTo(1); }
 function peakSelect(idx, id, btn) {
@@ -174,7 +188,7 @@ if (window.parent !== window) { window.parent.postMessage({ type: 'DEV_READY', t
 
 /* ═══ xAPI ═══ */
 (function initXAPI() {
-  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') { console.log('[xAPI] skipped on localhost (dev)'); return; }
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') { return; }
   var CDN = 'https://lomdot.education.gov.il/metodica/720active/common/';
   function loadScript(src, cb) { var s = document.createElement('script'); s.src = src; s.onload = cb; s.onerror = function () { cb(); }; document.head.appendChild(s); }
   function poll(cb) { if (window.jsXAPI_MetadataReady) cb(); else setTimeout(function () { poll(cb); }, 200); }

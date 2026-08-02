@@ -152,7 +152,7 @@ Extracted from `ppt/media/` in the storyboard deck, re-encoded **JPEG q80 at ~2�
 
 | part | files | KB |
 |---|---|---|
-| 01 | `s14-bowling-ball` `s15-four-kids` `s16-crystals` `s17-{metal-cube,shell,trophy}.png` `s18-task-{water-cup,rubik,watermelon,doll,acorn}` `s19-sharpener` `s21-large-bodies` | 658 |
+| 01 | `s14-bowling-ball` `s15-four-kids` `s16-crystals` `s17-{metal-cube,shell,trophy}.png` `s18-task-{water-cup,rubik,watermelon,doll}` `s19-sharpener` `s21-large-bodies` · **+ 2.8.26:** `s29-nongeometric` `s30-overflow-can` `s31-overflow-can-steps` | 657 |
 | 02 | `s1-bodies` `s2-tom-shirley` `s5-cylinder-{before,after}` | 296 |
 | 04 | `s2-lentils` `s3-gold-measurements` `s4-slime` `s6-marbles` *(the last two reused on S5 / S7–S8)* | 286 |
 | 05 | `s0-figurine` (on S1) · `s3-speaker-{male,female}.svg` | 113 |
@@ -177,14 +177,10 @@ and flip-card faces are `blipFill` fills on autoshapes, so an extractor walking
       `s15-four-kids` (01) carries a baked Hebrew line *"תוכן שהופק על ידי בינה מלאכותית"* along its
       bottom edge, and Hebrew lab signage in the background. Same decision as the comic panels:
       nothing cropped. **Needs the same content-owner ruling** as the §A2 watermarks.
-- [ ] **`05 S3` has three speakers, the storyboard has four.** Slide 153 shows רינה, משה, איריס
-      **and עופר**; this build ships the first three. The two generic role icons the deck provides
-      (ScientistMale / ScientistFemale) are wired to the three that exist. Adding עופר is a content
-      change — **content-owner call.**
-- [ ] **`image26` (storyboard slide 24) has no home.** It illustrates an experiments-path guess
-      question about non-geometric bodies; the build's experiments path has only one guess screen
-      (`01 S21`, which matches slide 27). Not extracted. Either the screen is missing or the
-      storyboard slide is redundant — **content-owner call.**
+- [x] **`05 S3` speakers** ✅ resolved 2.8.26 — עופר was added, so all four speakers from slide 153
+      are present. Correct answer unchanged (`a` = איריס).
+- [x] **`image26` (storyboard slide 24)** ✅ resolved 2.8.26 — the missing experiments-path guess
+      screen was built as `01 S29` and the image ships as `s29-nongeometric.jpg`.
 - [ ] Storyboard internal inconsistencies noticed while extracting, all pre-existing and untouched:
       slide 78 vs 79/81/82 (גליל עץ → קוביית עץ) · slide 42 vs 44/45 (בלוט → צדף, and the art swaps
       acorn → dinosaur) · slide 46 vs 48/49 (מחדד → סיכת נעץ) · slides 92–97 (stem says גוש, the

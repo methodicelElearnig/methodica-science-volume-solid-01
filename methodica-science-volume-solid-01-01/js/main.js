@@ -12,7 +12,7 @@ function shortId(u){ return String(u || "").split("/").pop(); }
 'use strict';
 
 /* ─── Constants ─────────────────────────────────────────── */
-const TOTAL_SCREENS = 29;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice, S23–S28 comic slides 13–18. Bump as screens are added.
+const TOTAL_SCREENS = 33;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice, S23–S28 comic slides 13–18, S29 guess-Q (sb24), S30/S31 overflow can (sb39/40), S32 practice rules (sb50). Bump as screens are added.
                            // Must equal the live `.screen` count — index_dev.html derives its jump range from that,
                            // while goTo() rejects n >= TOTAL_SCREENS. The two silently disagree if only one is edited.
 
@@ -342,6 +342,8 @@ function resetScreenState(n) {
   }
   if (n === 20) { flipEnter('s20'); }              // real-world uses (flip cards)
   if (n === 21) { guessEnter('s21'); }             // guess-question (no feedback)
+  if (n === 29) { guessEnter('s29'); }             // guess-question sb24 (no feedback)
+  if (n === 30 || n === 31) { syncPathToggle(); }  // overflow-can info screens
   if (n === 22) { measEnter(); }                   // multi-step measurement applet
   if (n === 18) { ddqEnter('s18'); }               // warm-up 1 (matching)
   if (n === 19) { dqEnter('s19'); }                // warm-up 2 (dropdown)
@@ -377,17 +379,21 @@ function goBack() {
   // Comic path — purely screen-level; in-slider back-paging is the arrows' job.
   const cb = COMIC_SCREENS.indexOf(currentScreen);
   if (cb !== -1) { goTo(cb === 0 ? 7 : COMIC_SCREENS[cb - 1]); return; }
-  if (currentScreen === 9)  { goTo(10); return; }       // displacement → back to aquarium (experiments order)
+  if (currentScreen === 29) { goTo(10); return; }       // guess-Q (sb24) → back to aquarium
+  if (currentScreen === 9)  { goTo(29); return; }       // displacement → back to guess-Q (sb24)
   if (currentScreen === 10) { goTo(7); return; }        // aquarium (experiments entry) → back to path choice
   if (currentScreen === 21) { goTo(9); return; }        // guess-Q → back to displacement
   if (currentScreen === 11) { goTo(21); return; }       // flooding → back to guess-Q
   if (currentScreen === 20) { goTo(11); return; }       // flip-cards → back to flooding
   if (currentScreen === 22) { goTo(20); return; }       // measurement applet → back to flip-cards
+  if (currentScreen === 30) { goTo(22); return; }       // overflow can → back to measurement applet
+  if (currentScreen === 31) { goTo(30); return; }       // overflow can (how) → back to the question
   if (currentScreen === 12) { goTo(7); return; }        // practice transition → back to path choice
   if (currentScreen === 18) { goTo(12); return; }       // warm-up 1 → transition
   if (currentScreen === 19) { goTo(18); return; }       // warm-up 2 → warm-up 1
+  if (currentScreen === 32) { goTo(19); return; }       // practice rules → back to warm-up 2
   const pIdx = practiceProgress.questions.findIndex(q => q.screen === currentScreen);
-  if (pIdx !== -1) { goTo(pIdx > 0 ? practiceProgress.questions[pIdx - 1].screen : 19); return; }  // Q1 back → warm-up 2
+  if (pIdx !== -1) { goTo(pIdx > 0 ? practiceProgress.questions[pIdx - 1].screen : 32); return; }  // Q1 back → practice rules
   goTo(currentScreen - 1);
 }
 
@@ -407,13 +413,17 @@ function advanceScreen() {
     goTo(COMIC_SCREENS[ci + 1]); return;
   }
   if (currentScreen === 10) return;                                        // aquarium advances via its check button
+  if (currentScreen === 29) { if (!guessPicked['s29']) return; goTo(9); return; }        // guess-Q (sb24) → displacement
   if (currentScreen === 9)  { if (!dispPlaced) return; goTo(21); return; } // displacement → guess-Q
   if (currentScreen === 21) { if (!guessPicked['s21']) return; goTo(11); return; }       // guess-Q → flooding
   if (currentScreen === 11) { if (!floodPlaced) return; goTo(20); return; }             // flooding → flip-cards
   if (currentScreen === 20) { const c = document.getElementById('s20-continue'); if (c && c.disabled) return; goTo(22); return; } // flip-cards → measurement applet
-  if (currentScreen === 22) { if (!measDone) return; goTo(MERGE_SCREEN); return; }       // measurement applet → merge
+  if (currentScreen === 22) { if (!measDone) return; goTo(30); return; }                 // measurement applet → overflow can
+  if (currentScreen === 30) { goTo(31); return; }                                        // overflow can: question → how it works
+  if (currentScreen === 31) { goTo(MERGE_SCREEN); return; }                              // overflow can → merge
   if (currentScreen === 12) { goTo(18); return; }                                       // transition → warm-up 1
   if (currentScreen === 18 || currentScreen === 19) return;                             // warm-ups advance via their own check button
+  if (currentScreen === 32) { goTo(13); return; }                                        // practice rules → practice Q1
   if (practiceProgress.questions.some(q => q.screen === currentScreen)) return;         // practice Qs advance via their own check button
   goTo(currentScreen + 1);
 }
@@ -524,7 +534,8 @@ const COMIC_SCREENS = [8, 23, 24, 25, 26, 27, 28];
 // Experiments path (pedagogical order ≠ screen-number order, wired explicitly):
 //   entry = S10 aquarium (geometric) → S9 displacement → (flooding, tbd)
 const EXPERIMENTS_ENTRY = 10;
-const EXPERIMENTS_SCREENS = [9, 10, 11, 20, 21, 22];   // all experiments-path screen indices (for the toggle)
+const EXPERIMENTS_SCREENS = [9, 10, 11, 20, 21, 22, 29, 30, 31];   // membership list for the path toggle, NOT the order
+                                                                    // (runtime order is 10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31)
 const MERGE_SCREEN = 12;                       // both paths (comic end / flip-cards end) continue here
 function selectPathOption(cardEl) {
   document.querySelectorAll('#s7 .option-card').forEach(c => {
@@ -1545,8 +1556,18 @@ function ddqCheck(screen) {
   ddqRender(screen);
   ddqShowPopup(screen, allCorrect ? 'correct' : 'incorrect');
   const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'שנמשיך?'; btn.disabled = false; }
+  const hint = document.getElementById(screen + '-ddq-hint'); if (hint) hint.style.visibility = 'hidden';
   if (cfg.onFinish) cfg.onFinish(allCorrect);
 }
+/* Hint for a matching question. The scq* hint machinery is keyed on SCQ_REG,
+   which the DnD screens do not use, so they get their own thin pair. Overlay
+   ids end in -hint-overlay, so goTo() closes them on navigation. */
+function ddqHint(screen) {
+  const s = DDQ_REG[screen]; if (!s || s.checked) return;
+  xapiSend('requested.1', 'question', null, { questionId: s.cfg.questionId });
+  document.getElementById(screen + '-ddq-hint-overlay')?.classList.remove('hidden');
+}
+function ddqCloseHint(screen) { document.getElementById(screen + '-ddq-hint-overlay')?.classList.add('hidden'); }
 function ddqShowPopup(screen, type) {
   const popup = document.getElementById(screen + '-ddq-popup'); if (!popup) return;
   const cfg = DDQ_REG[screen].cfg.popups[type];
@@ -1567,6 +1588,9 @@ function ddqEnter(screen) {
   }
   ddqRender(screen);
   if (s.done) { const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'שנמשיך?'; btn.disabled = false; } }
+  // An answered question keeps its hint hidden on return, as the SCQ screens do.
+  const hint = document.getElementById(screen + '-ddq-hint');
+  if (hint) hint.style.visibility = s.done ? 'hidden' : '';
 }
 
 /* Register a standard-practice DragAndDropQuestion at practice index idx. */
@@ -1659,7 +1683,7 @@ scqRegister({
     const t = document.getElementById('s19-dropdown-trigger');
     if (t) { t.classList.remove('correct', 'wrong'); t.classList.add(ok ? 'correct' : 'wrong'); }
   },
-  onContinue: function () { goTo(13); }   // → standard practice Q1
+  onContinue: function () { goTo(32); }   // → practice rules (sb50) → Q1
 });
 attachPopupDrag(document.getElementById('s19-scq-popup'));
 
@@ -1887,7 +1911,6 @@ function submitReport() {
   body.append('entry.806447525',  textVal);
   fetch(REPORT_FORM_ACTION, { method: 'POST', mode: 'no-cors', body: body })
     .catch(function(e) { console.error('[Report] send failed', e); });
-  console.log('[Report Issue] sent');
   showReportThanks();
 }
 function showReportThanks() {
@@ -1947,7 +1970,6 @@ if (window.parent !== window) {
   // real 720 LMS). Offline it would storm retries against a missing endpoint,
   // starving the renderer. Production hosts run it normally.
   if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-    console.log('[xAPI] skipped on localhost (dev)');
     return;
   }
   var CDN = 'https://lomdot.education.gov.il/metodica/720active/common/';

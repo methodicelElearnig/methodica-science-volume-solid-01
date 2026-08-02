@@ -41,8 +41,9 @@
         </div>
       </div>
     </div>
-    <div class="nav-bar"><button class="btn-continue" id="s1-continue" disabled onclick="peakContinue(1)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="nav-bar"><button class="scq-hint peak-hint" id="s1-hint" type="button" onclick="peakHint(1)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s1-continue" disabled onclick="peakContinue(1)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
+  <div class="scq-hint-overlay hidden" id="s1-hint-overlay" onclick="if(event.target===this)peakCloseHint(1)"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="peakCloseHint(1)" aria-label="סגור">✕</button><h2 class="scq-hint-title">נפח גוף מוצק</h2><p>נפח הגוף = ההפרש בין נפח המים הסופי לנפח המים ההתחלתי.</p></div></div>
 
   <section class="screen" data-screen="2" id="s2">
     <div class="peak-question">
@@ -55,8 +56,9 @@
         <button class="peak-opt" type="button" data-id="d" onclick="peakSelect(2,'d',this)">אין צורך ב-3 מדידות, מדידה אחת מספיקה</button>
       </div>
     </div>
-    <div class="nav-bar"><button class="btn-continue" id="s2-continue" disabled onclick="peakContinue(2)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="nav-bar"><button class="scq-hint peak-hint" id="s2-hint" type="button" onclick="peakHint(2)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s2-continue" disabled onclick="peakContinue(2)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
+  <div class="scq-hint-overlay hidden" id="s2-hint-overlay" onclick="if(event.target===this)peakCloseHint(2)"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="peakCloseHint(2)" aria-label="סגור">✕</button><h2 class="scq-hint-title">נוהל שלוש החזרות</h2><p>למה חוזרים על מדידה? מה הערך שהתקבל מייצג?</p></div></div>
 
   <section class="screen" data-screen="3" id="s3">
     <div class="peak-question">
@@ -64,17 +66,18 @@
       <p class="scq-qtext">מנהל המעבדה טוען "המדידות מהימנות!". מי מסביר את הטענה בצורה מדעית המבוססת על נתונים?</p>
       <!-- Storyboard slide 153 gives each speaker an avatar. The deck ships two
            generic role icons (ScientistMale / ScientistFemale), not portraits,
-           so the female icon serving both women is intended, not a duplicate.
-           NOTE: the storyboard has a FOURTH speaker (עופר) that this build does
-           not — logged in ASSETS-TODO for the content owner, not added here. -->
+           so the same icon serving two speakers of one gender is intended,
+           not a duplicate. All four speakers from the deck are present. -->
       <div class="peak-options" id="s3-opts" role="radiogroup" aria-label="הסבר מדעי">
         <button class="peak-opt peak-opt--speaker" type="button" data-id="a" onclick="peakSelect(3,'a',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-female.svg" alt="" aria-hidden="true"><span>איריס: שלוש תוצאות המדידה קרובות מאוד זו לזו, מה שמראה שהתוצאות יציבות ואינן מקריות</span></button>
         <button class="peak-opt peak-opt--speaker" type="button" data-id="b" onclick="peakSelect(3,'b',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-male.svg" alt="" aria-hidden="true"><span>משה: כיוון שחוקר מנוסה ביצע את המדידה, אין סיכוי לשגיאת מדידה</span></button>
         <button class="peak-opt peak-opt--speaker" type="button" data-id="c" onclick="peakSelect(3,'c',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-female.svg" alt="" aria-hidden="true"><span>רינה: תוצאות מדידת הנפח גדולות משמעותית מכמות המים ההתחלתית</span></button>
+        <button class="peak-opt peak-opt--speaker" type="button" data-id="d" onclick="peakSelect(3,'d',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-male.svg" alt="" aria-hidden="true"><span>עופר: העובדה שניתן לחשב ממוצע למדידות מוכיחה שהמדידה מדויקת</span></button>
       </div>
     </div>
-    <div class="nav-bar"><button class="btn-continue" id="s3-continue" disabled onclick="peakContinue(3)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="nav-bar"><button class="scq-hint peak-hint" id="s3-hint" type="button" onclick="peakHint(3)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s3-continue" disabled onclick="peakContinue(3)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
+  <div class="scq-hint-overlay hidden" id="s3-hint-overlay" onclick="if(event.target===this)peakCloseHint(3)"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="peakCloseHint(3)" aria-label="סגור">✕</button><h2 class="scq-hint-title">טיעון מבוסס נתונים</h2><p>מה חשוב בטיעון המבוסס על נתונים?</p></div></div>
 
   <section class="screen" data-screen="4" id="s4">
     <div class="peak-question">
@@ -87,8 +90,9 @@
         <button class="peak-opt" type="button" data-id="d" onclick="peakSelect(4,'d',this)">לדווח שנפח הפסלון הוא 80 סמ"ק כי הוא הגדול ביותר</button>
       </div>
     </div>
-    <div class="nav-bar"><button class="btn-continue" id="s4-continue" disabled onclick="peakContinue(4)">סיום</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="nav-bar"><button class="scq-hint peak-hint" id="s4-hint" type="button" onclick="peakHint(4)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s4-continue" disabled onclick="peakContinue(4)">סיום</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
+  <div class="scq-hint-overlay hidden" id="s4-hint-overlay" onclick="if(event.target===this)peakCloseHint(4)"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="peakCloseHint(4)" aria-label="סגור">✕</button><h2 class="scq-hint-title">עד כמה המדידה חריגה?</h2><p>מה ניתן להניח מכך שהמדידה רחוקה מאוד משאר המדידות?</p></div></div>
 
   <!-- S5 success / S6 failure end screens -->
   <section class="screen" data-screen="5" id="s5">

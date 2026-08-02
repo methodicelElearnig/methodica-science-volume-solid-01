@@ -4146,6 +4146,34 @@ html, body {
 .peak-opt--speaker { display: flex; align-items: center; gap: 14px; }
 .peak-speaker-ico  { flex: 0 0 auto; width: 40px; height: 40px; opacity: 0.7; }
 
+/* ── Numbered steps beside a photo (S31 overflow can) ───── */
+.steps-row {
+  display: flex; direction: rtl; align-items: center; justify-content: center; gap: 32px;
+}
+.steps-list {
+  margin: 0; padding-inline-start: 26px; max-width: 520px;
+  direction: rtl; text-align: right;
+  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400;
+  color: #303030; line-height: 1.5;
+}
+.steps-list li { margin-bottom: 10px; }
+.steps-list li::marker { color: var(--subject-500); font-weight: 800; }
+
+/* Secondary line under a transition sub-heading (S32 practice rules) */
+.transition-note {
+  font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 400;
+  color: #6a7683; line-height: 1.5;
+}
+
+/* Hint button on a peak-assessment screen. Peak screens use .nav-bar, not
+   .scq-bar, so there is no .scq-bar-main to sit inside — position it beside
+   .btn-continue (bottom:15px; left:24px; min-width:140px) and give it the same
+   z-index so it clears the decorative bottom bar. */
+.peak-hint {
+  position: absolute; bottom: 15px; left: 180px; z-index: 12;
+  pointer-events: auto;
+}
+
 /* ── Companion character ──────────────────────────────────
    The mascot the learner chose on part-01 S0, injected by renderCompanion().
    Decorative: pointer-events:none so it can never eat a click, and z-index 8

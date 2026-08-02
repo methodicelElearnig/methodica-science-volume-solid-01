@@ -16,9 +16,12 @@
 
   <!-- ═══ S0 — TransitionScreen (remediation intro) ═══ -->
   <section class="screen active" data-screen="0" id="s0">
+    <!-- Storyboard slide 77 — states the count and the pass bar. The deck draws
+         no failure branch for רכיב 2, so the 75% is stated, not enforced. -->
     <div class="transition-content">
-      <h1 class="transition-title">בואו נתרגל עוד קצת</h1>
-      <p class="transition-sub">נפתור יחד כמה שאלות על מדידת נפח של מוצקים, צעד אחר צעד.</p>
+      <h1 class="transition-title">אפשר להתחיל!</h1>
+      <p class="transition-sub">כל הכבוד שניסיתם, זה חשוב מאוד! כדי לחזק את ההבנה נמשיך לתרגל — <strong>4 שאלות פשוטות יותר</strong>, וכבר בהתחלה יש רמז.<br>ענו נכון על 3 שאלות ומעלה (75%) כדי להתקדם.</p>
+      <p class="transition-note">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</p>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s0-continue" onclick="advanceScreen()">לתרגול</button>
@@ -35,10 +38,6 @@
       <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
       <div class="progress-question__connector" data-connector="3"></div>
       <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
-      <div class="progress-question__connector" data-connector="4"></div>
-      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
-      <div class="progress-question__connector" data-connector="5"></div>
-      <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 6</span></div>
     </nav>
     <div class="scq-question scq-question--withimage">
       <div class="scq-figure" style="flex-basis: 430px">
@@ -75,10 +74,6 @@
       <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
       <div class="progress-question__connector" data-connector="3"></div>
       <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
-      <div class="progress-question__connector" data-connector="4"></div>
-      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
-      <div class="progress-question__connector" data-connector="5"></div>
-      <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 6</span></div>
     </nav>
     <div class="scq-question scq-question--withimage">
       <!-- Storyboard slide 83 attaches a named bubble to each child. The two
@@ -119,10 +114,6 @@
       <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
       <div class="progress-question__connector" data-connector="3"></div>
       <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
-      <div class="progress-question__connector" data-connector="4"></div>
-      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
-      <div class="progress-question__connector" data-connector="5"></div>
-      <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 6</span></div>
     </nav>
     <div class="scq-question scq-question--textonly">
       <p class="scq-qtext">כשמודדים נפח בשיטת דחיקת המים משתמשים ב־___.</p>
@@ -154,10 +145,6 @@
       <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
       <div class="progress-question__connector" data-connector="3"></div>
       <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
-      <div class="progress-question__connector" data-connector="4"></div>
-      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
-      <div class="progress-question__connector" data-connector="5"></div>
-      <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 6</span></div>
     </nav>
     <div class="scq-question scq-question--textonly">
       <p class="scq-qtext">במפעל מתכות הכניסו גליל מתכת לכלי מלא במים למדידת נפחו בשיטת ההצפה. נפח המים שגלשו מהכלי היה 760 מ"ל. מה נפח הגליל?</p>
@@ -182,17 +169,9 @@
   <!-- ═══ S5 — Standard-ב 1 (item 02-05) · identify the rise area ═══ -->
   <section class="screen" data-screen="5" id="s5">
     <nav class="progress-question" aria-label="ניווט שאלות">
-      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
-      <div class="progress-question__connector" data-connector="1"></div>
-      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
-      <div class="progress-question__connector" data-connector="2"></div>
-      <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
-      <div class="progress-question__connector" data-connector="3"></div>
-      <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
-      <div class="progress-question__connector" data-connector="4"></div>
-      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
+      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
       <div class="progress-question__connector" data-connector="5"></div>
-      <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 6</span></div>
+      <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
     </nav>
     <!-- Storyboard slide 99 — two labelled cylinder photos, three clickable bands
          stacked down תמונה ב'. Each option is TWO controls sharing one data-id:
@@ -239,17 +218,9 @@
   <!-- ═══ S6 — Standard-ב 2 (item 02-06) · single-bead volume = 10 ═══ -->
   <section class="screen" data-screen="6" id="s6">
     <nav class="progress-question" aria-label="ניווט שאלות">
-      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
-      <div class="progress-question__connector" data-connector="1"></div>
-      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
-      <div class="progress-question__connector" data-connector="2"></div>
-      <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
-      <div class="progress-question__connector" data-connector="3"></div>
-      <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
-      <div class="progress-question__connector" data-connector="4"></div>
-      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
+      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
       <div class="progress-question__connector" data-connector="5"></div>
-      <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 6</span></div>
+      <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
     </nav>
     <div class="scq-question scq-question--textonly">
       <p class="scq-qtext">מעצבת תכשיטים הכניסה למשורה 3 חרוזים זהים. מפלס המים לפני: 100 מ"ל, אחרי: 130 מ"ל. מהו נפחו של חרוז אחד?</p>
@@ -270,6 +241,22 @@
   </section>
   <div class="scq-popup hidden" id="s6-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s6')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s6-scq-popup-title"></p></div><div class="scq-popup-body" id="s6-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s6-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s6')"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s6')" aria-label="סגור">✕</button><h2 class="scq-hint-title">רמז</h2><p>קודם מצאו את הנפח הכולל של 3 החרוזים (ההפרש 130−100), ואז חלקו ב-3.</p></div></div>
+
+  <!-- ═══ S7 — Storyboard slide 98 · mid-section transition ═══
+       רכיב 2 is 4 basic questions then 2 harder ones, and the deck marks the
+       shift with its own screen. Sits between Q4 (S4) and Q5 (S5), which is why
+       it is the last section in the file but not the last in the flow. -->
+  <section class="screen" data-screen="7" id="s7">
+    <div class="transition-content">
+      <h1 class="transition-title">יופי של עבודה!</h1>
+      <p class="transition-sub">נחזור ל-2 תרגילים ברמת קושי גבוהה יותר.</p>
+      <p class="transition-note">ברור לי שתצליחו!</p>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s7-continue" onclick="advanceScreen()">קדימה</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
 
   <!-- ═══════════════ REPORT MODAL ═══════════════ -->
   <div id="report-modal" class="report-modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="report-modal-title">

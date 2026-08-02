@@ -10,7 +10,7 @@ function shortId(u){ return String(u || "").split("/").pop(); }
 
 'use strict';
 
-const TOTAL_SCREENS = 7;          // S0 intro + S1–S6 practice
+const TOTAL_SCREENS = 8;          // S0 intro + S1–S6 practice + S7 mid transition (sb98, sits between Q4 and Q5)
 const PART_03_URL = '../methodica-science-volume-solid-01-03/index.html';
 
 window.lomdaState = window.lomdaState || {};
@@ -110,12 +110,15 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
 });
 function goBack() {
+  if (currentScreen === 7) { goTo(4); return; }                                   // mid transition → back to Q4
+  if (currentScreen === 5) { goTo(7); return; }                                   // Q5 → back to the mid transition
   const pIdx = practiceProgress.questions.findIndex(q => q.screen === currentScreen);
   if (pIdx !== -1) { goTo(pIdx > 0 ? practiceProgress.questions[pIdx - 1].screen : 0); return; }
   goTo(currentScreen - 1);
 }
 function advanceScreen() {
   if (currentScreen === 0) { goTo(1); return; }
+  if (currentScreen === 7) { goTo(5); return; }                                   // mid transition → Q5
   if (practiceProgress.questions.some(q => q.screen === currentScreen)) return;   // via check button
   goTo(currentScreen + 1);
 }
@@ -255,8 +258,10 @@ function registerPractice(idx, cfg) {
   cfg.onFinish = function (ok) { const q = practiceProgress.questions[idx]; q.state = ok ? 'correct' : 'incorrect'; q.visited = true; syncPracticeNav(cfg.screen); };
   cfg.onContinue = function () {
     const next = idx + 1;
-    if (next < practiceProgress.questions.length) { practiceProgress.questions[next].visited = true; goTo(practiceProgress.questions[next].screen); }
-    else goToNextPart();
+    if (next >= practiceProgress.questions.length) { goToNextPart(); return; }
+    practiceProgress.questions[next].visited = true;
+    // Q4 → the sb98 transition, which then hands on to Q5.
+    goTo(idx === 3 ? 7 : practiceProgress.questions[next].screen);
   };
   scqRegister(cfg);
   attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup'));
@@ -360,7 +365,7 @@ if (window.parent !== window) { window.parent.postMessage({ type: 'DEV_READY', t
 
 /* ═══ xAPI (720 LMS host; skipped on localhost) ═══ */
 (function initXAPI() {
-  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') { console.log('[xAPI] skipped on localhost (dev)'); return; }
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') { return; }
   var CDN = 'https://lomdot.education.gov.il/metodica/720active/common/';
   var METADATA_FILE = '../metadata/methodica-science-volume-solid-01-02.json';
   function loadScript(src, cb) { var s = document.createElement('script'); s.src = src; s.onload = cb; s.onerror = function () { console.error('[xAPI] failed to load', src); cb(); }; document.head.appendChild(s); }
