@@ -662,18 +662,19 @@ const COMIC_DATA = {
     ]
   },
 
-  /* ── S28 · slide 18 · מוצק שמתנהג כמו נוזל · slider, 3 panels.
-        18a was never delivered — it ships as a visible production marker and
-        still counts toward the unlock, so the screen stays completable. ── */
+  /* ── S28 · slide 18 · מוצק שמתנהג כמו נוזל · slider, 3 panels ── */
   s28: {
     slide: 18, kind: 'panels',
     panels: [
-      { placeholder: 'ארכימדס מסתכל לכיוון של בועת הדיבור ו"מקשיב" — איור להפקה (18a)',
-        alt: 'איור להפקה: ארכימדס מסתכל לכיוון בועת הדיבור ומקשיב.',
+      { src: 'assets/img/comic/18a.jpg',
+        alt: 'ארכימדס עומד ליד שולחן המעבדה ומפנה את ראשו הצידה כדי להקשיב לשאלה.',
         bubbles: [
-          { type: 'speech', tail: 'down-left', r: 4, t: 8, w: 30,
+          // The first line is an off-panel voice (storyboard: "הדיבור הזה מגיע
+          // כאילו מחוץ לקומיקס") — the tail points off the right edge, the side
+          // Archimedes is turned toward.
+          { type: 'speech', tail: 'down-right', r: 2, t: 5, w: 29,
             text: 'ארכימדס! מה לגבי מוצק שמתנהג כמו נוזל?' },
-          { type: 'thought', tail: 'down-right', r: 44, t: 40, w: 26,
+          { type: 'thought', tail: 'down-right', r: 48, t: 6, w: 26,
             text: 'או! חיכיתי לשאלה הזאת!' }
         ] },
       { src: 'assets/img/comic/18b.jpg',

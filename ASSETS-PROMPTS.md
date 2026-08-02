@@ -61,22 +61,18 @@ The `selection` pose exists for both. These add the poses the storyboard uses el
 
 ---
 
-## A2. Comic panels — Part 01 S8 / S24 / S25 / S27 / S28 ✅ **FULFILLED (27.7.26)**
+## A2. Comic panels — Part 01 S8 / S24 / S25 / S27 / S28 ✅ **COMPLETE (27.7.26; 18a 2.8.26)**
 Delivered by Ron Reuveni as photorealistic art and wired in as
-`assets/img/comic/{12,14,15a-e,17a-g,18b,18c}.jpg`. The prompts below are superseded —
-keep them only as reference for regeneration. See `ASSETS-TODO.md` §A2 for the delivery
-status and the open issues (retained generator watermarks; the `14.jpg` 3000 cm³ vs
-1,000 סמ"ק conflict).
+`assets/img/comic/{12,14,15a-e,17a-g,18a,18c}.jpg` — all 17 panels, no placeholders left.
+The prompts below are superseded — keep them only as reference for regeneration. See
+`ASSETS-TODO.md` §A2 for the delivery record and the remaining open issues (retained
+generator watermarks; the `14.jpg` 3000 cm³ vs 1,000 סמ"ק conflict).
 
-**Still open — the one panel never delivered:**
-
-- **18a** (**S28**, panel 1 of 3) > match the delivered `18b.jpg` / `18c.jpg` look exactly
-  (attach `18b.jpg` as `REF`): Archimedes in his lab turning his head toward the viewer's
-  right and listening attentively, hand cupped near his ear or an interested lean —
-  reacting to a question asked from outside the panel. 16:9 landscape.
-  **No speech bubbles, no text, no letters, no numbers, no watermark** — the dialogue
-  (`ארכימדס! מה לגבי מוצק שמתנהג כמו נוזל?` and `או! חיכיתי לשאלה הזאת!`) is live HTML.
-  Save as `assets/img/comic/18a.jpg`.
+If **18a** ever needs regenerating, the brief that produced the accepted version was:
+Archimedes at his lab bench turning his head aside to listen to a question from outside
+the frame — **no watermelon, no bowl, no overflow tray** (that is slide 17's scene, and a
+first attempt wrongly reused it). 16:9 landscape, matching the `18b` rice-pouring frame.
+**No speech bubbles, no text, no letters, no numbers, no watermark.**
 
 <details><summary>Superseded original prompts (7-panel flipbook)</summary>
 
@@ -124,15 +120,15 @@ Transparent PNG, single object, straight-on product view, soft shadow.
 ## B. Existing images — regenerate / fix (Part 01)
 Current files are AI-reference images; regenerate only if you want higher quality/consistency.
 
-- `s6-archimedes-bath.jpeg` — **must fix the AI watermark.** Either I crop it out, or regenerate:
+- `s6-archimedes-bath.jpg` — **must fix the AI watermark.** Either I crop it out, or regenerate:
   > classical ancient-Greek Archimedes (older man, white beard) sitting in a stone Roman bath, water overflowing over the edge, holding a golden crown, joyful "eureka" expression, warm candlelight, cinematic, no text, no watermark.
-- `s1-roni-hook.jpeg` — > [PHOTO] a ~12-year-old girl kneeling on a lake beach holding up a small gold star-shaped pendant, a metal detector beside her, warm late-afternoon light. no text.
-- `s2-roni-think.jpeg` — > [PHOTO] the same girl indoors, holding the gold star pendant in one hand and a graduated water cylinder in the other, thoughtful. keep same girl as `s1-roni-hook.jpeg` (REF). no text.
-- `s3-roni-displacement.jpeg` — > [PHOTO] the same girl holding the pendant next to a graduated cylinder of water, about to lower it in. REF `s1-roni-hook.jpeg`. no text.
-- `s5-archimedes-crown.jpeg` — > classical ancient Greece: King Hiero (crowned, purple robe) and Archimedes (white beard, tunic) examining an ornate gold crown; a water vessel and small metal cubes on a stone table; candlelit, cinematic, no text.
-- `s4-opt-suitcase.jpeg` — > [PHOTO] an open travel suitcase being packed with boxes/items, top-down. no text.
-- `s4-opt-planter.jpeg` — > [PHOTO] a rectangular garden planter box being filled with soil, plant seedlings nearby. no text.
-- `s4-opt-apple.jpeg` — > [PHOTO] a red apple sitting on a digital kitchen scale that clearly shows a weight in **grams**, kitchen counter. (grams reading is the only allowed text.)
+- `s1-roni-hook.jpg` — > [PHOTO] a ~12-year-old girl kneeling on a lake beach holding up a small gold star-shaped pendant, a metal detector beside her, warm late-afternoon light. no text.
+- `s2-roni-think.jpg` — > [PHOTO] the same girl indoors, holding the gold star pendant in one hand and a graduated water cylinder in the other, thoughtful. keep same girl as `s1-roni-hook.jpg` (REF). no text.
+- `s3-roni-displacement.jpg` — > [PHOTO] the same girl holding the pendant next to a graduated cylinder of water, about to lower it in. REF `s1-roni-hook.jpg`. no text.
+- `s5-archimedes-crown.jpg` — > classical ancient Greece: King Hiero (crowned, purple robe) and Archimedes (white beard, tunic) examining an ornate gold crown; a water vessel and small metal cubes on a stone table; candlelit, cinematic, no text.
+- `s4-opt-suitcase.jpg` — > [PHOTO] an open travel suitcase being packed with boxes/items, top-down. no text.
+- `s4-opt-planter.jpg` — > [PHOTO] a rectangular garden planter box being filled with soil, plant seedlings nearby. no text.
+- `s4-opt-apple.jpg` — > [PHOTO] a red apple sitting on a digital kitchen scale that clearly shows a weight in **grams**, kitchen counter. (grams reading is the only allowed text.)
 
 ---
 

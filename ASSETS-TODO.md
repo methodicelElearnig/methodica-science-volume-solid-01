@@ -39,10 +39,16 @@ placeholders in place. Interactive logic is complete; only the visuals are pendi
 
 ### A2. Comic panels (`…-01` **S8, S24, S25, S27, S28**)
 
-Delivered by Ron Reuveni on **27.7.26** as photorealistic art (not illustrated comic
-style) — *"סיימתי לג'נרט את התמונות כריאלסטיות. שמרתי על הנראות לפי מה שכבר קיים בתסריט."*
-Source: `Images/comics/`. Exported to `assets/img/comic/` as JPEG q82 (long edge
-1800 px) — 40 MB of PNG → 3.5 MB. **All dialogue is live HTML overlaid on the art.**
+Delivered by Ron Reuveni on **27.7.26** (18a on **2.8.26**) as photorealistic art, not
+illustrated comic style — *"סיימתי לג'נרט את התמונות כריאלסטיות. שמרתי על הנראות לפי מה
+שכבר קיים בתסריט."* **All 17 panels are in. All dialogue is live HTML overlaid on the art.**
+
+Source: `Images/comics/` — normalised to **`.jpg` only** (the delivered PNGs were converted
+at q80 and removed, `.jpeg` files renamed to `.jpg`, `17F` lower-cased): 45.3 MB → 3.6 MB.
+Shipped to `assets/img/comic/` as JPEG **q80**, long edge 1800 px, compressed once from the
+originals rather than re-encoded from the source JPEGs: **3.5 MB for all 17 panels.**
+The layered `comics_Sc_8.psd` and the SharePoint link in the delivery e-mail remain the
+lossless fallback.
 
 The comic is no longer one flipbook screen: each storyboard slide is its own screen,
 and slides 15/17/18 are horizontal sliders over their panels (see the `COMIC_SCREENS`
@@ -55,19 +61,20 @@ comment in `js/main.js`).
       calculates · left: key / acorn / marble).
 - [x] **Slide 15** → `15a.jpg` … `15e.jpg` (**S25**, 5-panel slider).
 - [x] **Slide 17** → `17a.jpg` … `17g.jpg` (**S27**, 7-panel slider).
-      Source `17F.png` was renamed to lowercase `17f.jpg` — an uppercase letter breaks
-      on any case-sensitive host.
-- [x] **Slide 18** → `18b.jpg`, `18c.jpg` (**S28**, panels 2–3 of 3).
-- [ ] **Slide 18 panel A — NOT DELIVERED.** S28 ships a dashed "איור להפקה" placeholder
-      in its place (it still counts toward the screen's unlock, so the flow is not
-      blocked). Art direction: *"ארכימדס מסתכל לכיוון של בועת הדיבור ו'מקשיב'"* — he
-      hears the off-panel question `ארכימדס! מה לגבי מוצק שמתנהג כמו נוזל?` and thinks
-      `או! חיכיתי לשאלה הזאת!`. Expected path: `assets/img/comic/18a.jpg`.
+      Source `17F.png` was lower-cased to `17f.jpg` — an uppercase letter breaks on any
+      case-sensitive host.
+- [x] **Slide 18** → `18a.jpg`, `18b.jpg`, `18c.jpg` (**S28**, 3-panel slider).
+      The production placeholder is gone; every comic panel now has real art.
+      *History: a first `18a` (2.8.26) was the same render as `17c` — Archimedes over the
+      watermelon in the overflow bowl — and was rejected rather than wired in, since it
+      belongs to slide 17's flooding method and already ships as panel 3 of S27. The
+      replacement is the correct scene: he turns from the bench to listen to the
+      off-panel question.*
 
 **Open issues on the delivered art — left exactly as delivered, by decision:**
 
 - [ ] **Generator watermarks retained.** A Gemini sparkle glyph is baked into `17a`,
-      `17c`, `17e` and `17f`; `18c` additionally carries a baked Hebrew line
+      `17c`, `17e`, `17f` and `18a`; `18c` additionally carries a baked Hebrew line
       *"נוצר/הופק על ידי בינה מלאכותית"* along its bottom edge. Neither was cropped.
       Decide whether the MOE delivery requires them removed or requires them kept as an
       AI-generation disclosure.
@@ -112,14 +119,14 @@ comment in `js/main.js`).
 
 ## B. Existing images needing a fix / final confirmation (`…-01/assets/img/`)
 
-- [ ] **`s6-archimedes-bath.jpeg`** — AI-generated, has a **visible AI-generation watermark**
+- [ ] **`s6-archimedes-bath.jpg`** — AI-generated, has a **visible AI-generation watermark**
   (bottom-left). **Re-export without the watermark** (crop or regenerate).
-- [ ] **`s1-roni-hook.jpeg`** — Roni on the beach with metal detector + gold-star pendant.
+- [ ] **`s1-roni-hook.jpg`** — Roni on the beach with metal detector + gold-star pendant.
   Confirm final or replace with produced/licensed art.
-- [ ] **`s2-roni-think.jpeg`** — should show Roni holding the pendant + cylinder ("רוני 2"). Verify/replace.
-- [ ] **`s3-roni-displacement.jpeg`** — Roni with pendant + cylinder of water ("רוני 3"). Verify/replace.
-- [ ] **`s5-archimedes-crown.jpeg`** — King Hiron + Archimedes + crown. Confirm final / match house style.
-- [ ] **`s4-opt-suitcase.jpeg`**, **`s4-opt-planter.jpeg`**, **`s4-opt-apple.jpeg`** — option photos.
+- [ ] **`s2-roni-think.jpg`** — should show Roni holding the pendant + cylinder ("רוני 2"). Verify/replace.
+- [ ] **`s3-roni-displacement.jpg`** — Roni with pendant + cylinder of water ("רוני 3"). Verify/replace.
+- [ ] **`s5-archimedes-crown.jpg`** — King Hiron + Archimedes + crown. Confirm final / match house style.
+- [ ] **`s4-opt-suitcase.jpg`**, **`s4-opt-planter.jpg`**, **`s4-opt-apple.jpg`** — option photos.
   Confirm final; the apple must clearly show a **digital scale reading grams** (mass distractor).
 
 ---
@@ -162,12 +169,12 @@ comment in `js/main.js`).
 | `btn-flag-default.png`, `btn-flag-hover.png`, `icon-idea-blue.svg` | ✅ final (shared 720 components) |
 | `character-orange-selection.png` | ✅ placed & wired (S0); static — optionally animate |
 | `character-turquoise-selection.png` | ✅ placed & wired (S0); static — optionally animate |
-| `s1-roni-hook.jpeg` | ⚠️ confirm final (§B) |
-| `s2-roni-think.jpeg` | ⚠️ confirm final (§B) |
-| `s3-roni-displacement.jpeg` | ⚠️ confirm final (§B) |
-| `s4-opt-suitcase.jpeg` / `s4-opt-planter.jpeg` / `s4-opt-apple.jpeg` | ⚠️ confirm final (§B) |
-| `s5-archimedes-crown.jpeg` | ⚠️ confirm final (§B) |
-| `s6-archimedes-bath.jpeg` | ❌ re-export without watermark (§B) |
+| `s1-roni-hook.jpg` | ⚠️ confirm final (§B) |
+| `s2-roni-think.jpg` | ⚠️ confirm final (§B) |
+| `s3-roni-displacement.jpg` | ⚠️ confirm final (§B) |
+| `s4-opt-suitcase.jpg` / `s4-opt-planter.jpg` / `s4-opt-apple.jpg` | ⚠️ confirm final (§B) |
+| `s5-archimedes-crown.jpg` | ⚠️ confirm final (§B) |
+| `s6-archimedes-bath.jpg` | ❌ re-export without watermark (§B) |
 | `s9-cylinder.png` | ❌ re-produce clean (§A3) |
 | `s9-marble.png` | ❌ re-produce (§A3) |
 
