@@ -113,7 +113,7 @@ function resetScreenState(n) {
   renderCompanion(n);
   if (n >= 1 && n <= 8) {
     const idx = n - 1;
-    if (n === 7) practiceEnterVIQ(idx, 's7'); else practiceEnter(idx, 's' + n);
+    practiceEnter(idx, 's' + n);
   }
   /* The scenario screen carries the same progress nav as the question screens.
      buildProgressNav() fills in its dots from data-count, but without this the nav
@@ -319,10 +319,10 @@ registerPractice(5, { correctId: 'a', questionId: QID + P + '05/q1', popups: {
   retry:   { title: 'התשובה אינה נכונה.', body: ['מתי חלוקה שווה מייצגת גולה אחת?', 'נסו שוב!'] },
   correct: { title: 'נכון!', body: ['מדידה קבוצתית וחלוקה עובדת רק אם כל הגולות זהות.'] },
   wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'רק אם הגולות זהות אפשר לחלק את הנפח הכולל במספרן.'] } } });
-registerPracticeVIQ(6, { correct: 10, questionId: QID + P + '05/q2', popups: {
-  retry:   { title: 'לא מדויק.', body: ['50 ÷ 5 = ?', 'נסו שוב!'] },
+registerPractice(6, { correctId: 'a', questionId: QID + P + '05/q2', popups: {
+  retry:   { title: 'התשובה אינה נכונה.', body: ['50 ÷ 5 = ?', 'נסו שוב!'] },
   correct: { title: 'נכון!', body: ['נפח גולה אחת = 50 ÷ 5 = 10 סמ"ק.'] },
-  wrong2:  { title: 'לא מדויק.', body: ['התשובה הנכונה: 10 סמ"ק (50 ÷ 5).'] } } });
+  wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'נפח גולה אחת = 50 ÷ 5 = 10 סמ"ק.'] } } });
 registerPractice(7, { correctId: 'b', questionId: QID + P + '05/q3', popups: {
   retry:   { title: 'התשובה אינה נכונה.', body: ['אם הגולות שונות — מה החלוקה נותנת?', 'נסו שוב!'] },
   correct: { title: 'נכון!', body: ['בגולות שונות נדע רק את הנפח הכולל, לא את נפח הגולה הבודדת.'] },
