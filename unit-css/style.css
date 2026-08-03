@@ -121,9 +121,17 @@ html, body {
    bottom/top edges (flag button, .scq-bar, .screen::after) reaches the
    actual screen edges on tablet aspect ratios. Per-screen content stays
    positioned via absolute layout against the 1280-wide design grid. */
+/* Every screen is a white canvas. Stated once here, replacing 17 arbitrary
+   per-screen `#sN { background: #fff; }` rules that had accumulated in the part
+   sheets — they covered s0-s3, s5, s6, s8-s12, s15-s18, s20, s21 but not s4, s7,
+   s13, s14, s19 or s22+, which is drift rather than intent. Those screens were
+   simply transparent and showed #app's white through, so this changes nothing
+   that renders. `background` (not `background-color`) mirrors the shorthand the
+   deleted rules used, keeping the covered screens computed-identical. */
 .screen {
   position: absolute; inset: 0;
   display: none; overflow: hidden;
+  background: #fff;
 }
 .screen.active { display: block; }
 
