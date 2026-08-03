@@ -3697,31 +3697,45 @@ html, body {
 .scq-qtext.scq-qtext--mixed strong { font-weight: 700; }
 
 /* ═══════════════════════════════════════════════════════
-   COMPONENT — Thought bubble (cloud)
-   The storyboard renders a character's inner thought as a cloud shape
-   ("בועת מחשבה: ענן"), distinct from the outlined speech bubbles. Part 01 has its own
-   comic-panel variant of this, but that family is part-local and differs between parts,
-   so scenario screens get this small shared version instead: a strongly rounded cloud
-   with two trailing puffs. Width comes from the instance.
+   COMPONENT — Character thought/speech bubble (scenario screens)
+   White field, Subject/500 outline, rounded corners and a beak on the PHYSICAL LEFT
+   pointing at the illustration, so the line reads as coming from the person in the
+   photo rather than floating in the margin. The beak is two stacked CSS triangles —
+   a blue one and a white one inset by the border width — which is the same trick the
+   part-01/02 .speech-bubble tails use, so the outline stays continuous around the point.
+   `left` is physical and therefore bidi-immune; never use inset-inline here.
+   Text weight is REGULAR, matching the deck (storyboard slide 140 sets no bold on it).
    ═══════════════════════════════════════════════════════ */
 .thought-bubble {
   position: relative;
-  align-self: flex-start;
-  background: var(--subject-100);
-  border: 2px solid var(--subject-500);
-  border-radius: 42px 42px 42px 12px / 34px 34px 34px 12px;
-  padding: 14px 22px;
+  align-self: flex-end;              /* RTL column: flex-end is the physical LEFT edge,
+                                        i.e. hard against the illustration */
+  max-width: 430px;
+  margin: 0 0 22px 8px;              /* small left margin: the beak overhangs into the
+                                        28px figure/text gap so it nearly touches the
+                                        photo. --withimage is overflow:visible, so the
+                                        overhang is not clipped. */
+  background: #fff;
+  border: 3px solid var(--subject-500);
+  border-radius: 18px;
+  padding: 14px 20px;
   font-family: 'Assistant', sans-serif;
-  font-size: 21px; font-weight: 700; color: var(--subject-900);
+  font-size: 21px; font-weight: 400; color: #303030;
   text-align: right; direction: rtl; line-height: 1.35;
 }
 .thought-bubble::before,
-.thought-bubble::after {           /* the two puffs trailing toward the character */
+.thought-bubble::after {
   content: '';
-  position: absolute; right: 26px;
-  background: var(--subject-100);
-  border: 2px solid var(--subject-500);
-  border-radius: 50%;
+  position: absolute;
+  top: 26px;
+  border-top: 13px solid transparent;
+  border-bottom: 13px solid transparent;
 }
-.thought-bubble::before { bottom: -13px; width: 16px; height: 16px; }
-.thought-bubble::after  { bottom: -26px; right: 14px; width: 9px; height: 9px; }
+.thought-bubble::before {            /* outline triangle */
+  left: -19px;
+  border-right: 19px solid var(--subject-500);
+}
+.thought-bubble::after {             /* white fill, inset by the 3px border */
+  left: -15px;
+  border-right: 19px solid #fff;
+}
