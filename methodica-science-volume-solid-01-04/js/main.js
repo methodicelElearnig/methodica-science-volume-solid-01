@@ -190,7 +190,9 @@ function renderFeedbackPopup(screen, type, popups) {
   const cfg = popups[type];
   popup.style.background = (type === 'correct') ? '#edf8ed' : '#ffdbdc';
   popup.style.left = '2px'; popup.style.top = 'auto'; popup.style.bottom = '84px';
-  document.getElementById(screen + '-scq-popup-title').textContent = cfg.title;
+  /* innerHTML, not textContent: the deck's wrong-final title is two bold lines.
+     Every title is a literal in this file, same as s11-result-title. */
+  document.getElementById(screen + '-scq-popup-title').innerHTML = cfg.title;
   document.getElementById(screen + '-scq-popup-body').innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
   popup.classList.remove('hidden');
 }
@@ -314,26 +316,41 @@ function registerPractice(idx, cfg) { cfg.screen = 's' + practiceProgress.questi
 
 const QID = XAPI_ID_PREFIX;
 const P = 'methodica-science-volume-solid-01-04-';
-registerPractice(0, { correctId: 'a', questionId: QID + P + '01/q1', popups: {
-  retry:   { title: 'התשובה אינה נכונה.', body: ['מה מייצגים המים שעלו?', 'נסו שוב!'] },
-  correct: { title: 'נכון!', body: ['המים שעלו הם ראיה ישירה שהטבעת תופסת מקום; ההפרש 85−60 = 25 מ"ל הוא נפח הטבעת.'] },
-  wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'דחיקת המים היא ראיה אמפירית ישירה לנפח — לא נדרשת נוסחה.'] } } });
-registerPractice(1, { correctId: 'b', questionId: QID + P + '02/q1', popups: {
-  retry:   { title: 'התשובה אינה נכונה.', body: ['עדשים = מוצק גרגרי המקבל את צורת הכלי.', 'נסו שוב!'] },
-  correct: { title: 'נכון!', body: ['מוצק גרגרי ממלא את הכלי, ולכן קוראים את נפחו בכוס מדידה. מאזניים מודדים מסה.'] },
-  wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'ממלאים כוס מדידה בעדשים וקוראים נפח לפי השנתות.'] } } });
-registerPractice(2, { correctId: 'a', questionId: QID + P + '03/q1', popups: {
-  retry:   { title: 'התשובה אינה נכונה.', body: ['בדקו כמה הערכים קרובים.', 'נסו שוב!'] },
-  correct: { title: 'נכון!', body: ['הערכים קרובים מאוד (23,22,24,23,23) — לכן המדידות עקביות ומהימנות.'] },
-  wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'מהימנות = עקביות; הפרש של 2 סמ"ק הוא קטן.'] } } });
-registerPractice(3, { correctId: 'b', questionId: QID + P + '04/q1', popups: {
-  retry:   { title: 'התשובה אינה נכונה.', body: ['צריך "עוגן" ששוקע.', 'נסו שוב!'] },
-  correct: { title: 'נכון!', body: ['עוטפים משקולת קטנה עם הסליים כדי שהמערכת תשקע במים.'] },
-  wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'משקולת קטנה מטביעה את הסליים בלי לשבש את המדידה.'] } } });
-registerPractice(4, { correctId: 'd', questionId: QID + P + '04/q2', popups: {
-  retry:   { title: 'התשובה אינה נכונה.', body: ['הנפח כולל מים + סליים + משקולת.', 'נסו שוב!'] },
-  correct: { title: 'נכון!', body: ['נפח הסליים = הנפח החדש − נפח המים ההתחלתי − נפח המשקולת.'] },
-  wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'מחסירים גם את המים ההתחלתיים וגם את המשקולת.'] } } });
+/* ═══ Feedback copy — storyboard slides 115-139 ═══
+   The deck gives every question a five-slide block: question, retry, hint, correct,
+   wrong-final. Three things follow from that and were wrong before:
+     - RETRY says nothing about the content. It is the same two bold lines on every
+       retry slide (115/120/125/131/136); the deck puts the thinking prompt on the HINT
+       slide, which is where the unit's invented nudges have moved to.
+     - the WRONG-FINAL body is the SAME text as correct, differing only in the bold
+       prefix. Each question declares its explanation once and both variants share the
+       array, so they cannot drift apart.
+     - the correct title is `נכון מאוד!`, not `נכון!`.
+   Slides 128 and 134 write `התשובה הנכונה מוצגת.` where 118/123/139 write `מסומנת.`;
+   the unit marks the correct option, so FB_WRONG2 keeps `מסומנת` everywhere
+   (QA/TEXT-FIDELITY.md §Deck defects). */
+const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['<b>שננסה שוב?</b>'] };
+const FB_WRONG2 = 'התשובה אינה נכונה.<br />התשובה הנכונה מסומנת.';
+const fbPopups = explanation => ({
+  retry:   FB_RETRY,
+  correct: { title: 'נכון מאוד!', body: explanation },
+  wrong2:  { title: FB_WRONG2,    body: explanation }
+});
+
+registerPractice(0, { correctId: 'a', questionId: QID + P + '01/q1', popups: fbPopups([   /* sb117/118 */
+  'הטבעת העלתה את מפלס המים במשורה.',
+  'העלייה בגובה המים היא הרמז שאפשר למדוד באמצעותו את נפח הטבעת, משום שנפח המים שנדחקו שווה לנפח החלק השקוע של הטבעת.']) });
+registerPractice(1, { correctId: 'b', questionId: QID + P + '02/q1', popups: fbPopups([   /* sb122/123 */
+  'עדשים הם מוצק גרגרי וניתן למדוד את נפחם באמצעות כוס מדידה:',
+  'ממלאים את הכוס בעדשים וקוראים את הנפח לפי השנתות שעליה.']) });
+registerPractice(2, { correctId: 'a', questionId: QID + P + '03/q1', popups: fbPopups([   /* sb127/128 */
+  'המדידות מהימנות משום שהתוצאות החוזרות קרובות מאוד זו לזו.']) });
+registerPractice(3, { correctId: 'b', questionId: QID + P + '04/q1', popups: fbPopups([   /* sb133/134 */
+  'אם ליאן תעטוף משקולת קטנה בסליים ותכניס למשורה – הסליים ישקע והיא תוכל למדוד את הנפח שלו.']) });
+registerPractice(4, { correctId: 'd', questionId: QID + P + '04/q2', popups: fbPopups([   /* sb138/139 */
+  'נפח המים הסופי במשורה = נפח מים התחלתי + נפח משקולת + נפח סליים.',
+  'צריך להוריד מהנפח שהתקבל את הנפח ההתחלתי ואת נפח המשקולת כדי לקבל את נפח הסליים.']) });
+
 /* סעיפים א-ג of the marbles question run silent: one attempt, no popup, no marking.
    See SILENT_SCREENS at the top — storyboard 141 promises results only at the end and
    144/145 deliver them for all three at once, so there is nothing to show per question. */
