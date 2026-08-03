@@ -30,7 +30,10 @@
     <div class="scq-question scq-question--textonly">
       <!-- Storyboard slide 114, verbatim. Scenario regular over two lines, blank
            line, then the question in bold — the deck's own formatting. -->
-      <p class="scq-qtext"><span class="scq-qlead">בשיעור מדעים יעל מילאה משורה במים עד 60 מ"ל. היא הכניסה פנימה טבעת כסף וראתה שפני המים עלו ל- 85 מ"ל.<br>היא טענה: "הניסוי לא מודד את נפח הטבעת, אלא רק את המים שעלו"</span>איך המורה למדעים יסביר ליעל שהניסוי מספק ראיה מדעית תקפה לנפח הטבעת?</p>
+      <p class="scq-qtext scq-qtext--mixed">
+        בשיעור מדעים יעל מילאה משורה במים עד 60 מ"ל. היא הכניסה פנימה טבעת כסף וראתה שפני המים עלו ל- 85 מ"ל.<br />
+        היא טענה: "הניסוי לא מודד את נפח הטבעת, אלא רק את המים שעלו"<br /><br />
+        <b>איך המורה למדעים יסביר ליעל שהניסוי מספק ראיה מדעית תקפה לנפח הטבעת?</b></p>
       <!-- Option ORDER follows the deck (top to bottom on slide 114). Each data-id
            keeps its own text, so correctId in main.js stays 'a' and needs no change. -->
       <div class="scq-answers" id="s1-answers" role="radiogroup" aria-label="הסבר מדעי">
@@ -47,16 +50,18 @@
 
   <section class="screen" data-screen="2" id="s2">
     <nav class="progress-question" data-count="8"></nav>
-    <div class="scq-question scq-question--withimage is-long">
-      <div class="scq-figure" style="flex-basis: 430px">
+    <div class="scq-question scq-question--withimage">
+      <div class="scq-figure">
         <img src="assets/img/s2-lentils.jpg" alt="עדשים כתומות נשפכות מכף לתוך כלי מדידה">
       </div>
       <div class="scq-side">
-        <p class="scq-qtext">במפעל אריזת עדשים כתומות רוצים לדעת כמה עדשים להכניס לכל שקית בנפח 500 מ"ל. איך אפשר למדוד את נפח העדשים?</p>
+        <p class="scq-qtext scq-qtext--mixed">
+          במפעל אריזת עדשים כתומות רוצים לדעת כמה עדשים להכניס לכל שקית בנפח 500 מ"ל.<br /><br />
+          <b>איך ניתן למדוד את נפח העדשים?</b></p>
         <div class="scq-answers" id="s2-answers" role="radiogroup" aria-label="איך למדוד נפח עדשים">
-          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s2','a')"><span class="scq-opt-text">שוקלים את העדשים במאזניים וקוראים את המסה בגרמים</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s2','a')"><span class="scq-opt-text">מודדים את העדשים במאזניים וקוראים את המסה בגרמים</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s2','b')"><span class="scq-opt-text">מכניסים את העדשים לכוס מדידה וקוראים את הנפח לפי השנתות</span><span class="scq-radio" aria-hidden="true"></span></button>
-          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s2','c')"><span class="scq-opt-text">סופרים את העדשים אחד-אחד ומחברים את מספרם</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s2','c')"><span class="scq-opt-text">סופרים את העדשים אחד – אחד ומחברים את מספרם</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s2','d')"><span class="scq-opt-text">מודדים בסרגל אורך של עדש אחד ומכפילים באורך השקית</span><span class="scq-radio" aria-hidden="true"></span></button>
         </div>
       </div>
@@ -68,12 +73,16 @@
 
   <section class="screen" data-screen="3" id="s3">
     <nav class="progress-question" data-count="8"></nav>
-    <div class="scq-question scq-question--withimage is-long">
-      <div class="scq-figure" style="flex-basis: 430px">
+    <div class="scq-question scq-question--withimage">
+      <div class="scq-figure">
         <img src="assets/img/s3-gold-measurements.jpg" alt="גוש זהב מונח ליד משורה עם מים על שולחן מעבדה">
       </div>
       <div class="scq-side">
-        <p class="scq-qtext">תומר מדד את נפח גוש הזהב 5 פעמים: 23, 22, 24, 23, 23 סמ"ק. מה אפשר לומר על מהימנות המדידות?</p>
+        <p class="scq-qtext scq-qtext--mixed">
+          תומר מצא גוש זהב ומדד את הנפח שלו 5 פעמים.<br />
+          אלה היו התוצאות שקיבל:<br />
+          23 סמ"ק, 22 סמ"ק, 24 סמ"ק, 23 סמ"ק, 23 סמ"ק.<br /><br />
+          <b>מה אפשר לומר על מהימנות המדידות?</b></p>
         <div class="scq-answers" id="s3-answers" role="radiogroup" aria-label="מהימנות המדידות">
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s3','a')"><span class="scq-opt-text">המדידות מהימנות כי הן קרובות זו לזו</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s3','b')"><span class="scq-opt-text">המדידות לא מהימנות כי יש פער גדול בין הערכים</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -90,11 +99,16 @@
   <section class="screen" data-screen="4" id="s4">
     <nav class="progress-question" data-count="8"></nav>
     <div class="scq-question scq-question--withimage is-long">
-      <div class="scq-figure" style="flex-basis: 430px">
+      <div class="scq-figure">
         <img src="assets/img/s4-slime.jpg" alt="סליים ירוק צף על פני המים שבתוך משורה">
       </div>
       <div class="scq-side">
-        <p class="scq-qtext"><span class="scq-part-tag">הסליים של ליאן — סעיף א</span>הסליים של ליאן צף על פני המים. איך היא יכולה להכניס אותו לתוך המים במשורה?</p>
+        <!-- Storyboard slide 130: only "סעיף א:" is bold, the question is REGULAR.
+             The scenario sentence the unit had here belongs to slide 129, which the
+             deck shows as its own screen before the question. -->
+        <p class="scq-qtext scq-qtext--mixed">
+          <b>סעיף א:</b><br />
+          איך ליאן יכולה להכניס את הסליים לתוך המים?</p>
         <div class="scq-answers" id="s4-answers" role="radiogroup" aria-label="איך להכניס גוף צף">
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s4','a')"><span class="scq-opt-text">ללחוץ עליו כלפי מטה עם היד בתוך המשורה</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s4','b')"><span class="scq-opt-text">לעטוף משקולת קטנה עם הסליים ולהכניס למשורה</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -111,16 +125,20 @@
   <section class="screen" data-screen="5" id="s5">
     <nav class="progress-question" data-count="8"></nav>
     <div class="scq-question scq-question--withimage is-long">
-      <div class="scq-figure" style="flex-basis: 430px">
+      <div class="scq-figure">
         <img src="assets/img/s4-slime.jpg" alt="סליים ירוק צף על פני המים שבתוך משורה">
       </div>
       <div class="scq-side">
-        <p class="scq-qtext"><span class="scq-part-tag">הסליים של ליאן — סעיף ב</span>אחרי שהמשקולת והסליים שקעו במשורה וליאן קראה את הנפח, איך תחשב את נפח הסליים לבדו?</p>
+        <!-- Storyboard slide 135: tag bold, scenario regular, closing question bold. -->
+        <p class="scq-qtext scq-qtext--mixed">
+          <b>סעיף ב:</b><br />
+          אחרי שהמשקולת והסליים שקעו במשורה ליאן קראה את הנפח שהתקבל.<br /><br />
+          <b>איך היא תחשב את נפח הסליים לבדו?</b></p>
         <div class="scq-answers" id="s5-answers" role="radiogroup" aria-label="חישוב נפח הסליים">
-          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s5','a')"><span class="scq-opt-text">תחבר את הנפח שהתקבל יחד עם נפח המשקולת הידוע מראש</span><span class="scq-radio" aria-hidden="true"></span></button>
-          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s5','b')"><span class="scq-opt-text">תחסיר מהנפח שהתקבל את נפח המים שהיה בהתחלה בלבד</span><span class="scq-radio" aria-hidden="true"></span></button>
-          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s5','c')"><span class="scq-opt-text">תמדוד בסרגל אורך, רוחב וגובה של הסליים ותכפיל</span><span class="scq-radio" aria-hidden="true"></span></button>
-          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s5','d')"><span class="scq-opt-text">תחסיר את נפח המים ההתחלתי ואת נפח המשקולת מהנפח החדש שהתקבל</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s5','a')"><span class="scq-opt-text">תחבר את הנפח שהתקבל במשורה יחד עם נפח המשקולת הידוע מראש</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s5','b')"><span class="scq-opt-text">תחסיר מהנפח שהתקבל במשורה את נפח המים שהיה בהתחלה</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s5','c')"><span class="scq-opt-text">תמדוד את אורך, רוחב וגובה הסליים בעזרת סרגל ותכפיל אותם זה בזה</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s5','d')"><span class="scq-opt-text">תחסיר את נפח המים ההתחלתי ונפח המשקולת מנפח המים החדש שהתקבל</span><span class="scq-radio" aria-hidden="true"></span></button>
         </div>
       </div>
     </div>
@@ -132,16 +150,18 @@
   <section class="screen" data-screen="6" id="s6">
     <nav class="progress-question" data-count="8"></nav>
     <div class="scq-question scq-question--withimage is-long">
-      <div class="scq-figure" style="flex-basis: 420px">
+      <div class="scq-figure">
         <img src="assets/img/s6-marbles.jpg" alt="כמה גולות זכוכית מונחות ליד משורה עם מים">
       </div>
       <div class="scq-side">
-        <p class="scq-qtext"><span class="scq-part-tag">הגולות של גילי — סעיף א</span>גילי אומר: "אני יכול למדוד נפח של 5 גולות ביחד". האם גילי צודק שאפשר למדוד 5 גולות יחד כדי לדעת נפח של אחת?</p>
+        <p class="scq-qtext scq-qtext--mixed">
+          <b>סעיף א:</b><br />
+          האם גילי צודק וניתן מבחינה מדעית למדוד 5 גולות ביחד כדי לדעת מה הנפח של אחת מהן?</p>
         <div class="scq-answers" id="s6-answers" role="radiogroup" aria-label="האם גילי צודק">
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s6','a')"><span class="scq-opt-text">גילי צודק רק אם כל הגולות זהות</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s6','b')"><span class="scq-opt-text">גילי צודק רק אם הגולות שונות זו מזו</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s6','c')"><span class="scq-opt-text">גילי טועה, חייבים למדוד כל גולה בנפרד</span><span class="scq-radio" aria-hidden="true"></span></button>
-          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s6','d')"><span class="scq-opt-text">גילי צודק רק אם מדובר ב-5 גולות ולא יותר</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s6','d')"><span class="scq-opt-text">גילי צודק רק אם מדובר ב- 5 גולות ולא יותר</span><span class="scq-radio" aria-hidden="true"></span></button>
         </div>
       </div>
     </div>
@@ -153,7 +173,7 @@
   <section class="screen" data-screen="7" id="s7">
     <nav class="progress-question" data-count="8"></nav>
     <div class="scq-question scq-question--withimage">
-      <div class="scq-figure" style="flex-basis: 420px">
+      <div class="scq-figure">
         <img src="assets/img/s6-marbles.jpg" alt="כמה גולות זכוכית מונחות ליד משורה עם מים">
       </div>
       <div class="scq-side">
@@ -171,11 +191,13 @@
   <section class="screen" data-screen="8" id="s8">
     <nav class="progress-question" data-count="8"></nav>
     <div class="scq-question scq-question--withimage is-long">
-      <div class="scq-figure" style="flex-basis: 420px">
+      <div class="scq-figure">
         <img src="assets/img/s6-marbles.jpg" alt="כמה גולות זכוכית מונחות ליד משורה עם מים">
       </div>
       <div class="scq-side">
-        <p class="scq-qtext"><span class="scq-part-tag">הגולות של גילי — סעיף ג</span>האם השיטה שגילי מודד בה את הגולות תעבוד גם עבור גולות בגדלים שונים?</p>
+        <p class="scq-qtext scq-qtext--mixed">
+          <b>סעיף ג:</b><br />
+          האם השיטה שגילי מודד בה את הגולות תעבוד גם עבור גולות בגדלים שונים?</p>
         <div class="scq-answers" id="s8-answers" role="radiogroup" aria-label="גולות בגדלים שונים">
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s8','a')"><span class="scq-opt-text">כן, אפשר להכניס גולות שונות למשורה ולמדוד את הנפח של כל הגולות</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s8','b')"><span class="scq-opt-text">לא, כך גילי ידע רק את הנפח הכללי ולא את הנפח של כל גולה</span><span class="scq-radio" aria-hidden="true"></span></button>

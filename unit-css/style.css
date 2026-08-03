@@ -340,7 +340,7 @@ html, body {
   display: flex; flex-direction: column; justify-content: flex-start; gap: 0;
   padding-top: 16px;
   font-family: 'Assistant', sans-serif;
-  font-size: 24px; font-weight: 700; color: var(--subject-500);   /* Blue/70, Body/B5 Bold */
+  font-size: 24px; font-weight: normal; color: var(--subject-500);   /* Blue/70, Body/B5 Bold */
   text-align: right; direction: rtl; line-height: normal;
 }
 
@@ -3223,20 +3223,6 @@ html, body {
 .transition-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-900); }
 .transition-sub { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 400; color: #303030; line-height: 1.5; }
 
-/* Storyboard stems mix weights: the scenario runs in REGULAR and only the closing
-   question line is BOLD (or, on the סעיף screens, the tag is bold and the question
-   regular). .scq-qtext is bold by default, so these two spans opt a run back out of
-   it and reproduce the deck's blank line between scenario and question.
-   Keep them in the stem's source order — they are inline runs, not layout. */
-.scq-qlead {                 /* regular-weight scenario, blank line after it */
-  display: block;
-  font-weight: 400;
-  margin-bottom: 0.85em;
-}
-.scq-qreg {                  /* regular-weight run with no trailing gap */
-  font-weight: 400;
-}
-
 /* Text-only SingleChoiceQuestion layout (practice questions) */
 .scq-question--textonly {
   position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%);
@@ -3494,7 +3480,7 @@ html, body {
   display: flex; flex-direction: column; align-items: stretch; gap: 18px;
 }
 .scq-question--withimage .scq-qtext {
-  width: 100%; font-family: 'Assistant', sans-serif; font-size: 23px; font-weight: 700;
+  width: 100%; font-family: 'Assistant', sans-serif; font-size: 23px; font-weight: 400;
   color: #303030; text-align: right; direction: rtl; line-height: 1.4;
 }
 .scq-question--withimage .scq-answers { width: 100%; }
@@ -3524,7 +3510,7 @@ html, body {
    display box is a different size and a class per size would be noise. */
 .scq-figure {
   position: relative;              /* anchor for .img-zoom-btn and __label */
-  flex: 0 0 auto; align-self: center;
+  flex: 0 0 auto; align-self: center;flex-basis: 500px;
   border: 3px solid rgba(201, 206, 216, 0.4); border-radius: 16px;
   overflow: hidden; background: #fff;
 }
@@ -3691,3 +3677,17 @@ html, body {
   pointer-events: none; user-select: none; -webkit-user-drag: none;
 }
 .companion--center { left: 50%; transform: translateX(-50%); }
+
+/* ═══════════════════════════════════════════════════════
+   Storyboard stems that MIX weights
+   The deck puts the scenario in regular and bolds only one run — the closing question
+   on most screens, just the "סעיף X:" tag on others. Every stem layout
+   (--textonly, --withimage, .dnd-question, .peak-question …) sets
+   `.scq-qtext { font-weight: 700 }` at specificity 0,0,2,0, so a single-class modifier
+   loses to all of them. Doubling the class matches that specificity, and living at the
+   END of this sheet wins the tie — which is why this block must stay last.
+   Authoring: add the modifier to the <p> and use plain <b> and <br /> inside it.
+   ═══════════════════════════════════════════════════════ */
+.scq-qtext.scq-qtext--mixed { font-weight: 400; }
+.scq-qtext.scq-qtext--mixed b,
+.scq-qtext.scq-qtext--mixed strong { font-weight: 700; }
