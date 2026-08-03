@@ -241,7 +241,13 @@
     <!-- Storyboard slide 141: the companion announces that this group runs without hints
          and reveals results only at the end. The deck stands him bottom-right, but the four
          options occupy that column here (the deck's own options sit off-canvas), so he goes
-         bottom-left under the photo with the bubble to his right, beak pointing at him. -->
+         bottom-left under the photo with the bubble to his right, beak pointing at him.
+         The sprite is authored here rather than left to renderCompanion(): a screen-specific
+         one-off has no sync cost, and this way it paints with the markup instead of waiting
+         on main.js. renderCompanion() adopts an existing `:scope > .companion` and only
+         refreshes src and offsets, so the turquoise/orange choice still applies. -->
+    <img class="companion" src="assets/img/character-orange-selection.png" alt="" aria-hidden="true"
+         draggable="false" style="--cw: 132px; left: 46px; bottom: 80px;">
     <p class="thought-bubble thought-bubble--pinned" style="left: 214px; bottom: 96px; max-width: 330px;">
       סקרנים לדעת אם צדקתם?<br />
       בגלל שכל כך התקדמנו, נענה בלי רמזים ונדע אם צדקנו רק בסוף!<br />
