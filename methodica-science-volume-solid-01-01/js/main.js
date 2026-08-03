@@ -1444,7 +1444,7 @@ registerPractice(2, {
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['איזה טיעון מבוסס על מדידה בפועל?', 'נסו שוב!'] },
     correct: { title: 'נכון!', body: ['רק המדידה בשיטת דחיקת המים מבוססת על ראיה שנמדדה:', 'המים עלו מ-50 ל-70, ולכן נפח הכפית = 20 מ"ל.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'רק שיטת דחיקת המים מתאימה לגוף לא־הנדסי ומבוססת על ראיה שנמדדה.'] }
+    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'רק שיטת דחיקת המים מתאימה לגוף לא-הנדסי ומבוססת על ראיה שנמדדה.'] }
   }
 });
 registerPractice(4, {
@@ -1632,7 +1632,7 @@ registerPracticeDnD(3, {
   ],
   correctMap: { 't-ruler': 'metal-cube', 't-displace': 'shell', 't-flood': 'goblet' },
   popups: {
-    correct:   { title: 'נכון!', body: ['קוביית מתכת = גוף הנדסי → מדידה בסרגל.', 'צדפה = גוף לא־הנדסי קטן שנכנס למשורה → דחיקת מים.', 'גביע גדול = גוף שאינו נכנס למשורה → שיטת ההצפה.'] },
+    correct:   { title: 'נכון!', body: ['קוביית מתכת = גוף הנדסי → מדידה בסרגל.', 'צדפה = גוף לא-הנדסי קטן שנכנס למשורה → דחיקת מים.', 'גביע גדול = גוף שאינו נכנס למשורה → שיטת ההצפה.'] },
     incorrect: { title: 'לא מדויק — התשובה הנכונה מוצגת.', body: ['קוביית מתכת → מדידה הנדסית בסרגל.', 'צדפה → שיטת דחיקת המים.', 'גביע גדול → שיטת ההצפה.'] }
   }
 });
@@ -1705,12 +1705,23 @@ function dqPick(screen, id, label) {
 function dqEnter(screen) {
   const s = SCQ_REG[screen];
   const trigger = document.getElementById(screen + '-dropdown-trigger');
+  const list = document.getElementById(screen + '-answers');
+  if (trigger && list) {
+    // The trigger box must be exactly as wide as the option list. list.offsetWidth
+    // ignores the canvas-wide scale() transform (unlike getBoundingClientRect), so
+    // this stays correct at any zoom. Briefly un-hide to measure — .hidden is
+    // display:none, which can't be measured — then restore, all before paint.
+    const wasHidden = list.classList.contains('hidden');
+    if (wasHidden) list.classList.remove('hidden');
+    trigger.style.width = list.offsetWidth + 'px';
+    if (wasHidden) list.classList.add('hidden');
+  }
   if (trigger && s && !s.done) {
     trigger.classList.remove('correct', 'wrong');
     const tr = trigger.querySelector('.dropdown-trigger-text');
     if (tr) tr.textContent = 'בחרו מילה';
   }
-  document.getElementById(screen + '-answers')?.classList.add('hidden');
+  list?.classList.add('hidden');
   scqEnter(screen);
 }
 /* Close any open dropdown when clicking outside it. */

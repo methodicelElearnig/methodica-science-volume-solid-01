@@ -3723,8 +3723,8 @@ html, body {
   width: 760px; display: flex; flex-direction: column; align-items: stretch; gap: 20px;
 }
 .scq-question--textonly .scq-qtext {
-  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-900);
-  text-align: center; direction: rtl; line-height: 1.4;
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
+  text-align: right; direction: rtl; line-height: 1.4;
 }
 .scq-question--textonly .scq-answers { width: 100%; }
 
@@ -3739,7 +3739,7 @@ html, body {
   width: 860px; display: flex; flex-direction: column; align-items: stretch; gap: 20px;
 }
 .dnd-question .scq-qtext {
-  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-900);
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
   text-align: center; direction: rtl;
 }
 .dnd-board { display: flex; flex-direction: column; gap: 18px; }
@@ -3796,7 +3796,7 @@ html, body {
   width: 820px; display: flex; flex-direction: column; align-items: center; gap: 18px;
 }
 .hotspot-question .scq-qtext {
-  font-family: 'Assistant', sans-serif; font-size: 23px; font-weight: 700; color: var(--subject-900);
+  font-family: 'Assistant', sans-serif; font-size: 23px; font-weight: 700; color: #303030;
   text-align: center; direction: rtl;
 }
 .hotspot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
@@ -3812,26 +3812,27 @@ html, body {
   position: absolute; left: 50%; top: calc(50% - 24px); transform: translate(-50%, -50%);
   width: 760px; display: flex; flex-direction: column; align-items: center; gap: 18px;
 }
-.dq-question .scq-qtext { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 700; color: var(--subject-900); text-align: center; }
+.dq-question .scq-qtext { display: block; font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 700; color: #303030; text-align: center; line-height: 2.2; }
 .dq-sentence { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 500; color: #303030; line-height: 2.2; text-align: center; direction: rtl; }
 .dropdown { position: relative; display: inline-block; }
 .dropdown-trigger {
-  display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;
-  background: #fff; border: 2px solid var(--subject-500); border-radius: 10px; padding: 4px 14px;
+  height: 24px;
+  position: relative; display: inline-flex; align-items: center; vertical-align: middle;
+  background: #fff; border: 2px solid var(--subject-500); border-radius: 10px; padding: 0 4px 4px 8px;
   font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 700; color: var(--subject-700); cursor: pointer;
 }
 .dropdown-trigger.correct { border-color: #2e9b57; color: #1c5b32; background: #edf8ed; }
 .dropdown-trigger.wrong { border-color: #d64550; color: #8a2b32; background: #ffe3e5; }
-.dropdown-caret { font-size: 12px; }
+.dropdown-caret { position: absolute; left: 2px; top: 50%; transform: translateY(-50%); font-size: 24px; }
 .dropdown-list {
   position: absolute; top: 100%; right: 0; margin-top: 6px; z-index: 20;
   background: #fff; border: 1px solid #C9CED8; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,32,96,0.16);
-  min-width: 140px; overflow: hidden; padding: 4px;
+  overflow: hidden; padding: 4px;
 }
 /* .dropdown-opt is also .scq-opt — override the pill styling to a list row */
 .dropdown-opt {
-  display: block; width: 100%; justify-content: initial; text-align: right;
-  background: #fff; border: none; border-radius: 8px; padding: 10px 14px;
+  display: block; width: 100%; justify-content: initial; text-align: right; min-height: auto;
+  background: #fff; border: none; border-radius: 8px; padding: 2px 14px;
   font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 500; color: #303030; cursor: pointer;
 }
 .dropdown-opt:hover { background: var(--subject-100); border: none; }
@@ -3932,8 +3933,10 @@ html, body {
 /* Both layout modifiers set left + width, but the base .scq-question further up
    this file still carries right:40px from the inherited mass-measure block.
    With a RTL containing block an over-constrained left/right/width resolves in
-   favour of ight, which was silently pushing every text-only question 160px
-   off centre. Clearing ight lets left:50% + translateX(-50%) actually centre. */
+   favour of 
+ight, which was silently pushing every text-only question 160px
+   off centre. Clearing 
+ight lets left:50% + translateX(-50%) actually centre. */
 .scq-question--textonly,
 .scq-question--withimage { right: auto; }
 
@@ -3949,7 +3952,7 @@ html, body {
 }
 .scq-question--withimage .scq-qtext {
   width: 100%; font-family: 'Assistant', sans-serif; font-size: 23px; font-weight: 700;
-  color: var(--subject-900); text-align: right; direction: rtl; line-height: 1.4;
+  color: #303030; text-align: right; direction: rtl; line-height: 1.4;
 }
 .scq-question--withimage .scq-answers { width: 100%; }
 /* The inherited mass-measure block absolutely positions .scq-qtext (right:0;
@@ -4036,16 +4039,6 @@ html, body {
    as a square). Must come AFTER .hotspot-photo > img to win the cascade. */
 .hotspot-photo--square { aspect-ratio: 1; border: 3px solid rgba(201, 206, 216, 0.4); }
 .hotspot-photo--square > img { height: 100%; object-fit: cover; }
-
-/* Small name pill pinned over a point in a photo — storyboard slide 83 labels
-   which child is which. Physical left/top in % of the frame, bidi-immune. */
-.figure-tag {
-  position: absolute; left: var(--x); top: var(--y); transform: translate(-50%, -50%);
-  padding: 3px 12px; border-radius: 999px;
-  background: rgba(0, 32, 96, 0.82); color: #fff;
-  font-family: 'Assistant', sans-serif; font-size: 15px; font-weight: 700;
-  white-space: nowrap; pointer-events: none; z-index: 2;
-}
 
 /* The readable half of an option: a bubble beside the photo. */
 .hotspot-bubble {

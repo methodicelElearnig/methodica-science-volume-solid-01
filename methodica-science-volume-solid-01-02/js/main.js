@@ -212,6 +212,49 @@ function attachPopupDrag(popup) {
   header.addEventListener('pointercancel', () => { dragging = false; });
 }
 
+/* ═══════════════════════════════════════════════════════════
+   TEMPLATE — DropdownQuestion (thin UI over the SCQ controller)
+   The word-menu options are .scq-opt (dqPick → scqSelect); the SCQ
+   controller drives check/feedback; the trigger reflects the result.
+   ═══════════════════════════════════════════════════════════ */
+function dqToggle(screen) {
+  const s = SCQ_REG[screen]; if (s && s.answered) return;
+  document.getElementById(screen + '-answers').classList.toggle('hidden');
+}
+function dqPick(screen, id, label) {
+  scqSelect(screen, id);
+  const tr = document.querySelector('#' + screen + '-dropdown-trigger .dropdown-trigger-text');
+  if (tr) tr.textContent = label;
+  document.getElementById(screen + '-answers').classList.add('hidden');
+}
+function dqEnter(screen) {
+  const s = SCQ_REG[screen];
+  const trigger = document.getElementById(screen + '-dropdown-trigger');
+  const list = document.getElementById(screen + '-answers');
+  if (trigger && list) {
+    // The trigger box must be exactly as wide as the option list. list.offsetWidth
+    // ignores the canvas-wide scale() transform (unlike getBoundingClientRect), so
+    // this stays correct at any zoom. Briefly un-hide to measure — .hidden is
+    // display:none, which can't be measured — then restore, all before paint.
+    const wasHidden = list.classList.contains('hidden');
+    if (wasHidden) list.classList.remove('hidden');
+    trigger.style.width = list.offsetWidth + 'px';
+    if (wasHidden) list.classList.add('hidden');
+  }
+  if (trigger && s && !s.done) {
+    trigger.classList.remove('correct', 'wrong');
+    const tr = trigger.querySelector('.dropdown-trigger-text');
+    if (tr) tr.textContent = '';
+  }
+  list?.classList.add('hidden');
+  scqEnter(screen);
+}
+/* Close any open dropdown when clicking outside it. */
+document.addEventListener('click', function (e) {
+  if (e.target.closest('.dropdown')) return;
+  document.querySelectorAll('.dropdown-list:not(.hidden)').forEach(l => l.classList.add('hidden'));
+});
+
 /* ═══ Progress dots + practice wiring (6 questions, no score branch → Part 03) ═══ */
 var practiceProgress = {
   questions: [
@@ -251,11 +294,18 @@ function syncPracticeNav(screen) { updateProgressQuestion(document.querySelector
 function practiceEnter(idx, screen) {
   const q = practiceProgress.questions[idx];
   q.visited = true; if (q.state === 'not-answered') q.state = 'current';
-  syncPracticeNav(screen); scqEnter(screen);
+  syncPracticeNav(screen);
+  // A DropdownQuestion screen also needs its trigger text/state reset on
+  // (re-)entry, which scqEnter alone doesn't do.
+  document.getElementById(screen + '-dropdown-trigger') ? dqEnter(screen) : scqEnter(screen);
 }
 function registerPractice(idx, cfg) {
   cfg.screen = 's' + practiceProgress.questions[idx].screen;
-  cfg.onFinish = function (ok) { const q = practiceProgress.questions[idx]; q.state = ok ? 'correct' : 'incorrect'; q.visited = true; syncPracticeNav(cfg.screen); };
+  cfg.onFinish = function (ok) {
+    const q = practiceProgress.questions[idx]; q.state = ok ? 'correct' : 'incorrect'; q.visited = true; syncPracticeNav(cfg.screen);
+    const trigger = document.getElementById(cfg.screen + '-dropdown-trigger');   // reflect result on the trigger, if this is a DropdownQuestion
+    if (trigger) { trigger.classList.remove('correct', 'wrong'); trigger.classList.add(ok ? 'correct' : 'wrong'); }
+  };
   cfg.onContinue = function () {
     const next = idx + 1;
     if (next >= practiceProgress.questions.length) { goToNextPart(); return; }
@@ -272,7 +322,7 @@ registerPractice(0, {  // Basic 1 — non-geometric body
   correctId: 'b', questionId: QID + 'methodica-science-volume-solid-01-02-01/q1',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['גוף הנדסי בנוי מקווים ישרים או מעגלים.', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['מפלצת הפלסטלינה היא גוף בעל צורה לא־סדירה, שאי אפשר לחשב את נפחו בנוסחה.'] },
+    correct: { title: 'נכון!', body: ['מפלצת הפלסטלינה היא גוף בעל צורה לא-סדירה, שאי אפשר לחשב את נפחו בנוסחה.'] },
     wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'לבנה, קופסה וקובייה הן צורות הנדסיות; מפלצת הפלסטלינה אינה.'] }
   }
 });
@@ -280,8 +330,8 @@ registerPractice(1, {  // Basic 2 — who is right
   correctId: 'b', questionId: QID + 'methodica-science-volume-solid-01-02-02/q1',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['מה מודדים מאזניים וסרגל?', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['שירלי צודקת: לגוף לא־הנדסי מודדים נפח בשיטת דחיקת המים.', 'מאזניים מודדים מסה וסרגל מודד אורך — לא נפח.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'שירלי צודקת — דחיקת מים מתאימה לגוף לא־הנדסי.'] }
+    correct: { title: 'נכון!', body: ['שירלי צודקת: לגוף לא-הנדסי מודדים נפח בשיטת דחיקת המים.', 'מאזניים מודדים מסה וסרגל מודד אורך — לא נפח.'] },
+    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'שירלי צודקת — דחיקת מים מתאימה לגוף לא-הנדסי.'] }
   }
 });
 registerPractice(2, {  // Basic 3 — which tool

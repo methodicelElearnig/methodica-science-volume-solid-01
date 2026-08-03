@@ -62,7 +62,7 @@
     </div>
   </section>
   <div class="scq-popup hidden" id="s1-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s1')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s1-scq-popup-title"></p></div><div class="scq-popup-body" id="s1-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s1-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s1')"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s1')" aria-label="סגור">✕</button><h2 class="scq-hint-title">רמז</h2><p>גוף הנדסי בנוי מקווים ישרים או מעגלים סדירים (כמו קובייה או תיבה). איזה גוף בעל צורה "אורגנית" לא־סדירה?</p></div></div>
+  <div class="scq-hint-overlay hidden" id="s1-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s1')"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s1')" aria-label="סגור">✕</button><h2 class="scq-hint-title">רמז</h2><p>גוף הנדסי בנוי מקווים ישרים או מעגלים סדירים (כמו קובייה או תיבה). איזה גוף בעל צורה "אורגנית" לא-סדירה?</p></div></div>
 
   <!-- ═══ S2 — Basic 2 (item 02-02) · who is right (true/false) ═══ -->
   <section class="screen" data-screen="2" id="s2">
@@ -76,17 +76,24 @@
       <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
     </nav>
     <div class="scq-question scq-question--withimage">
-      <!-- Storyboard slide 83 attaches a named bubble to each child. The two
-           quotes are already live HTML in the stem, so the photo only carries
-           the NAME pills — repeating the quotes over the art would duplicate
-           the same text twice on one screen. -->
-      <div class="scq-figure" style="flex-basis: 470px">
-        <img src="assets/img/s2-tom-shirley.jpg" alt="שני ילדים בחלוקי מעבדה עומדים משני צדי שולחן ועליו מפלצת פלסטלינה ירוקה">
-        <span class="figure-tag" style="--x:28%;--y:20%">שירלי</span>
-        <span class="figure-tag" style="--x:73%;--y:17%">תום</span>
+      <!-- Storyboard slide 83 draws each child's line as an actual speech
+           bubble ("בועת דיבור") anchored over their side of the photo, not
+           as stem text. -->
+      <div class="scq-figure-frame" style="position: relative; flex: 0 0 470px; align-self: center;">
+        <div class="scq-figure" style="width: 100%">
+          <img src="assets/img/s2-tom-shirley.jpg" alt="שני ילדים בחלוקי מעבדה עומדים משני צדי שולחן ועליו מפלצת פלסטלינה ירוקה">
+        </div>
+        <div class="speech-bubble" style="left: -10%; top: -40%; width: 57%">
+          <div class="speech-bubble__frame"><p class="speech-bubble__text">שירלי: כדי למדוד נפח של גוף ללא צורה הנדסית מוגדרת, יש להשתמש בשיטת דחיקת המים.</p></div>
+          <span class="speech-bubble__tail" aria-hidden="true"></span>
+        </div>
+        <div class="speech-bubble" style="left: 49%; top: -42%; width: 51%">
+          <div class="speech-bubble__frame"><p class="speech-bubble__text">תום: כדי למדוד נפח של גוף ללא צורה הנדסית מוגדרת, יש להשתמש במאזניים וסרגל.</p></div>
+          <span class="speech-bubble__tail" aria-hidden="true"></span>
+        </div>
       </div>
       <div class="scq-side">
-      <p class="scq-qtext">מי מהילדים צודק?<br><span class="scq-qsub">שירלי: "כדי למדוד נפח של גוף ללא צורה הנדסית מוגדרת יש להשתמש בשיטת דחיקת המים".<br>תום: "…יש להשתמש במאזניים וסרגל".</span></p>
+      <p class="scq-qtext">מי מהילדים צודק? תום או שירלי?</p>
       <div class="scq-answers" id="s2-answers" role="radiogroup" aria-label="מי צודק?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s2','a')"><span class="scq-opt-text">תום צודק</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s2','b')"><span class="scq-opt-text">שירלי צודקת</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -102,7 +109,7 @@
     </div>
   </section>
   <div class="scq-popup hidden" id="s2-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s2')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s2-scq-popup-title"></p></div><div class="scq-popup-body" id="s2-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s2-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s2')"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s2')" aria-label="סגור">✕</button><h2 class="scq-hint-title">רמז</h2><p>מאזניים מודדים מסה וסרגל מודד אורך — לא נפח. איזו שיטה מודדת נפח של גוף לא־הנדסי?</p></div></div>
+  <div class="scq-hint-overlay hidden" id="s2-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s2')"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s2')" aria-label="סגור">✕</button><h2 class="scq-hint-title">רמז</h2><p>מאזניים מודדים מסה וסרגל מודד אורך — לא נפח. איזו שיטה מודדת נפח של גוף לא-הנדסי?</p></div></div>
 
   <!-- ═══ S3 — Basic 3 (item 02-03) · which tool for displacement ═══ -->
   <section class="screen" data-screen="3" id="s3">
@@ -115,14 +122,20 @@
       <div class="progress-question__connector" data-connector="3"></div>
       <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
     </nav>
-    <div class="scq-question scq-question--textonly">
-      <p class="scq-qtext">כשמודדים נפח בשיטת דחיקת המים משתמשים ב־___.</p>
-      <div class="scq-answers" id="s3-answers" role="radiogroup" aria-label="באיזה כלי משתמשים?">
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s3','a')"><span class="scq-opt-text">סרגל</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s3','b')"><span class="scq-opt-text">משורה</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s3','c')"><span class="scq-opt-text">מאזניים</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s3','d')"><span class="scq-opt-text">משקולת</span><span class="scq-radio" aria-hidden="true"></span></button>
-      </div>
+    <!-- DropdownQuestion — Single Paragraph variant: one bold sentence with
+         the blank as an inline dropdown, no instruction line or image. -->
+    <div class="dq-question">
+      <p class="scq-qtext">כשמודדים נפח בשיטת דחיקת המים משתמשים ב-
+        <span class="dropdown" id="s3-dropdown">
+          <button class="dropdown-trigger" id="s3-dropdown-trigger" type="button" onclick="dqToggle('s3')"><span class="dropdown-trigger-text"></span><span class="dropdown-caret" aria-hidden="true">▾</span></button>
+          <span class="dropdown-list hidden" id="s3-answers" role="listbox">
+            <button class="scq-opt dropdown-opt" type="button" role="option" data-id="a" onclick="dqPick('s3','a','סרגל')">סרגל</button>
+            <button class="scq-opt dropdown-opt" type="button" role="option" data-id="b" onclick="dqPick('s3','b','משורה')">משורה</button>
+            <button class="scq-opt dropdown-opt" type="button" role="option" data-id="c" onclick="dqPick('s3','c','מאזניים')">מאזניים</button>
+            <button class="scq-opt dropdown-opt" type="button" role="option" data-id="d" onclick="dqPick('s3','d','משקולת')">משקולת</button>
+          </span>
+        </span>.
+      </p>
     </div>
     <div class="scq-bar">
       <div class="scq-bar-main">
