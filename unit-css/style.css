@@ -3223,6 +3223,20 @@ html, body {
 .transition-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-900); }
 .transition-sub { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 400; color: #303030; line-height: 1.5; }
 
+/* Storyboard stems mix weights: the scenario runs in REGULAR and only the closing
+   question line is BOLD (or, on the סעיף screens, the tag is bold and the question
+   regular). .scq-qtext is bold by default, so these two spans opt a run back out of
+   it and reproduce the deck's blank line between scenario and question.
+   Keep them in the stem's source order — they are inline runs, not layout. */
+.scq-qlead {                 /* regular-weight scenario, blank line after it */
+  display: block;
+  font-weight: 400;
+  margin-bottom: 0.85em;
+}
+.scq-qreg {                  /* regular-weight run with no trailing gap */
+  font-weight: 400;
+}
+
 /* Text-only SingleChoiceQuestion layout (practice questions) */
 .scq-question--textonly {
   position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%);

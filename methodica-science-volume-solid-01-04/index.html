@@ -28,12 +28,16 @@
   <section class="screen" data-screen="1" id="s1">
     <nav class="progress-question" data-count="8"></nav>
     <div class="scq-question scq-question--textonly">
-      <p class="scq-qtext">יעל מילאה משורה במים עד 60 מ"ל, הכניסה טבעת כסף והמים עלו ל-85 מ"ל. יעל טענה: "הניסוי לא מודד את נפח הטבעת אלא רק את המים שעלו". איך נסביר שהניסוי כן מספק ראיה מדעית תקפה לנפח הטבעת?</p>
+      <!-- Storyboard slide 114, verbatim. Scenario regular over two lines, blank
+           line, then the question in bold — the deck's own formatting. -->
+      <p class="scq-qtext"><span class="scq-qlead">בשיעור מדעים יעל מילאה משורה במים עד 60 מ"ל. היא הכניסה פנימה טבעת כסף וראתה שפני המים עלו ל- 85 מ"ל.<br>היא טענה: "הניסוי לא מודד את נפח הטבעת, אלא רק את המים שעלו"</span>איך המורה למדעים יסביר ליעל שהניסוי מספק ראיה מדעית תקפה לנפח הטבעת?</p>
+      <!-- Option ORDER follows the deck (top to bottom on slide 114). Each data-id
+           keeps its own text, so correctId in main.js stays 'a' and needs no change. -->
       <div class="scq-answers" id="s1-answers" role="radiogroup" aria-label="הסבר מדעי">
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s1','a')"><span class="scq-opt-text">המים שעלו הם ראיה ישירה לכך שהטבעת תופסת מקום במרחב, ולכן נפח המים שנדחקו שווה בדיוק לנפח הטבעת</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s1','b')"><span class="scq-opt-text">יעל צודקת — כדי לקבל ראיה תקפה חייבים נוסחה מתמטית ולא ניסוי</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s1','c')"><span class="scq-opt-text">העלייה ל-85 מ"ל היא רק הערכה כללית, מכיוון שכסף הוא חומר כבד</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s1','d')"><span class="scq-opt-text">הנתונים אינם מהווים ראיה מדעית תקפה, כל עוד לא חזרו על הניסוי עם נוזלים אחרים כמו שמן או אלכוהול</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s1','b')"><span class="scq-opt-text">יעל צודקת. הניסוי מודד רק מים וכדי לקבל ראיה מדעית תקפה לנפח הטבעת חייבים להשתמש בנוסחה מתמטית ולא בניסוי אמפירי</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s1','a')"><span class="scq-opt-text">המים שעלו הם ראיה ישירה לכך שהטבעת תופסת מקום במרחב, ולכן נפח המים שנדחקו מעלה שווה בדיוק לנפח הטבעת</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s1','c')"><span class="scq-opt-text">העלייה של המים ל-85 מ"ל היא רק הערכה כללית, מכיוון שכסף הוא חומר כבד המשנה את תכונות המים ופוגע בדיוק הראיות</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s1','d')"><span class="scq-opt-text">הנתונים הנוכחיים אינם מהווים ראיה מדעית תקפה, כל עוד לא חזרו על הניסוי עם נוזלים אחרים כמו שמן או אלכוהול.</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
     <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s1-scq-check" type="button" disabled onclick="scqCheck('s1')">צדקתי?</button><button class="scq-hint" id="s1-scq-hint" type="button" onclick="scqHint('s1')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
