@@ -3941,10 +3941,8 @@ html, body {
 /* Both layout modifiers set left + width, but the base .scq-question further up
    this file still carries right:40px from the inherited mass-measure block.
    With a RTL containing block an over-constrained left/right/width resolves in
-   favour of 
-ight, which was silently pushing every text-only question 160px
-   off centre. Clearing 
-ight lets left:50% + translateX(-50%) actually centre. */
+   favour of right, which was silently pushing every text-only question 160px
+   off centre. Clearing right lets left:50% + translateX(-50%) actually centre. */
 .scq-question--textonly,
 .scq-question--withimage { right: auto; }
 
