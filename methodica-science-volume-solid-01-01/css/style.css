@@ -355,7 +355,5 @@
   background: linear-gradient(180deg, rgba(234,245,252,0.5), rgba(220,240,250,0.2));
   box-shadow: inset 6px 0 10px rgba(255,255,255,0.35);
 }
-/* override the base .scq-opt pill → card with avatar on top */
-.hotspot-card { flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 16px 18px; border-radius: 14px; }
 .meas-object-icon { display: flex; align-items: center; justify-content: center; height: 56px; }
 .meas-obj-img { height: 56px; width: auto; display: block; }

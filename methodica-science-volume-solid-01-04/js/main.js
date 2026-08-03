@@ -184,7 +184,7 @@ function advanceScreen() {
   goTo(currentScreen + 1);
 }
 
-/* ═══ Shared feedback popup renderer (used by SCQ + VIQ) ═══ */
+/* ═══ Feedback popup renderer ═══ */
 function renderFeedbackPopup(screen, type, popups) {
   const popup = document.getElementById(screen + '-scq-popup'); if (!popup) return;
   const cfg = popups[type];
@@ -272,36 +272,6 @@ function scqReset(screen) {
   const hint = document.getElementById(screen + '-scq-hint'); if (hint) { hint.disabled = false; hint.style.visibility = ''; }
 }
 
-/* ═══ ValueInputQuestion (numeric) — mirrors SCQ, shares the feedback popup ═══ */
-const VIQ_REG = {};
-function viqRegister(cfg) { cfg.maxAttempts = cfg.maxAttempts || 2; cfg.tolerance = cfg.tolerance || 0; VIQ_REG[cfg.screen] = { cfg: cfg, attempts: 0, answered: false, done: false }; }
-function viqInput(screen) { const inp = document.getElementById(screen + '-viq-input'); document.getElementById(screen + '-scq-check').disabled = inp.value.trim() === ''; }
-function viqCheck(screen) {
-  const s = VIQ_REG[screen], cfg = s.cfg;
-  if (s.answered) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
-  const inp = document.getElementById(screen + '-viq-input'); if (inp.value.trim() === '') return;
-  s.attempts++;
-  const val = parseFloat(String(inp.value).replace(',', '.'));
-  const correct = !isNaN(val) && Math.abs(val - cfg.correct) <= cfg.tolerance;
-  xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question', { success: !!correct, score: { scaled: correct ? 1 : 0 }, response: inp.value }, { questionId: cfg.questionId });
-  inp.classList.remove('correct', 'wrong');
-  if (correct) { inp.classList.add('correct'); renderFeedbackPopup(screen, 'correct', cfg.popups); viqFinish(screen, true); }
-  else if (s.attempts >= cfg.maxAttempts) { inp.classList.add('wrong'); renderFeedbackPopup(screen, 'wrong2', cfg.popups); viqFinish(screen, false); }
-  else { inp.classList.add('wrong'); renderFeedbackPopup(screen, 'retry', cfg.popups); }
-}
-function viqFinish(screen, ok) {
-  const s = VIQ_REG[screen]; s.answered = true; s.done = true;
-  document.getElementById(screen + '-viq-input').disabled = true;
-  const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'שנמשיך?'; chk.disabled = false; }
-  if (s.cfg.onFinish) s.cfg.onFinish(ok);
-}
-function viqEnter(screen) {
-  const s = VIQ_REG[screen]; if (!s) return; scqClosePopup(screen);
-  const inp = document.getElementById(screen + '-viq-input');
-  if (s.done) { inp.disabled = true; const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'שנמשיך?'; chk.disabled = false; } }
-  else { s.attempts = 0; s.answered = false; inp.disabled = false; inp.classList.remove('correct', 'wrong'); const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'צדקתי?'; chk.disabled = inp.value.trim() === ''; } }
-}
-
 /* ═══ Progress dots + practice wiring (8 questions → Part 05) ═══ */
 var practiceProgress = { questions: [] };
 for (let i = 1; i <= 8; i++) practiceProgress.questions.push({ number: i, visited: i === 1, state: i === 1 ? 'current' : 'not-answered', screen: i });
@@ -329,7 +299,6 @@ function updateProgressQuestion(container, state) {
 }
 function syncPracticeNav(screen) { updateProgressQuestion(document.querySelector('#' + screen + ' .progress-question'), practiceProgress); }
 function practiceEnter(idx, screen) { const q = practiceProgress.questions[idx]; q.visited = true; if (q.state === 'not-answered') q.state = 'current'; syncPracticeNav(screen); scqEnter(screen); }
-function practiceEnterVIQ(idx, screen) { const q = practiceProgress.questions[idx]; q.visited = true; if (q.state === 'not-answered') q.state = 'current'; syncPracticeNav(screen); viqEnter(screen); }
 function _practiceOnFinish(idx, screen) { return function (ok) { const q = practiceProgress.questions[idx]; q.state = ok ? 'correct' : 'incorrect'; q.visited = true; syncPracticeNav(screen); }; }
 function _practiceOnContinue(idx) {
   return function () {
@@ -342,7 +311,6 @@ function _practiceOnContinue(idx) {
   };
 }
 function registerPractice(idx, cfg) { cfg.screen = 's' + practiceProgress.questions[idx].screen; cfg.onFinish = _practiceOnFinish(idx, cfg.screen); cfg.onContinue = _practiceOnContinue(idx); scqRegister(cfg); attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup')); }
-function registerPracticeVIQ(idx, cfg) { cfg.screen = 's' + practiceProgress.questions[idx].screen; cfg.onFinish = _practiceOnFinish(idx, cfg.screen); cfg.onContinue = _practiceOnContinue(idx); viqRegister(cfg); attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup')); }
 
 const QID = XAPI_ID_PREFIX;
 const P = 'methodica-science-volume-solid-01-04-';

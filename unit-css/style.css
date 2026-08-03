@@ -3298,8 +3298,10 @@ html, body {
 .dnd-question--warmup .dnd-source { min-height: 46px; padding: 8px; }
 
 /* ═══════════════════════════════════════════════════════
-   TEMPLATE — ImageHotspotQuestion (S15). Reuses SCQ controller;
-   each kid card is a .scq-opt in a 2×2 grid (avatar + argument).
+   TEMPLATE — ImageHotspotQuestion (S15). Reuses SCQ controller.
+   S15 was rebuilt around .hotspot-bubble; the original 2×2 card grid
+   (.hotspot-grid / .hotspot-avatar / .hotspot-card) went with it and its
+   rules are gone. The rest of the family is live in parts 01 and 02.
    ═══════════════════════════════════════════════════════ */
 .hotspot-question {
   position: absolute; left: 50%; top: calc(50% - 16px); transform: translate(-50%, -50%);
@@ -3309,9 +3311,6 @@ html, body {
   font-family: 'Assistant', sans-serif; font-size: 23px; font-weight: 700; color: #303030;
   text-align: center; direction: rtl;
 }
-.hotspot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
-.hotspot-avatar { font-size: 42px; line-height: 1; }
-.hotspot-card .scq-opt-text { font-size: 17px; font-weight: 500; line-height: 1.4; }
 
 /* ═══════════════════════════════════════════════════════
    TEMPLATE — DropdownQuestion (S19). Inline word-menu; reuses SCQ.
@@ -3421,14 +3420,12 @@ html, body {
 .task-list li { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400; color: #303030; line-height: 1.5; }
 .task-note { font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 600; color: var(--subject-700); background: var(--subject-100); border-radius: 12px; padding: 12px 18px; text-align: center; }
 
-/* ═══ ValueInputQuestion (numeric) + multi-part tag ═══ */
+/* ═══ Multi-part question tag ═══
+   The ValueInputQuestion rules (.viq-input-row / .viq-input / .viq-unit) lived here.
+   Part 04's s7 was the unit's only numeric-input question and became a multiple choice
+   in 840d587, so the template has no users left and its CSS and controller are gone. */
 .scq-part-tag { display: block; font-family: 'Assistant', sans-serif; font-size: 15px; font-weight: 700; color: var(--subject-500); margin-bottom: 6px; }
 .scq-qsub { display: block; font-size: 18px; font-weight: 500; color: #303030; margin-top: 6px; }
-.viq-input-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 6px; }
-.viq-input { width: 130px; padding: 10px 14px; border: 2px solid var(--subject-500); border-radius: 12px; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; text-align: center; color: #303030; outline: none; }
-.viq-input.correct { border-color: #2e9b57; background: #edf8ed; }
-.viq-input.wrong { border-color: #d64550; background: #ffe3e5; }
-.viq-unit { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 600; color: #303030; }
 
 /* ═══ PeakAssessment (Parts 05/06) ═══ */
 .peak-intro { position: absolute; left: 50%; top: calc(50% - 37px); transform: translate(-50%, -50%); width: 820px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
