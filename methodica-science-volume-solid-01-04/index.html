@@ -102,6 +102,7 @@
        wired explicitly in goBack()/the s3 onContinue — the same approach part 01 uses
        for its out-of-sequence screens. Scenario only: no progress nav, no question. -->
   <section class="screen" data-screen="9" id="s9">
+    <nav class="progress-question" data-count="8"></nav>
     <div class="scq-question scq-question--withimage">
       <div class="scq-figure">
         <img src="assets/img/s9-slime-intro.jpg" alt="ליאן מכינה סליים במטבח ומודדת אותו במשורה, לידה קופסאות וצנצנות סליים">
@@ -129,7 +130,7 @@
              The scenario sentence the unit had here belongs to slide 129, which the
              deck shows as its own screen before the question. -->
         <p class="scq-qtext scq-qtext--mixed">
-          <b>סעיף א:</b><br />
+          <strong>סעיף א:</strong><br />
           איך ליאן יכולה להכניס את הסליים לתוך המים?</p>
         <div class="scq-answers" id="s4-answers" role="radiogroup" aria-label="איך להכניס גוף צף">
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s4','a')"><span class="scq-opt-text">ללחוץ עליו כלפי מטה עם היד בתוך המשורה</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -153,7 +154,7 @@
       <div class="scq-side">
         <!-- Storyboard slide 135: tag bold, scenario regular, closing question bold. -->
         <p class="scq-qtext scq-qtext--mixed">
-          <b>סעיף ב:</b><br />
+          <strong>סעיף ב:</strong><br />
           אחרי שהמשקולת והסליים שקעו במשורה ליאן קראה את הנפח שהתקבל.<br /><br />
           <b>איך היא תחשב את נפח הסליים לבדו?</b></p>
         <div class="scq-answers" id="s5-answers" role="radiogroup" aria-label="חישוב נפח הסליים">
@@ -261,6 +262,6 @@
   </div>
 
 </div><!-- /#app -->
-<script src="js/main.js?v=3"></script>
+<script src="js/main.js?v=4"></script>
 </body>
 </html>

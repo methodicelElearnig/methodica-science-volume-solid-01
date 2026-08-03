@@ -344,6 +344,10 @@ html, body {
   text-align: right; direction: rtl; line-height: normal;
 }
 
+.scq-qtext strong {
+  font-weight: 700; color: var(--subject-500);   /* Bold and light blue */
+}
+
 /* Answers (right, below the question text) */
 .scq-answers {
   position: absolute; right: 0; top: 100px;

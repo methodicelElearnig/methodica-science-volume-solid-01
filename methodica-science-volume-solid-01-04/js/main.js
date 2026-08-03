@@ -104,6 +104,17 @@ function resetScreenState(n) {
     const idx = n - 1;
     if (n === 7) practiceEnterVIQ(idx, 's7'); else practiceEnter(idx, 's' + n);
   }
+  /* The scenario screen carries the same progress nav as the question screens.
+     buildProgressNav() fills in its dots from data-count, but without this the nav
+     renders with no state at all — nothing answered, nothing current. Mark the question
+     it introduces (סעיף א) as current, since this is that question's opening screen, and
+     sync. No answer state is touched: practiceEnter() re-runs on the question itself. */
+  if (n === SCENARIO_SCREEN) {
+    const q = practiceProgress.questions[SCENARIO_BEFORE - 1];
+    q.visited = true;
+    if (q.state === 'not-answered') q.state = 'current';
+    syncPracticeNav('s' + SCENARIO_SCREEN);
+  }
 }
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft')  advanceScreen();
