@@ -8,7 +8,7 @@ var XAPI_ID_PREFIX = "https://lomdot.education.gov.il/metodica/720active/science
 function shortId(u){ return String(u || "").split("/").pop(); }
 'use strict';
 
-const TOTAL_SCREENS = 9;   // S0 intro + S1–S8
+const TOTAL_SCREENS = 10;  // S0 intro + S1–S8 + S9 (Liyan scenario, sits between S3 and S4)
 const PART_05_URL = '../methodica-science-volume-solid-01-05/index.html';
 window.lomdaState = window.lomdaState || {};
 let currentScreen = 0;
@@ -110,13 +110,24 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') goBack();
   if (e.key === 'Escape') document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
 });
+/* S9 is the Liyan scenario (storyboard slide 129). It sits between S3 and S4 in the
+   flow but carries the next free id, so the order is wired explicitly here and in
+   advanceScreen()/SCENARIO_BEFORE rather than by renumbering every screen. */
+const SCENARIO_SCREEN = 9;       // slide 129
+const SCENARIO_AFTER  = 3;       // shown after Q3 …
+const SCENARIO_BEFORE = 4;       // … and before Q4 (סעיף א)
 function goBack() {
+  if (currentScreen === SCENARIO_SCREEN) { goTo(SCENARIO_AFTER); return; }
   const pIdx = practiceProgress.questions.findIndex(q => q.screen === currentScreen);
-  if (pIdx !== -1) { goTo(pIdx > 0 ? practiceProgress.questions[pIdx - 1].screen : 0); return; }
+  if (pIdx !== -1) {
+    if (currentScreen === SCENARIO_BEFORE) { goTo(SCENARIO_SCREEN); return; }
+    goTo(pIdx > 0 ? practiceProgress.questions[pIdx - 1].screen : 0); return;
+  }
   goTo(currentScreen - 1);
 }
 function advanceScreen() {
   if (currentScreen === 0) { goTo(1); return; }
+  if (currentScreen === SCENARIO_SCREEN) { goTo(SCENARIO_BEFORE); return; }
   if (practiceProgress.questions.some(q => q.screen === currentScreen)) return;
   goTo(currentScreen + 1);
 }
@@ -249,7 +260,16 @@ function syncPracticeNav(screen) { updateProgressQuestion(document.querySelector
 function practiceEnter(idx, screen) { const q = practiceProgress.questions[idx]; q.visited = true; if (q.state === 'not-answered') q.state = 'current'; syncPracticeNav(screen); scqEnter(screen); }
 function practiceEnterVIQ(idx, screen) { const q = practiceProgress.questions[idx]; q.visited = true; if (q.state === 'not-answered') q.state = 'current'; syncPracticeNav(screen); viqEnter(screen); }
 function _practiceOnFinish(idx, screen) { return function (ok) { const q = practiceProgress.questions[idx]; q.state = ok ? 'correct' : 'incorrect'; q.visited = true; syncPracticeNav(screen); }; }
-function _practiceOnContinue(idx) { return function () { const nx = idx + 1; if (nx < practiceProgress.questions.length) { practiceProgress.questions[nx].visited = true; goTo(practiceProgress.questions[nx].screen); } else goToNextPart(); }; }
+function _practiceOnContinue(idx) {
+  return function () {
+    const nx = idx + 1;
+    if (nx >= practiceProgress.questions.length) { goToNextPart(); return; }
+    practiceProgress.questions[nx].visited = true;
+    const target = practiceProgress.questions[nx].screen;
+    // Q3 hands off to the Liyan scenario, which then continues to Q4.
+    goTo(target === SCENARIO_BEFORE ? SCENARIO_SCREEN : target);
+  };
+}
 function registerPractice(idx, cfg) { cfg.screen = 's' + practiceProgress.questions[idx].screen; cfg.onFinish = _practiceOnFinish(idx, cfg.screen); cfg.onContinue = _practiceOnContinue(idx); scqRegister(cfg); attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup')); }
 function registerPracticeVIQ(idx, cfg) { cfg.screen = 's' + practiceProgress.questions[idx].screen; cfg.onFinish = _practiceOnFinish(idx, cfg.screen); cfg.onContinue = _practiceOnContinue(idx); viqRegister(cfg); attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup')); }
 

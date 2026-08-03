@@ -96,9 +96,31 @@
   <div class="scq-popup hidden" id="s3-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s3')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s3-scq-popup-title"></p></div><div class="scq-popup-body" id="s3-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s3-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s3')"><div class="scq-hint-box" role="dialog" aria-modal="true"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s3')" aria-label="סגור">✕</button><h2 class="scq-hint-title">רמז</h2><p>מהימנות = עקביות. בדקו כמה הערכים קרובים זה לזה (הפרש מרבי של 2 סמ"ק).</p></div></div>
 
+  <!-- ═══ S9 — Liyan slime scenario (storyboard slide 129) ═══
+       Sits BETWEEN s3 and s4 in the flow, but keeps the next free id so none of the
+       existing screen ids, popup ids or progress-nav indices have to shift. Order is
+       wired explicitly in goBack()/the s3 onContinue — the same approach part 01 uses
+       for its out-of-sequence screens. Scenario only: no progress nav, no question. -->
+  <section class="screen" data-screen="9" id="s9">
+    <div class="scq-question scq-question--withimage">
+      <div class="scq-figure">
+        <img src="assets/img/s9-slime-intro.jpg" alt="ליאן מכינה סליים במטבח ומודדת אותו במשורה, לידה קופסאות וצנצנות סליים">
+      </div>
+      <div class="scq-side">
+        <p class="scq-qtext scq-qtext--mixed">
+          ליאן מכינה סליים ומוכרת אותו בתוך קופסאות פלסטיק קטנות בנפח 20 סמ"ק כל אחת.<br /><br />
+          היא רוצה למדוד נפח של כל חתיכת סליים לפני שהיא מכניסה אותה לקופסה, אבל הסליים כל הזמן צף והמים במשורה לא עולים.</p>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s9-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
   <section class="screen" data-screen="4" id="s4">
     <nav class="progress-question" data-count="8"></nav>
-    <div class="scq-question scq-question--withimage is-long">
+    <div class="scq-question scq-question--withimage">
       <div class="scq-figure">
         <img src="assets/img/s4-slime.jpg" alt="סליים ירוק צף על פני המים שבתוך משורה">
       </div>
@@ -124,7 +146,7 @@
 
   <section class="screen" data-screen="5" id="s5">
     <nav class="progress-question" data-count="8"></nav>
-    <div class="scq-question scq-question--withimage is-long">
+    <div class="scq-question scq-question--withimage">
       <div class="scq-figure">
         <img src="assets/img/s4-slime.jpg" alt="סליים ירוק צף על פני המים שבתוך משורה">
       </div>
@@ -149,7 +171,7 @@
 
   <section class="screen" data-screen="6" id="s6">
     <nav class="progress-question" data-count="8"></nav>
-    <div class="scq-question scq-question--withimage is-long">
+    <div class="scq-question scq-question--withimage">
       <div class="scq-figure">
         <img src="assets/img/s6-marbles.jpg" alt="כמה גולות זכוכית מונחות ליד משורה עם מים">
       </div>
@@ -190,7 +212,7 @@
 
   <section class="screen" data-screen="8" id="s8">
     <nav class="progress-question" data-count="8"></nav>
-    <div class="scq-question scq-question--withimage is-long">
+    <div class="scq-question scq-question--withimage">
       <div class="scq-figure">
         <img src="assets/img/s6-marbles.jpg" alt="כמה גולות זכוכית מונחות ליד משורה עם מים">
       </div>
@@ -239,6 +261,6 @@
   </div>
 
 </div><!-- /#app -->
-<script src="js/main.js?v=2"></script>
+<script src="js/main.js?v=3"></script>
 </body>
 </html>
