@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · תרגול מתקדם</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=1">
+  <link rel="stylesheet" href="../unit-css/style.css?v=2">
   <link rel="stylesheet" href="css/style.css?v=1">
 </head>
 <body data-subject-theme="science">
@@ -212,9 +212,8 @@
         </div>
       </div>
     </div>
-    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s6-scq-check" type="button" disabled onclick="scqCheck('s6')">צדקתי?</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s6-scq-check" type="button" disabled onclick="scqCheck('s6')">המשך</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
-  <div class="scq-popup hidden" id="s6-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s6')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s6-scq-popup-title"></p></div><div class="scq-popup-body" id="s6-scq-popup-body"></div></div>
 
   <!-- Q7 — numeric (ValueInputQuestion) -->
   <section class="screen" data-screen="7" id="s7">
@@ -247,14 +246,13 @@
          on main.js. renderCompanion() adopts an existing `:scope > .companion` and only
          refreshes src and offsets, so the turquoise/orange choice still applies. -->
     <img class="companion" src="assets/img/character-orange-selection.png" alt="" aria-hidden="true"
-         draggable="false" style="--cw: 132px; left: 46px; bottom: 80px;">
+         data-pose="ask" draggable="false" style="--cw: 132px; left: 46px; bottom: 80px;">
     <p class="thought-bubble thought-bubble--pinned" style="left: 214px; bottom: 96px; max-width: 330px;">
       סקרנים לדעת אם צדקתם?<br />
       בגלל שכל כך התקדמנו, נענה בלי רמזים ונדע אם צדקנו רק בסוף!<br />
       איזה מתח....</p>
-    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s7-scq-check" type="button" disabled onclick="scqCheck('s7')">צדקתי?</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s7-scq-check" type="button" disabled onclick="scqCheck('s7')">המשך</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
-  <div class="scq-popup hidden" id="s7-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s7')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s7-scq-popup-title"></p></div><div class="scq-popup-body" id="s7-scq-popup-body"></div></div>
 
   <section class="screen" data-screen="8" id="s8">
     <nav class="progress-question" data-count="8"></nav>
@@ -274,9 +272,31 @@
         </div>
       </div>
     </div>
-    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s8-scq-check" type="button" disabled onclick="scqCheck('s8')">צדקתי?</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s8-scq-check" type="button" disabled onclick="scqCheck('s8')">המשך</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
-  <div class="scq-popup hidden" id="s8-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s8')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s8-scq-popup-title"></p></div><div class="scq-popup-body" id="s8-scq-popup-body"></div></div>
+
+  <!-- ═══════════════ S11 — combined result for סעיפים א-ג (storyboard 144/145) ═══════════════
+       The three marbles סעיפים run without per-question feedback: the companion on slide 141
+       promises no hints and results only at the end, and the deck backs that up by giving
+       141/142/143 no feedback slides of their own and 144/145 one verdict for all three.
+       Title and tone switch on whether all three were right; the body — the correct answer
+       for each סעיף — is identical in both, so renderSectionResult() fills it in rather than
+       the markup carrying two copies. -->
+  <section class="screen" data-screen="11" id="s11">
+    <nav class="progress-question" data-count="8"></nav>
+    <div class="section-result" id="s11-result">
+      <p class="section-result-title" id="s11-result-title"></p>
+      <div class="section-result-body" id="s11-result-body"></div>
+    </div>
+    <img class="companion" src="assets/img/character-orange-selection.png" alt="" aria-hidden="true"
+         data-pose="ask" draggable="false" style="--cw: 150px; left: 40px; bottom: 84px;">
+    <p class="thought-bubble thought-bubble--pinned" id="s11-result-bubble"
+       style="left: 214px; bottom: 147px; max-width: 240px;"></p>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s11-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
 
   <!-- ═══════════════ REPORT MODAL ═══════════════ -->
   <div id="report-modal" class="report-modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
@@ -307,6 +327,6 @@
   </div>
 
 </div><!-- /#app -->
-<script src="js/main.js?v=7"></script>
+<script src="js/main.js?v=8"></script>
 </body>
 </html>

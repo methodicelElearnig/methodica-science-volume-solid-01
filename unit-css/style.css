@@ -3683,6 +3683,38 @@ html, body {
 .companion--center { left: 50%; transform: translateX(-50%); }
 
 /* ═══════════════════════════════════════════════════════
+   TEMPLATE — sectionResult (storyboard 144/145)
+   ONE verdict for a group of questions that deliberately ran without per-question
+   feedback. Laid out as the deck lays it out: the card in the right-hand half, the
+   companion and his reflective prompt down the left. The two variants (all correct /
+   partly correct) differ only in title and tone, so the body is rendered from JS
+   instead of being written twice.
+   ═══════════════════════════════════════════════════════ */
+.section-result {
+  position: absolute;
+  top: 104px; right: 60px; left: 480px;
+  border: 3px solid var(--subject-500);
+  border-radius: 18px;
+  background: #f4f9fd;
+  padding: 22px 28px;
+  direction: rtl; text-align: right;
+  font-family: 'Assistant', sans-serif;
+  font-size: 20px; font-weight: 400; color: #303030; line-height: 1.5;
+}
+.section-result--retry { background: #fff6f6; border-color: #d98b8f; }
+.section-result-title {
+  margin: 0 0 16px;
+  font-size: 24px; font-weight: 700; color: var(--subject-900);
+}
+.section-result--retry .section-result-title { color: #8f2f34; }
+.section-result-body > p { margin: 0 0 14px; }
+.section-result-body > p:last-child { margin-bottom: 0; }
+/* The deck writes the division as "50 : 5 = 10". Digits are LTR but the colon and the
+   equals sign are bidi-neutral, so inside this RTL paragraph they would resolve to the
+   paragraph direction and the expression would read back to front. Isolate it. */
+.section-result-expr { unicode-bidi: isolate; direction: ltr; }
+
+/* ═══════════════════════════════════════════════════════
    Storyboard stems that MIX weights
    The deck puts the scenario in regular and bolds only one run — the closing question
    on most screens, just the "סעיף X:" tag on others. Every stem layout

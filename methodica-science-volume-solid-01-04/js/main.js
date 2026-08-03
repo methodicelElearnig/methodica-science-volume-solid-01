@@ -1,14 +1,28 @@
 /* ═══════════════════════════════════════════════════════════
    js/main.js — 720 Science · Volume of a Solid · Part 04 (advanced)
-   S0 intro + 8 questions (7 SingleChoice + 1 numeric ValueInput) with
-   progress dots. On completion → Part 05 (peak א). Engine + SCQ + VIQ +
-   progress + report + xAPI.
+   S0 intro + 8 SingleChoice questions with progress dots, two scenario
+   screens, and one combined result for the last three. On completion →
+   Part 05 (peak א). Engine + SCQ + progress + report + xAPI.
    ═══════════════════════════════════════════════════════════ */
 var XAPI_ID_PREFIX = "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/";
 function shortId(u){ return String(u || "").split("/").pop(); }
 'use strict';
 
-const TOTAL_SCREENS = 11;  // S0 intro + S1–S8 + two scenario screens (S9, S10)
+const TOTAL_SCREENS = 12;  // S0 intro + S1–S8 + scenarios S9/S10 + result S11
+
+/* ── The סעיפים that run WITHOUT per-question feedback ────────────────────
+   Storyboard 141 has the companion promise "נענה בלי רמזים ונדע אם צדקנו רק בסוף",
+   and the deck backs that up: 141/142/143 carry no hint button and no feedback
+   slides of their own, and 144/145 give one verdict covering all three. So these
+   three grade silently — no popup, no right/wrong marking on the options — and
+   RESULT_SCREEN reports them together.
+   The progress dots must not leak the verdict either. Each answer is recorded the
+   moment it is given (so the result screen and xAPI both have it); only the
+   correct/incorrect *rendering* is withheld, and revealed on the result screen. */
+const SILENT_SCREENS = [6, 7, 8];
+const RESULT_SCREEN = 11;
+let resultRevealed = false;
+const isSilent = n => SILENT_SCREENS.indexOf(n) !== -1;
 
 /* Scenario screens: storyboard pages that set up a question but ask nothing. They take
    the next free ids so no existing screen / popup / hint-overlay id and no progress-nav
@@ -82,26 +96,37 @@ function characterAsset(pose) {
   return 'assets/img/character-' + getCharacter() + '-' +
          (ext ? pose : 'selection') + '.' + (ext || 'png');
 }
+/* s7 and s11 are NOT here: they author their sprite in index.html, because the position
+   only makes sense next to a bubble that also lives in the markup. Keeping a slot for
+   them too would mean two sources of truth for the same offsets. */
 const CHARACTER_SLOTS = {
-  s0: { pose: 'dumbbells', w: 200, right: 40, bottom: 95 },    /* sb113 */
-  s7: { pose: 'ask',       w: 132, left: 46, bottom: 80 }      /* sb141 — beside his bubble */
+  s0: { pose: 'dumbbells', w: 200, right: 40, bottom: 95 }     /* sb113 */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
   if (!screen) return;
   const slot = CHARACTER_SLOTS['s' + n];
-  // Lets a template reserve room for the sprite instead of being drawn over.
-  screen.classList.toggle('has-companion', !!slot);
   let el = screen.querySelector(':scope > .companion');
-  if (!slot) { if (el) el.remove(); return; }
+  /* An AUTHORED sprite (data-pose in the markup, no slot) must survive this function —
+     only which character it shows is refreshed. Removing every sprite on a slot-less
+     screen deleted s11's. An INJECTED one is still cleaned up when its slot goes away. */
+  if (!slot) {
+    if (el && el.dataset.injected === '1') { el.remove(); el = null; }
+    else if (el) el.src = characterAsset(el.dataset.pose || 'selection');
+    screen.classList.toggle('has-companion', !!el);
+    return;
+  }
   if (!el) {
     el = document.createElement('img');
     el.className = 'companion';
     el.alt = '';                                   // decorative, carries no information
     el.setAttribute('aria-hidden', 'true');
     el.draggable = false;
+    el.dataset.injected = '1';
     screen.appendChild(el);
   }
+  // Lets a template reserve room for the sprite instead of being drawn over.
+  screen.classList.add('has-companion');
   el.src = characterAsset(slot.pose);
   el.style.setProperty('--cw', slot.w + 'px');
   el.classList.toggle('companion--center', slot.center === true);
@@ -112,6 +137,9 @@ function renderCompanion(n) {
 
 function resetScreenState(n) {
   renderCompanion(n);
+  /* Reaching the result screen is what unseals the three withheld verdicts. Set the
+     flag before syncing any nav so this screen's own dots render revealed. */
+  if (n === RESULT_SCREEN) { resultRevealed = true; renderSectionResult(); syncPracticeNav('s' + n); }
   if (n >= 1 && n <= 8) {
     const idx = n - 1;
     practiceEnter(idx, 's' + n);
@@ -135,6 +163,8 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
 });
 function goBack() {
+  /* The result screen follows the last question, not screen 10. */
+  if (currentScreen === RESULT_SCREEN) { goTo(practiceProgress.questions[practiceProgress.questions.length - 1].screen); return; }
   const sc = scenarioAt(currentScreen);
   if (sc) { goTo(sc.after); return; }
   const pIdx = practiceProgress.questions.findIndex(q => q.screen === currentScreen);
@@ -147,6 +177,7 @@ function goBack() {
 }
 function advanceScreen() {
   if (currentScreen === 0) { goTo(1); return; }
+  if (currentScreen === RESULT_SCREEN) { goToNextPart(); return; }   // last screen of the part
   const sc = scenarioAt(currentScreen);
   if (sc) { goTo(sc.before); return; }
   if (practiceProgress.questions.some(q => q.screen === currentScreen)) return;
@@ -199,15 +230,26 @@ function scqCheck(screen) {
   s.attempts++;
   const correct = s.sel === cfg.correctId;
   xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question', { success: !!correct, score: { scaled: correct ? 1 : 0 } }, { questionId: cfg.questionId });
+  /* Silent question (cfg.silent, maxAttempts 1): record the answer and move on without
+     revealing anything — no popup, no correct/wrong marking on the options. The verdict
+     surfaces once, on RESULT_SCREEN. */
+  if (cfg.silent) {
+    scqFinish(screen, correct);
+    if (cfg.onContinue) cfg.onContinue(); else advanceScreen();
+    return;
+  }
   if (correct) { scqMark(screen, cfg.correctId, 'correct'); renderFeedbackPopup(screen, 'correct', cfg.popups); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) { scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'wrong2', cfg.popups); scqFinish(screen, false); }
   else { scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'retry', cfg.popups); }
 }
+/* A silent question never shows a verdict, so "צדקתי?" ("was I right?") would promise
+   one it does not deliver — those screens just continue. */
+function scqLabel(cfg, done) { return cfg.silent ? 'המשך' : (done ? 'שנמשיך?' : 'צדקתי?'); }
 function scqMark(screen, id, cls) { const o = document.querySelector('#' + screen + ' .scq-opt[data-id="' + id + '"]'); if (o) { o.classList.remove('selected'); o.classList.add(cls); } }
 function scqFinish(screen, ok) {
   const s = SCQ_REG[screen]; s.answered = true; s.done = true;
   scqOpts(screen).forEach(o => { o.disabled = true; });
-  const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'שנמשיך?'; chk.disabled = false; }
+  const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = scqLabel(s.cfg, true); chk.disabled = false; }
   const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden';
   if (s.cfg.onFinish) s.cfg.onFinish(ok);
 }
@@ -220,13 +262,13 @@ function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-over
 function scqEnter(screen) {
   const s = SCQ_REG[screen]; if (!s) return;
   document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); scqClosePopup(screen);
-  if (s.done) { scqOpts(screen).forEach(o => { o.disabled = true; }); const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'שנמשיך?'; chk.disabled = false; } const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden'; }
+  if (s.done) { scqOpts(screen).forEach(o => { o.disabled = true; }); const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = scqLabel(s.cfg, true); chk.disabled = false; } const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden'; }
   else { scqReset(screen); }
 }
 function scqReset(screen) {
   const s = SCQ_REG[screen]; s.sel = null; s.attempts = 0; s.answered = false;
   scqOpts(screen).forEach(o => { o.classList.remove('selected', 'correct', 'wrong'); o.setAttribute('aria-checked', 'false'); o.disabled = false; });
-  const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'צדקתי?'; chk.disabled = true; }
+  const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = scqLabel(s.cfg, false); chk.disabled = true; }
   const hint = document.getElementById(screen + '-scq-hint'); if (hint) { hint.disabled = false; hint.style.visibility = ''; }
 }
 
@@ -264,18 +306,26 @@ function viqEnter(screen) {
 var practiceProgress = { questions: [] };
 for (let i = 1; i <= 8; i++) practiceProgress.questions.push({ number: i, visited: i === 1, state: i === 1 ? 'current' : 'not-answered', screen: i });
 function goToNextPart() { try { sendStatement720('completed', 'onlinelesson'); } catch (e) {} window.location.href = PART_05_URL + window.location.search; }
+/* What the nav is allowed to SHOW, as opposed to what has been recorded. A silent
+   question that has been answered still reads as 'current' — visited, verdict withheld —
+   until the result screen unseals it. */
+function visibleState(q) {
+  if (!resultRevealed && isSilent(q.screen) && (q.state === 'correct' || q.state === 'incorrect')) return 'current';
+  return q.state;
+}
 function updateProgressQuestion(container, state) {
   if (!container) return; const qs = state.questions;
   qs.forEach((q, i) => {
     const n = i + 1; const item = container.querySelector('[data-question="' + n + '"]'); if (!item) return;
     const icon = item.querySelector('.progress-question__icon'), label = item.querySelector('.progress-question__label');
+    const vs = visibleState(q);
     icon.classList.remove('progress-question__icon--current', 'progress-question__icon--correct', 'progress-question__icon--incorrect');
-    if (q.state !== 'not-answered') icon.classList.add('progress-question__icon--' + q.state);
+    if (vs !== 'not-answered') icon.classList.add('progress-question__icon--' + vs);
     label.classList.toggle('progress-question__label--visited', q.visited);
     const nav = q.visited && q.screen != null && q.screen !== currentScreen;
     item.style.cursor = nav ? 'pointer' : ''; item.onclick = nav ? (function (s) { return function () { goTo(s); }; })(q.screen) : null;
   });
-  for (let n = 1; n < qs.length; n++) { const conn = container.querySelector('[data-connector="' + n + '"]'); if (!conn) continue; const st = qs[n - 1].state; conn.classList.toggle('progress-question__connector--visited', st === 'correct' || st === 'incorrect'); }
+  for (let n = 1; n < qs.length; n++) { const conn = container.querySelector('[data-connector="' + n + '"]'); if (!conn) continue; const st = visibleState(qs[n - 1]); conn.classList.toggle('progress-question__connector--visited', st === 'correct' || st === 'incorrect'); }
 }
 function syncPracticeNav(screen) { updateProgressQuestion(document.querySelector('#' + screen + ' .progress-question'), practiceProgress); }
 function practiceEnter(idx, screen) { const q = practiceProgress.questions[idx]; q.visited = true; if (q.state === 'not-answered') q.state = 'current'; syncPracticeNav(screen); scqEnter(screen); }
@@ -284,7 +334,7 @@ function _practiceOnFinish(idx, screen) { return function (ok) { const q = pract
 function _practiceOnContinue(idx) {
   return function () {
     const nx = idx + 1;
-    if (nx >= practiceProgress.questions.length) { goToNextPart(); return; }
+    if (nx >= practiceProgress.questions.length) { goTo(RESULT_SCREEN); return; }
     practiceProgress.questions[nx].visited = true;
     const target = practiceProgress.questions[nx].screen;
     const pre = scenarioBefore(target);          // a question with a scenario page opens on it
@@ -316,18 +366,41 @@ registerPractice(4, { correctId: 'd', questionId: QID + P + '04/q2', popups: {
   retry:   { title: 'התשובה אינה נכונה.', body: ['הנפח כולל מים + סליים + משקולת.', 'נסו שוב!'] },
   correct: { title: 'נכון!', body: ['נפח הסליים = הנפח החדש − נפח המים ההתחלתי − נפח המשקולת.'] },
   wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'מחסירים גם את המים ההתחלתיים וגם את המשקולת.'] } } });
-registerPractice(5, { correctId: 'a', questionId: QID + P + '05/q1', popups: {
-  retry:   { title: 'התשובה אינה נכונה.', body: ['מתי חלוקה שווה מייצגת גולה אחת?', 'נסו שוב!'] },
-  correct: { title: 'נכון!', body: ['מדידה קבוצתית וחלוקה עובדת רק אם כל הגולות זהות.'] },
-  wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'רק אם הגולות זהות אפשר לחלק את הנפח הכולל במספרן.'] } } });
-registerPractice(6, { correctId: 'a', questionId: QID + P + '05/q2', popups: {
-  retry:   { title: 'התשובה אינה נכונה.', body: ['50 ÷ 5 = ?', 'נסו שוב!'] },
-  correct: { title: 'נכון!', body: ['נפח גולה אחת = 50 ÷ 5 = 10 סמ"ק.'] },
-  wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'נפח גולה אחת = 50 ÷ 5 = 10 סמ"ק.'] } } });
-registerPractice(7, { correctId: 'b', questionId: QID + P + '05/q3', popups: {
-  retry:   { title: 'התשובה אינה נכונה.', body: ['אם הגולות שונות — מה החלוקה נותנת?', 'נסו שוב!'] },
-  correct: { title: 'נכון!', body: ['בגולות שונות נדע רק את הנפח הכולל, לא את נפח הגולה הבודדת.'] },
-  wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'חלוקה נותנת ממוצע — לא נפח אמיתי של גולה מסוימת כשהן שונות.'] } } });
+/* סעיפים א-ג of the marbles question run silent: one attempt, no popup, no marking.
+   See SILENT_SCREENS at the top — storyboard 141 promises results only at the end and
+   144/145 deliver them for all three at once, so there is nothing to show per question. */
+registerPractice(5, { correctId: 'a', silent: true, maxAttempts: 1, questionId: QID + P + '05/q1' });
+registerPractice(6, { correctId: 'a', silent: true, maxAttempts: 1, questionId: QID + P + '05/q2' });
+registerPractice(7, { correctId: 'b', silent: true, maxAttempts: 1, questionId: QID + P + '05/q3' });
+
+/* ═══ Combined result for סעיפים א-ג — storyboard 144/145 ═══
+   Both slides carry the SAME body (the correct answer for each סעיף); only the title and
+   the companion's reflective prompt differ, so the body is written once. Bold runs follow
+   the deck run for run, with two deliberate departures:
+     - the deck writes `כל הגלות` (missing vav) — kept as `הגולות`, per the agreed policy
+       in QA/TEXT-FIDELITY.md §Deck defects
+     - the division is wrapped in .section-result-expr; its colon and equals sign are
+       bidi-neutral and would otherwise be reordered inside this RTL paragraph */
+const SECTION_RESULT = {
+  correct: { title: 'צדקת בכל הסעיפים! כל הכבוד!',
+             bubble: 'איזה סעיף דרש ממך הכי הרבה מחשבה?' },
+  partial: { title: 'התשובה אינה נכונה במלואה.<br />הנה התשובות הנכונות.',
+             bubble: 'מה הפתיע אתכם בפתרון הנכון לעומת מה שחשבתם בהתחלה?' },
+  body: [
+    '<b>א. גילי צודק רק אם כל הגולות זהות.</b><br />אם הגולות זהות אז הנפח הכולל שלהן חלקי מספר הגולות שווה לנפח של גולה אחת.',
+    '<b>ב. כל הגולות זהות ולכן ניתן לחלק את הנפח הכולל ב – 5</b> <span class="section-result-expr">50 : 5 = 10</span>',
+    'ג. עבור גולות בגדלים שונים <b>השיטה של גילי לא תעבוד</b>. אם הגולות שונות, נדע את הנפח הכולל אבל לא נפח של גולה ספציפית.'
+  ]
+};
+function renderSectionResult() {
+  const allRight = SILENT_SCREENS.every(n => practiceProgress.questions[n - 1].state === 'correct');
+  const v = allRight ? SECTION_RESULT.correct : SECTION_RESULT.partial;
+  document.getElementById('s11-result').classList.toggle('section-result--retry', !allRight);
+  document.getElementById('s11-result-title').innerHTML = v.title;
+  document.getElementById('s11-result-body').innerHTML =
+    SECTION_RESULT.body.map(x => '<p>' + x + '</p>').join('');
+  document.getElementById('s11-result-bubble').textContent = v.bubble;
+}
 
 /* ═══ Report modal ═══ */
 function openReportModal() { document.getElementById('report-modal').removeAttribute('hidden'); setTimeout(function () { document.getElementById('report-type')?.focus(); }, 40); }
