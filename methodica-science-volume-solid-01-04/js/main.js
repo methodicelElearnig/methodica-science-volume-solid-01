@@ -8,7 +8,18 @@ var XAPI_ID_PREFIX = "https://lomdot.education.gov.il/metodica/720active/science
 function shortId(u){ return String(u || "").split("/").pop(); }
 'use strict';
 
-const TOTAL_SCREENS = 10;  // S0 intro + S1–S8 + S9 (Liyan scenario, sits between S3 and S4)
+const TOTAL_SCREENS = 11;  // S0 intro + S1–S8 + two scenario screens (S9, S10)
+
+/* Scenario screens: storyboard pages that set up a question but ask nothing. They take
+   the next free ids so no existing screen / popup / hint-overlay id and no progress-nav
+   index had to shift; the flow order lives in this table instead of in the numbering.
+   `after`/`before` are the question screens they sit between. */
+const SCENARIOS = [
+  { screen: 9,  after: 3, before: 4 },   // slide 129 — Liyan's slime, before סעיף א
+  { screen: 10, after: 5, before: 6 },   // slide 140 — Gili's marbles, before סעיף א
+];
+const scenarioAt     = n => SCENARIOS.find(s => s.screen === n);
+const scenarioBefore = n => SCENARIOS.find(s => s.before === n);
 const PART_05_URL = '../methodica-science-volume-solid-01-05/index.html';
 window.lomdaState = window.lomdaState || {};
 let currentScreen = 0;
@@ -109,11 +120,12 @@ function resetScreenState(n) {
      renders with no state at all — nothing answered, nothing current. Mark the question
      it introduces (סעיף א) as current, since this is that question's opening screen, and
      sync. No answer state is touched: practiceEnter() re-runs on the question itself. */
-  if (n === SCENARIO_SCREEN) {
-    const q = practiceProgress.questions[SCENARIO_BEFORE - 1];
+  const sc = scenarioAt(n);
+  if (sc) {
+    const q = practiceProgress.questions[sc.before - 1];
     q.visited = true;
     if (q.state === 'not-answered') q.state = 'current';
-    syncPracticeNav('s' + SCENARIO_SCREEN);
+    syncPracticeNav('s' + n);
   }
 }
 document.addEventListener('keydown', e => {
@@ -121,24 +133,21 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') goBack();
   if (e.key === 'Escape') document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
 });
-/* S9 is the Liyan scenario (storyboard slide 129). It sits between S3 and S4 in the
-   flow but carries the next free id, so the order is wired explicitly here and in
-   advanceScreen()/SCENARIO_BEFORE rather than by renumbering every screen. */
-const SCENARIO_SCREEN = 9;       // slide 129
-const SCENARIO_AFTER  = 3;       // shown after Q3 …
-const SCENARIO_BEFORE = 4;       // … and before Q4 (סעיף א)
 function goBack() {
-  if (currentScreen === SCENARIO_SCREEN) { goTo(SCENARIO_AFTER); return; }
+  const sc = scenarioAt(currentScreen);
+  if (sc) { goTo(sc.after); return; }
   const pIdx = practiceProgress.questions.findIndex(q => q.screen === currentScreen);
   if (pIdx !== -1) {
-    if (currentScreen === SCENARIO_BEFORE) { goTo(SCENARIO_SCREEN); return; }
+    const pre = scenarioBefore(currentScreen);   // step back through the scenario, not past it
+    if (pre) { goTo(pre.screen); return; }
     goTo(pIdx > 0 ? practiceProgress.questions[pIdx - 1].screen : 0); return;
   }
   goTo(currentScreen - 1);
 }
 function advanceScreen() {
   if (currentScreen === 0) { goTo(1); return; }
-  if (currentScreen === SCENARIO_SCREEN) { goTo(SCENARIO_BEFORE); return; }
+  const sc = scenarioAt(currentScreen);
+  if (sc) { goTo(sc.before); return; }
   if (practiceProgress.questions.some(q => q.screen === currentScreen)) return;
   goTo(currentScreen + 1);
 }
@@ -277,8 +286,8 @@ function _practiceOnContinue(idx) {
     if (nx >= practiceProgress.questions.length) { goToNextPart(); return; }
     practiceProgress.questions[nx].visited = true;
     const target = practiceProgress.questions[nx].screen;
-    // Q3 hands off to the Liyan scenario, which then continues to Q4.
-    goTo(target === SCENARIO_BEFORE ? SCENARIO_SCREEN : target);
+    const pre = scenarioBefore(target);          // a question with a scenario page opens on it
+    goTo(pre ? pre.screen : target);
   };
 }
 function registerPractice(idx, cfg) { cfg.screen = 's' + practiceProgress.questions[idx].screen; cfg.onFinish = _practiceOnFinish(idx, cfg.screen); cfg.onContinue = _practiceOnContinue(idx); scqRegister(cfg); attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup')); }

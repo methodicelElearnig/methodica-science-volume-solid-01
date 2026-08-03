@@ -170,6 +170,30 @@
   <div class="scq-popup hidden" id="s5-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s5')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s5-scq-popup-title"></p></div><div class="scq-popup-body" id="s5-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s5-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s5')"><div class="scq-hint-box" role="dialog" aria-modal="true"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s5')" aria-label="סגור">✕</button><h2 class="scq-hint-title">רמז</h2><p>הנפח שנמדד כולל מים + סליים + משקולת. כדי לבודד את הסליים, מחסירים את שני האחרים.</p></div></div>
 
+  <!-- ═══ S10 — Gili marbles scenario (storyboard slide 140) ═══
+       Sits between s5 and s6; id is the next free one and the order lives in the
+       SCENARIOS table in main.js. Scenario only — no question, but it carries the same
+       progress nav as the questions, in the state of the one it introduces (סעיף א). -->
+  <section class="screen" data-screen="10" id="s10">
+    <nav class="progress-question" data-count="8"></nav>
+    <div class="scq-question scq-question--withimage">
+      <div class="scq-figure">
+        <img src="assets/img/s10-marbles-intro.jpg" alt="גולות זכוכית צבעוניות מפוזרות על משטח ליד משורה">
+      </div>
+      <div class="scq-side">
+        <p class="thought-bubble">אני יכול למדוד את הנפח של 5 הגולות ביחד!</p>
+        <p class="scq-qtext scq-qtext--mixed">
+          גילי מתכנן מסלול מכשולים לגולות.<br />
+          כדי לתכנן את אחד המעברים הוא צריך לדעת מה הנפח של גולה.<br /><br />
+          בגלל שהגולות מאוד קטנות הוא חושש שהמדידה שלו לא תהיה מספיק מדויקת.</p>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s10-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
   <section class="screen" data-screen="6" id="s6">
     <nav class="progress-question" data-count="8"></nav>
     <div class="scq-question scq-question--withimage">
@@ -262,6 +286,6 @@
   </div>
 
 </div><!-- /#app -->
-<script src="js/main.js?v=4"></script>
+<script src="js/main.js?v=5"></script>
 </body>
 </html>

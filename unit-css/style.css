@@ -3695,3 +3695,33 @@ html, body {
 .scq-qtext.scq-qtext--mixed { font-weight: 400; }
 .scq-qtext.scq-qtext--mixed b,
 .scq-qtext.scq-qtext--mixed strong { font-weight: 700; }
+
+/* ═══════════════════════════════════════════════════════
+   COMPONENT — Thought bubble (cloud)
+   The storyboard renders a character's inner thought as a cloud shape
+   ("בועת מחשבה: ענן"), distinct from the outlined speech bubbles. Part 01 has its own
+   comic-panel variant of this, but that family is part-local and differs between parts,
+   so scenario screens get this small shared version instead: a strongly rounded cloud
+   with two trailing puffs. Width comes from the instance.
+   ═══════════════════════════════════════════════════════ */
+.thought-bubble {
+  position: relative;
+  align-self: flex-start;
+  background: var(--subject-100);
+  border: 2px solid var(--subject-500);
+  border-radius: 42px 42px 42px 12px / 34px 34px 34px 12px;
+  padding: 14px 22px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 21px; font-weight: 700; color: var(--subject-900);
+  text-align: right; direction: rtl; line-height: 1.35;
+}
+.thought-bubble::before,
+.thought-bubble::after {           /* the two puffs trailing toward the character */
+  content: '';
+  position: absolute; right: 26px;
+  background: var(--subject-100);
+  border: 2px solid var(--subject-500);
+  border-radius: 50%;
+}
+.thought-bubble::before { bottom: -13px; width: 16px; height: 16px; }
+.thought-bubble::after  { bottom: -26px; right: 14px; width: 9px; height: 9px; }
