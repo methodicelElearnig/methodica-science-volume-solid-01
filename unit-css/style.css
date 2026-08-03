@@ -3739,3 +3739,13 @@ html, body {
   left: -15px;
   border-right: 19px solid #fff;
 }
+
+/* Pinned variant: the bubble belongs to the companion sprite rather than to the text
+   column, so the instance supplies physical left/bottom. Same beak, still pointing at
+   whatever sits to its physical left — which is where the sprite stands. */
+.thought-bubble--pinned {
+  position: absolute;
+  z-index: 10;                       /* over .screen::after's 74px bar (9) */
+  align-self: auto;
+  margin: 0;
+}

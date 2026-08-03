@@ -83,7 +83,8 @@ function characterAsset(pose) {
          (ext ? pose : 'selection') + '.' + (ext || 'png');
 }
 const CHARACTER_SLOTS = {
-  s0: { pose: 'dumbbells', w: 200, right: 40, bottom: 95 }     /* sb113 */
+  s0: { pose: 'dumbbells', w: 200, right: 40, bottom: 95 },    /* sb113 */
+  s7: { pose: 'ask',       w: 132, left: 46, bottom: 80 }      /* sb141 — beside his bubble */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
