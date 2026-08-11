@@ -17,12 +17,12 @@ _test/                        the local verification harness (not shipped)
 | Read this | For |
 |---|---|
 | [unit-js/README.md](unit-js/README.md) | the shared layer, the hook contract, and **three standing rules** that must not be broken |
-| [REPORT-XAPI.md](REPORT-XAPI.md) | every statement, where it fires, id shapes, denominators, `success` policy |
-| [RESUME.md](RESUME.md) | the state document, the ledgers, restore, `?resetState`, and what is **not** yet verified |
-| [ROUTING-AND-RETAKE.md](ROUTING-AND-RETAKE.md) | the flow graph, who owns the retake, the three attempt-ending sites |
-| [METADATA-KNOWN-ISSUES.md](METADATA-KNOWN-ISSUES.md) | the bare unit id and what else is open in `metadata/` |
+| [docs-and-tools/REPORT-XAPI.md](docs-and-tools/REPORT-XAPI.md) | every statement, where it fires, id shapes, denominators, `success` policy |
+| [docs-and-tools/RESUME.md](docs-and-tools/RESUME.md) | the state document, the ledgers, restore, `?resetState`, and what is **not** yet verified |
+| [docs-and-tools/ROUTING-AND-RETAKE.md](docs-and-tools/ROUTING-AND-RETAKE.md) | the flow graph, who owns the retake, the three attempt-ending sites |
+| [docs-and-tools/METADATA-KNOWN-ISSUES.md](docs-and-tools/METADATA-KNOWN-ISSUES.md) | the bare unit id and what else is open in `metadata/` |
 | [_test/README.md](_test/README.md) | the harness, its console helpers, and the cache traps |
-| [SEND-METADATA.md](SEND-METADATA.md) | pushing `metadata/` to the platform |
+| [docs-and-tools/SEND-METADATA.md](docs-and-tools/SEND-METADATA.md) | pushing `metadata/` to the platform |
 
 `_test/baselines/` holds the stage-by-stage working record of the reconstruction — what was found,
 what was decided and why. The documents above are the current-state reference; the baselines are the
@@ -64,9 +64,9 @@ vs markup, metadata id resolution, and `SCREEN_TO_SUBCONTENT` completeness. All 
 
 Reporting is v2.4-conformant and resume is enabled. **Nothing has been verified against a live Kata
 launch** — no real `?slxapi`/`?registration`, and the State API has never been exercised over HTTP.
-The open list is at the end of [RESUME.md](RESUME.md); reporting questions for the platform are at the
-end of [REPORT-XAPI.md](REPORT-XAPI.md).
+The open list is at the end of [docs-and-tools/RESUME.md](docs-and-tools/RESUME.md); reporting questions for the platform are at the
+end of [docs-and-tools/REPORT-XAPI.md](docs-and-tools/REPORT-XAPI.md).
 
 Content completeness is tracked separately and is **not** release-ready: see
-[ASSETS-TODO.md](ASSETS-TODO.md). `CHARACTER_ASSETS` currently declares one pose while
+[docs-and-tools/ASSETS-TODO.md](docs-and-tools/ASSETS-TODO.md). `CHARACTER_ASSETS` currently declares one pose while
 `CHARACTER_SLOTS` names eleven.

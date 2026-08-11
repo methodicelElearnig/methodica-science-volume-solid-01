@@ -4,8 +4,8 @@ One copy of every behaviour that is the same in all **six** components of this u
 `methodica-science-volume-solid-01-0N/js/main.js` keeps only that component's configuration and screen
 logic, and fills in the hook contract below.
 
-Companions: [../REPORT-XAPI.md](../REPORT-XAPI.md) · [../RESUME.md](../RESUME.md) ·
-[../ROUTING-AND-RETAKE.md](../ROUTING-AND-RETAKE.md) · [../_test/README.md](../_test/README.md)
+Companions: [../docs-and-tools/REPORT-XAPI.md](../docs-and-tools/REPORT-XAPI.md) · [../docs-and-tools/RESUME.md](../docs-and-tools/RESUME.md) ·
+[../docs-and-tools/ROUTING-AND-RETAKE.md](../docs-and-tools/ROUTING-AND-RETAKE.md) · [../_test/README.md](../_test/README.md)
 
 ---
 

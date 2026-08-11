@@ -7,7 +7,7 @@ guidelines v2.4 (26/07/2026)** plus `דוגמאות XAPI.pdf`.
 > predates both of v2.4's breaking changes. Build against the v2.4 PDF in
 > `…/methodica-math-scale-01/docs/`, not against `Docs/`.
 
-Companions: [unit-js/README.md](unit-js/README.md) · [RESUME.md](RESUME.md) ·
+Companions: [unit-js/README.md](../unit-js/README.md) · [RESUME.md](RESUME.md) ·
 [ROUTING-AND-RETAKE.md](ROUTING-AND-RETAKE.md) · [METADATA-KNOWN-ISSUES.md](METADATA-KNOWN-ISSUES.md)
 
 ---

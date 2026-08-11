@@ -29,14 +29,16 @@ See [KATA-API-DETAILED.md](../../KATA-API-DETAILED.md) for the full endpoint sch
 ## Usage
 
 ```powershell
+# Run from the repo root (or adjust the -File path to match your cwd).
+
 # 1) Dry run — builds and prints every payload, no network, no key needed.
-pwsh -File send-metadata.ps1 -DryRun
+pwsh -File docs-and-tools/send-metadata.ps1 -DryRun
 
 # 2) Live run — after pasting your key.
-pwsh -File send-metadata.ps1
+pwsh -File docs-and-tools/send-metadata.ps1
 
 # Optional overrides:
-pwsh -File send-metadata.ps1 -BaseUrl 'https://kata.cet.ac.il' -MetadataDir '.\metadata'
+pwsh -File docs-and-tools/send-metadata.ps1 -BaseUrl 'https://kata.cet.ac.il' -MetadataDir '.\metadata'
 ```
 
 Progress prints to the console and to `send-metadata.log` (git-ignored). Each line is
