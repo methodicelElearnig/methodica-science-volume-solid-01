@@ -1,0 +1,20 @@
+# Keep line endings stable across machines: LF in the repo and in working trees.
+# Without this, core.autocrlf=true rewrites every text file to CRLF on checkout
+# and fills diffs with whitespace-only churn.
+* text=auto eol=lf
+
+# Binary assets: never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.svg binary
+*.mp3 binary
+*.mp4 binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+*.pdf binary
