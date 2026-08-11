@@ -1,3 +1,4 @@
+'use strict';
 /* ═══════════════════════════════════════════════════════════
    js/main.js — 720 Science · Volume of a Solid · Part 02 (remediation)
    Reached from Part 01's score branch (<4/5). 6 SingleChoiceQuestions
@@ -5,40 +6,13 @@
    progress-dots + report modal + xAPI, ported from Part 01.
    ═══════════════════════════════════════════════════════════ */
 
-var XAPI_ID_PREFIX = "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/";
-function shortId(u){ return String(u || "").split("/").pop(); }
-
-'use strict';
-
 const TOTAL_SCREENS = 8;          // S0 intro + S1–S6 practice + S7 mid transition (sb98, sits between Q4 and Q5)
 const PART_03_URL = '../methodica-science-volume-solid-01-03/index.html';
 
 window.lomdaState = window.lomdaState || {};
-let currentScreen = 0;
 
 /* ─── Scale App (1280×710 canvas) ─────────────────────────── */
-function scaleApp() {
-  const app = document.getElementById('app');
-  const scale   = Math.min(window.innerWidth / 1280, window.innerHeight / 710);
-  app.style.width     = (window.innerWidth / scale) + 'px';
-  app.style.height    = (window.innerHeight / scale) + 'px';
-  app.style.transform = 'scale(' + scale + ')';
-  app.style.left = '0px'; app.style.top = '0px';
-}
-window.addEventListener('resize', scaleApp);
-scaleApp();
 
-/* ─── Navigation ─────────────────────────────────────────── */
-function goTo(n) {
-  if (n < 0 || n >= TOTAL_SCREENS) return;
-  document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
-  const prev = document.querySelector('.screen.active');
-  if (prev) prev.classList.remove('active');
-  currentScreen = n;
-  const next = document.getElementById('s' + n);
-  if (next) next.classList.add('active');
-  resetScreenState(n);
-}
 /* ═══════════════════════════════════════════════════════════
    COMPONENT — Companion character
    The learner picks a mascot on part-01 S0; localStorage is the only
@@ -134,20 +108,35 @@ function scqSelect(screen, id) {
   scqOpts(screen).forEach(o => { const sel = o.dataset.id === id; o.classList.toggle('selected', sel); o.setAttribute('aria-checked', sel ? 'true' : 'false'); });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) chk.disabled = false;
 }
-/* Fire-and-forget xAPI — defer the (possibly synchronous) send to a macrotask so it
-   never blocks a click's visual feedback (the browser only paints after the handler
-   returns). Pre-navigation 'completed' sends and init stay synchronous. */
-function xapiSend() {
-  const args = arguments;
-  setTimeout(function () { try { sendStatement720.apply(null, args); } catch (e) {} }, 0);
-}
 function scqCheck(screen) {
   const s = SCQ_REG[screen], cfg = s.cfg;
   if (s.answered) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
   if (!s.sel) return;
   s.attempts++;
   const correct = s.sel === cfg.correctId;
-  xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question', { success: !!correct, score: { scaled: correct ? 1 : 0 } }, { questionId: cfg.questionId });
+
+  /* xAPI: two attempts allowed. A correct answer or the second wrong one closes the question with
+     'answered.last'; a first wrong answer is an interim 'answered'. Only '.last' feeds the
+     component score.
+
+     The ids are resolved HERE and not at registration time: xapiQ() reads window.METADATA, which the
+     library fetches asynchronously, and registerPractice() runs while the page is still parsing. It
+     returns the question IRI and the id of the containing item, which 720 v2.4 §2 makes mandatory as
+     context.contextActivities.parent. */
+  const q = xapiQ(cfg.item, cfg.qKey || 'q1');
+  xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question',
+    { response: xapiAnswerText(document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]')),
+      success: !!correct,
+      score: { scaled: correct ? 1 : 0 } },
+    { questionId: q.questionId, parentId: q.parentId });
+
+  /* Outside the send: xapiSend swallows exceptions, and the component score must not depend on
+     whether reporting succeeded. Recorded only on the attempt that closes the question, so a first
+     wrong answer followed by a correct one counts as correct. */
+  if (correct || s.attempts >= cfg.maxAttempts) {
+    XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!correct;
+  }
+
   if (correct) { scqMark(screen, cfg.correctId, 'correct'); scqShowPopup(screen, 'correct'); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) { scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'wrong2'); scqFinish(screen, false); }
   else { scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); }
@@ -175,7 +164,11 @@ function scqShowPopup(screen, type) {
 function scqClosePopup(screen) { document.getElementById(screen + '-scq-popup')?.classList.add('hidden'); }
 function scqHint(screen) {
   const s = SCQ_REG[screen]; if (!s || s.answered) return;
-  xapiSend('requested.1', 'question', null, { questionId: s.cfg.questionId });
+  /* Reported on OPEN only. This overlay has no toggle — closing goes through scqCloseHint — so a
+     learner reopening the hint legitimately reports a second request.
+     No parentId: v2.4 mandates it for answered/evaluated only. */
+  const q = xapiQ(s.cfg.item, s.cfg.qKey || 'q1');
+  xapiSend('requested.1', 'question', null, { questionId: q.questionId });
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
@@ -194,22 +187,6 @@ function scqReset(screen) {
   scqOpts(screen).forEach(o => { o.classList.remove('selected', 'correct', 'wrong'); o.setAttribute('aria-checked', 'false'); o.disabled = false; });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'צדקתי?'; chk.disabled = true; }
   const hint = document.getElementById(screen + '-scq-hint'); if (hint) { hint.disabled = false; hint.style.visibility = ''; }
-}
-function attachPopupDrag(popup) {
-  if (!popup || popup._dragWired) return;
-  popup._dragWired = true;
-  let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
-  const header = popup.querySelector('.scq-popup-header') || popup;
-  function scale() { const app = document.getElementById('app'); const m = app && app.style.transform.match(/scale\(([^)]+)\)/); return m ? parseFloat(m[1]) : 1; }
-  header.addEventListener('pointerdown', e => {
-    if (e.target.closest('.scq-popup-close')) return;
-    dragging = true; sx = e.clientX; sy = e.clientY;
-    const r = popup.getBoundingClientRect(), sc = scale(); ox = r.left / sc; oy = r.top / sc;
-    popup.style.bottom = 'auto'; header.setPointerCapture(e.pointerId); e.preventDefault();
-  });
-  header.addEventListener('pointermove', e => { if (!dragging) return; const sc = scale(); popup.style.left = (ox + (e.clientX - sx) / sc) + 'px'; popup.style.top = (oy + (e.clientY - sy) / sc) + 'px'; });
-  header.addEventListener('pointerup', () => { dragging = false; });
-  header.addEventListener('pointercancel', () => { dragging = false; });
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -266,8 +243,35 @@ var practiceProgress = {
     { number: 6, visited: false, state: 'not-answered', screen: 6 }
   ]
 };
+/* How many of the six the learner got right. Counted from XAPI_Q_RESULTS rather than from
+   practiceProgress, so the number reported and the number scored cannot drift apart. */
+function practiceScore() {
+  return xapiCorrectCount();
+}
+
 function goToNextPart() {
-  try { sendStatement720('completed', 'onlinelesson'); } catch (e) {}
+  /* Close the item the learner is standing in before reporting the component: an item 'completed'
+     that arrived after its component's would be out of order. */
+  try { xapiFinishItems(); } catch (e) {}
+
+  /* xAPI: the component 'completed', with an EXPLICIT result. The library's own aggregate is an
+     all-correct AND, which would report success:false for any partial pass.
+
+     Denominator is 6 — the six exercises the learner was promised (and the six progress dots),
+     not the metadata question count, which happens to agree here but does not in part 04.
+
+     ⚠️ success:true unconditionally, and that is a deliberate reading rather than an oversight.
+     This component is remediation: it has NO pass threshold anywhere in the code and always
+     proceeds to Part 03, whatever the learner scores. v2.4 leaves `success` to the content
+     provider's own definition, so with no gate to clear, completing the component IS the success
+     condition and `score.scaled` carries the performance. If the content owner wants a threshold
+     here (part 01 uses 4/5), this is the one line to change — see REPORT-XAPI.md open items. */
+  try {
+    sendCompletedOnce('done', currentPartSlug(), 'onlinelesson',
+      { success: true, score: { scaled: practiceScore() / 6 } });
+  } catch (e) { console.error('[xAPI] completed component 02', e); }
+
+  if (RESUME_ENABLED) writeForwardState('methodica-science-volume-solid-01-03');
   window.location.href = PART_03_URL + window.location.search;   // remediation always proceeds to Part 03
 }
 function updateProgressQuestion(container, state) {
@@ -317,9 +321,8 @@ function registerPractice(idx, cfg) {
   attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup'));
 }
 
-const QID = XAPI_ID_PREFIX;
 registerPractice(0, {  // Basic 1 — non-geometric body
-  correctId: 'b', questionId: QID + 'methodica-science-volume-solid-01-02-01/q1',
+  correctId: 'b', item: '01',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['גוף הנדסי בנוי מקווים ישרים או מעגלים.', 'נסו שוב!'] },
     correct: { title: 'נכון!', body: ['מפלצת הפלסטלינה היא גוף בעל צורה לא-סדירה, שאי אפשר לחשב את נפחו בנוסחה.'] },
@@ -327,7 +330,7 @@ registerPractice(0, {  // Basic 1 — non-geometric body
   }
 });
 registerPractice(1, {  // Basic 2 — who is right
-  correctId: 'b', questionId: QID + 'methodica-science-volume-solid-01-02-02/q1',
+  correctId: 'b', item: '02',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['מה מודדים מאזניים וסרגל?', 'נסו שוב!'] },
     correct: { title: 'נכון!', body: ['שירלי צודקת: לגוף לא-הנדסי מודדים נפח בשיטת דחיקת המים.', 'מאזניים מודדים מסה וסרגל מודד אורך — לא נפח.'] },
@@ -335,7 +338,7 @@ registerPractice(1, {  // Basic 2 — who is right
   }
 });
 registerPractice(2, {  // Basic 3 — which tool
-  correctId: 'b', questionId: QID + 'methodica-science-volume-solid-01-02-03/q1',
+  correctId: 'b', item: '03',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['צריך כלי עם שנתות נפח.', 'נסו שוב!'] },
     correct: { title: 'נכון!', body: ['במשורה יש סימוני נפח שמאפשרים לקרוא את מפלס המים לפני ואחרי.'] },
@@ -343,7 +346,7 @@ registerPractice(2, {  // Basic 3 — which tool
   }
 });
 registerPractice(3, {  // Basic 4 — flooding 760
-  correctId: 'b', questionId: QID + 'methodica-science-volume-solid-01-02-04/q1',
+  correctId: 'b', item: '04',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['הכלי היה מלא עד הקצה.', 'נסו שוב!'] },
     correct: { title: 'נכון!', body: ['נפח הגליל = 760 מ"ל — בדיוק כמות המים שגלשה, כי הכלי היה מלא עד הקצה.'] },
@@ -351,7 +354,7 @@ registerPractice(3, {  // Basic 4 — flooding 760
   }
 });
 registerPractice(4, {  // Standard-ב 1 — rise area
-  correctId: 'b', questionId: QID + 'methodica-science-volume-solid-01-02-05/q1',
+  correctId: 'b', item: '05',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['הבובה דחקה את המים כלפי מעלה.', 'נסו שוב!'] },
     correct: { title: 'נכון!', body: ['התוספת שמעל המפלס המקורי היא נפח המים שנדחק — כלומר נפח הבובה.'] },
@@ -359,7 +362,7 @@ registerPractice(4, {  // Standard-ב 1 — rise area
   }
 });
 registerPractice(5, {  // Standard-ב 2 — single bead = 10
-  correctId: 'a', questionId: QID + 'methodica-science-volume-solid-01-02-06/q1',
+  correctId: 'a', item: '06',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['חשבו: 130 − 100 = הנפח של 3 חרוזים.', 'נסו שוב!'] },
     correct: { title: 'נכון!', body: ['3 חרוזים העלו את המים ב-30 מ"ל, ולכן חרוז אחד = 30 ÷ 3 = 10 סמ"ק.'] },
@@ -367,71 +370,182 @@ registerPractice(5, {  // Standard-ב 2 — single bead = 10
   }
 });
 
-/* ═══ Report modal ═══ */
-function openReportModal() { document.getElementById('report-modal').removeAttribute('hidden'); setTimeout(function () { document.getElementById('report-type')?.focus(); }, 40); }
-function tryCloseReportModal() {
-  const t = document.getElementById('report-type').value, x = document.getElementById('report-text').value.trim();
-  if (t || x) { document.getElementById('report-modal').setAttribute('hidden', ''); document.getElementById('report-confirm-modal').removeAttribute('hidden'); } else forceCloseReportModal();
-}
-function forceCloseReportModal() { document.getElementById('report-modal').setAttribute('hidden', ''); document.getElementById('report-confirm-modal').setAttribute('hidden', ''); resetReportForm(); }
-function backToReportForm() { document.getElementById('report-confirm-modal').setAttribute('hidden', ''); document.getElementById('report-modal').removeAttribute('hidden'); }
-var REPORT_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSfFq5XFtH1pPpLgV5RWT4m3NanYPW5GKremqTvkp6zKjEGqcw/formResponse';
-var SCREEN_TO_SUBCONTENT = { 1:['01',1], 2:['02',1], 3:['03',1], 4:['04',1], 5:['05',1], 6:['06',1] };
-function submitReport() {
-  const typeSel = document.getElementById('report-type'), textVal = document.getElementById('report-text').value.trim(), errEl = document.getElementById('report-error');
-  if (!typeSel.value || !textVal) { if (errEl) errEl.removeAttribute('hidden'); (typeSel.value ? document.getElementById('report-text') : typeSel).focus(); return; }
-  if (errEl) errEl.setAttribute('hidden', '');
-  const now = new Date(), meta = window.METADATA || {}, body = new URLSearchParams();
-  body.append('entry.301404029_year', now.getFullYear()); body.append('entry.301404029_month', now.getMonth() + 1); body.append('entry.301404029_day', now.getDate());
-  body.append('entry.2066097581_hour', now.getHours()); body.append('entry.2066097581_minute', now.getMinutes());
-  body.append('entry.1933069481', shortId(meta.learningUnitId)); body.append('entry.2070680092', shortId(meta.id));
-  const m = SCREEN_TO_SUBCONTENT[currentScreen];
-  body.append('entry.1555704258', m ? shortId(meta.id) + '-' + m[0] : ''); body.append('entry.1671046914', m ? String(m[1]) : String(currentScreen));
-  body.append('entry.1179822443', typeSel.options[typeSel.selectedIndex].text); body.append('entry.806447525', textVal);
-  fetch(REPORT_FORM_ACTION, { method: 'POST', mode: 'no-cors', body: body }).catch(function (e) { console.error('[Report] send failed', e); });
-  showReportThanks();
-}
-function showReportThanks() { document.querySelectorAll('#report-modal .report-field, #report-modal .report-actions, #report-modal .report-modal-body').forEach(el => el.setAttribute('hidden', '')); document.getElementById('report-thanks')?.removeAttribute('hidden'); }
-function resetReportForm() {
-  document.getElementById('report-type').value = ''; document.getElementById('report-text').value = ''; document.getElementById('report-char-count').textContent = '0 / 250';
-  document.getElementById('report-error')?.setAttribute('hidden', ''); document.getElementById('report-thanks')?.setAttribute('hidden', '');
-  document.querySelectorAll('#report-modal .report-field, #report-modal .report-actions, #report-modal .report-modal-body').forEach(el => el.removeAttribute('hidden'));
-}
-(function wireReport() {
-  document.getElementById('flag-btn')?.addEventListener('click', openReportModal);
-  const ta = document.getElementById('report-text'), cc = document.getElementById('report-char-count');
-  if (ta && cc) ta.addEventListener('input', function () { cc.textContent = ta.value.length + ' / 250'; });
-  document.addEventListener('keydown', function (ev) {
-    if (ev.key !== 'Escape') return;
-    const cm = document.getElementById('report-confirm-modal'), rm = document.getElementById('report-modal');
-    if (cm && !cm.hasAttribute('hidden')) { forceCloseReportModal(); return; }
-    if (rm && !rm.hasAttribute('hidden')) { tryCloseReportModal(); return; }
-  });
-})();
+/* ═══════════════════════════════════════════════════════════
+   xAPI (720) — per-part seams
+   Read at CALL time by unit-js/20-xapi.js, /25-report.js and /50-loader.js.
+   ═══════════════════════════════════════════════════════════ */
 
-/* ═══ Dev bridge ═══ */
-window.addEventListener('message', e => { if (!e.data || e.data.type !== 'DEV_GOTO') return; const n = parseInt(e.data.screen, 10); if (!isNaN(n)) goTo(n); });
-if (window.parent !== window) { window.parent.postMessage({ type: 'DEV_READY', total: document.querySelectorAll('.screen').length }, '*'); }
+/* Screen (data-screen index) -> [subContent suffix, page-in-item]; null = no catalog item.
+   Read by xapiOnScreen() (element 0, to open/close items) and by submitReport() (both).
 
-/* ═══ xAPI (720 LMS host; skipped on localhost) ═══ */
-(function initXAPI() {
-  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') { return; }
-  var CDN = 'https://lomdot.education.gov.il/metodica/720active/common/';
-  var METADATA_FILE = '../metadata/methodica-science-volume-solid-01-02.json';
-  function loadScript(src, cb) { var s = document.createElement('script'); s.src = src; s.onload = cb; s.onerror = function () { console.error('[xAPI] failed to load', src); cb(); }; document.head.appendChild(s); }
-  function poll(cb) { if (window.jsXAPI_MetadataReady) cb(); else setTimeout(function () { poll(cb); }, 200); }
-  loadScript(CDN + 'xapiwrapper.min.js', function () {
-    loadScript(CDN + 'xapi-720-f.js', function () {
-      try {
-        getXAPIParameters(METADATA_FILE);
-        poll(function () {
-          try {
-            ADL.XAPIWrapper.changeConfig({ endpoint: window.slxapi.endpoint, auth: window.slxapi.auth });
-            sendStatement720('initialized', 'onlinelesson');
-            loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () { try { sendStatement720('initialized', 'onlinelesson', null, { scope: 'unit' }); } catch (e) {} });
-          } catch (e) { console.error('[xAPI] init', e); }
-        });
-      } catch (e) { console.error('[xAPI] load', e); }
-    });
+   MUST have exactly TOTAL_SCREENS entries — _test/checks.mjs gate 3 pairs the constant with the
+   markup, and an unlisted screen silently reports no item at all. Screens 0 and 7 were missing
+   before: a problem report filed from the intro or the mid-transition went out with an empty item. */
+var SCREEN_TO_SUBCONTENT = {
+  0: null,            // intro (sb77)
+  1: ['01', 1],       // basic 1 — non-geometric body
+  2: ['02', 1],       // basic 2 — who is right
+  3: ['03', 1],       // basic 3 — which tool
+  4: ['04', 1],       // basic 4 — flooding 760
+  7: null,            // sb98 mid transition — sits between Q4 and Q5, belongs to no item
+  5: ['05', 1],       // standard-ב 1 — rise area
+  6: ['06', 1]        // standard-ב 2 — single bead
+};
+
+var XAPI_COMP_SLUG = 'methodica-science-volume-solid-01-02';
+/* Component and item ids must match metadata/*.json byte-for-byte — this unit's convention keeps a
+   TRAILING SLASH on unit, component and item ids (but not on question ids). */
+var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
+
+/* Items carrying a graded question IN CODE. All six here; drives the 'evaluation-item' context
+   category on the item 'initialized', and expectsAnswer on its 'completed'. */
+var XAPI_EVAL_ITEMS = { '01': 1, '02': 1, '03': 1, '04': 1, '05': 1, '06': 1 };
+
+/* Per-part seam read by unit-js/50-loader.js. */
+var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-02.json';
+
+/* ═══════════════════════════════════════════════════════════
+   RESUME — this component's payload
+   All six questions are SCQ, so every answer lives in SCQ_REG rather than in top-level variables —
+   which is why RESUME_PLAIN_VARS is empty here and the work is in the scq/practice reducers.
+   ═══════════════════════════════════════════════════════════ */
+
+var RESUME_PLAIN_VARS = [];      // nothing at file scope holds answer state in this component
+var RESUME_INPUT_IDS  = [];      // no typed answers
+
+/* A dropdown keeps its machine value in SCQ_REG.sel but the LABEL only in the DOM, and dqEnter()
+   blanks it while the question is unsolved — so a selection made but not yet checked would lose its
+   text. Collected from the document rather than from a hard-coded id list: the list would go stale
+   the moment a screen gains or loses a dropdown, silently and with no error. */
+function captureDropdownTexts() {
+  var out = {};
+  document.querySelectorAll('[id$="-dropdown-trigger"] .dropdown-trigger-text').forEach(function (el) {
+    var trigger = el.closest('[id$="-dropdown-trigger"]');
+    if (trigger) out[trigger.id] = el.textContent;
   });
-})();
+  return out;
+}
+
+function applyDropdownTexts(texts) {
+  if (!texts) return;
+  Object.keys(texts).forEach(function (id) {
+    var t = document.querySelector('#' + id + ' .dropdown-trigger-text');
+    if (t) t.textContent = texts[id];
+  });
+}
+
+/* Only the MUTABLE half of each SCQ_REG entry. cfg holds functions and popup copy — restoring it
+   would overwrite live config with a JSON round-trip of itself. */
+function captureScqState() {
+  return Object.keys(SCQ_REG).reduce(function (o, k) {
+    var s = SCQ_REG[k];
+    o[k] = { sel: s.sel, attempts: s.attempts, answered: !!s.answered, done: !!s.done };
+    return o;
+  }, {});
+}
+
+function applyScqState(scq) {
+  if (!scq) return;
+  Object.keys(scq).forEach(function (k) {
+    var s = SCQ_REG[k];
+    if (!s) return;
+    s.sel = scq[k].sel; s.attempts = scq[k].attempts;
+    s.answered = !!scq[k].answered; s.done = !!scq[k].done;
+  });
+}
+
+/* Positional, and deliberately WITHOUT `screen`: that is a static table entry, and a stale document
+   must not be able to override a later screen renumber. */
+function capturePracticeState() {
+  return practiceProgress.questions.map(function (q) {
+    return { visited: !!q.visited, state: q.state };
+  });
+}
+
+function applyPracticeState(practice) {
+  if (!practice) return;
+  practice.forEach(function (p, i) {
+    var q = practiceProgress.questions[i];
+    if (!q) return;
+    q.visited = !!p.visited; q.state = p.state;
+  });
+}
+
+/* This part's payload only. `v`, `part` and the ledgers live on the enclosing document.
+   Every object is COPIED, never referenced: practiceEnter() mutates practiceProgress, so a payload
+   holding a live reference would mutate along with it and the snapshot taken before
+   resetScreenState() would already contain the change it exists to undo. */
+function capturePartPayload() {
+  return {
+    currentScreen: currentScreen,
+    qResults: Object.assign({}, XAPI_Q_RESULTS),
+    scq: captureScqState(),
+    practice: capturePracticeState(),
+    texts: captureDropdownTexts(),
+    vars: {}
+  };
+}
+
+/* The parameter MUST stay named `st` — see unit-js/README.md. */
+function applyResumeVars(st) {
+  if (st.qResults) XAPI_Q_RESULTS = Object.assign({}, st.qResults);
+  applyScqState(st.scq);
+  applyPracticeState(st.practice);
+}
+
+function applyResumeDom(st) {
+  applyDropdownTexts(st.texts);
+}
+
+/* Repaints the answered look. Mirrors the DOM writes of scqCheck's branches and NOTHING else — no
+   state mutation, no statements, and no popup: goTo() closes popups by design, and re-opening one on
+   arrival would be new UI rather than a restore.
+   scqEnter()'s `done` branch already disables the options and relabels the button, but it never
+   repaints the correct/wrong MARKS or a mid-attempt selection, which is what this adds. */
+function restoreScreenUI(n) {
+  try {
+    var screen = 's' + n;
+    var s = SCQ_REG[screen];
+    if (!s) return;
+
+    if (s.done) {
+      scqMark(screen, s.cfg.correctId, 'correct');
+      /* A wrong final answer leaves both marks on screen: the learner's pick and the right one. */
+      if (s.sel && s.sel !== s.cfg.correctId) scqMark(screen, s.sel, 'wrong');
+      var trig = document.getElementById(screen + '-dropdown-trigger');
+      if (trig) {
+        trig.classList.remove('correct', 'wrong');
+        trig.classList.add(s.sel === s.cfg.correctId ? 'correct' : 'wrong');
+      }
+      return;
+    }
+
+    /* Not solved: an attempt already spent shows the interim wrong mark, and the current selection
+       is repainted — those co-occur, so this is two axes rather than four branches. */
+    if (s.attempts >= 1 && s.sel) scqMark(screen, s.sel, 'wrong');
+    if (s.sel && !s.attempts) {
+      document.querySelectorAll('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]').forEach(function (o) {
+        o.classList.add('selected');
+        o.setAttribute('aria-checked', 'true');
+      });
+    }
+    /* Mirror the live enablement predicate rather than assuming. */
+    var chk = document.getElementById(screen + '-scq-check');
+    if (chk) chk.disabled = !s.sel;
+  } catch (e) { console.error('[resume] restoreScreenUI', e); }
+}
+
+/* ── xAPI ready hook ──
+   Called by unit-js/50-loader.js after this component's 'initialized' and the landing screen's item
+   init. Opens the UNIT: loads the unit metadata into window.UNIT_METADATA, then reports the
+   unit-scope 'initialized'.
+
+   Only components 01 and 02 did this before the extraction, and that split is preserved verbatim
+   here rather than "fixed" — whether the unit should be opened by exactly one component (01 is the
+   entry every launch passes through) is a reporting-semantics question for Stage 4, not a
+   refactoring one. See REPORT-XAPI.md. */
+function onXapiReady() {
+  loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {
+    try { sendStatement720('initialized', 'onlinelesson', null, { scope: 'unit' }); } catch (e) {}
+  });
+}

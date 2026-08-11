@@ -1,15 +1,10 @@
+'use strict';
 /* ═══════════════════════════════════════════════════════════
    js/main.js — 720 Science · Volume of a Solid · Part 01
    Engine ported verbatim from methodica-science-mass-measure-01.
    Screens built so far: S0 character-select, S1–S3 Roni hook.
    (More screens are appended as the storyboard is implemented.)
    ═══════════════════════════════════════════════════════════ */
-
-/* xAPI: canonical URL id prefix + short-id helper */
-var XAPI_ID_PREFIX = "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/";
-function shortId(u){ return String(u || "").split("/").pop(); }
-
-'use strict';
 
 /* ─── Constants ─────────────────────────────────────────── */
 const TOTAL_SCREENS = 33;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice, S23–S28 comic slides 13–18, S29 guess-Q (sb24), S30/S31 overflow can (sb39/40), S32 practice rules (sb50). Bump as screens are added.
@@ -22,57 +17,6 @@ const TOTAL_SCREENS = 33;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-ca
 window.lomdaState = window.lomdaState || {
   selectedCharacter: null
 };
-
-/* ─── State ─────────────────────────────────────────────── */
-let currentScreen = 0;
-
-/* ─── Scale App ──────────────────────────────────────────────
-   Scale-to-fit the 1280×710 design while EXTENDING the canvas to
-   fill the viewport, so edge-anchored chrome reaches screen edges.
-   scale = min(vw/1280, vh/710); canvas = viewport / scale. */
-function scaleApp() {
-  const app = document.getElementById('app');
-  const scale   = Math.min(window.innerWidth / 1280, window.innerHeight / 710);
-  const canvasW = window.innerWidth  / scale;
-  const canvasH = window.innerHeight / scale;
-  app.style.width     = canvasW + 'px';
-  app.style.height    = canvasH + 'px';
-  app.style.transform = `scale(${scale})`;
-  app.style.left      = '0px';
-  app.style.top       = '0px';
-}
-window.addEventListener('resize', scaleApp);
-scaleApp();
-
-/* ═══ Image zoom (shared) — enlarges any content image whose
-   wrapper carries a [data-zoom-src] button. ═══ */
-function openImageZoom(btn) {
-  const modal = document.getElementById('img-zoom-modal');
-  const stage = document.getElementById('img-zoom-modal-stage');
-  if (!modal || !stage || !btn) return;
-  const wrapper = btn.closest('.hook-img-frame, .scq-img-inner, .zoomable-img-inner');
-  if (!wrapper) return;
-  const clone = wrapper.cloneNode(true);
-  clone.querySelectorAll('.img-zoom-btn').forEach(b => b.remove());
-  clone.classList.add('img-zoom-clone');
-  stage.innerHTML = '';
-  stage.appendChild(clone);
-  modal.classList.remove('hidden');
-  modal.setAttribute('aria-hidden', 'false');
-}
-function closeImageZoom() {
-  const modal = document.getElementById('img-zoom-modal');
-  const stage = document.getElementById('img-zoom-modal-stage');
-  if (!modal) return;
-  modal.classList.add('hidden');
-  modal.setAttribute('aria-hidden', 'true');
-  if (stage) stage.innerHTML = '';
-}
-document.addEventListener('click', function (e) {
-  const openBtn = e.target.closest('[data-zoom-src]');
-  if (openBtn) { openImageZoom(openBtn); return; }
-  if (e.target.closest('[data-zoom-close="true"]')) closeImageZoom();
-});
 
 /* ═══════════════════════════════════════════════════════════
    Pointer-based drag-and-drop helper (engine — reused by future
@@ -187,22 +131,6 @@ function createPointerDnd(opts) {
     else     { if (opts.onCancel) opts.onCancel(dragId, activeRef.srcElem); }
   }
   return { attachSource, attachTarget };
-}
-
-/* ─── Navigation ─────────────────────────────────────────── */
-function goTo(n) {
-  if (n < 0 || n >= TOTAL_SCREENS) return;
-  // Close every feedback popup / hint overlay before the screen swap.
-  document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]')
-    .forEach(el => el.classList.add('hidden'));
-  // Pause any playing media before leaving the current screen.
-  document.querySelectorAll('video').forEach(v => { try { v.pause(); } catch (e) {} });
-  const prev = document.querySelector('.screen.active');
-  if (prev) prev.classList.remove('active');
-  currentScreen = n;
-  const next = document.getElementById('s' + n);
-  if (next) next.classList.add('active');
-  resetScreenState(n);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -407,7 +335,6 @@ function advanceScreen() {
     const cid = 's' + currentScreen;
     if (!comicCanAdvance(cid)) return;                                     // slider: every panel seen · guess: an option picked
     if (ci === COMIC_SCREENS.length - 1) {                                 // last comic screen → merge point
-      xapiSend('completed', 'question', null, { category: 'comic' });
       goTo(MERGE_SCREEN); return;
     }
     goTo(COMIC_SCREENS[ci + 1]); return;
@@ -432,18 +359,6 @@ function advanceScreen() {
    TEMPLATE — TwoOptionSelection (S0, character select)
    Single selection stores the choice globally and enables בחרתי.
    ═══════════════════════════════════════════════════════════ */
-/* Fire-and-forget xAPI. The xapiwrapper send can run synchronously on the live
-   host; because the browser only paints AFTER a click handler returns, a blocking
-   send inside a handler delays the visual feedback (button enable, popup, marks).
-   Deferring to a macrotask lets the feedback paint first, then the statement fires.
-   NOTE: navigation-boundary sends that precede window.location.href (goToNextPart's
-   'completed') stay synchronous so they aren't cut off by page unload. */
-function xapiSend() {
-  const args = arguments;
-  setTimeout(function () {
-    try { sendStatement720.apply(null, args); } catch (e) {}
-  }, 0);
-}
 function selectOption(cardEl) {
   document.querySelectorAll('#s0 .option-card').forEach(c => {
     c.classList.remove('selected');
@@ -455,7 +370,12 @@ function selectOption(cardEl) {
   try { localStorage.setItem('lomda_selectedCharacter', cardEl.dataset.value); } catch (e) {}
   const cont = document.getElementById('s0-continue');
   if (cont) cont.disabled = false;   // enable FIRST — instant visual feedback
-  xapiSend('selected', 'question', { response: cardEl.dataset.value }, { category: 'learningType' });
+  /* NOT 'selected'. v2.4 §4 defines a closed dictionary of choice categories — learning-type,
+     practice-decision, is-understood, is-repeat, external-learning — and picking a companion mascot
+     is none of them; REPORT-XAPI.md is explicit that an avatar picker is decoration, not a learning
+     preference. Reporting it as a 'learning-type' selection would be false. Kept as 'interacted' so
+     the datum survives without misrepresenting what it is. */
+  xapiSend('interacted', 'question', { response: cardEl.dataset.value }, { category: 'companion-choice' });
 }
 function advanceFromS0() {
   if (!window.lomdaState.selectedCharacter) return;
@@ -484,7 +404,14 @@ function hookOpenInput() {
 function hookOpenReveal() {
   const ta = document.getElementById('s2-open-text');
   if (ta && ta.value.trim().length === 0) return; // hint gated on input
-  xapiSend('answered.last', 'question', { response: (ta ? ta.value.trim() : '') });
+  /* 'interacted', not 'answered'. v2.4 reserves 'answered' for a question the component measures,
+     and requires context.contextActivities.parent = the containing ITEM on every one. This applet is
+     not a catalog question — the metadata gives item 02 exactly one question (q1, on s10) — so there
+     is no item question to parent to, and an 'answered' here would both be unmatchable and violate
+     §2. Recording it as an interaction keeps the learning-analytics value honestly.
+     See _test/baselines/stage-4-pattern.md for the open question about whether these SHOULD become
+     catalog items. */
+  xapiSend('interacted', 'question', { response: (ta ? ta.value.trim() : '') }, { category: 'hook-open-question' });
   goTo(3);
 }
 
@@ -506,7 +433,8 @@ function imgqToggle(cardEl) {
   imgqRevealed[id] = true;
   cardEl.classList.add('revealed');
   cardEl.classList.add(IMGQ[id].correct ? 'correct' : 'incorrect');
-  xapiSend('selected', 'question', { response: id }, { category: 'why-measure-volume' });
+  /* Also not a dictionary choice — the learner is revealing a reason, not stating a preference. */
+  xapiSend('interacted', 'question', { response: id }, { category: 'why-measure-volume' });
 }
 function imgqEnter() {
   Object.keys(imgqRevealed).forEach(function (id) {
@@ -546,7 +474,10 @@ function selectPathOption(cardEl) {
   window.lomdaState.learningPath = cardEl.dataset.value;
   const cont = document.getElementById('s7-continue');
   if (cont) cont.disabled = false;   // enable FIRST — instant visual feedback
-  xapiSend('selected', 'question', { response: cardEl.dataset.value }, { category: 'learningType' });
+  /* The one genuine 'selected' in the unit: comic vs experiments IS a learning-format preference,
+     which is exactly v2.4's `learning-type`. The category is kebab-case per the dictionary table in
+     v2.4 §4 — the camelCase 'learningType' this used to send is not a dictionary value. */
+  xapiSend('selected', 'question', { response: cardEl.dataset.value }, { category: 'learning-type' });
 }
 function advanceFromPathChoice() {
   const path = window.lomdaState.learningPath;
@@ -1055,7 +986,7 @@ function dispDrop() {
     const rs = document.getElementById('disp-reset');    if (rs) rs.hidden = false;
     const cont = document.getElementById('s9-continue');  if (cont) cont.disabled = false;
   }, 900);
-  xapiSend('answered.last', 'question', { response: '62' }, { category: 'displacement-applet' });
+  xapiSend('interacted', 'question', { response: '62' }, { category: 'displacement-applet' });
 }
 function dispReset() {
   dispPlaced = false;
@@ -1130,8 +1061,18 @@ function scqCheck(screen) {
   if (!s.sel) return;
   s.attempts++;
   const correct = s.sel === cfg.correctId;
+  /* xAPI: resolved at send time — xapiQ() reads window.METADATA, which the library fetches
+     asynchronously while these registrations run during parse. parentId is the containing item
+     (v2.4 §2, mandatory); `response` is the option's visible text and was missing entirely. */
+  const q = xapiQ(cfg.item, cfg.qKey || 'q1');
   xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question',
-    { success: !!correct, score: { scaled: correct ? 1 : 0 } }, { questionId: cfg.questionId });
+    { response: xapiAnswerText(document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]')),
+      success: !!correct,
+      score: { scaled: correct ? 1 : 0 } },
+    { questionId: q.questionId, parentId: q.parentId });
+  if (correct || s.attempts >= cfg.maxAttempts) {
+    XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!correct;
+  }
   if (correct) { scqMark(screen, cfg.correctId, 'correct'); scqShowPopup(screen, 'correct'); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) {
     scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong');
@@ -1165,7 +1106,7 @@ function scqShowPopup(screen, type) {
 function scqClosePopup(screen) { document.getElementById(screen + '-scq-popup')?.classList.add('hidden'); }
 function scqHint(screen) {
   const s = SCQ_REG[screen]; if (!s || s.answered) return;
-  xapiSend('requested.1', 'question', null, { questionId: s.cfg.questionId });
+  xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey || 'q1').questionId });
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
@@ -1194,28 +1135,6 @@ function scqReset(screen) {
 }
 /* Shared draggable feedback popup — resets to default position on each open
    (handled in scqShowPopup). Drag is app-scale aware. Attached once per popup. */
-function attachPopupDrag(popup) {
-  if (!popup || popup._dragWired) return;
-  popup._dragWired = true;
-  let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
-  const header = popup.querySelector('.scq-popup-header') || popup;
-  function scale() { const app = document.getElementById('app'); const m = app && app.style.transform.match(/scale\(([^)]+)\)/); return m ? parseFloat(m[1]) : 1; }
-  header.addEventListener('pointerdown', e => {
-    if (e.target.closest('.scq-popup-close')) return;
-    dragging = true; sx = e.clientX; sy = e.clientY;
-    const r = popup.getBoundingClientRect(); const sc = scale();
-    ox = r.left / sc; oy = r.top / sc;
-    popup.style.bottom = 'auto';
-    header.setPointerCapture(e.pointerId); e.preventDefault();
-  });
-  header.addEventListener('pointermove', e => {
-    if (!dragging) return; const sc = scale();
-    popup.style.left = (ox + (e.clientX - sx) / sc) + 'px';
-    popup.style.top  = (oy + (e.clientY - sy) / sc) + 'px';
-  });
-  header.addEventListener('pointerup', () => { dragging = false; });
-  header.addEventListener('pointercancel', () => { dragging = false; });
-}
 
 /* ═══════════════════════════════════════════════════════════
    APPLET — Aquarium ruler measurement (S10, experiments path)
@@ -1269,7 +1188,7 @@ scqRegister({
   screen: 's10',
   correctId: 'd',
   startLocked: true,
-  questionId: XAPI_ID_PREFIX + 'methodica-science-volume-solid-01-01-02/q1',
+  item: '02',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['לא נורא, גם מטעויות לומדים.', 'נסו שוב!'] },
     correct: { title: 'נכון!', body: ['צלע הקובייה = 10 ס"מ.', 'נפח = 10 × 10 × 10 = 1,000 סמ"ק.'] },
@@ -1308,7 +1227,7 @@ function floodDrop() {
     const rs = document.getElementById('flood-reset');    if (rs) rs.hidden = false;
     const cont = document.getElementById('s11-continue');  if (cont) cont.disabled = false;
   }, 900);
-  xapiSend('answered.last', 'question', { response: 'overflow' }, { category: 'flooding-applet' });
+  xapiSend('interacted', 'question', { response: 'overflow' }, { category: 'flooding-applet' });
 }
 function floodReset() {
   floodPlaced = false;
@@ -1342,8 +1261,10 @@ function floodEnter() {
    object + one generic renderer. (SP4 matching, metadata item 08,
    is a pending 5th slot — added when the DnD template is ported.)
    ═══════════════════════════════════════════════════════════ */
-const PART_02_URL = '../methodica-science-volume-solid-01-02/index.html';
-const PART_03_URL = '../methodica-science-volume-solid-01-03/index.html';
+const PART_02_SLUG = 'methodica-science-volume-solid-01-02';
+const PART_03_SLUG = 'methodica-science-volume-solid-01-03';
+const PART_02_URL = '../' + PART_02_SLUG + '/index.html';
+const PART_03_URL = '../' + PART_03_SLUG + '/index.html';
 // Standard practice = 5 questions (metadata items 05,06,07,08,09).
 // Screen order ≠ number order: Q4 (matching, item 08) lives on S17, Q5 (item 09) on S16.
 var practiceProgress = {
@@ -1359,10 +1280,35 @@ function practiceScore() {
   return practiceProgress.questions.filter(q => q.state === 'correct').length;
 }
 function goToNextPart() {
-  try { sendStatement720('completed', 'onlinelesson'); } catch (e) {}
+  /* Closes the practice item the learner is standing on (item 09, or 08 if they came via S17) before
+     the component is reported, so the two arrive in order. */
+  try { xapiFinishItems(); } catch (e) {}
+
+  const passed = practiceScore() >= 4;
+
+  /* xAPI: the component 'completed', with an explicit result — the library's aggregate is an
+     all-correct AND, which would report failure for any partial pass.
+
+     DENOMINATOR 5, not 8. This component has eight graded questions in code (item 02's embedded
+     check, the two warm-ups, and the five practice questions), but "what the learner was promised"
+     is the practice block: the progress dots count five, and the routing threshold is stated to them
+     as 4 מתוך 5. Reporting 8 would make the score mean something the learner was never shown.
+
+     SUCCESS IS THE REAL THRESHOLD HERE, unlike parts 02 and 04. Those have no gate at all — they
+     always advance, so completing them is the success condition. Part 01 does have one: ≥4/5 routes
+     past remediation. That is a gate that exists in the content, so it is reported rather than
+     invented, and the metadata backs it up — recommendedAfterFail names Part 02. */
+  try {
+    sendCompletedOnce('done', currentPartSlug(), 'onlinelesson',
+      { success: passed, score: { scaled: practiceScore() / 5 } });
+  } catch (e) { console.error('[xAPI] completed component 01', e); }
+
   // ≥80% correct (4/5) → skip remediation (Part 03); else Part 02 (basic practice).
-  const url = (practiceScore() >= 4) ? PART_03_URL : PART_02_URL;
-  window.location.href = url + window.location.search;
+  /* Resume: point the document at the branch actually taken, and record the back-edge so that
+     component's first screen knows where "חזרה" leads. Part 03 is reachable from BOTH 01 and 02, and
+     resolves correctly because whichever router navigated is the one that wrote the edge. */
+  if (RESUME_ENABLED) writeForwardState(passed ? PART_03_SLUG : PART_02_SLUG);
+  window.location.href = (passed ? PART_03_URL : PART_02_URL) + window.location.search;
 }
 function updateProgressQuestion(container, state) {
   if (!container) return;
@@ -1419,10 +1365,9 @@ function registerPractice(idx, cfg) {
   attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup'));
 }
 
-const QID = XAPI_ID_PREFIX;   // question-id prefix shorthand
 registerPractice(0, {
   correctId: 'c',
-  questionId: QID + 'methodica-science-volume-solid-01-01-05/q1',
+  item: '05',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['לא נורא, גם מטעויות לומדים.', 'נסו שוב!'] },
     correct: { title: 'נכון!', body: ['נפח האבן = 73 − 50 = 23 סמ"ק.', 'ההפרש בין הקריאה הסופית לקריאה ההתחלתית הוא נפח הגוף.'] },
@@ -1431,7 +1376,7 @@ registerPractice(0, {
 });
 registerPractice(1, {
   correctId: 'a',
-  questionId: QID + 'methodica-science-volume-solid-01-01-06/q1',
+  item: '06',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['חשבו: הכדור גדול מדי למשורה.', 'נסו שוב!'] },
     correct: { title: 'נכון!', body: ['הכדור גדול מדי למשורה, לכן משתמשים בשיטת ההצפה:', 'כמות המים שנשפכו = נפח הכדור.'] },
@@ -1440,7 +1385,7 @@ registerPractice(1, {
 });
 registerPractice(2, {
   correctId: 'd',
-  questionId: QID + 'methodica-science-volume-solid-01-01-07/q1',
+  item: '07',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['איזה טיעון מבוסס על מדידה בפועל?', 'נסו שוב!'] },
     correct: { title: 'נכון!', body: ['רק המדידה בשיטת דחיקת המים מבוססת על ראיה שנמדדה:', 'המים עלו מ-50 ל-70, ולכן נפח הכפית = 20 מ"ל.'] },
@@ -1449,7 +1394,7 @@ registerPractice(2, {
 });
 registerPractice(4, {
   correctId: 'd',
-  questionId: QID + 'methodica-science-volume-solid-01-01-09/q1',
+  item: '09',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['הכלי היה מלא עד הקצה — מה זה אומר על המים שנשפכו?', 'נסו שוב!'] },
     correct: { title: 'נכון!', body: ['אופק צודק: נפח המים שנשפכו שווה לנפח הקריסטל.', 'הכלי היה מלא עד הקצה, ולכן כל המים שנדחקו מייצגים את נפח הגוף.'] },
@@ -1550,7 +1495,15 @@ function ddqCheck(screen) {
   const s = DDQ_REG[screen], cfg = s.cfg;
   if (s.checked) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
   const allCorrect = cfg.targets.every(t => cfg.placement[cfg.correctMap[t.id]] === t.id);
-  xapiSend('answered.last', 'question', { success: !!allCorrect, score: { scaled: allCorrect ? 1 : 0 } }, { questionId: cfg.questionId });
+  /* One matching board = one question; a single closing 'answered.last'. `response` lists the
+     learner's pairings in a readable form, since there is no single option element to read. */
+  const q = xapiQ(cfg.item, cfg.qKey || 'q1');
+  xapiSend('answered.last', 'question',
+    { response: Object.keys(cfg.placement).map(function (id) { return id + '->' + cfg.placement[id]; }).join(', '),
+      success: !!allCorrect,
+      score: { scaled: allCorrect ? 1 : 0 } },
+    { questionId: q.questionId, parentId: q.parentId });
+  XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!allCorrect;
   s.checked = true; s.done = true;
   if (!allCorrect) { Object.keys(cfg.correctMap).forEach(tId => { cfg.placement[cfg.correctMap[tId]] = tId; }); }  // reveal correct
   ddqRender(screen);
@@ -1564,7 +1517,7 @@ function ddqCheck(screen) {
    ids end in -hint-overlay, so goTo() closes them on navigation. */
 function ddqHint(screen) {
   const s = DDQ_REG[screen]; if (!s || s.checked) return;
-  xapiSend('requested.1', 'question', null, { questionId: s.cfg.questionId });
+  xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey || 'q1').questionId });
   document.getElementById(screen + '-ddq-hint-overlay')?.classList.remove('hidden');
 }
 function ddqCloseHint(screen) { document.getElementById(screen + '-ddq-hint-overlay')?.classList.add('hidden'); }
@@ -1619,7 +1572,7 @@ function practiceEnterDnD(idx, screen) {
 
 /* Standard practice Q4 (item 08) — match each body to its measurement method */
 registerPracticeDnD(3, {
-  questionId: QID + 'methodica-science-volume-solid-01-01-08/q1',
+  item: '08',
   items: [
     { id: 'metal-cube', label: 'קוביית מתכת', img: 'assets/img/s17-metal-cube.png', w: 96 },
     { id: 'shell',      label: 'צדפה',        img: 'assets/img/s17-shell.png',      w: 92 },
@@ -1643,7 +1596,7 @@ registerPracticeDnD(3, {
    ═══════════════════════════════════════════════════════════ */
 ddqRegister({
   screen: 's18',
-  questionId: QID + 'methodica-science-volume-solid-01-01-03/q1',
+  item: '03',
   items: [
     // Storyboard slide 42 puts a small photo inside each task card. The שדף photo
     // is the one from S17 (slide 42 illustrates this task with a בלוט, which the
@@ -1673,7 +1626,7 @@ attachPopupDrag(document.getElementById('s18-ddq-popup'));
 scqRegister({
   screen: 's19',
   correctId: 'a',
-  questionId: QID + 'methodica-science-volume-solid-01-01-04/q1',
+  item: '04',
   popups: {
     retry:   { title: 'התשובה אינה נכונה.', body: ['חשבו: הגוף תופס מקום בתוך המים.', 'נסו שוב!'] },
     correct: { title: 'נכון!', body: ['כשמכניסים גוף למים הוא תופס מקום, ולכן המים עולים.', 'ההפרש בין קריאת המפלס אחרי ולפני = נפח הגוף.'] },
@@ -1767,7 +1720,7 @@ function guessPick(screen, btn) {
   guessPicked[screen] = btn.dataset.id;
   document.getElementById(screen + '-guess-bubble')?.classList.remove('hidden');
   const cont = document.getElementById(screen + '-continue'); if (cont) cont.disabled = false;
-  xapiSend('answered.last', 'question', { response: btn.dataset.id }, { category: 'guess' });
+  xapiSend('interacted', 'question', { response: btn.dataset.id }, { category: 'guess' });
 }
 function guessEnter(screen) {
   syncPathToggle();
@@ -1818,7 +1771,7 @@ function measConfirm() {
   const cfg = MEAS[measStep];
   if (!cfg.input) return;
   measRevealed = true;
-  xapiSend('answered.last', 'question', { response: document.getElementById('meas-input').value }, { category: 'measurement-applet' });
+  xapiSend('interacted', 'question', { response: document.getElementById('meas-input').value }, { category: 'measurement-applet' });
   if (cfg.last) measDone = true;
   measRender();
 }
@@ -1861,155 +1814,366 @@ function measEnter() {
   measRender();
 }
 
-
 // ============================================================
 //  REPORT MODAL
 // ============================================================
-function openReportModal() {
-  document.getElementById('report-modal').removeAttribute('hidden');
-  setTimeout(function() { var el = document.getElementById('report-type'); if (el) el.focus(); }, 40);
-}
-function tryCloseReportModal() {
-  var typeVal = document.getElementById('report-type').value;
-  var textVal = document.getElementById('report-text').value.trim();
-  if (typeVal || textVal) {
-    document.getElementById('report-modal').setAttribute('hidden', '');
-    document.getElementById('report-confirm-modal').removeAttribute('hidden');
-  } else { forceCloseReportModal(); }
-}
-function forceCloseReportModal() {
-  document.getElementById('report-modal').setAttribute('hidden', '');
-  document.getElementById('report-confirm-modal').setAttribute('hidden', '');
-  resetReportForm();
-}
-function backToReportForm() {
-  document.getElementById('report-confirm-modal').setAttribute('hidden', '');
-  document.getElementById('report-modal').removeAttribute('hidden');
-  setTimeout(function() { var el = document.getElementById('report-type'); if (el) el.focus(); }, 40);
-}
-
-var REPORT_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSfFq5XFtH1pPpLgV5RWT4m3NanYPW5GKremqTvkp6zKjEGqcw/formResponse';
 
 // screen -> [subContent suffix, page-in-item] ; null = no matching subContent
-var SCREEN_TO_SUBCONTENT = { 0:null, 1:['001',1], 2:['001',2], 3:['001',3] };
-
-function submitReport() {
-  var typeSel = document.getElementById('report-type');
-  var textVal = document.getElementById('report-text').value.trim();
-  var errEl   = document.getElementById('report-error');
-  if (!typeSel.value || !textVal) {
-    if (errEl) errEl.removeAttribute('hidden');
-    (typeSel.value ? document.getElementById('report-text') : typeSel).focus();
-    return;
-  }
-  if (errEl) errEl.setAttribute('hidden', '');
-  var now  = new Date();
-  var meta = window.METADATA || {};
-  var body = new URLSearchParams();
-  body.append('entry.301404029_year',  now.getFullYear());
-  body.append('entry.301404029_month', now.getMonth() + 1);
-  body.append('entry.301404029_day',   now.getDate());
-  body.append('entry.2066097581_hour',   now.getHours());
-  body.append('entry.2066097581_minute', now.getMinutes());
-  body.append('entry.1933069481', shortId(meta.learningUnitId));
-  body.append('entry.2070680092', shortId(meta.id));
-  var mapEntry = SCREEN_TO_SUBCONTENT[currentScreen];
-  var itemId   = mapEntry ? (shortId(meta.id)) + '-' + mapEntry[0] : '';
-  var itemPage = mapEntry ? String(mapEntry[1]) : String(currentScreen);
-  body.append('entry.1555704258', itemId);
-  body.append('entry.1671046914', itemPage);
-  body.append('entry.1179822443', typeSel.options[typeSel.selectedIndex].text);
-  body.append('entry.806447525',  textVal);
-  fetch(REPORT_FORM_ACTION, { method: 'POST', mode: 'no-cors', body: body })
-    .catch(function(e) { console.error('[Report] send failed', e); });
-  showReportThanks();
-}
-function showReportThanks() {
-  document.querySelectorAll('#report-modal .report-field, #report-modal .report-actions, #report-modal .report-modal-body')
-    .forEach(function(el) { el.setAttribute('hidden', ''); });
-  var t = document.getElementById('report-thanks');
-  if (t) t.removeAttribute('hidden');
-}
-function resetReportForm() {
-  document.getElementById('report-type').value = '';
-  document.getElementById('report-text').value = '';
-  document.getElementById('report-char-count').textContent = '0 / 250';
-  var errEl = document.getElementById('report-error');
-  if (errEl) errEl.setAttribute('hidden', '');
-  var t = document.getElementById('report-thanks');
-  if (t) t.setAttribute('hidden', '');
-  document.querySelectorAll('#report-modal .report-field, #report-modal .report-actions, #report-modal .report-modal-body')
-    .forEach(function(el) { el.removeAttribute('hidden'); });
-}
-(function wireReport() {
-  var flagBtn = document.getElementById('flag-btn');
-  if (flagBtn) flagBtn.addEventListener('click', openReportModal);
-  var reportTextarea = document.getElementById('report-text');
-  var reportCounter  = document.getElementById('report-char-count');
-  if (reportTextarea && reportCounter) {
-    reportTextarea.addEventListener('input', function() {
-      reportCounter.textContent = reportTextarea.value.length + ' / 250';
-    });
-  }
-  document.addEventListener('keydown', function(event) {
-    if (event.key !== 'Escape') return;
-    var confirmModal = document.getElementById('report-confirm-modal');
-    var reportModal  = document.getElementById('report-modal');
-    if (confirmModal && !confirmModal.hasAttribute('hidden')) { forceCloseReportModal(); return; }
-    if (reportModal && !reportModal.hasAttribute('hidden'))  { tryCloseReportModal();   return; }
-  });
-})();
-
 /* ═══════════════════════════════════════════════════════════
-   Dev mode: postMessage bridge (used by index_dev.html)
+   xAPI (720) — per-part seams
    ═══════════════════════════════════════════════════════════ */
-window.addEventListener('message', e => {
-  if (!e.data || e.data.type !== 'DEV_GOTO') return;
-  const n = parseInt(e.data.screen, 10);
-  if (!isNaN(n)) goTo(n);
-});
-if (window.parent !== window) {
-  const count = document.querySelectorAll('.screen').length;
-  window.parent.postMessage({ type: 'DEV_READY', total: count }, '*');
-}
+
+/* All 33 screens. The previous map had four entries and used THREE-digit suffixes ('001'), which
+   match nothing in the catalog — metadata items are '-01'…'-09'. So 29 screens reported no item and
+   the other four reported one that does not exist.
+
+   Item boundaries come from the metadata titles, which describe the pedagogy:
+     01  Motivational  "הוק: רוני מוצאת תליון על החוף"                         — the hook
+     02  Instruction   "הקנייה: שיטות מדידת נפח (פלייליסט: קומיקס / ניסויים)"  — the whole acquisition
+     03  Practice      "חימום 1"                                              — warm-up 1
+     04  Practice      "חימום 2"                                              — warm-up 2
+     05-09 Practice    "סטנדרטי 1-5"                                          — the five practice Qs
+
+   Item 02 is deliberately large: its title names the playlist, so BOTH branches of the path choice
+   belong to it, and it closes only when the learner leaves the merge screen for warm-up 1. That is
+   also why it holds exactly one catalog question (q1, on s10) despite spanning ~19 screens.
+
+   Flow order is neither screen order nor DOM order:
+     hook          0 → 1 → 2 → 3 → 4
+     acquisition   5 → 6 → 7 ─┬─ comic:       8 → 23 → 24 → 25 → 26 → 27 → 28 ─┐
+                              └─ experiments: 10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31 ─┤
+                                                                          merge 12 ←──────┘
+     practice      12 → 18 → 19 → 32 → 13 → 14 → 15 → 17 → 16 → (Part 02 or 03)
+
+   Page numbers run in that flow order and are unique within an item, so a bug report identifies the
+   screen even where two branches cover the same item. */
+var SCREEN_TO_SUBCONTENT = {
+  /* pre-content */
+  0:  null,           // companion picker — decoration, not learning content
+
+  /* item 01 — the hook */
+  1:  ['01', 1],      // רוני מצאה אוצר?
+  2:  ['01', 2],      // open question (free text)
+  3:  ['01', 3],      // the pendant
+  4:  ['01', 4],      // למה חשוב למדוד נפח של חפץ מוצק?
+
+  /* item 02 — acquisition: the shared opening */
+  5:  ['02', 1],      // Archimedes intro
+  6:  ['02', 2],
+  7:  ['02', 3],      // איך נמדוד נפח של מוצק? — the playlist choice
+
+  /* item 02 — comic branch */
+  8:  ['02', 4],
+  23: ['02', 5],
+  24: ['02', 6],
+  25: ['02', 7],
+  26: ['02', 8],
+  27: ['02', 9],
+  28: ['02', 10],
+
+  /* item 02 — experiments branch, in flow order (10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31) */
+  10: ['02', 11],     // aquarium ruler + the item's ONLY catalog question (q1)
+  29: ['02', 12],     // guess (sb24)
+  9:  ['02', 13],     // displacement applet
+  21: ['02', 14],     // guess
+  11: ['02', 15],     // flooding applet
+  20: ['02', 16],     // flip cards — real-world uses
+  22: ['02', 17],     // measurement applet
+  30: ['02', 18],     // overflow can — the question
+  31: ['02', 19],     // overflow can — how it works
+
+  /* item 02 — where both branches merge and the item ends */
+  12: ['02', 20],     // כל הכבוד! סיימתם את שלב הלימוד
+
+  /* items 03, 04 — the warm-ups */
+  18: ['03', 1],      // חימום 1 — matching (DnD)
+  19: ['04', 1],      // חימום 2 — dropdown
+
+  /* bridge */
+  32: null,           // אפשר להתחיל! — practice rules; belongs to no catalog item
+
+  /* items 05-09 — the five practice questions. NOTE screen order != question order:
+     Q4 (item 08) is on s17 and Q5 (item 09) on s16. */
+  13: ['05', 1],      // סטנדרטי 1
+  14: ['06', 1],      // סטנדרטי 2
+  15: ['07', 1],      // סטנדרטי 3
+  17: ['08', 1],      // סטנדרטי 4
+  16: ['09', 1]       // סטנדרטי 5
+};
+
+var XAPI_COMP_SLUG = 'methodica-science-volume-solid-01-01';
+var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
+
+/* Items carrying a graded question IN CODE. Item 01 is absent: it is the hook, walked through rather
+   than answered, and the metadata gives it no questions at all. Its open-text screen (s2) records an
+   'interacted', not an 'answered' — see the note at hookOpenReveal(). */
+var XAPI_EVAL_ITEMS = { '02': 1, '03': 1, '04': 1, '05': 1, '06': 1, '07': 1, '08': 1, '09': 1 };
 
 /* ═══════════════════ xAPI (720 LMS common host) ═══════════════════
    Loaded from the MOE 720 platform's own common host (not a 3rd-party
    CDN); fails gracefully offline. Fires learning statements. */
-(function initXAPI() {
-  // Skip the LMS xAPI wrapper during local development (localhost is never the
-  // real 720 LMS). Offline it would storm retries against a missing endpoint,
-  // starving the renderer. Production hosts run it normally.
-  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+
+/* Per-part seam read by unit-js/50-loader.js. */
+var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-01.json';
+
+/* ═══════════════════════════════════════════════════════════
+   RESUME — this component's payload
+   The largest by far: 33 screens, a branching playlist, three applets, a comic slider, flip cards,
+   two guess screens, a matching board and five practice questions.
+
+   What makes it tractable is that MOST of it already restores itself. imgqEnter, dispEnter, aqEnter,
+   floodEnter, flipEnter, guessEnter, comicSliderEnter, measEnter→measRender, scqEnter's `done` branch
+   and ddqEnter+ddqRender all rebuild their screen from the variables the second assignment pass has
+   just restored. So the payload's job is to carry those variables faithfully, and restoreScreenUI()
+   only has to fill the four gaps where an enter() does not repaint everything.
+   ═══════════════════════════════════════════════════════════ */
+
+/* Plain booleans and counters, copied verbatim.
+   ⚠️ The four *Dnd controllers (dispDnd, aqDnd, floodDnd, measDnd) are deliberately ABSENT: they are
+   live pointer-drag controllers bound to DOM nodes that no longer exist after a reload. Capturing one
+   would serialise to {} and restoring it would convince the enter() that the applet is already wired
+   when it is not. */
+var RESUME_PLAIN_VARS = ['dispPlaced', 'aqMeasured', 'floodPlaced',
+                         'measStep', 'measDone', 'measRevealed'];
+
+/* Typed answers live only in the DOM — no variable holds them — so they travel by element id.
+   Reading them at capture time is safe: no branch clears these, only disables. */
+var RESUME_INPUT_IDS = ['s2-open-text', 'meas-input'];
+var RESUME_TEXT_IDS  = [];
+
+function captureResumeInputs() {
+  var out = {};
+  RESUME_INPUT_IDS.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) out[id] = el.value;
+  });
+  return out;
+}
+
+/* Comic sliders: only the MUTABLE half.
+   `built`, `timer` and `token` are DOM/timer identity, not learner state — and restoring built:true
+   would make comicBuild() early-return against an empty track after a reload, leaving a blank comic.
+   `seen` is an array, so it is sliced rather than referenced.
+   `reported` is what stops a resumed panel re-emitting its 'experienced'. */
+function captureComicState() {
+  return Object.keys(comicState).reduce(function (o, k) {
+    var s = comicState[k];
+    o[k] = { i: s.i, seen: (s.seen || []).slice(), done: !!s.done, reported: !!s.reported };
+    return o;
+  }, {});
+}
+
+function applyComicState(comic) {
+  if (!comic) return;
+  Object.keys(comic).forEach(function (k) {
+    var cur = comicState[k];
+    if (!cur) return;   // not built yet — comicBuild() seeds it, then the second pass re-applies
+    var src = comic[k];
+    cur.i = src.i;
+    cur.seen = (src.seen || []).slice();
+    cur.done = !!src.done;
+    cur.reported = !!src.reported;
+  });
+}
+
+/* SCQ: mutable subset. `locked` matters — s10's options start locked until the aquarium ruler has
+   been dragged, and a restored answered s10 must not come back locked. */
+function captureScqState() {
+  return Object.keys(SCQ_REG).reduce(function (o, k) {
+    var s = SCQ_REG[k];
+    o[k] = { sel: s.sel, attempts: s.attempts, answered: !!s.answered, done: !!s.done, locked: !!s.locked };
+    return o;
+  }, {});
+}
+
+function applyScqState(scq) {
+  if (!scq) return;
+  Object.keys(scq).forEach(function (k) {
+    var s = SCQ_REG[k];
+    if (!s) return;
+    s.sel = scq[k].sel; s.attempts = scq[k].attempts;
+    s.answered = !!scq[k].answered; s.done = !!scq[k].done; s.locked = !!scq[k].locked;
+  });
+}
+
+/* DDQ: the board layout lives in cfg.placement, which registration seeds and dragging mutates — so
+   it is learner state stored on the config object, and it has to be cloned out and back. */
+function captureDdqState() {
+  return Object.keys(DDQ_REG).reduce(function (o, k) {
+    var s = DDQ_REG[k];
+    o[k] = { checked: !!s.checked, done: !!s.done, placement: Object.assign({}, s.cfg.placement) };
+    return o;
+  }, {});
+}
+
+function applyDdqState(ddq) {
+  if (!ddq) return;
+  Object.keys(ddq).forEach(function (k) {
+    var s = DDQ_REG[k];
+    if (!s) return;
+    s.checked = !!ddq[k].checked;
+    s.done = !!ddq[k].done;
+    s.cfg.placement = Object.assign({}, ddq[k].placement);
+  });
+}
+
+/* Positional, WITHOUT `screen` — static table data. practiceScore() reads `state`, and it decides
+   whether this component routes to part 02 or part 03, so losing it would change the learner's route
+   through the unit after a reload. */
+function capturePracticeState() {
+  return practiceProgress.questions.map(function (q) {
+    return { visited: !!q.visited, state: q.state };
+  });
+}
+
+function applyPracticeState(practice) {
+  if (!practice) return;
+  practice.forEach(function (p, i) {
+    var q = practiceProgress.questions[i];
+    if (!q) return;
+    q.visited = !!p.visited; q.state = p.state;
+  });
+}
+
+/* ⚠️ Everything nested is COPIED, never referenced — see the note in part 04. */
+function capturePartPayload() {
+  var st = {
+    currentScreen: currentScreen,
+    qResults: Object.assign({}, XAPI_Q_RESULTS),
+    /* The mascot rides in localStorage across parts, but learningPath is JS-only and decides which
+       branch switchLearningPath() and advanceFromPathChoice() offer next. */
+    lomdaState: {
+      selectedCharacter: window.lomdaState.selectedCharacter,
+      learningPath: window.lomdaState.learningPath
+    },
+    imgqRevealed: Object.assign({}, imgqRevealed),
+    comic: captureComicState(),
+    guessPicked: Object.assign({}, guessPicked),
+    /* flipState is {screen: {cardId: true}} — two levels, so a shallow copy is not enough. */
+    flipState: Object.keys(flipState).reduce(function (o, k) {
+      o[k] = Object.assign({}, flipState[k]); return o;
+    }, {}),
+    scq: captureScqState(),
+    ddq: captureDdqState(),
+    practice: capturePracticeState(),
+    inputs: captureResumeInputs(),
+    vars: {}
+  };
+  RESUME_PLAIN_VARS.forEach(function (k) {
+    try { st.vars[k] = eval(k); } catch (e) {}
+  });
+  return st;
+}
+
+/* The parameter MUST stay named `st` — the eval below assigns through that name, and renaming it
+   fails SILENTLY. See unit-js/README.md. */
+function applyResumeVars(st) {
+  if (st.qResults) XAPI_Q_RESULTS = Object.assign({}, st.qResults);
+  if (st.lomdaState) {
+    window.lomdaState.selectedCharacter = st.lomdaState.selectedCharacter;
+    window.lomdaState.learningPath      = st.lomdaState.learningPath;
+  }
+  if (st.imgqRevealed) imgqRevealed = Object.assign({}, st.imgqRevealed);
+  applyComicState(st.comic);
+  if (st.guessPicked) Object.keys(st.guessPicked).forEach(function (k) { guessPicked[k] = st.guessPicked[k]; });
+  if (st.flipState) Object.keys(st.flipState).forEach(function (k) { flipState[k] = Object.assign({}, st.flipState[k]); });
+  applyScqState(st.scq);
+  applyDdqState(st.ddq);
+  applyPracticeState(st.practice);
+  if (st.vars) {
+    Object.keys(st.vars).forEach(function (k) {
+      if (RESUME_PLAIN_VARS.indexOf(k) === -1) return;   // never assign an unlisted name
+      try { eval(k + ' = st.vars[k];'); } catch (e) {}
+    });
+  }
+}
+
+function applyResumeDom(st) {
+  RESUME_INPUT_IDS.forEach(function (id) {
+    if (!st.inputs || typeof st.inputs[id] !== 'string') return;
+    var el = document.getElementById(id);
+    if (el) el.value = st.inputs[id];
+  });
+}
+
+/* The four gaps where an enter() does not repaint everything.
+
+   Everything NOT listed here is deliberately absent because its enter() already handles it:
+   the three applets branch on dispPlaced / aqMeasured / floodPlaced to redraw the completed look;
+   measEnter→measRender rebuilds entirely from measStep / measDone / measRevealed; flipEnter repaints
+   from flipState; guessEnter from guessPicked; imgqEnter from imgqRevealed; ddqEnter+ddqRender paint
+   the answered board, per-slot correct/wrong included, from {checked, done, placement}. Adding
+   redundant painters here would be dead code that drifts. */
+var SCQ_RESTORE_SCREENS = [10, 13, 14, 15, 16, 19];
+
+function restoreScreenUI(n) {
+  try {
+    /* 1. s2 — hookOpenInput() derives the hint/continue gate from the textarea, but only on input.
+           applyResumeDom() puts the text back afterwards, so the gate has to be re-derived. */
+    if (n === 2) hookOpenInput();
+
+    /* 2. the SCQ screens — scqEnter()'s `done` branch disables options and relabels the button, but
+           never repaints the marks or a mid-attempt selection. */
+    if (SCQ_RESTORE_SCREENS.indexOf(n) !== -1) scqRestoreUI('s' + n);
+
+    /* 3. s22 — measRender() recomputes everything from measStep/measDone/measRevealed EXCEPT the
+           confirm button, which it derives from #meas-input's live value; that value is restored
+           after measRender has already run. */
+    if (n === 22 && typeof measInputChange === 'function') measInputChange();
+
+    /* 4. the comic sliders — comicSliderEnter() runs comicBuild(), which seeds a FRESH record when
+           comicState[sid] is absent (as it is after a reload) and then pages to i:0. The second
+           applyResumeVars() pass fixes the record but not the paint, so the learner would land on
+           panel 1 of a slider they had finished. comicSliderGo is idempotent; animate:false keeps it
+           from sliding visibly on arrival. */
+    if (COMIC_SCREENS.indexOf(n) !== -1) {
+      var sid = 's' + n, cs = comicState[sid];
+      if (cs && COMIC_DATA[sid] && COMIC_DATA[sid].kind !== 'guess') {
+        comicSliderGo(sid, cs.i, { animate: false });
+      }
+    }
+  } catch (e) { console.error('[resume] restoreScreenUI', e); }
+}
+
+/* Mirrors scqCheck's DOM writes and NOTHING else — no state mutation, no statements, no popup
+   (goTo() closes popups by design; re-opening one on arrival would be new UI, not a restore). */
+function scqRestoreUI(screen) {
+  var s = SCQ_REG[screen];
+  if (!s) return;
+  if (s.done) {
+    scqMark(screen, s.cfg.correctId, 'correct');
+    if (s.sel && s.sel !== s.cfg.correctId) scqMark(screen, s.sel, 'wrong');
+    /* s19 is a dropdown: its trigger carries the verdict. */
+    var trig = document.getElementById(screen + '-dropdown-trigger');
+    if (trig) {
+      trig.classList.remove('correct', 'wrong');
+      trig.classList.add(s.sel === s.cfg.correctId ? 'correct' : 'wrong');
+    }
     return;
   }
-  var CDN = 'https://lomdot.education.gov.il/metodica/720active/common/';
-  var METADATA_FILE = '../metadata/methodica-science-volume-solid-01-01.json';
-  function loadScript(src, cb) {
-    var s = document.createElement('script');
-    s.src = src;
-    s.onload = cb;
-    s.onerror = function() { console.error('[xAPI] failed to load', src); cb(); };
-    document.head.appendChild(s);
-  }
-  function pollMetadataReady(cb) {
-    if (window.jsXAPI_MetadataReady) { cb(); }
-    else { setTimeout(function() { pollMetadataReady(cb); }, 200); }
-  }
-  loadScript(CDN + 'xapiwrapper.min.js', function() {
-    loadScript(CDN + 'xapi-720-f.js', function() {
-      try {
-        getXAPIParameters(METADATA_FILE);
-        pollMetadataReady(function() {
-          try {
-            ADL.XAPIWrapper.changeConfig({ endpoint: window.slxapi.endpoint, auth: window.slxapi.auth });
-            sendStatement720('initialized', 'onlinelesson');
-            loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function() {
-              try { sendStatement720('initialized', 'onlinelesson', null, { scope: 'unit' }); } catch(e) {}
-            });
-          } catch(e) { console.error('[xAPI] init', e); }
-        });
-      } catch(e) { console.error('[xAPI] load', e); }
+  if (s.attempts >= 1 && s.sel) scqMark(screen, s.sel, 'wrong');
+  if (s.sel && !s.attempts) {
+    document.querySelectorAll('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]').forEach(function (o) {
+      o.classList.add('selected');
+      o.setAttribute('aria-checked', 'true');
     });
+  }
+  /* Mirror the live enablement predicate, including s10's lock. */
+  var chk = document.getElementById(screen + '-scq-check');
+  if (chk) chk.disabled = !s.sel || !!s.locked;
+}
+
+/* ── xAPI ready hook ──
+   Called by unit-js/50-loader.js after this component's 'initialized' and the landing screen's item
+   init. Opens the UNIT: loads the unit metadata into window.UNIT_METADATA, then reports the
+   unit-scope 'initialized'.
+
+   Only components 01 and 02 did this before the extraction, and that split is preserved verbatim
+   here rather than "fixed" — whether the unit should be opened by exactly one component (01 is the
+   entry every launch passes through) is a reporting-semantics question for Stage 4, not a
+   refactoring one. See REPORT-XAPI.md. */
+function onXapiReady() {
+  loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {
+    try { sendStatement720('initialized', 'onlinelesson', null, { scope: 'unit' }); } catch (e) {}
   });
-})();
+}

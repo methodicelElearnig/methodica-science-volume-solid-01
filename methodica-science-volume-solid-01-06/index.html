@@ -22,7 +22,8 @@
       <h1 class="peak-intro-title">פסל ספינה טרופה לאקווריום</h1>
       <p class="peak-intro-text">ארז קנה פסל של ספינה טרופה לאקווריום, ורצה למדוד את נפחו. הוא השתמש בשיטת ההצפה ומדד שלוש פעמים: 1,250 · 1,240 · 1,260 מ"ל. לפניכם 4 סעיפים — ענו על כולם, ובסוף תקבלו משוב. יש לענות נכון על 3 מתוך 4 כדי לסיים בהצלחה.</p>
     </div>
-    <div class="nav-bar"><button class="btn-continue" id="s0-continue" onclick="peakStart()">התחילו</button></div>
+    <div class="nav-bar"><button class="btn-back" id="back-to-prev-part" onclick="goBackToPrevPart()" hidden>חזרה</button>
+      <button class="btn-continue" id="s0-continue" onclick="peakStart()">התחילו</button></div>
   </section>
 
   <section class="screen" data-screen="1" id="s1">
@@ -133,6 +134,15 @@
   </div>
 
 </div><!-- /#app -->
-<script src="js/main.js?v=2"></script>
+<script src="../unit-js/10-identity.js?v=2"></script>
+<script src="../unit-js/15-ui.js?v=1"></script>
+<script src="../unit-js/20-xapi.js?v=3"></script>
+<script src="../unit-js/25-report.js?v=1"></script>
+<script src="../unit-js/30-nav.js?v=3"></script>
+<script src="../unit-js/40-resume.js?v=1"></script>
+<script src="../unit-js/50-loader.js?v=3"></script>
+<script src="../unit-js/60-devbridge.js?v=1"></script>
+<script src="js/main.js?v=15"></script>
+<script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

@@ -1,36 +1,16 @@
+'use strict';
 /* ═══════════════════════════════════════════════════════════
    js/main.js — 720 Science · Volume of a Solid · Part 06 (peak ב)
    Final attempt (reached only after failing מועד א). Intro + 4
    single-attempt sub-parts (NO per-part feedback) → score. Both
    success (≥3/4) and failure end screens are TERMINAL — the unit ends.
    ═══════════════════════════════════════════════════════════ */
-var XAPI_ID_PREFIX = "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/";
-function shortId(u){ return String(u || "").split("/").pop(); }
-'use strict';
 
 const TOTAL_SCREENS = 7;               // S0 intro, S1–S4 sub-parts, S5 success, S6 failure
 const PEAK_CORRECT = { 1: 'a', 2: 'a', 3: 'b', 4: 'a' };
 const PEAK_PARTS = 4, PEAK_PASS = 3;
-const PEAK_QID = XAPI_ID_PREFIX + 'methodica-science-volume-solid-01-06-01/';
-let currentScreen = 0;
 let peakAnswers = {};
 
-function scaleApp() {
-  const app = document.getElementById('app');
-  const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 710);
-  app.style.width = (window.innerWidth / scale) + 'px'; app.style.height = (window.innerHeight / scale) + 'px';
-  app.style.transform = 'scale(' + scale + ')'; app.style.left = '0px'; app.style.top = '0px';
-}
-window.addEventListener('resize', scaleApp); scaleApp();
-
-function goTo(n) {
-  if (n < 0 || n >= TOTAL_SCREENS) return;
-  document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
-  const prev = document.querySelector('.screen.active'); if (prev) prev.classList.remove('active');
-  currentScreen = n;
-  const next = document.getElementById('s' + n); if (next) next.classList.add('active');
-  resetScreenState(n);
-}
 /* ═══════════════════════════════════════════════════════════
    COMPONENT — Companion character
    The learner picks a mascot on part-01 S0; localStorage is the only
@@ -90,14 +70,19 @@ function renderCompanion(n) {
   });
 }
 
+/* ⚠️ NOTHING HERE MAY REPORT. resetScreenState() runs on every navigation, every back-navigation
+   and (from Stage 5) every resume replay.
+
+   This was the worst instance in the unit: the send sat OUTSIDE the `n === 5` test, so it fired on
+   BOTH end screens — one pass through the screens produced two component 'completed' statements,
+   one claiming success and one claiming failure. `__dupes()` caught it on the very first Stage 0
+   sweep, before any of this work began. Now in peakFinish(), once, synchronously. */
 function resetScreenState(n) {
   renderCompanion(n);
   if (n >= 1 && n <= PEAK_PARTS) peakEnter(n);
   if (n === 5 || n === 6) {
     const el = document.getElementById('s' + n + '-score');
     if (el) el.textContent = 'ענית נכון על ' + peakScore() + ' מתוך ' + PEAK_PARTS + ' סעיפים.';
-    // Both end screens are terminal here (final attempt) — report completion + pass/fail.
-    xapiSend('completed', 'onlinelesson', { success: (n === 5), score: { scaled: peakScore() / PEAK_PARTS } });
   }
 }
 document.addEventListener('keydown', e => {
@@ -110,14 +95,6 @@ function goBack() {
 }
 function advanceScreen() { if (currentScreen === 0) peakStart(); }
 
-/* Fire-and-forget xAPI — defer the (possibly synchronous) send to a macrotask so it
-   never blocks a click's visual feedback / screen paint (the browser only paints after
-   the handler returns). Both end-screen 'completed' sends are terminal (no page unload
-   follows), so deferring is safe. Init stays synchronous. */
-function xapiSend() {
-  const args = arguments;
-  setTimeout(function () { try { sendStatement720.apply(null, args); } catch (e) {} }, 0);
-}
 /* ─── Peak hints (storyboard gives every sub-part its own hint slide) ───
    Not the scq* hint machinery: that is keyed on SCQ_REG, which the peak
    components do not use. The overlay id ends in -hint-overlay so goTo()
@@ -126,7 +103,8 @@ function peakHint(idx) {
   const ov = document.getElementById('s' + idx + '-hint-overlay');
   if (!ov) return;
   ov.classList.remove('hidden');
-  xapiSend('requested.1', 'question', null, { questionId: PEAK_QID + 'q' + idx });
+  /* Reported on open. No parentId: v2.4 mandates it for answered/evaluated only. */
+  xapiSend('requested.1', 'question', null, { questionId: xapiQ(PEAK_ITEM, 'q' + idx).questionId });
 }
 function peakCloseHint(idx) {
   document.getElementById('s' + idx + '-hint-overlay')?.classList.add('hidden');
@@ -147,50 +125,156 @@ function peakEnter(idx) {
 }
 function peakContinue(idx) {
   if (peakAnswers[idx] === undefined) return;
-  xapiSend('answered.last', 'question', { response: peakAnswers[idx] }, { questionId: PEAK_QID + 'q' + idx });
+  const correct = peakAnswers[idx] === PEAK_CORRECT[idx];
+
+  /* One attempt, no per-part feedback, so always 'answered.last'. response is the option's visible
+     text (the metadata's `answers` are the full option strings); success and score were absent. */
+  /* SYNCHRONOUS, not xapiSend. On the last sub-part this call and peakFinish() happen in the SAME
+     click, and peakFinish must be synchronous (risk R1) — so a deferred answer would be overtaken by
+     the item, component and unit 'completed' and arrive after all three. Observed exactly that: q4's
+     answer landed last in the log. Four sends in an assessment do not need deferring. */
+  const q = xapiQ(PEAK_ITEM, 'q' + idx);
+  try {
+    /* Through the doneQ ledger, not sendStatement720 directly. This is an isAssessment component and
+       part 06's back edge makes מועד א re-enterable, so a graded answer must never be reported twice.
+       See sendAnsweredOnce() in unit-js/40-resume.js. Falls through to a plain send while
+       RESUME_ENABLED is false. */
+    sendAnsweredOnce(PEAK_ITEM, 'q' + idx,
+      { response: xapiAnswerText(document.querySelector('#s' + idx + '-opts .peak-opt[data-id="' + peakAnswers[idx] + '"]')),
+        success: correct,
+        score: { scaled: correct ? 1 : 0 } },
+      { questionId: q.questionId, parentId: q.parentId });
+  } catch (e) { console.error('[xAPI] answered q' + idx, e); }
+
+  XAPI_Q_RESULTS[PEAK_ITEM + '/q' + idx] = correct;
+
   if (idx < PEAK_PARTS) { goTo(idx + 1); return; }
-  goTo(peakScore() >= PEAK_PASS ? 5 : 6);   // finish
+
+  /* Navigate FIRST, then report. Both orders show the same screen, but reporting first emitted a
+     spurious item 'initialized' AFTER the item's own 'completed': xapiFinishItems() clears the
+     current-item latch, and the score screen belongs to the same item, so the next goTo() re-opened
+     it. Navigating first keeps the latch on item 01 across the move (xapiOnScreen emits nothing when
+     the item is unchanged) and peakFinish() then closes it exactly once, last.
+     Safe in this order because peakFinish() catches everything internally and cannot throw. */
+  const passed = peakScore() >= PEAK_PASS;
+  goTo(passed ? 5 : 6);
+  peakFinish(passed);
+}
+
+/* Reports the end of מועד ב — and with it the end of the unit, on EVERY path.
+   Called from peakContinue() only, synchronously (RESUME.md risk R1).
+
+   Both end screens are terminal here: there is no third attempt. So unlike part 05, this component
+   closes the unit whether the learner passed or failed — a learner who fails the final attempt has
+   still finished the lomda, and REPORT-XAPI.md is explicit that a component the learner does not
+   clear must still be reported or the whole attempt goes unrecorded. */
+function peakFinish(passed) {
+  try { xapiFinishItems(); } catch (e) {}
+
+  const result = { success: passed, score: { scaled: peakScore() / PEAK_PARTS } };
+
+  try {
+    sendCompletedOnce('done', currentPartSlug(), 'onlinelesson', result);
+  } catch (e) { console.error('[xAPI] completed component 06', e); }
+
+  try {
+    sendCompletedOnce('done', 'unit', 'onlinelesson', result, { scope: 'unit' });
+  } catch (e) { console.error('[xAPI] completed unit (via 06)', e); }
 }
 function peakScore() { let s = 0; for (let i = 1; i <= PEAK_PARTS; i++) if (peakAnswers[i] === PEAK_CORRECT[i]) s++; return s; }
 /* מועד ב is the final attempt — no retake; both end screens are terminal. */
 
-/* ═══ Report modal ═══ */
-function openReportModal() { document.getElementById('report-modal').removeAttribute('hidden'); setTimeout(function () { document.getElementById('report-type')?.focus(); }, 40); }
-function tryCloseReportModal() { const t = document.getElementById('report-type').value, x = document.getElementById('report-text').value.trim(); if (t || x) { document.getElementById('report-modal').setAttribute('hidden', ''); document.getElementById('report-confirm-modal').removeAttribute('hidden'); } else forceCloseReportModal(); }
-function forceCloseReportModal() { document.getElementById('report-modal').setAttribute('hidden', ''); document.getElementById('report-confirm-modal').setAttribute('hidden', ''); resetReportForm(); }
-function backToReportForm() { document.getElementById('report-confirm-modal').setAttribute('hidden', ''); document.getElementById('report-modal').removeAttribute('hidden'); }
-var REPORT_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSfFq5XFtH1pPpLgV5RWT4m3NanYPW5GKremqTvkp6zKjEGqcw/formResponse';
-function submitReport() {
-  const typeSel = document.getElementById('report-type'), textVal = document.getElementById('report-text').value.trim(), errEl = document.getElementById('report-error');
-  if (!typeSel.value || !textVal) { if (errEl) errEl.removeAttribute('hidden'); (typeSel.value ? document.getElementById('report-text') : typeSel).focus(); return; }
-  if (errEl) errEl.setAttribute('hidden', '');
-  const now = new Date(), meta = window.METADATA || {}, body = new URLSearchParams();
-  body.append('entry.301404029_year', now.getFullYear()); body.append('entry.301404029_month', now.getMonth() + 1); body.append('entry.301404029_day', now.getDate());
-  body.append('entry.2066097581_hour', now.getHours()); body.append('entry.2066097581_minute', now.getMinutes());
-  body.append('entry.1933069481', shortId(meta.learningUnitId)); body.append('entry.2070680092', shortId(meta.id));
-  body.append('entry.1555704258', meta.id ? shortId(meta.id) + '-01' : ''); body.append('entry.1671046914', String(currentScreen));
-  body.append('entry.1179822443', typeSel.options[typeSel.selectedIndex].text); body.append('entry.806447525', textVal);
-  fetch(REPORT_FORM_ACTION, { method: 'POST', mode: 'no-cors', body: body }).catch(function (e) {});
-  showReportThanks();
+/* ═══════════════════════════════════════════════════════════
+   xAPI (720) — per-part seams
+   ═══════════════════════════════════════════════════════════ */
+
+/* Four sub-parts = q1..q4 of ONE item, so the item spans screens 1-4 and both score screens. */
+var SCREEN_TO_SUBCONTENT = {
+  /* The intro is page 0 OF THE ITEM, not a no-item screen. Mapping it to null made the item close
+     the moment a learner navigated back to the intro (goBack allows 2->1->0), emitting a premature
+     item 'completed' carrying a partial score — which, once the Stage 5a ledger lands, would mark
+     the item done and SUPPRESS the real one from peakFinish(). Keeping the intro inside the item
+     means the item opens on entry and closes only in peakFinish(), whatever route the learner takes. */
+  0: ['01', 0],       // intro
+  1: ['01', 1],       // sub-part 1
+  2: ['01', 2],       // sub-part 2
+  3: ['01', 3],       // sub-part 3
+  4: ['01', 4],       // sub-part 4
+  5: ['01', 5],       // score - passed   (terminal)
+  6: ['01', 5]        // score - failed   (terminal; no third attempt)
+};
+
+var XAPI_COMP_SLUG = 'methodica-science-volume-solid-01-06';
+var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
+
+/* The single item. NOTE it shares the suffix '01' with part 05's item — the two are distinguished
+   only by XAPI_COMP_ID. That is why the Stage 5a resume ledger must namespace doneItems by part
+   slug: '<slug>#01' for each, or מועד א and מועד ב would cancel each other out. */
+var PEAK_ITEM = '01';
+
+var XAPI_EVAL_ITEMS = { '01': 1 };
+
+/* Explicit item result: 3 of 4 passes, but the library's aggregate is an all-correct AND. */
+var XAPI_ITEM_RESULT = {
+  '01': function () {
+    return { success: peakScore() >= PEAK_PASS, score: { scaled: peakScore() / PEAK_PARTS } };
+  }
+};
+
+/* Per-part seam read by unit-js/50-loader.js. */
+var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-06.json';
+
+/* ═══════════════════════════════════════════════════════════
+   RESUME — this component's payload
+   The assessment. peakAnswers is the whole of it, and restoring it is LAYER 1 of the re-answer guard:
+   with the answers back, peakEnter() re-marks the picked option and peakContinue() cannot be reached
+   for a sub-part the learner already committed, so no graded answer can be sent twice. Layer 2 is the
+   doneQ ledger in unit-js/40-resume.js, which does not depend on this working.
+   That matters here specifically because part 06 offers "חזרה" back into part 05 — see
+   ROUTING-AND-RETAKE.md.
+   ═══════════════════════════════════════════════════════════ */
+
+/* peakAnswers is an OBJECT, so it cannot travel through RESUME_PLAIN_VARS' verbatim copy — that
+   would store a live reference that mutates along with the original, and the snapshot goTo() takes
+   before resetScreenState() would already contain the change it exists to undo. It is cloned
+   explicitly below instead. Nothing else in this component holds answer state at file scope. */
+var RESUME_PLAIN_VARS = [];
+var RESUME_INPUT_IDS  = [];
+var RESUME_TEXT_IDS   = [];
+
+function capturePartPayload() {
+  return {
+    currentScreen: currentScreen,
+    qResults: Object.assign({}, XAPI_Q_RESULTS),
+    peakAnswers: Object.assign({}, peakAnswers),   // clone, not reference
+    vars: {}
+  };
 }
-function showReportThanks() { document.querySelectorAll('#report-modal .report-field, #report-modal .report-actions, #report-modal .report-modal-body').forEach(el => el.setAttribute('hidden', '')); document.getElementById('report-thanks')?.removeAttribute('hidden'); }
-function resetReportForm() { document.getElementById('report-type').value = ''; document.getElementById('report-text').value = ''; document.getElementById('report-char-count').textContent = '0 / 250'; document.getElementById('report-error')?.setAttribute('hidden', ''); document.getElementById('report-thanks')?.setAttribute('hidden', ''); document.querySelectorAll('#report-modal .report-field, #report-modal .report-actions, #report-modal .report-modal-body').forEach(el => el.removeAttribute('hidden')); }
-(function wireReport() {
-  document.getElementById('flag-btn')?.addEventListener('click', openReportModal);
-  const ta = document.getElementById('report-text'), cc = document.getElementById('report-char-count');
-  if (ta && cc) ta.addEventListener('input', function () { cc.textContent = ta.value.length + ' / 250'; });
-  document.addEventListener('keydown', function (ev) { if (ev.key !== 'Escape') return; const cm = document.getElementById('report-confirm-modal'), rm = document.getElementById('report-modal'); if (cm && !cm.hasAttribute('hidden')) { forceCloseReportModal(); return; } if (rm && !rm.hasAttribute('hidden')) { tryCloseReportModal(); return; } });
-})();
 
-/* ═══ Dev bridge ═══ */
-window.addEventListener('message', e => { if (!e.data || e.data.type !== 'DEV_GOTO') return; const n = parseInt(e.data.screen, 10); if (!isNaN(n)) goTo(n); });
-if (window.parent !== window) { window.parent.postMessage({ type: 'DEV_READY', total: document.querySelectorAll('.screen').length }, '*'); }
+/* The parameter MUST stay named `st` — see unit-js/README.md. */
+function applyResumeVars(st) {
+  if (st.qResults) XAPI_Q_RESULTS = Object.assign({}, st.qResults);
+  if (st.peakAnswers) peakAnswers = Object.assign({}, st.peakAnswers);
+}
 
-/* ═══ xAPI ═══ */
-(function initXAPI() {
-  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') { return; }
-  var CDN = 'https://lomdot.education.gov.il/metodica/720active/common/';
-  function loadScript(src, cb) { var s = document.createElement('script'); s.src = src; s.onload = cb; s.onerror = function () { cb(); }; document.head.appendChild(s); }
-  function poll(cb) { if (window.jsXAPI_MetadataReady) cb(); else setTimeout(function () { poll(cb); }, 200); }
-  loadScript(CDN + 'xapiwrapper.min.js', function () { loadScript(CDN + 'xapi-720-f.js', function () { try { getXAPIParameters('../metadata/methodica-science-volume-solid-01-06.json'); poll(function () { try { ADL.XAPIWrapper.changeConfig({ endpoint: window.slxapi.endpoint, auth: window.slxapi.auth }); sendStatement720('initialized', 'onlinelesson'); loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {}); } catch (e) {} }); } catch (e) {} }); });
-})();
+function applyResumeDom(st) {}
+
+/* peakEnter() already repaints a sub-part completely from peakAnswers — it re-marks the picked option
+   and re-enables the continue button — and resetScreenState() calls it for screens 1-4. The score
+   screens likewise rebuild their text from peakScore(), which reads the restored peakAnswers. So
+   there is genuinely nothing left to paint here, and saying so explicitly is better than an empty
+   function that reads like an oversight.
+
+   NOTE what this deliberately does NOT do: it does not disable the options on an answered sub-part.
+   The assessment allows one attempt per sub-part and peakContinue() is the only path forward, so a
+   learner returning to an answered screen can change their pick but cannot re-submit it — and the
+   doneQ ledger refuses a second graded answer even if that ever changed. */
+function restoreScreenUI(n) {}
+
+
+/* ── xAPI ready hook ──
+   Loads the unit metadata but reports NO unit-scope 'initialized' — this component is not the one
+   that opens the unit. Preserved from the pre-extraction code; see the note in component 01. */
+function onXapiReady() {
+  loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {});
+}

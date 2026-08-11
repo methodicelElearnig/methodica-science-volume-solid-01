@@ -1,22 +1,18 @@
+'use strict';
 /* ═══════════════════════════════════════════════════════════
    js/main.js — 720 Science · Volume of a Solid · Part 03 (class task)
    Single offline-synthesis task screen. "חזרתי" → Part 04.
    ═══════════════════════════════════════════════════════════ */
-var XAPI_ID_PREFIX = "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/";
-function shortId(u){ return String(u || "").split("/").pop(); }
-'use strict';
 
 const PART_04_URL = '../methodica-science-volume-solid-01-04/index.html';
-let currentScreen = 0;
 
-function scaleApp() {
-  const app = document.getElementById('app');
-  const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 710);
-  app.style.width = (window.innerWidth / scale) + 'px';
-  app.style.height = (window.innerHeight / scale) + 'px';
-  app.style.transform = 'scale(' + scale + ')';
-  app.style.left = '0px'; app.style.top = '0px';
-}
+/* One screen, and no in-component navigation — but the constant is still required. The shared
+   goTo() in unit-js/30-nav.js rejects n >= TOTAL_SCREENS, index_dev.html derives its jump range
+   from it, and unit-js/25-report.js reads it to decide that a single-screen component reports
+   page 1 rather than the live screen index. It was absent, which is why the report from this part
+   briefly went out as page 0 during the extraction. */
+const TOTAL_SCREENS = 1;
+
 /* ═══════════════════════════════════════════════════════════
    COMPONENT — Companion character
    The learner picks a mascot on part-01 S0; localStorage is the only
@@ -73,73 +69,93 @@ function renderCompanion(n) {
   });
 }
 
-window.addEventListener('resize', scaleApp);
-renderCompanion(0);
-scaleApp();
+/* The per-screen re-entry hook the shared goTo() calls. This component has exactly one screen and
+   never navigates, so it only ever renders the companion — but the hook contract requires every
+   part to define it, and leaving it out would make the shared goTo() throw if the dev bridge or a
+   resume ever pointed here. */
+function resetScreenState(n) {
+  renderCompanion(n);
+}
 
+resetScreenState(0);
+
+/* The learner presses "חזרתי" when they come back from the off-computer task. */
 function classTaskDone() {
-  try { sendStatement720('completed', 'onlinelesson'); } catch (e) {}
+  /* Close the item before reporting the component, so the two arrive in order. */
+  try { xapiFinishItems(); } catch (e) {}
+
+  /* xAPI: component 'completed' with success and NO score.
+     Deliberate: this component is an off-computer inquiry task (metadata contentType
+     "Task Inquiry or Project"). Nothing about it is measurable in the browser — there is no answer
+     UI at all, only the "חזרתי" button — so there is no numerator and no denominator to report, and
+     a fabricated score would be worse than none. Reaching this button IS the completion.
+     v2.4 asks for score only where the component contains 'answered' interactions; this one has
+     none. */
+  try {
+    sendCompletedOnce('done', currentPartSlug(), 'onlinelesson', { success: true });
+  } catch (e) { console.error('[xAPI] completed component 03', e); }
+
+  if (RESUME_ENABLED) writeForwardState('methodica-science-volume-solid-01-04');
   window.location.href = PART_04_URL + window.location.search;
 }
 
-/* ═══ Report modal ═══ */
-function openReportModal() { document.getElementById('report-modal').removeAttribute('hidden'); setTimeout(function () { document.getElementById('report-type')?.focus(); }, 40); }
-function tryCloseReportModal() {
-  const t = document.getElementById('report-type').value, x = document.getElementById('report-text').value.trim();
-  if (t || x) { document.getElementById('report-modal').setAttribute('hidden', ''); document.getElementById('report-confirm-modal').removeAttribute('hidden'); } else forceCloseReportModal();
-}
-function forceCloseReportModal() { document.getElementById('report-modal').setAttribute('hidden', ''); document.getElementById('report-confirm-modal').setAttribute('hidden', ''); resetReportForm(); }
-function backToReportForm() { document.getElementById('report-confirm-modal').setAttribute('hidden', ''); document.getElementById('report-modal').removeAttribute('hidden'); }
-var REPORT_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSfFq5XFtH1pPpLgV5RWT4m3NanYPW5GKremqTvkp6zKjEGqcw/formResponse';
-function submitReport() {
-  const typeSel = document.getElementById('report-type'), textVal = document.getElementById('report-text').value.trim(), errEl = document.getElementById('report-error');
-  if (!typeSel.value || !textVal) { if (errEl) errEl.removeAttribute('hidden'); (typeSel.value ? document.getElementById('report-text') : typeSel).focus(); return; }
-  if (errEl) errEl.setAttribute('hidden', '');
-  const now = new Date(), meta = window.METADATA || {}, body = new URLSearchParams();
-  body.append('entry.301404029_year', now.getFullYear()); body.append('entry.301404029_month', now.getMonth() + 1); body.append('entry.301404029_day', now.getDate());
-  body.append('entry.2066097581_hour', now.getHours()); body.append('entry.2066097581_minute', now.getMinutes());
-  body.append('entry.1933069481', shortId(meta.learningUnitId)); body.append('entry.2070680092', shortId(meta.id));
-  body.append('entry.1555704258', meta.id ? shortId(meta.id) + '-01' : ''); body.append('entry.1671046914', '1');
-  body.append('entry.1179822443', typeSel.options[typeSel.selectedIndex].text); body.append('entry.806447525', textVal);
-  fetch(REPORT_FORM_ACTION, { method: 'POST', mode: 'no-cors', body: body }).catch(function (e) { console.error('[Report] send failed', e); });
-  showReportThanks();
-}
-function showReportThanks() { document.querySelectorAll('#report-modal .report-field, #report-modal .report-actions, #report-modal .report-modal-body').forEach(el => el.setAttribute('hidden', '')); document.getElementById('report-thanks')?.removeAttribute('hidden'); }
-function resetReportForm() {
-  document.getElementById('report-type').value = ''; document.getElementById('report-text').value = ''; document.getElementById('report-char-count').textContent = '0 / 250';
-  document.getElementById('report-error')?.setAttribute('hidden', ''); document.getElementById('report-thanks')?.setAttribute('hidden', '');
-  document.querySelectorAll('#report-modal .report-field, #report-modal .report-actions, #report-modal .report-modal-body').forEach(el => el.removeAttribute('hidden'));
-}
-(function wireReport() {
-  document.getElementById('flag-btn')?.addEventListener('click', openReportModal);
-  const ta = document.getElementById('report-text'), cc = document.getElementById('report-char-count');
-  if (ta && cc) ta.addEventListener('input', function () { cc.textContent = ta.value.length + ' / 250'; });
-  document.addEventListener('keydown', function (ev) {
-    if (ev.key !== 'Escape') return;
-    const cm = document.getElementById('report-confirm-modal'), rm = document.getElementById('report-modal');
-    if (cm && !cm.hasAttribute('hidden')) { forceCloseReportModal(); return; }
-    if (rm && !rm.hasAttribute('hidden')) { tryCloseReportModal(); return; }
-  });
-})();
+/* ═══════════════════════════════════════════════════════════
+   xAPI (720) — per-part seams
+   ═══════════════════════════════════════════════════════════ */
 
-/* ═══ xAPI (720 LMS host; skipped on localhost) ═══ */
-(function initXAPI() {
-  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') { return; }
-  var CDN = 'https://lomdot.education.gov.il/metodica/720active/common/';
-  function loadScript(src, cb) { var s = document.createElement('script'); s.src = src; s.onload = cb; s.onerror = function () { cb(); }; document.head.appendChild(s); }
-  function poll(cb) { if (window.jsXAPI_MetadataReady) cb(); else setTimeout(function () { poll(cb); }, 200); }
-  loadScript(CDN + 'xapiwrapper.min.js', function () {
-    loadScript(CDN + 'xapi-720-f.js', function () {
-      try {
-        getXAPIParameters('../metadata/methodica-science-volume-solid-01-03.json');
-        poll(function () {
-          try {
-            ADL.XAPIWrapper.changeConfig({ endpoint: window.slxapi.endpoint, auth: window.slxapi.auth });
-            sendStatement720('initialized', 'onlinelesson');
-            loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {});
-          } catch (e) {}
-        });
-      } catch (e) {}
-    });
-  });
-})();
+/* One screen, one catalog item. */
+var SCREEN_TO_SUBCONTENT = {
+  0: ['01', 1]        // the class task itself (sb110)
+};
+
+var XAPI_COMP_SLUG = 'methodica-science-volume-solid-01-03';
+var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
+
+/* EMPTY on purpose. The metadata declares a question q1 on item 01, but it is answered on paper,
+   away from the screen — the code has no way to grade it and never sends an 'answered'. Marking the
+   item as an evaluation item would set expectsAnswer on its 'completed', which the library then
+   DEFERS until an 'answered' arrives for that item. None ever would, and the item 'completed' would
+   never be sent at all. */
+var XAPI_EVAL_ITEMS = {};
+
+/* Per-part seam read by unit-js/50-loader.js. */
+var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-03.json';
+
+/* ═══════════════════════════════════════════════════════════
+   RESUME — this component's payload
+   The whole hook contract, at its smallest. One screen, nothing answerable on it, so there is
+   nothing to restore beyond the fact that the learner got here. The functions still have to exist:
+   the shared goTo() and applyExecutionState() call them unconditionally.
+   ═══════════════════════════════════════════════════════════ */
+
+var RESUME_PLAIN_VARS = [];      // no answer variables in this component
+var RESUME_INPUT_IDS  = [];
+var RESUME_TEXT_IDS   = [];
+
+function capturePartPayload() {
+  return {
+    currentScreen: currentScreen,
+    /* Carried even though nothing here writes it: the learner may arrive with results already in
+       XAPI_Q_RESULTS from an earlier part, and a payload that dropped them would make a later
+       component's score wrong. Object.assign is a sufficient clone — the values are booleans. */
+    qResults: Object.assign({}, XAPI_Q_RESULTS),
+    vars: {}
+  };
+}
+
+/* The parameter MUST stay named `st` — see unit-js/README.md. Nothing here uses eval, but keeping
+   the name uniform across all six parts is what stops someone copying this one as a template and
+   renaming it in a part that does. */
+function applyResumeVars(st) {
+  if (st.qResults) XAPI_Q_RESULTS = Object.assign({}, st.qResults);
+}
+
+function applyResumeDom(st) {}
+function restoreScreenUI(n) {}
+
+/* ── xAPI ready hook ──
+   Loads the unit metadata but reports NO unit-scope 'initialized' — this component is not the one
+   that opens the unit. Preserved from the pre-extraction code; see the note in component 01. */
+function onXapiReady() {
+  loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {});
+}

@@ -22,7 +22,8 @@
       <h1 class="peak-intro-title">אבטיפוס לפסלון משחק קופסה</h1>
       <p class="peak-intro-text">חברה מייצרת פסלוני משחק מפלסטיק ורוצה לדעת את נפח הפסלון המדויק. לפניכם 4 סעיפים — ענו על כולם, ובסוף תקבלו משוב. יש לענות נכון על 3 מתוך 4 כדי לסיים בהצלחה.</p>
     </div>
-    <div class="nav-bar"><button class="btn-continue" id="s0-continue" onclick="peakStart()">התחילו</button></div>
+    <div class="nav-bar"><button class="btn-back" id="back-to-prev-part" onclick="goBackToPrevPart()" hidden>חזרה</button>
+      <button class="btn-continue" id="s0-continue" onclick="peakStart()">התחילו</button></div>
   </section>
 
   <!-- S1–S4 sub-parts injected/handled by JS (single-select, no feedback) -->
@@ -139,6 +140,15 @@
   </div>
 
 </div><!-- /#app -->
-<script src="js/main.js?v=2"></script>
+<script src="../unit-js/10-identity.js?v=2"></script>
+<script src="../unit-js/15-ui.js?v=1"></script>
+<script src="../unit-js/20-xapi.js?v=3"></script>
+<script src="../unit-js/25-report.js?v=1"></script>
+<script src="../unit-js/30-nav.js?v=3"></script>
+<script src="../unit-js/40-resume.js?v=1"></script>
+<script src="../unit-js/50-loader.js?v=3"></script>
+<script src="../unit-js/60-devbridge.js?v=1"></script>
+<script src="js/main.js?v=16"></script>
+<script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>
