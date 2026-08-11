@@ -247,7 +247,8 @@ html, body {
   background: #fff; overflow: hidden;
   transition: border-color 0.15s, background 0.15s;
 }
-.option-card-img img {
+.option-card-img img,
+.option-card-img video {
   width: 100%;
   aspect-ratio: 296 / 278;
   object-fit: cover; border-radius: 16px;

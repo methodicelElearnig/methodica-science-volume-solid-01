@@ -36,11 +36,18 @@ function getCharacter() {
    <img onerror> fallback: onerror would fire a real 404 on nearly every
    screen and this unit's QA gate checks the network log for zero 404s.
    Landing a produced GIF is one line here plus the file. */
-const CHARACTER_ASSETS = { selection: 'png' };
+const CHARACTER_ASSETS = { selection: 'png', notebook: 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   return 'assets/img/character-' + getCharacter() + '-' +
          (ext ? pose : 'selection') + '.' + (ext || 'png');
+}
+/* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
+function startCompanionMedia(el) {
+  if (el.tagName !== 'VIDEO') return;
+  el.load();
+  const p = el.play();
+  if (p && p.catch) p.catch(function () {});
 }
 const CHARACTER_SLOTS = {
   s0: { pose: 'notebook', w: 180, right: 14, bottom: 95 }      /* sb110 */
@@ -53,15 +60,19 @@ function renderCompanion(n) {
   screen.classList.toggle('has-companion', !!slot);
   let el = screen.querySelector(':scope > .companion');
   if (!slot) { if (el) el.remove(); return; }
+  const tag = CHARACTER_ASSETS[slot.pose] === 'mp4' ? 'video' : 'img';
+  if (el && el.tagName.toLowerCase() !== tag) { el.remove(); el = null; }
   if (!el) {
-    el = document.createElement('img');
+    el = document.createElement(tag);
     el.className = 'companion';
     el.alt = '';                                   // decorative, carries no information
     el.setAttribute('aria-hidden', 'true');
     el.draggable = false;
+    if (tag === 'video') { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
     screen.appendChild(el);
   }
   el.src = characterAsset(slot.pose);
+  startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
   el.classList.toggle('companion--center', slot.center === true);
   ['left', 'right', 'top', 'bottom'].forEach(function (k) {

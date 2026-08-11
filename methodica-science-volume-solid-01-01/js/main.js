@@ -156,11 +156,22 @@ function getCharacter() {
    <img onerror> fallback: onerror would fire a real 404 on nearly every
    screen and this unit's QA gate checks the network log for zero 404s.
    Landing a produced GIF is one line here plus the file. */
-const CHARACTER_ASSETS = { selection: 'png' };
+const CHARACTER_ASSETS = {
+  selection: 'png', examine: 'mp4', 'cylinder-pendant': 'mp4', toga: 'mp4',
+  towel: 'png', comic: 'mp4', experiments: 'mp4', pingpong: 'mp4', soap: 'mp4',
+  stretch: 'png', ask: 'mp4', 'wet-object': 'mp4'
+};
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   return 'assets/img/character-' + getCharacter() + '-' +
          (ext ? pose : 'selection') + '.' + (ext || 'png');
+}
+/* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
+function startCompanionMedia(el) {
+  if (el.tagName !== 'VIDEO') return;
+  el.load();
+  const p = el.play();
+  if (p && p.catch) p.catch(function () {});
 }
 const CHARACTER_SLOTS = {
   s1:  { pose: 'examine',          w: 162, right: 61, bottom: 142 },  /* sb4  */
@@ -180,8 +191,8 @@ const CHARACTER_SLOTS = {
 function renderPathCharacters() {
   const c = document.getElementById('s7-img-comic');
   const e = document.getElementById('s7-img-experiments');
-  if (c) c.src = characterAsset('comic');
-  if (e) e.src = characterAsset('experiments');
+  if (c) { c.src = characterAsset('comic'); startCompanionMedia(c); }
+  if (e) { e.src = characterAsset('experiments'); startCompanionMedia(e); }
 }
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
@@ -192,15 +203,19 @@ function renderCompanion(n) {
   screen.classList.toggle('has-companion', !!slot);
   let el = screen.querySelector(':scope > .companion');
   if (!slot) { if (el) el.remove(); return; }
+  const tag = CHARACTER_ASSETS[slot.pose] === 'mp4' ? 'video' : 'img';
+  if (el && el.tagName.toLowerCase() !== tag) { el.remove(); el = null; }
   if (!el) {
-    el = document.createElement('img');
+    el = document.createElement(tag);
     el.className = 'companion';
     el.alt = '';                                   // decorative, carries no information
     el.setAttribute('aria-hidden', 'true');
     el.draggable = false;
+    if (tag === 'video') { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
     screen.appendChild(el);
   }
   el.src = characterAsset(slot.pose);
+  startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
   el.classList.toggle('companion--center', slot.center === true);
   ['left', 'right', 'top', 'bottom'].forEach(function (k) {
