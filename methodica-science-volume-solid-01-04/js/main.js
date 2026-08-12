@@ -71,11 +71,18 @@ function getCharacter() {
    <img onerror> fallback: onerror would fire a real 404 on nearly every
    screen and this unit's QA gate checks the network log for zero 404s.
    Landing a produced GIF is one line here plus the file. */
-const CHARACTER_ASSETS = { selection: 'png' };
+const CHARACTER_ASSETS = { selection: 'png', dumbbells: 'mp4', ask: 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   return 'assets/img/character-' + getCharacter() + '-' +
          (ext ? pose : 'selection') + '.' + (ext || 'png');
+}
+/* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
+function startCompanionMedia(el) {
+  if (el.tagName !== 'VIDEO') return;
+  el.load();
+  const p = el.play();
+  if (p && p.catch) p.catch(function () {});
 }
 /* s7 and s11 are NOT here: they author their sprite in index.html, because the position
    only makes sense next to a bubble that also lives in the markup. Keeping a slot for
@@ -93,22 +100,26 @@ function renderCompanion(n) {
      screen deleted s11's. An INJECTED one is still cleaned up when its slot goes away. */
   if (!slot) {
     if (el && el.dataset.injected === '1') { el.remove(); el = null; }
-    else if (el) el.src = characterAsset(el.dataset.pose || 'selection');
+    else if (el) { el.src = characterAsset(el.dataset.pose || 'selection'); startCompanionMedia(el); }
     screen.classList.toggle('has-companion', !!el);
     return;
   }
+  const tag = CHARACTER_ASSETS[slot.pose] === 'mp4' ? 'video' : 'img';
+  if (el && el.dataset.injected === '1' && el.tagName.toLowerCase() !== tag) { el.remove(); el = null; }
   if (!el) {
-    el = document.createElement('img');
+    el = document.createElement(tag);
     el.className = 'companion';
     el.alt = '';                                   // decorative, carries no information
     el.setAttribute('aria-hidden', 'true');
     el.draggable = false;
     el.dataset.injected = '1';
+    if (tag === 'video') { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
     screen.appendChild(el);
   }
   // Lets a template reserve room for the sprite instead of being drawn over.
   screen.classList.add('has-companion');
   el.src = characterAsset(slot.pose);
+  startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
   el.classList.toggle('companion--center', slot.center === true);
   ['left', 'right', 'top', 'bottom'].forEach(function (k) {
