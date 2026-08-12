@@ -6,7 +6,7 @@ re-reported to the LRS.**
 
 State document version **1**. Enabled via `RESUME_ENABLED` in `unit-js/10-identity.js`.
 
-Companions: [unit-js/README.md](unit-js/README.md) · [REPORT-XAPI.md](REPORT-XAPI.md) ·
+Companions: [unit-js/README.md](../unit-js/README.md) · [REPORT-XAPI.md](REPORT-XAPI.md) ·
 [ROUTING-AND-RETAKE.md](ROUTING-AND-RETAKE.md)
 
 > ⚠️ **DEPLOY ALL SIX COMPONENT FOLDERS ATOMICALLY** whenever `RESUME_ENABLED` or the document version

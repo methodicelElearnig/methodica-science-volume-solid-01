@@ -64,6 +64,7 @@
    Default theme: science. Theme switch = data-subject-theme attribute on <body>;
    only Subject/* tokens may change between themes. ── */
 :root {
+  --pure-white: #fff;
   --subject-100: #d4f3ff;
   --subject-200: #c7f0ff;
   --subject-300: #b9ecff;
@@ -2900,7 +2901,7 @@ html, body {
 .hook-bubble {
   position: relative;
   margin-top: 6px;
-  background: var(--subject-100);
+  background: var(--pure-white);
   border: 2px solid var(--subject-500);
   border-radius: 18px;
   padding: 16px 20px;
