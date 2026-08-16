@@ -74,8 +74,13 @@ function getCharacter() {
 const CHARACTER_ASSETS = { selection: 'png', dumbbells: 'mp4', ask: 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
+  /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
+     (their near-white matte lifted to pure #FFFFFF) under their existing names, so a
+     browser holding the old copy would keep showing the grey box on the white canvas.
+     Bump it whenever a character asset is re-exported. Over file:// the query is ignored
+     rather than breaking the load, so it is safe there too. */
   return 'assets/img/character-' + getCharacter() + '-' +
-         (ext ? pose : 'selection') + '.' + (ext || 'png');
+         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=2';
 }
 /* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
 function startCompanionMedia(el) {
@@ -84,9 +89,10 @@ function startCompanionMedia(el) {
   const p = el.play();
   if (p && p.catch) p.catch(function () {});
 }
-/* s7 and s11 are NOT here: they author their sprite in index.html, because the position
-   only makes sense next to a bubble that also lives in the markup. Keeping a slot for
-   them too would mean two sources of truth for the same offsets. */
+/* s7 and s11 are NOT here: they author their sprite in index.html inside a .companion-say
+   group, because the position only makes sense next to a bubble that also lives in the
+   markup. Keeping a slot for them too would mean two sources of truth for the same
+   offsets — and now the group, not a number, is what holds the pair together. */
 const CHARACTER_SLOTS = {
   s0: { pose: 'dumbbells', w: 200, right: 40, bottom: 95 }     /* sb113 */
 };
@@ -94,7 +100,10 @@ function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
   if (!screen) return;
   const slot = CHARACTER_SLOTS['s' + n];
-  let el = screen.querySelector(':scope > .companion');
+  /* NOT `:scope > .companion`: a sprite authored inside a .companion-say group is nested,
+     and missing it would leave the orange src baked into the markup in front of a learner
+     who chose turquoise. */
+  let el = screen.querySelector('.companion');
   /* An AUTHORED sprite (data-pose in the markup, no slot) must survive this function —
      only which character it shows is refreshed. Removing every sprite on a slot-less
      screen deleted s11's. An INJECTED one is still cleaned up when its slot goes away. */
@@ -122,9 +131,13 @@ function renderCompanion(n) {
   startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
   el.classList.toggle('companion--center', slot.center === true);
-  ['left', 'right', 'top', 'bottom'].forEach(function (k) {
-    el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
-  });
+  /* A grouped sprite is positioned BY the group, so writing slot offsets onto it would be
+     a second, conflicting source of truth. (Reachable only if a screen ever has both.) */
+  if (!el.closest('.companion-say')) {
+    ['left', 'right', 'top', 'bottom'].forEach(function (k) {
+      el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
+    });
+  }
 }
 
 function resetScreenState(n) {

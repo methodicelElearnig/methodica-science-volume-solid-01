@@ -22,6 +22,12 @@ window.lomdaState = window.lomdaState || {
    Pointer-based drag-and-drop helper (engine — reused by future
    DnD/matching screens). Ghost clone follows the pointer, scaled
    to the #app transform so it matches the source visually.
+   `opts.moveSource: true` switches to a second mode where the REAL
+   source element is translated to follow the pointer instead of a
+   ghost, and is left there on drop (no snap-back) — for a plain
+   "leave it wherever you dragged it" object like the aquarium ruler.
+   The accumulated offset is kept on the element's own dataset so a
+   second drag continues from the current position, not from zero.
    ═══════════════════════════════════════════════════════════ */
 /* Current #app scale factor. Pointer events report SCREEN pixels; everything
    inside #app is expressed in DESIGN pixels, so any pointer delta used for
@@ -57,8 +63,32 @@ function createPointerDnd(opts) {
     if (!dragId) return;
     if (opts.canDrag && !opts.canDrag(dragId, src)) return;
     e.preventDefault();
-    const rect  = src.getBoundingClientRect();
     const scale = getAppScale();
+
+    if (opts.moveSource) {
+      /* No ghost: the real element is translated directly, so it's what's
+         left behind on drop. pointer-events are dropped for the duration so
+         findTargetUnder() (elementFromPoint) sees what's UNDER it, not itself —
+         the ghost path gets this for free via ghost.pointerEvents:'none'. */
+      const baseX = parseFloat(src.dataset.pdragOffX || '0');
+      const baseY = parseFloat(src.dataset.pdragOffY || '0');
+      src.style.pointerEvents = 'none';
+      active = {
+        dragId, srcElem: src, moveSource: true, scale,
+        pointerId: e.pointerId,
+        startClientX: e.clientX, startClientY: e.clientY,
+        baseX, baseY,
+        currentTarget: null,
+      };
+      src.classList.add('dragging');
+      if (opts.onPick) opts.onPick(dragId, src);
+      document.addEventListener('pointermove',   onMove,   { passive: false });
+      document.addEventListener('pointerup',     onUp);
+      document.addEventListener('pointercancel', onUp);
+      return;
+    }
+
+    const rect  = src.getBoundingClientRect();
     const ghost = src.cloneNode(true);
     ghost.removeAttribute('id');
     ghost.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
@@ -102,8 +132,14 @@ function createPointerDnd(opts) {
     if (!active) return;
     if (active.pointerId !== undefined && e.pointerId !== active.pointerId) return;
     e.preventDefault();
-    active.ghost.style.left = (e.clientX - active.offX) + 'px';
-    active.ghost.style.top  = (e.clientY - active.offY) + 'px';
+    if (active.moveSource) {
+      const dx = (e.clientX - active.startClientX) / active.scale;
+      const dy = (e.clientY - active.startClientY) / active.scale;
+      active.srcElem.style.transform = `translate(${(active.baseX + dx).toFixed(2)}px, ${(active.baseY + dy).toFixed(2)}px)`;
+    } else {
+      active.ghost.style.left = (e.clientX - active.offX) + 'px';
+      active.ghost.style.top  = (e.clientY - active.offY) + 'px';
+    }
     const hit = findTargetUnder(e.clientX, e.clientY);
     if (hit && hit.elem !== active.currentTarget) {
       if (active.currentTarget) active.currentTarget.classList.remove('drop-hover');
@@ -118,7 +154,15 @@ function createPointerDnd(opts) {
     if (!active) return;
     if (active.pointerId !== undefined && e.pointerId !== active.pointerId) return;
     const hit = findTargetUnder(e.clientX, e.clientY);
-    active.ghost.remove();
+    if (active.moveSource) {
+      const dx = (e.clientX - active.startClientX) / active.scale;
+      const dy = (e.clientY - active.startClientY) / active.scale;
+      active.srcElem.dataset.pdragOffX = String(active.baseX + dx);
+      active.srcElem.dataset.pdragOffY = String(active.baseY + dy);
+      active.srcElem.style.pointerEvents = '';
+    } else {
+      active.ghost.remove();
+    }
     active.srcElem.classList.remove('dragging');
     if (active.currentTarget) active.currentTarget.classList.remove('drop-hover');
     const dragId = active.dragId;
@@ -140,7 +184,9 @@ function createPointerDnd(opts) {
    Slots are per-screen records injected by renderCompanion() rather than
    authored markup: ~20 slots across six index.html files would have to be
    kept in sync with every position tweak, and injecting lets the pose
-   resolver run at render time.
+   resolver run at render time. The exception is a mascot who SPEAKS: there
+   the sprite is authored in a .companion-say group next to its bubble (see
+   CHARACTER_SLOTS below), so the pair cannot drift apart.
    Offsets are storyboard positions mapped onto this 1280x710 canvas
    (bottom = 710 - (y + h)), anchored to the nearer PHYSICAL edge so the
    mascot stays on its intended side when the canvas grows wider than 1280.
@@ -163,8 +209,13 @@ const CHARACTER_ASSETS = {
 };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
+  /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
+     (their near-white matte lifted to pure #FFFFFF) under their existing names, so a
+     browser holding the old copy would keep showing the grey box on the white canvas.
+     Bump it whenever a character asset is re-exported. Over file:// the query is ignored
+     rather than breaking the load, so it is safe there too. */
   return 'assets/img/character-' + getCharacter() + '-' +
-         (ext ? pose : 'selection') + '.' + (ext || 'png');
+         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=2';
 }
 /* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
 function startCompanionMedia(el) {
@@ -173,18 +224,15 @@ function startCompanionMedia(el) {
   const p = el.play();
   if (p && p.catch) p.catch(function () {});
 }
+/* Screens where the mascot SPEAKS are not here: s1, s3, s5, s6, s21, s22, s23, s26 and s29
+   author their sprite in index.html inside a .companion-say group, because its position
+   only makes sense next to a bubble that also lives in the markup — a slot as well would
+   be two sources of truth for one offset. renderCompanion() adopts those sprites and
+   refreshes only which character they show. */
 const CHARACTER_SLOTS = {
-  s1:  { pose: 'examine',          w: 162, right: 61, bottom: 142 },  /* sb4  */
-  s3:  { pose: 'cylinder-pendant', w: 220, right: 42, bottom: 198 },  /* sb6  */
-  s5:  { pose: 'toga',             w: 178, right: 43, top:     31 },  /* sb9  */
-  s6:  { pose: 'towel',            w: 178, right: 49, bottom:  96 },  /* sb10 */
   s9:  { pose: 'pingpong',         w: 160, right: 30, bottom:  95 },  /* sb26 */
   s11: { pose: 'soap',             w: 160, right: 30, bottom:  97 },  /* sb29 */
-  s12: { pose: 'stretch',          w: 200, right: 40, bottom:  89 },  /* sb41 */
-  s21: { pose: 'ask',              w: 160, left:  40, bottom:  90 },  /* sb27 */
-  s22: { pose: 'wet-object',       w: 150, left:  30, bottom: 100 },  /* sb35/38 */
-  s23: { pose: 'ask',              w: 179, right: 50, bottom: 200 },  /* sb13 */
-  s26: { pose: 'ask',              w: 179, right: 50, bottom: 200 }   /* sb16 */
+  s12: { pose: 'stretch',          w: 200, right: 40, bottom:  89 }   /* sb41 */
 };
 /* S7's two path cards are the mascot in two poses. Not a CHARACTER_SLOTS entry:
    these sit inside the option cards as content, not as a floating sprite. */
@@ -198,29 +246,45 @@ function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
   if (!screen) return;
   const slot = CHARACTER_SLOTS['s' + n];
-  // Lets a template reserve room for the sprite instead of being drawn over —
-  // the storyboard's narration column is narrower on exactly these screens.
-  screen.classList.toggle('has-companion', !!slot);
-  let el = screen.querySelector(':scope > .companion');
-  if (!slot) { if (el) el.remove(); return; }
+  /* NOT `:scope > .companion`: a sprite authored inside a .companion-say group is nested,
+     and missing it would leave the orange src baked into the markup in front of a learner
+     who chose turquoise. */
+  let el = screen.querySelector('.companion');
+  /* An AUTHORED sprite (data-pose in the markup, no slot) must survive this function —
+     only which character it shows is refreshed. An INJECTED one is still cleaned up when
+     its slot goes away. */
+  if (!slot) {
+    if (el && el.dataset.injected === '1') { el.remove(); el = null; }
+    else if (el) { el.src = characterAsset(el.dataset.pose || 'selection'); startCompanionMedia(el); }
+    screen.classList.toggle('has-companion', !!el);
+    return;
+  }
   const tag = CHARACTER_ASSETS[slot.pose] === 'mp4' ? 'video' : 'img';
-  if (el && el.tagName.toLowerCase() !== tag) { el.remove(); el = null; }
+  if (el && el.dataset.injected === '1' && el.tagName.toLowerCase() !== tag) { el.remove(); el = null; }
   if (!el) {
     el = document.createElement(tag);
     el.className = 'companion';
     el.alt = '';                                   // decorative, carries no information
     el.setAttribute('aria-hidden', 'true');
     el.draggable = false;
+    el.dataset.injected = '1';
     if (tag === 'video') { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
     screen.appendChild(el);
   }
+  // Lets a template reserve room for the sprite instead of being drawn over —
+  // the storyboard's narration column is narrower on exactly these screens.
+  screen.classList.add('has-companion');
   el.src = characterAsset(slot.pose);
   startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
   el.classList.toggle('companion--center', slot.center === true);
-  ['left', 'right', 'top', 'bottom'].forEach(function (k) {
-    el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
-  });
+  /* A grouped sprite is positioned BY the group, so writing slot offsets onto it would be
+     a second, conflicting source of truth. (Reachable only if a screen ever has both.) */
+  if (!el.closest('.companion-say')) {
+    ['left', 'right', 'top', 'bottom'].forEach(function (k) {
+      el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
+    });
+  }
 }
 
 function resetScreenState(n) {
@@ -304,7 +368,13 @@ function resetScreenState(n) {
    onclick="advanceScreen()" must always mean "leave this screen" — otherwise a
    learner who has seen every panel and paged back would get a page-turn. */
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeImageZoom(); return; }
+  /* Escape closes any open hint overlay as well as the zoom, matching parts 02/04. The
+     close must happen BEFORE the return, or the overlays would never see the key. */
+  if (e.key === 'Escape') {
+    document.querySelectorAll('[id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
+    closeImageZoom();
+    return;
+  }
   if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
   // Don't hijack the arrow keys while the learner is typing (#s2-open-text, #meas-input…).
   if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
@@ -566,9 +636,9 @@ const COMIC_DATA = {
       alt: 'ארכימדס במעבדה עתיקה. מימין הוא עומד ליד תיבת מתכת על השולחן ופונה אל הלומדים, משמאל הוא מודד את התיבה בעזרת סרגל.',
       bubbles: [
         { type: 'caption', text: 'ארכימדס הגיע עד לימינו כדי ללמד אותנו על השיטות לחישוב נפח שהוא המציא.' },
-        { type: 'speech', tail: 'down-left', r: 3, t: 5, w: 21,
+        { type: 'speech', tail: 'down-left', r: 1, t: 5, w: 21,
           text: 'בואו נתחיל בתזכורת! איך מודדים גוף בעל צורה הנדסית מוגדרת כמו גליל או תיבה?' },
-        { type: 'speech', tail: 'down-left', r: 54, t: 5, w: 23,
+        { type: 'speech', tail: 'down-left', r: 51, t: 5, w: 23,
           text: 'למדידת נפח של תיבה משתמשים בסרגל: מודדים את צלעות התיבה (אורך, רוחב, גובה) ומכפילים.' }
       ]
     }]
@@ -738,6 +808,15 @@ function comicHasSlider(screenId) {
   return !!(cfg && cfg.panels && cfg.panels.length > 1);
 }
 
+/* The image track and its unclipped bubble twin (.comic-bleed > .comic-track).
+   Anything that moves, drags or freezes one MUST do the same to the other, or
+   the bubbles desync from the art they belong to. */
+function comicTracks(screenId) {
+  return [screenId + '-track', screenId + '-bleed-track']
+    .map(function (id) { return document.getElementById(id); })
+    .filter(Boolean);
+}
+
 function comicCanAdvance(screenId) {
   const cfg = COMIC_DATA[screenId];
   if (!cfg) return true;
@@ -747,7 +826,12 @@ function comicCanAdvance(screenId) {
 }
 
 /* One bubble → one .speech-bubble. Docked variants (caption/banner) ignore
-   --r/--t/--w; positioned variants read them. */
+   --r/--t/--w; positioned variants read them. --r/--t may be negative or >100:
+   the bubbles are built into .comic-bleed, which does not clip.
+   tail: down-right | down-left | up-right | up-left | right | left.
+   tx aims an up/down beak along the horizontal edge (default 28px), ty aims a
+   left/right beak along the vertical one (default 38px, measured to its centre);
+   both sit outside the `docked` branch so a banner may carry a beak too. */
 function comicBubbleHtml(b, k) {
   const type  = b.type || 'speech';
   const docked = (type === 'caption');   // banner is width-docked but honours --t
@@ -759,6 +843,8 @@ function comicBubbleHtml(b, k) {
            + '--t:' + (b.t != null ? b.t : 5) + '%;'
            + '--w:' + (b.w != null ? b.w : 30) + '%;';
   }
+  if (b.tx != null) style += '--tail-x:' + b.tx + 'px;';
+  if (b.ty != null) style += '--tail-y:' + b.ty + 'px;';
   return '<div class="' + cls + '" style="' + style + '">'
        +   '<div class="speech-bubble__frame"><p class="speech-bubble__text">' + esc(b.text) + '</p></div>'
        +   (b.tail ? '<span class="speech-bubble__tail" aria-hidden="true"></span>' : '')
@@ -791,9 +877,22 @@ function comicBuild(screenId) {
     return '<div class="comic-panel" id="' + screenId + '-panel-' + k + '" style="--i:' + k + '"'
          +      ' role="group" aria-roledescription="פאנל" aria-label="פאנל ' + (k + 1) + ' מתוך ' + n + '">'
          +   media
-         +   (p.bubbles || []).map(comicBubbleHtml).join('')
          + '</div>';
   }).join('');
+
+  // The bubbles go into the twin track outside .comic-viewport's clip, in panels
+  // that reuse .comic-panel so the --i layout, .is-revealed fade and the
+  // reduced-motion rules all apply unchanged. The numbered a11y group stays on
+  // the art panel above; every non-current panel in BOTH tracks is inert, so the
+  // announced order is still "panel image, then that panel's dialogue".
+  const bleedTrack = document.getElementById(screenId + '-bleed-track');
+  if (bleedTrack) {
+    bleedTrack.innerHTML = cfg.panels.map(function (p, k) {
+      return '<div class="comic-panel" id="' + screenId + '-bleed-panel-' + k + '" style="--i:' + k + '">'
+           +   (p.bubbles || []).map(comicBubbleHtml).join('')
+           + '</div>';
+    }).join('');
+  }
 
   if (dots) {
     dots.innerHTML = n < 2 ? '' : cfg.panels.map(function (p, k) {
@@ -835,8 +934,7 @@ function comicSliderGo(screenId, i, opts) {
   const n = cfg.panels.length;
   i = Math.max(0, Math.min(n - 1, i));
 
-  const track = document.getElementById(screenId + '-track');
-  if (track) {
+  comicTracks(screenId).forEach(function (track) {
     if (opts && opts.animate === false) {
       track.style.transition = 'none';
       track.style.transform  = 'translateX(' + (i * 100) + '%)';
@@ -845,7 +943,7 @@ function comicSliderGo(screenId, i, opts) {
     } else {
       track.style.transform = 'translateX(' + (i * 100) + '%)';
     }
-  }
+  });
 
   st.i = i;
   st.seen[i] = true;
@@ -855,9 +953,13 @@ function comicSliderGo(screenId, i, opts) {
   // Keep inactive panels out of the a11y and focus trees. Focusing anything in
   // an off-screen panel would scroll the clipping box and permanently offset
   // the strip; scrollLeft = 0 is the belt-and-braces half of that fix.
-  document.querySelectorAll('#' + screenId + ' .comic-panel').forEach(function (p, k) {
-    p.toggleAttribute('inert', k !== i);
-    p.setAttribute('aria-hidden', k !== i ? 'true' : 'false');
+  // Per track, not one flat query: with the bleed twin a flat `#sN .comic-panel`
+  // returns 2n panels and the positional index would be wrong for the second set.
+  comicTracks(screenId).forEach(function (t) {
+    t.querySelectorAll('.comic-panel').forEach(function (p, k) {
+      p.toggleAttribute('inert', k !== i);
+      p.setAttribute('aria-hidden', k !== i ? 'true' : 'false');
+    });
   });
   const vp = document.getElementById(screenId + '-viewport');
   if (vp) vp.scrollLeft = 0;
@@ -887,8 +989,12 @@ function comicRevealBubbles(screenId, i) {
     if (token !== st.token) return;                        // superseded by a newer panel
     if (currentScreen !== +screenId.slice(1)) return;      // learner navigated away
     if (st.i !== i) return;                                // learner paged away
-    const p = document.getElementById(screenId + '-panel-' + i);
-    if (p) p.classList.add('is-revealed');
+    // The bubbles live in the bleed panel; the art panel is revealed too so the
+    // class keeps meaning "this panel is on screen" for both layers.
+    [screenId + '-panel-' + i, screenId + '-bleed-panel-' + i].forEach(function (id) {
+      const p = document.getElementById(id);
+      if (p) p.classList.add('is-revealed');
+    });
   }, COMIC_REDUCED_MOTION.matches ? 200 : COMIC_BUBBLE_DELAY);
 }
 
@@ -913,8 +1019,8 @@ function comicUpdateNav(screenId) {
    in DESIGN px, so every delta is divided by getAppScale(). */
 function comicAttachDrag(screenId) {
   const vp = document.getElementById(screenId + '-viewport');
-  const track = document.getElementById(screenId + '-track');
-  if (!vp || !track || vp.dataset.dragAttached === '1') return;
+  const tracks = comicTracks(screenId);          // art track + its bubble twin
+  if (!vp || !tracks.length || vp.dataset.dragAttached === '1') return;
   vp.dataset.dragAttached = '1';
 
   let on = false, pid = null, startX = 0, startT = 0, lastX = 0, vpW = 1, moved = false;
@@ -927,7 +1033,7 @@ function comicAttachDrag(screenId) {
     on = true; moved = false; pid = e.pointerId;
     startX = lastX = e.clientX; startT = performance.now();
     try { vp.setPointerCapture(pid); } catch (err) {}
-    track.classList.add('is-dragging');
+    tracks.forEach(function (t) { t.classList.add('is-dragging'); });
     vp.classList.add('is-dragging');
   });
 
@@ -939,14 +1045,14 @@ function comicAttachDrag(screenId) {
     let dx = (e.clientX - startX) / getAppScale();
     if ((st.i === 0 && dx < 0) || (st.i === last && dx > 0)) dx *= 0.32;   // rubber band
     if (Math.abs(dx) > 4) moved = true;
-    track.style.transform = 'translateX(' + (st.i * vpW + dx) + 'px)';
+    tracks.forEach(function (t) { t.style.transform = 'translateX(' + (st.i * vpW + dx) + 'px)'; });
     lastX = e.clientX;
   });
 
   function settle(e) {
     if (!on || (e && e.pointerId !== pid)) return;
     on = false;
-    track.classList.remove('is-dragging');
+    tracks.forEach(function (t) { t.classList.remove('is-dragging'); });
     vp.classList.remove('is-dragging');
     const st = comicState[screenId];
     if (!st) return;
@@ -1153,15 +1259,20 @@ function scqReset(screen) {
 
 /* ═══════════════════════════════════════════════════════════
    APPLET — Aquarium ruler measurement (S10, experiments path)
-   Drag the ruler onto the cube's highlighted wall → reveals the
-   10 cm edge reading and unlocks the volume question (10³ = 1,000).
+   Drag the ruler onto the cube's highlighted wall to unlock the volume
+   question (10³ = 1,000).
    ═══════════════════════════════════════════════════════════ */
 let aqMeasured = false;
 let aqDnd = null;
 function aqInitDnd() {
   if (aqDnd) return;
   aqDnd = createPointerDnd({
-    canDrag: function () { return !aqMeasured; },
+    /* No canDrag gate — the ruler stays draggable after it's already been
+       measured once, with no attempt limit. aqMeasure() below is already
+       idempotent, so re-dropping it on the cube is a harmless no-op.
+       moveSource: the ruler itself follows the pointer and stays wherever
+       it's released — no ghost, no snap-back to its starting slot. */
+    moveSource: true,
     onDrop: function (dragId, targetId) { if (targetId === 'aq-cube') aqMeasure(); },
   });
   aqDnd.attachSource(document.getElementById('aq-ruler'), 'ruler');
@@ -1170,25 +1281,21 @@ function aqInitDnd() {
 function aqMeasure() {
   if (aqMeasured) return;
   aqMeasured = true;
-  document.getElementById('aq-ruler').classList.add('measured');
   document.getElementById('aq-ruler-hint').textContent = '';
-  document.getElementById('aq-readout').classList.remove('hidden');
   scqSetLocked('s10', false);   // unlock the volume question
   xapiSend('interacted', 'question', { response: '10cm' }, { category: 'aquarium-ruler' });
 }
 function aqReset() {
   aqMeasured = false;
   const ruler = document.getElementById('aq-ruler');
-  ruler.classList.remove('measured'); ruler.style.transform = '';
+  ruler.style.transform = '';
+  delete ruler.dataset.pdragOffX; delete ruler.dataset.pdragOffY;
   document.getElementById('aq-ruler-hint').textContent = 'גררו את הסרגל לדופן הצהובה';
-  document.getElementById('aq-readout').classList.add('hidden');
 }
 function aqEnter() {
   aqInitDnd();
   syncPathToggle();
   if (aqMeasured) {
-    document.getElementById('aq-readout').classList.remove('hidden');
-    document.getElementById('aq-ruler').classList.add('measured');
     document.getElementById('aq-ruler-hint').textContent = '';
     scqSetLocked('s10', false);
   } else {
@@ -1729,9 +1836,15 @@ function flipEnter(screen) {
    a companion bubble appears and Continue unlocks. No scoring.
    ═══════════════════════════════════════════════════════════ */
 const guessPicked = {};
+/* The options are template .scq-opt pills, so the picked state is `.selected` — the class
+   .scq-opt.selected .scq-radio keys on to fill the radio — and aria-checked follows it. */
 function guessPick(screen, btn) {
-  document.querySelectorAll('#' + screen + '-guess .guess-opt').forEach(o => o.classList.remove('picked'));
-  btn.classList.add('picked');
+  document.querySelectorAll('#' + screen + '-guess .guess-opt').forEach(o => {
+    o.classList.remove('selected');
+    o.setAttribute('aria-checked', 'false');
+  });
+  btn.classList.add('selected');
+  btn.setAttribute('aria-checked', 'true');
   guessPicked[screen] = btn.dataset.id;
   document.getElementById(screen + '-guess-bubble')?.classList.remove('hidden');
   const cont = document.getElementById(screen + '-continue'); if (cont) cont.disabled = false;
@@ -1740,7 +1853,11 @@ function guessPick(screen, btn) {
 function guessEnter(screen) {
   syncPathToggle();
   const picked = guessPicked[screen];
-  document.querySelectorAll('#' + screen + '-guess .guess-opt').forEach(o => o.classList.toggle('picked', o.dataset.id === picked));
+  document.querySelectorAll('#' + screen + '-guess .guess-opt').forEach(o => {
+    const sel = o.dataset.id === picked;
+    o.classList.toggle('selected', sel);
+    o.setAttribute('aria-checked', sel ? 'true' : 'false');
+  });
   document.getElementById(screen + '-guess-bubble')?.classList.toggle('hidden', !picked);
   const cont = document.getElementById(screen + '-continue'); if (cont) cont.disabled = !picked;
 }

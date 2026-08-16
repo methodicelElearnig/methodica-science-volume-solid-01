@@ -37,8 +37,13 @@ function getCharacter() {
 const CHARACTER_ASSETS = { selection: 'png', run: 'mp4', cheer: 'mp4', think: 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
+  /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
+     (their near-white matte lifted to pure #FFFFFF) under their existing names, so a
+     browser holding the old copy would keep showing the grey box on the white canvas.
+     Bump it whenever a character asset is re-exported. Over file:// the query is ignored
+     rather than breaking the load, so it is safe there too. */
   return 'assets/img/character-' + getCharacter() + '-' +
-         (ext ? pose : 'selection') + '.' + (ext || 'png');
+         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=2';
 }
 /* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
 function startCompanionMedia(el) {
@@ -99,6 +104,7 @@ function resetScreenState(n) {
   }
 }
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('[id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
   if (e.key === 'ArrowLeft')  { if (currentScreen >= 1 && currentScreen <= PEAK_PARTS) return; }
   if (e.key === 'ArrowRight') goBack();
 });
@@ -125,15 +131,25 @@ function peakCloseHint(idx) {
 
 /* ─── Peak assessment ─────────────────────────────────────── */
 function peakStart() { goTo(1); }
+/* The options are template .scq-opt pills, so the picked state is `.selected` — the class
+   .scq-opt.selected .scq-radio keys on to fill the radio — and aria-checked follows it. */
 function peakSelect(idx, id, btn) {
   peakAnswers[idx] = id;
-  document.querySelectorAll('#s' + idx + '-opts .peak-opt').forEach(o => o.classList.remove('picked'));
-  btn.classList.add('picked');
+  document.querySelectorAll('#s' + idx + '-opts .peak-opt').forEach(o => {
+    o.classList.remove('selected');
+    o.setAttribute('aria-checked', 'false');
+  });
+  btn.classList.add('selected');
+  btn.setAttribute('aria-checked', 'true');
   const cont = document.getElementById('s' + idx + '-continue'); if (cont) cont.disabled = false;
 }
 function peakEnter(idx) {
   const picked = peakAnswers[idx];
-  document.querySelectorAll('#s' + idx + '-opts .peak-opt').forEach(o => o.classList.toggle('picked', o.dataset.id === picked));
+  document.querySelectorAll('#s' + idx + '-opts .peak-opt').forEach(o => {
+    const sel = o.dataset.id === picked;
+    o.classList.toggle('selected', sel);
+    o.setAttribute('aria-checked', sel ? 'true' : 'false');
+  });
   const cont = document.getElementById('s' + idx + '-continue'); if (cont) cont.disabled = (picked === undefined);
 }
 function peakContinue(idx) {

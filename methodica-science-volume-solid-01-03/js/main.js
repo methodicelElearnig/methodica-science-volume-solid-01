@@ -39,8 +39,13 @@ function getCharacter() {
 const CHARACTER_ASSETS = { selection: 'png', notebook: 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
+  /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
+     (their near-white matte lifted to pure #FFFFFF) under their existing names, so a
+     browser holding the old copy would keep showing the grey box on the white canvas.
+     Bump it whenever a character asset is re-exported. Over file:// the query is ignored
+     rather than breaking the load, so it is safe there too. */
   return 'assets/img/character-' + getCharacter() + '-' +
-         (ext ? pose : 'selection') + '.' + (ext || 'png');
+         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=2';
 }
 /* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
 function startCompanionMedia(el) {

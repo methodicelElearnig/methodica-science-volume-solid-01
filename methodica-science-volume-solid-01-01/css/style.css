@@ -133,11 +133,29 @@
 /* Tail direction — anchored with the PHYSICAL left/right properties so the
    beak points at the speaker regardless of bidi. The triangle is horizontally
    symmetric, so scaleX(-1) on the left variants is a no-op for speech and
-   correctly mirrors the trailing circles of a thought bubble. */
-.speech-bubble--tail-down-right .speech-bubble__tail { bottom: -20px; right: 28px; }
-.speech-bubble--tail-down-left  .speech-bubble__tail { bottom: -20px; left:  28px; transform: scaleX(-1); }
-.speech-bubble--tail-up-right   .speech-bubble__tail { top: -20px;    right: 28px; transform: scaleY(-1); }
-.speech-bubble--tail-up-left    .speech-bubble__tail { top: -20px;    left:  28px; transform: scale(-1, -1); }
+   correctly mirrors the trailing circles of a thought bubble.
+   Aiming knobs, set inline per instance (COMIC_DATA keys `tx` / `ty`):
+   --tail-x slides an up/down beak along the horizontal edge, --tail-y slides a
+   left/right beak along the vertical one. */
+.speech-bubble--tail-down-right .speech-bubble__tail { bottom: -20px; right: var(--tail-x, 28px); }
+.speech-bubble--tail-down-left  .speech-bubble__tail { bottom: -20px; left:  var(--tail-x, 28px); transform: scaleX(-1); }
+.speech-bubble--tail-up-right   .speech-bubble__tail { top: -20px;    right: var(--tail-x, 28px); transform: scaleY(-1); }
+.speech-bubble--tail-up-left    .speech-bubble__tail { top: -20px;    left:  var(--tail-x, 28px); transform: scale(-1, -1); }
+
+/* Side beaks — the same 40×20 triangle turned a quarter turn about its own
+   centre. CSS rotate is clockwise, so +90deg sends the down-pointing apex to
+   the LEFT and -90deg to the RIGHT. The rotated footprint is 20 wide × 40 tall,
+   so an offset of -30px puts the box centre 10px outside the frame edge and the
+   beak protrudes exactly 20px — the same protrusion the down beak has. The
+   -10px on `top` is that same half-difference, so --tail-y names the beak's
+   CENTRE, not its box. Rotation is rigid, so the ::after white triangle keeps
+   its 4.25px offset toward the frame and the outline stays continuous. */
+.speech-bubble--tail-right .speech-bubble__tail {
+  right: -30px; top: calc(var(--tail-y, 38px) - 10px); transform: rotate(-90deg);
+}
+.speech-bubble--tail-left .speech-bubble__tail {
+  left: -30px;  top: calc(var(--tail-y, 38px) - 10px); transform: rotate(90deg);
+}
 
 /* ── Variant: thought bubble (cloud) ──
    Lobed frame + two trailing circles instead of a beak. */
@@ -159,6 +177,13 @@
 .speech-bubble--thought .speech-bubble__tail::after  { width: 10px; height: 10px; top: 22px; right: 20px; }
 .speech-bubble--thought.speech-bubble--tail-down-right .speech-bubble__tail,
 .speech-bubble--thought.speech-bubble--tail-down-left  .speech-bubble__tail { bottom: -30px; }
+/* Side beak, thought variant: the circles are round, so the 34×34 box is placed
+   rather than rotated. It already trails down-LEFT, so the left variant needs no
+   transform and the right one mirrors it. The -9px is half the 18px lead circle,
+   so --tail-y means the same thing here as on a speech beak: the centre of what
+   touches the bubble. */
+.speech-bubble--thought.speech-bubble--tail-left  .speech-bubble__tail { left:  -34px; right: auto; top: calc(var(--tail-y, 38px) - 9px); bottom: auto; transform: none; }
+.speech-bubble--thought.speech-bubble--tail-right .speech-bubble__tail { right: -34px; left:  auto; top: calc(var(--tail-y, 38px) - 9px); bottom: auto; transform: scaleX(-1); }
 
 /* ── Variant: narration caption bar ──
    Docked across the bottom of the panel; ignores --r/--t/--w.
@@ -234,11 +259,13 @@
    No `vw`/`vh` anywhere here — #app is transform: scale()-ed, so viewport
    units do not map to design pixels.
    No `z-index` on .comic / .comic-frame / .comic-viewport — a stacking context
-   there would trap .path-toggle (z-index 15) behind the frame.
+   there would trap .path-toggle (z-index 16) behind the frame.
    ═══════════════════════════════════════════════════════ */
 .comic {
   position: absolute; inset: 0;
-  padding: 70px 40px 90px;   /* room for toggle (top) + feedback bar (bottom) */
+  /* 24px top: the toggle now sits inside the bottom bar, so the band it used to
+     occupy above the frame is content space again. */
+  padding: 24px 40px 90px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
 }
 /* prev (›) first in DOM = rightmost; next (‹) last = leftmost */
@@ -247,15 +274,28 @@
   --ratio: 1.7778;           /* per-screen inline override (2 for the slide-12 composite) */
   height: 480px; aspect-ratio: var(--ratio);
   max-width: 1040px; flex: none;
-  border-radius: 18px; overflow: hidden;
+  position: relative;        /* anchors .comic-bleed. Still NO z-index — a stacking
+                                context here would trap .path-toggle (16) behind it. */
+  border-radius: 18px;       /* kept for the box-shadow's shape; the CLIP moved to
+                                .comic-viewport so .comic-bleed can escape it */
   box-shadow: 0 8px 26px rgba(0, 32, 96, 0.22);
 }
 .comic-viewport {
   position: relative; width: 100%; height: 100%;
-  overflow: hidden; background: #0b1420;
+  border-radius: 18px;       /* was on .comic-frame; the viewport is exactly 100%×100%
+                                of it, so the rounded clip is pixel-identical */
+  overflow: hidden;          /* load-bearing: this is what hides the off-screen panels */
+  background: #0b1420;
   touch-action: pan-y;       /* we own horizontal, the browser keeps vertical */
   cursor: grab;
 }
+/* Unclipped twin of the viewport: same box, same paged track, no overflow — so a
+   bubble may hang outside the panel art (author with a negative or >100 --r/--t).
+   Bubbles live HERE, not inside .comic-viewport, because that clip cannot be
+   relaxed without unstacking the slider. pointer-events:none keeps the swipe on
+   the viewport underneath; z-index 4 keeps bubbles under .screen::after (9), the
+   nav buttons (12) and .path-toggle (16), while still painting above the art. */
+.comic-bleed { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 .comic-viewport.is-dragging { cursor: grabbing; }
 .comic-viewport.is-static   { cursor: default; }
 .comic-track {
@@ -329,7 +369,10 @@
   transition: top 1s cubic-bezier(.4,0,.2,1);
 }
 .disp-cylinder-wrap.risen .disp-badge { top: 41%; }
-.aq-ruler { position: relative; width: 44px; cursor: grab; touch-action: none; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.18)); }
+/* width matches the <svg> width attribute in index.html (44 native × 1.12,
+   scaled so the ruler's 0→10cm span matches the cube wall's px/cm — see
+   unit-css/style.css § "APPLET — Aquarium ruler measurement"). */
+.aq-ruler { position: relative; width: 49.28px; cursor: grab; touch-action: none; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.18)); }
 .aq-ruler-svg { display: block; }
 .flood-bowl {
   position: relative; width: 156px; height: 108px;

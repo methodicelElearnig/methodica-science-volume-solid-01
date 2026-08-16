@@ -61,6 +61,13 @@ function appScale() {
    Only part 01 has the #img-zoom-modal markup and any [data-zoom-src] buttons. Sharing these is
    inert in the other five: every lookup is guarded and returns early, and initImgZoom's delegated
    listener never matches. That is cheaper than keeping a sixth of the UI layer in one part. */
+/* Target ~75% of the canvas (70-80% requested) on whichever axis is tighter, in the
+   photo's own proportions — never a fixed square. Computed here rather than in CSS
+   because #app's own design-pixel size varies with window aspect ratio (scaleApp() grows
+   whichever axis isn't the tight constraint to fill the real viewport — see 15-ui.js
+   scaleApp()), so "70-80% of the canvas" has to be measured live, not hardcoded. */
+var IMG_ZOOM_TARGET = 0.75;
+
 function openImageZoom(btn) {
   const modal = document.getElementById('img-zoom-modal');
   const stage = document.getElementById('img-zoom-modal-stage');
@@ -70,6 +77,20 @@ function openImageZoom(btn) {
   const clone = wrapper.cloneNode(true);
   clone.querySelectorAll('.img-zoom-btn').forEach(b => b.remove());
   clone.classList.add('img-zoom-clone');
+
+  const srcImg = wrapper.querySelector('img');
+  const ar = (srcImg && srcImg.naturalWidth && srcImg.naturalHeight)
+    ? srcImg.naturalWidth / srcImg.naturalHeight
+    : 1;
+  const app = document.getElementById('app');
+  const scale   = appScale();
+  const canvasW = app ? app.getBoundingClientRect().width  / scale : 1280;
+  const canvasH = app ? app.getBoundingClientRect().height / scale : 710;
+  let w = canvasW * IMG_ZOOM_TARGET, h = w / ar;
+  if (h > canvasH * IMG_ZOOM_TARGET) { h = canvasH * IMG_ZOOM_TARGET; w = h * ar; }
+  clone.style.width  = w + 'px';
+  clone.style.height = h + 'px';
+
   stage.innerHTML = '';
   stage.appendChild(clone);
   modal.classList.remove('hidden');
