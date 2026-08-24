@@ -55,7 +55,7 @@ function startCompanionMedia(el) {
   if (p && p.catch) p.catch(function () {});
 }
 const CHARACTER_SLOTS = {
-  s0: { pose: 'start-line', w: 200, right: 40, bottom: 100 }   /* sb77 */
+  s0: { pose: 'start-line', w: 200, right: 40, bottom: 100, ca: '16 / 9' }   /* sb77 */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
@@ -79,6 +79,9 @@ function renderCompanion(n) {
   el.src = characterAsset(slot.pose);
   startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
+  /* Square is the CSS default; a 16:9 pose declares its own so the box is right from
+     first paint instead of after the mp4 header lands. */
+  el.style.setProperty('--ca', slot.ca || '');
   el.classList.toggle('companion--center', slot.center === true);
   ['left', 'right', 'top', 'bottom'].forEach(function (k) {
     el.style[k] = slot[k] != null ? slot[k] + 'px' : '';

@@ -369,12 +369,16 @@
   transition: top 1s cubic-bezier(.4,0,.2,1);
 }
 .disp-cylinder-wrap.risen .disp-badge { top: 41%; }
-/* width matches the <svg> width attribute in index.html (44 native × 1.12, then × 1.4 with the
-   cube — 49.28 → 68.99), scaled so the ruler's 0→10cm span matches the cube wall's px/cm — see
-   unit-css/style.css § "APPLET — Aquarium ruler measurement". Never change this without changing
-   .aq-cube-wrap's width by the same factor: the learner reads the measurement off these two. */
+/* The ruler's 0→10cm span must render at the SAME px/cm as the cube's highlighted wall — the
+   learner lays one against the other and reads the answer off them. Never change this width
+   without changing .aq-cube-wrap's by the same factor.
+   ⚠️ The `width: 100%` below is load-bearing, not tidiness. The inner <svg> still carries its own
+   width/height attributes; without a stretch rule it renders at THOSE, ignoring this wrapper. That
+   is exactly what broke on 2026-08-24: the wrapper went 49.28 → 68.99 with the cube's ×1.4 bump
+   while the <svg> stayed at 49.28, so the cube read 18.82 px/cm and the ruler 13.44 — laying the
+   ruler on the wall measured ~7.1cm instead of 10. Mirrors .aq-cube-svg, which had this all along. */
 .aq-ruler { position: relative; width: 68.99px; cursor: grab; touch-action: none; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.18)); }
-.aq-ruler-svg { display: block; }
+.aq-ruler-svg { display: block; width: 100%; height: auto; }
 /* Sized at ~1.55× the original 156×108 bowl / 236×50 tray. The scene used barely a third of the
    525px the stage gives it, which left the whole overflow demonstration — the point of the screen —
    playing out in a small corner. Every length below scales together so the water, the rim and the

@@ -94,7 +94,7 @@ function startCompanionMedia(el) {
    markup. Keeping a slot for them too would mean two sources of truth for the same
    offsets — and now the group, not a number, is what holds the pair together. */
 const CHARACTER_SLOTS = {
-  s0: { pose: 'dumbbells', w: 200, right: 40, bottom: 95 }     /* sb113 */
+  s0: { pose: 'dumbbells', w: 200, right: 40, bottom: 95, ca: '16 / 9' }     /* sb113 */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
@@ -130,6 +130,9 @@ function renderCompanion(n) {
   el.src = characterAsset(slot.pose);
   startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
+  /* Square is the CSS default; a 16:9 pose declares its own so the box is right from
+     first paint instead of after the mp4 header lands. */
+  el.style.setProperty('--ca', slot.ca || '');
   el.classList.toggle('companion--center', slot.center === true);
   /* A grouped sprite is positioned BY the group, so writing slot offsets onto it would be
      a second, conflicting source of truth. (Reachable only if a screen ever has both.) */

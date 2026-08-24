@@ -3740,9 +3740,16 @@ html, body {
    the copy left rather than let the two clip corners. */
 .screen.has-companion .peak-intro { left: calc(50% - 110px); }
 
+/* `aspect-ratio` here for the same reason .companion-say > .companion declares it (see the long
+   note there): a <video> with no loaded metadata falls back to the default 300×150 box, so
+   `height: auto` alone mis-sizes every sprite until the mp4 header arrives. That rule only covered
+   sprites inside a .companion-say group; the free-standing ones injected from CHARACTER_SLOTS were
+   left to the 300×150 fallback and visibly resized on load. Same `--ca` contract as the grouped
+   variant — default square, and an instance whose pose is 16:9 sets `--ca: 16 / 9`. */
 .companion {
   position: absolute; z-index: 8;
   width: var(--cw, 190px); height: auto; display: block;
+  aspect-ratio: var(--ca, 1 / 1); object-fit: contain;
   pointer-events: none; user-select: none; -webkit-user-drag: none;
 }
 .companion--center { left: 50%; transform: translateX(-50%); }

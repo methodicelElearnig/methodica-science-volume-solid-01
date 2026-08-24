@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=10">
-  <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="../unit-css/style.css?v=11">
+  <link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -672,10 +672,12 @@
 
           <div class="aq-ruler-zone">
             <div class="aq-ruler" id="aq-ruler" aria-label="סרגל מדידה">
-              <!-- width/height scaled ×1.12 from the native 44×210 viewBox so the
-                   0→10 cm span renders at the SAME px/cm as the cube's highlighted
-                   wall — see the size note on .aq-ruler in unit-css/style.css. -->
-              <svg class="aq-ruler-svg" viewBox="0 0 44 210" width="49.28" height="235.2" xmlns="http://www.w3.org/2000/svg">
+              <!-- No width/height attributes on purpose: .aq-ruler-svg stretches to its wrapper
+                   (width:100%), and the wrapper's px is what keeps the ruler's 0→10 cm span at the
+                   same px/cm as the cube's highlighted wall. Attributes here would silently win
+                   over the wrapper whenever the two disagree — which is how this drifted out of
+                   calibration once already. See the note on .aq-ruler in css/style.css. -->
+              <svg class="aq-ruler-svg" viewBox="0 0 44 210" xmlns="http://www.w3.org/2000/svg">
                 <rect x="3" y="4" width="38" height="202" rx="5" fill="#ffe7a0" stroke="#d9a441" stroke-width="2"/>
                 <!-- cm ticks: y = 194 - 12*cm  (0 at bottom … 15 at top) -->
                 <g stroke="#7a5a1e" stroke-linecap="round">
@@ -1398,7 +1400,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=25"></script>
+<script src="js/main.js?v=26"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

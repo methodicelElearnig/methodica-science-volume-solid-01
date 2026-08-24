@@ -281,6 +281,10 @@ function renderCompanion(n) {
   el.src = characterAsset(slot.pose);
   startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
+  /* Square is the CSS default; a 16:9 pose declares its own so the box is right from
+     first paint instead of after the mp4 header lands. (Every pose in this component
+     is square today — the line is here so a wide one can be slotted without surprise.) */
+  el.style.setProperty('--ca', slot.ca || '');
   el.classList.toggle('companion--center', slot.center === true);
   /* A grouped sprite is positioned BY the group, so writing slot offsets onto it would be
      a second, conflicting source of truth. (Reachable only if a screen ever has both.) */
