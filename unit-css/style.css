@@ -2954,7 +2954,7 @@ html, body {
   position: absolute; top: 6%; left: 33%;
   background: var(--pure-white); color: var(--subject-900);
   border: 3px solid var(--subject-500);
-  font-family: 'Assistant', sans-serif; font-weight: 800; font-size: 22px;
+  font-family: 'Assistant', sans-serif; font-size: 22px;
   line-height: 1.15; text-align: center;
   padding: 10px 20px; border-radius: 16px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.18);
