@@ -1369,10 +1369,15 @@ function floodDrop() {
   document.getElementById('flood-bowl').classList.add('flooded');
   const inst = document.getElementById('flood-instruction');
   if (inst) inst.textContent = 'האבן שקעה והמים גלשו לכלי האיסוף — בואו נבין למה.';
+  /* The tray's fill is `height 0.6s ease 0.3s`, so it lands at 900ms — the same beat the
+     explanation appears on. Marking the scene drained then stops the spill streams, because by
+     that point every drop that was going to leave the bowl has arrived (QA 2026-08-24, slide 13:
+     the lines should disappear once the flow stops). */
   setTimeout(function () {
     const ex = document.getElementById('flood-explain'); if (ex) ex.hidden = false;
     const rs = document.getElementById('flood-reset');    if (rs) rs.hidden = false;
     const cont = document.getElementById('s11-continue');  if (cont) cont.disabled = false;
+    document.querySelector('#s11 .flood-scene')?.classList.add('drained');
   }, 900);
   xapiSend('interacted', 'question', { response: 'overflow' }, { category: 'flooding-applet' });
 }
@@ -1382,7 +1387,8 @@ function floodReset() {
   rock.classList.remove('placed'); rock.style.transform = '';
   document.getElementById('flood-hint').textContent = 'גררו את האבן לקערה';
   document.getElementById('flood-bowl').classList.remove('flooded');
-  document.getElementById('flood-instruction').textContent = 'לגוף שאינו נכנס למשורה. הכניסו את האבן לתוך הקערה הגדולה המלאה במים.';
+  document.querySelector('#s11 .flood-scene')?.classList.remove('drained');
+  document.getElementById('flood-instruction').textContent = 'הכניסו את האבן לתוך הקערה הגדולה המלאה במים.';
   document.getElementById('flood-explain').hidden = true;
   document.getElementById('flood-reset').hidden = true;
   document.getElementById('s11-continue').disabled = true;
@@ -1394,6 +1400,7 @@ function floodEnter() {
     document.getElementById('flood-rock').classList.add('placed');
     document.getElementById('flood-hint').textContent = '';
     document.getElementById('flood-bowl').classList.add('flooded');
+    document.querySelector('#s11 .flood-scene')?.classList.add('drained');
     document.getElementById('flood-explain').hidden = false;
     document.getElementById('flood-reset').hidden = false;
     document.getElementById('s11-continue').disabled = false;

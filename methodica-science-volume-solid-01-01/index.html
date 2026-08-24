@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=17">
-  <link rel="stylesheet" href="css/style.css?v=8">
+  <link rel="stylesheet" href="../unit-css/style.css?v=19">
+  <link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -755,15 +755,15 @@
         <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
       </div>
       <div class="exp-head">
-        <h1 class="exp-title">שיטת ההצפה</h1>
-        <p class="exp-instruction" id="flood-instruction">לגוף שאינו נכנס למשורה. הכניסו את האבן לתוך הקערה הגדולה המלאה במים.</p>
+        <h1 class="exp-title">שיטת ההצפה לגוף שאינו נכנס למשורה</h1>
+        <p class="exp-instruction" id="flood-instruction">הכניסו את האבן לתוך הקערה הגדולה המלאה במים.</p>
       </div>
 
       <div class="flood-stage">
         <div class="flood-scene">
           <div class="flood-bowl" id="flood-bowl">
             <div class="flood-bowl-water"></div>
-            <svg class="flood-sunk-rock" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><polygon points="10,58 24,28 48,16 76,24 92,48 84,70 30,74" fill="#8b9099" stroke="#565b63" stroke-width="2.5" stroke-linejoin="round"/><polygon points="24,28 48,16 62,30 40,42" fill="#aab0b8" opacity="0.7"/><polygon points="76,24 92,48 84,70 64,52" fill="#6a7079" opacity="0.6"/></svg>
+            <img class="flood-sunk-rock" src="assets/img/s11-rock.png" alt="" aria-hidden="true" draggable="false">
             <span class="flood-stream flood-stream--l"></span>
             <span class="flood-stream flood-stream--r"></span>
           </div>
@@ -771,7 +771,7 @@
         </div>
 
         <div class="flood-rock-zone">
-          <svg class="flood-rock" id="flood-rock" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" aria-label="אבן — נִתנת לגרירה"><polygon points="10,58 24,28 48,16 76,24 92,48 84,70 30,74" fill="#8b9099" stroke="#565b63" stroke-width="2.5" stroke-linejoin="round"/><polygon points="24,28 48,16 62,30 40,42" fill="#aab0b8" opacity="0.7"/><polygon points="76,24 92,48 84,70 64,52" fill="#6a7079" opacity="0.6"/></svg>
+          <img class="flood-rock" id="flood-rock" src="assets/img/s11-rock.png" alt="אבן — נִתנת לגרירה" draggable="false">
           <p class="flood-hint" id="flood-hint">גררו את האבן לקערה</p>
         </div>
 
@@ -1425,7 +1425,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=33"></script>
+<script src="js/main.js?v=34"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

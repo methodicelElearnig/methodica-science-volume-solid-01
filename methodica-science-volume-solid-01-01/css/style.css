@@ -415,7 +415,9 @@
   border-top: 2px solid rgba(255,255,255,0.9);
 }
 .flood-tray {
-  width: 366px; height: 78px; margin-top: 71px; position: relative; overflow: hidden;
+  /* 44px, down from 71: QA 2026-08-24 asked for the bowl nearer its collection vessel, and
+     the streams that bridge the gap are 44px too, so they meet the tray exactly. */
+  width: 366px; height: 78px; margin-top: 44px; position: relative; overflow: hidden;
   border: 3px solid #7fb8d6; border-top: none; border-radius: 6px 6px 25px 25px;
   background: linear-gradient(180deg, rgba(234,245,252,0.5), rgba(220,240,250,0.2));
   box-shadow: inset 6px 0 10px rgba(255,255,255,0.35);
