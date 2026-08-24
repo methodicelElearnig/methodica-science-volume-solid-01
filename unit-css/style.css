@@ -3119,6 +3119,11 @@ html, body {
 /* Screens whose answers form their own column: the head takes that column's width so
    title, stem and options share one right edge. */
 .exp-head--question { width: 604px; max-width: 100%; }
+/* QA 2026-08-24, sweeping over every question in the unit: a question's stem and its answers must
+   clear the top edge of the canvas by at least 100px. Scoped to the QUESTION members of the .exp
+   family rather than .exp itself — the applet screens share that container, and stealing 76px from
+   their stage would push the vessels (454px on s22) out of the space they were sized to fill. */
+.exp--question { padding-top: 100px; }
 .exp-title { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-500); text-align: right; line-height: 1.4; }
 .exp-instruction { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030; text-align: right; line-height: 1.4; }
 
@@ -3298,7 +3303,7 @@ html, body {
 }
 .dnd-question .scq-qtext {
   font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
-  text-align: center; direction: rtl;
+  text-align: right; direction: rtl;
 }
 .dnd-board { display: flex; flex-direction: column; gap: 18px; }
 .dnd-targets { display: flex; flex-direction: column; gap: 12px; }
@@ -3357,7 +3362,7 @@ html, body {
 }
 .hotspot-question .scq-qtext {
   font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
-  text-align: center; direction: rtl;
+  text-align: right; direction: rtl;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -3367,8 +3372,8 @@ html, body {
   position: absolute; left: 50%; top: calc(50% - 24px); transform: translate(-50%, -50%);
   width: 760px; display: flex; flex-direction: column; align-items: center; gap: 18px;
 }
-.dq-question .scq-qtext { display: block; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: center; line-height: 2.2; }
-.dq-sentence { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030; line-height: 2.2; text-align: center; direction: rtl; }
+.dq-question .scq-qtext { display: block; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: right; line-height: 2.2; }
+.dq-sentence { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030; line-height: 2.2; text-align: right; direction: rtl; }
 .dropdown { position: relative; display: inline-block; }
 /* No fixed height — the trigger runs at the 24px question size, so a 24px box would
    clip it; content + padding size it instead. min-height is what a filled trigger
@@ -3491,7 +3496,7 @@ html, body {
 .peak-intro-text { font-family: 'Assistant', sans-serif; font-size: 21px; font-weight: 400; color: #303030; line-height: 1.55; }
 .peak-question { position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%); width: 820px; display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
 .peak-step { align-self: center; background: var(--subject-100); color: var(--subject-700); font-family: 'Assistant', sans-serif; font-size: 15px; font-weight: 700; padding: 4px 16px; border-radius: 1000px; }
-.peak-question .scq-qtext { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: center; direction: rtl; line-height: 1.4; }
+.peak-question .scq-qtext { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: right; direction: rtl; line-height: 1.4; }
 /* Options are the template .scq-opt pill; the container carries .scq-answers for the
    flex column + gap and .peak-opt is only the JS hook peakSelect()/peakEnter() select on.
    .scq-opt is pinned to 604px for the 760px --textonly layout, so widen it to fill the
