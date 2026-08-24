@@ -7,7 +7,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 /* ─── Constants ─────────────────────────────────────────── */
-const TOTAL_SCREENS = 33;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice, S23–S28 comic slides 13–18, S29 guess-Q (sb24), S30/S31 overflow can (sb39/40), S32 practice rules (sb50). Bump as screens are added.
+const TOTAL_SCREENS = 34;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice, S23–S28 comic slides 13–18, S29 guess-Q (sb24), S30/S31 overflow can (sb39/40), S32 practice rules (sb50), S33 flooding result (sb29). Bump as screens are added.
                            // Must equal the live `.screen` count — index_dev.html derives its jump range from that,
                            // while goTo() rejects n >= TOTAL_SCREENS. The two silently disagree if only one is edited.
 
@@ -235,7 +235,8 @@ function startCompanionMedia(el) {
    2026-08-24, which put each prop on the screen arguing the other case. */
 const CHARACTER_SLOTS = {
   s9:  { pose: 'soap',             w: 160, right: 30, bottom:  95 },  /* sb26 — dissolving */
-  s11: { pose: 'pingpong',         w: 160, right: 30, bottom:  97 },  /* sb29 — floating */
+  /* s11 has no slot: its slide-29 companion (the ping-pong ball) moved to s33 with the
+     rest of that slide, and is authored there inside a .companion-say group. */
   s12: { pose: 'stretch',          w: 200, right: 40, bottom:  89 }   /* sb41 */
 };
 /* S7's two path cards are the mascot in two poses. Not a CHARACTER_SLOTS entry:
@@ -351,6 +352,7 @@ function resetScreenState(n) {
     // Aquarium ruler applet + SingleChoiceQuestion.
     aqEnter();
   }
+  if (n === 33) { syncPathToggle(); }
   if (n === 11) {
     // Flooding / overflow applet.
     floodEnter();
@@ -405,7 +407,8 @@ function goBack() {
   if (currentScreen === 10) { goTo(7); return; }        // aquarium (experiments entry) → back to path choice
   if (currentScreen === 21) { goTo(9); return; }        // guess-Q → back to displacement
   if (currentScreen === 11) { goTo(21); return; }       // flooding → back to guess-Q
-  if (currentScreen === 20) { goTo(11); return; }       // flip-cards → back to flooding
+  if (currentScreen === 33) { goTo(11); return; }       // flooding result → back to the applet
+  if (currentScreen === 20) { goTo(33); return; }       // flip-cards → back to the flooding result
   if (currentScreen === 22) { goTo(20); return; }       // measurement applet → back to flip-cards
   if (currentScreen === 30) { goTo(22); return; }       // overflow can → back to measurement applet
   if (currentScreen === 31) { goTo(30); return; }       // overflow can (how) → back to the question
@@ -436,7 +439,8 @@ function advanceScreen() {
   if (currentScreen === 29) { if (!guessPicked['s29']) return; goTo(9); return; }        // guess-Q (sb24) → displacement
   if (currentScreen === 9)  { if (!dispPlaced) return; goTo(21); return; } // displacement → guess-Q
   if (currentScreen === 21) { if (!guessPicked['s21']) return; goTo(11); return; }       // guess-Q → flooding
-  if (currentScreen === 11) { if (!floodPlaced) return; goTo(20); return; }             // flooding → flip-cards
+  if (currentScreen === 11) { if (!floodPlaced) return; goTo(33); return; }             // flooding → its result (sb29)
+  if (currentScreen === 33) { goTo(20); return; }                                       // flooding result → flip-cards
   if (currentScreen === 20) { const c = document.getElementById('s20-continue'); if (c && c.disabled) return; goTo(22); return; } // flip-cards → measurement applet
   if (currentScreen === 22) { if (!measDone) return; goTo(30); return; }                 // measurement applet → overflow can
   if (currentScreen === 30) { goTo(31); return; }                                        // overflow can: question → how it works
@@ -555,7 +559,7 @@ const COMIC_SCREENS = [8, 23, 24, 25, 26, 27, 28];
 // Experiments path (pedagogical order ≠ screen-number order, wired explicitly):
 //   entry = S10 aquarium (geometric) → S9 displacement → (flooding, tbd)
 const EXPERIMENTS_ENTRY = 10;
-const EXPERIMENTS_SCREENS = [9, 10, 11, 20, 21, 22, 29, 30, 31];   // membership list for the path toggle, NOT the order
+const EXPERIMENTS_SCREENS = [9, 10, 11, 20, 21, 22, 29, 30, 31, 33];   // membership list for the path toggle, NOT the order
                                                                     // (runtime order is 10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31)
 const MERGE_SCREEN = 12;                       // both paths (comic end / flip-cards end) continue here
 function selectPathOption(cardEl) {
@@ -1374,7 +1378,6 @@ function floodDrop() {
      that point every drop that was going to leave the bowl has arrived (QA 2026-08-24, slide 13:
      the lines should disappear once the flow stops). */
   setTimeout(function () {
-    const ex = document.getElementById('flood-explain'); if (ex) ex.hidden = false;
     const rs = document.getElementById('flood-reset');    if (rs) rs.hidden = false;
     const cont = document.getElementById('s11-continue');  if (cont) cont.disabled = false;
     document.querySelector('#s11 .flood-scene')?.classList.add('drained');
@@ -1389,7 +1392,6 @@ function floodReset() {
   document.getElementById('flood-bowl').classList.remove('flooded');
   document.querySelector('#s11 .flood-scene')?.classList.remove('drained');
   document.getElementById('flood-instruction').textContent = 'הכניסו את האבן לתוך הקערה הגדולה המלאה במים.';
-  document.getElementById('flood-explain').hidden = true;
   document.getElementById('flood-reset').hidden = true;
   document.getElementById('s11-continue').disabled = true;
 }
@@ -1401,7 +1403,6 @@ function floodEnter() {
     document.getElementById('flood-hint').textContent = '';
     document.getElementById('flood-bowl').classList.add('flooded');
     document.querySelector('#s11 .flood-scene')?.classList.add('drained');
-    document.getElementById('flood-explain').hidden = false;
     document.getElementById('flood-reset').hidden = false;
     document.getElementById('s11-continue').disabled = false;
   } else {
@@ -2129,16 +2130,17 @@ var SCREEN_TO_SUBCONTENT = {
   27: ['02', 9],
   28: ['02', 10],
 
-  /* item 02 — experiments branch, in flow order (10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31) */
+  /* item 02 — experiments branch, in flow order (10 → 29 → 9 → 21 → 11 → 33 → 20 → 22 → 30 → 31) */
   10: ['02', 11],     // aquarium ruler + the item's ONLY catalog question (q1)
   29: ['02', 12],     // guess (sb24)
   9:  ['02', 13],     // displacement applet
   21: ['02', 14],     // guess
-  11: ['02', 15],     // flooding applet
-  20: ['02', 16],     // flip cards — real-world uses
-  22: ['02', 17],     // measurement applet
-  30: ['02', 18],     // overflow can — the question
-  31: ['02', 19],     // overflow can — how it works
+  11: ['02', 15],     // flooding applet (sb28)
+  33: ['02', 16],     // flooding result (sb29) — split out of the applet
+  20: ['02', 17],     // flip cards — real-world uses
+  22: ['02', 18],     // measurement applet
+  30: ['02', 19],     // overflow can — the question
+  31: ['02', 20],     // overflow can — how it works
 
   /* item 02 — where both branches merge and the item ends */
   12: ['02', 20],     // כל הכבוד! סיימתם את שלב הלימוד

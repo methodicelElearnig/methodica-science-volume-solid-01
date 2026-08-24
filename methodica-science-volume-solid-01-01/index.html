@@ -775,18 +775,46 @@
           <p class="flood-hint" id="flood-hint">גררו את האבן לקערה</p>
         </div>
 
-        <div class="flood-explain" id="flood-explain" hidden>
-          <h2 class="disp-explain-title">מה קרה כאן?</h2>
-          <p>המים בקערה גלשו ברגע שהאבן נכנסה אליה, והמים העודפים התנקזו לכלי האיסוף התחתון.</p>
-          <p class="disp-calc"><strong>כמות המים שגלשו מהקערה = נפח האבן!</strong></p>
-          <p class="disp-note">לגופים קלים שצפים במים אפשר לחבר משקולת שתשקיע אותם — ולהחסיר את נפח המשקולת מהתוצאה הסופית.</p>
-        </div>
       </div>
 
       <button class="disp-reset" id="flood-reset" type="button" onclick="floodReset()" hidden>ניסוי מחדש</button>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s11-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S33 — Storyboard slide 29 · what the flooding method measured ═══
+       Its own screen, not a panel inside the applet: slide 28 is the experiment (s11) and slide 29
+       is the result, and QA 2026-08-24 (slide 13) asked for them separated. The caveat about
+       floating bodies is the mascot's line here, per the same note, and he holds the ping-pong
+       ball slide 29 gives him. Flow: flooding S11 → S33 → flip-cards S20. -->
+  <section class="screen" data-screen="33" id="s33">
+    <div class="exp exp--content">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+      <div class="exp-head">
+        <h1 class="exp-title">מה קרה כאן?</h1>
+        <p class="exp-instruction">המים בקערה גלשו ברגע שהאבן נכנסה אליה, והמים העודפים התנקזו לכלי האיסוף התחתון.</p>
+      </div>
+      <div class="exp-stage--centered">
+        <div class="scq-figure" style="width: 460px">
+          <img src="assets/img/s33-pour-to-cylinder.jpg" alt="מים נמזגים מקערת האיסוף אל תוך משורה מדורגת המסומנת עד 250 מ&quot;ל">
+        </div>
+      </div>
+      <p class="disp-calc"><strong>כמות המים שגלשו מהקערה = נפח האבן!</strong></p>
+    </div>
+    <div class="companion-say companion-say--left" style="left: 24px; bottom: 96px;">
+      <video class="companion" src="assets/img/character-orange-pingpong.mp4?v=2" alt="" aria-hidden="true"
+           data-pose="pingpong" draggable="false" autoplay loop muted playsinline style="--cw: 150px;"></video>
+      <p class="companion-bubble" style="--bubble-w: 330px;">לגופים קלים שצפים במים אפשר לחבר משקולת שתשקיע אותם — ולהחסיר את נפח המשקולת מהתוצאה הסופית.</p>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s33-continue" onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
@@ -1425,7 +1453,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=34"></script>
+<script src="js/main.js?v=35"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>
