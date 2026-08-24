@@ -360,8 +360,8 @@ function resetScreenState(n) {
   if (n === 29) { guessEnter('s29'); }             // guess-question sb24 (no feedback)
   if (n === 30 || n === 31) { syncPathToggle(); }  // overflow-can info screens
   if (n === 22) { measEnter(); }                   // multi-step measurement applet
-  if (n === 18) { ddqEnter('s18'); }               // warm-up 1 (matching)
-  if (n === 19) { dqEnter('s19'); }                // warm-up 2 (dropdown)
+  if (n === 18) { warmupEnter(0, 's18', ddqEnter); }   // warm-up 1 (matching)
+  if (n === 19) { warmupEnter(1, 's19', dqEnter); }    // warm-up 2 (dropdown)
   if (n === 13) { practiceEnter(0, 's13'); }
   if (n === 14) { practiceEnter(1, 's14'); }
   if (n === 15) { practiceEnter(2, 's15'); }
@@ -1483,6 +1483,38 @@ function updateProgressQuestion(container, state) {
 function syncPracticeNav(screen) {
   updateProgressQuestion(document.querySelector('#' + screen + ' .progress-question'), practiceProgress);
 }
+
+/* The warm-up pair (s18 matching, s19 dropdown) gets its own bar. Storyboard slides 42 and 46 ask
+   for it in as many words — "מקטע זה מלווה בסרגל שאלה, שאלה 1 מתוך 2" and "…2 מתוך 2" — and QA
+   2026-08-24 (slide 20) asked for the same design and behaviour as the five-question bar.
+
+   Nothing about the component needed changing: .progress-question bakes in no count and
+   updateProgressQuestion() already takes any state object. Only the state was singular, so this is
+   a second one beside practiceProgress rather than a second renderer. */
+var warmupProgress = {
+  questions: [
+    { number: 1, visited: true,  state: 'current',      screen: 18 },  // item 03 — matching (DnD)
+    { number: 2, visited: false, state: 'not-answered', screen: 19 }   // item 04 — dropdown
+  ]
+};
+function syncWarmupNav(screen) {
+  updateProgressQuestion(document.querySelector('#' + screen + ' .progress-question'), warmupProgress);
+}
+/* Mirrors practiceEnter: mark visited, promote to current, paint, then hand off to the template's
+   own enter(). idx is the 0-based position in warmupProgress.questions. */
+function warmupEnter(idx, screen, enterFn) {
+  const q = warmupProgress.questions[idx];
+  q.visited = true;
+  if (q.state === 'not-answered') q.state = 'current';
+  syncWarmupNav(screen);
+  enterFn(screen);
+}
+function warmupFinish(idx, screen, isCorrect) {
+  const q = warmupProgress.questions[idx];
+  q.state = isCorrect ? 'correct' : 'incorrect';
+  q.visited = true;
+  syncWarmupNav(screen);
+}
 function practiceEnter(idx, screen) {
   const q = practiceProgress.questions[idx];
   q.visited = true;
@@ -1766,6 +1798,7 @@ ddqRegister({
     correct:   { title: 'נכון! כל הכבוד.', body: ['לכל משימת מדידה מתאים כלי אחר: נוזל נמזג למשורה, אורך נמדד בסרגל, מסה במאזניים.', 'נפח של גוף קטן שנכנס למשורה — בדחיקת מים; ושל גוף גדול — בשיטת ההצפה.'] },
     incorrect: { title: 'לא מדויק — ההתאמה הנכונה מוצגת.', body: ['כוס מים → מזיגה למשורה • צלע קובייה → סרגל • מסת אבטיח → מאזניים.', 'צדף קטן → דחיקת מים • בובה גדולה → שיטת ההצפה.'] }
   },
+  onFinish: function (ok) { warmupFinish(0, 's18', ok); },
   onContinue: function () { goTo(19); }
 });
 attachPopupDrag(document.getElementById('s18-ddq-popup'));
@@ -1779,9 +1812,10 @@ scqRegister({
     correct: { title: 'נכון!', body: ['כשמכניסים גוף למים הוא תופס מקום, ולכן המים עולים.', 'ההפרש בין קריאת המפלס אחרי ולפני = נפח הגוף.'] },
     wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'הגוף תופס מקום בתוך המים, ולכן מפלס המים עולה.'] }
   },
-  onFinish: function (ok) {   // reflect result on the dropdown trigger
+  onFinish: function (ok) {   // reflect result on the dropdown trigger, and on the warm-up bar
     const t = document.getElementById('s19-dropdown-trigger');
     if (t) { t.classList.remove('correct', 'wrong'); t.classList.add(ok ? 'correct' : 'wrong'); }
+    warmupFinish(1, 's19', ok);
   },
   onContinue: function () { goTo(32); }   // → practice rules (sb50) → Q1
 });

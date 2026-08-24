@@ -1017,6 +1017,13 @@
 
   <!-- ═══ S18 — Warm-up 1 (item 03) · DragAndDropQuestion (task → tool, 5-way) ═══ -->
   <section class="screen" data-screen="18" id="s18">
+    <!-- Storyboard slides 42/46 both call for this in their notes ("שאלה 1 מתוך 2" /
+         "2 מתוך 2"). Same component as the five-question bar, two slots instead of five. -->
+    <nav class="progress-question" aria-label="ניווט שאלות חימום">
+      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
+      <div class="progress-question__connector" data-connector="1"></div>
+      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
+    </nav>
     <div class="dnd-question dnd-question--warmup">
       <p class="scq-qtext">ל-5 מדענים צעירים ניתנו משימות מדידה שונות. התאימו כל משימה לכלי המתאים לה.</p>
       <div class="dnd-board">
@@ -1040,6 +1047,13 @@
 
   <!-- ═══ S19 — Warm-up 2 (item 04) · SingleChoiceQuestion (fill-in) ═══ -->
   <section class="screen" data-screen="19" id="s19">
+    <!-- Storyboard slides 42/46 both call for this in their notes ("שאלה 1 מתוך 2" /
+         "2 מתוך 2"). Same component as the five-question bar, two slots instead of five. -->
+    <nav class="progress-question" aria-label="ניווט שאלות חימום">
+      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
+      <div class="progress-question__connector" data-connector="1"></div>
+      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
+    </nav>
     <!-- DropdownQuestion — reuses the SCQ controller: dropdown options are
          .scq-opt (dqPick → scqSelect); onFinish colours the trigger. -->
     <div class="dq-question dq-question--withimage">
@@ -1407,7 +1421,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=30"></script>
+<script src="js/main.js?v=31"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>
