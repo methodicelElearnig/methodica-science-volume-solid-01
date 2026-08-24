@@ -3182,7 +3182,10 @@ html, body {
   display: flex; direction: ltr; align-items: center; justify-content: center; gap: 40px;
 }
 .aq-applet { flex: none; display: flex; direction: rtl; align-items: center; gap: 24px; }
-.aq-cube-wrap { position: relative; width: 240px; flex: none; }
+/* 240 → 336 (×1.4). .aq-ruler in part 01's style.css MUST move by the same factor and says so:
+   its width encodes the ruler's 0→10cm span against this cube's px/cm, and the learner does the
+   measuring themselves, so the two scaling apart would make a correct reading give a wrong answer. */
+.aq-cube-wrap { position: relative; width: 336px; flex: none; }
 .aq-cube-svg { width: 100%; height: auto; display: block; }
 .aq-ruler-zone { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .aq-ruler.dragging { cursor: grabbing; }
@@ -3216,21 +3219,21 @@ html, body {
 .flood-stage { flex: 1 1 auto; min-height: 0; display: flex; direction: rtl; align-items: center; justify-content: center; gap: 44px; }
 .flood-scene { display: flex; flex-direction: column; align-items: center; }
 .flood-sunk-rock {
-  position: absolute; width: 66px; height: auto; left: 50%; bottom: 6px;
+  position: absolute; width: 102px; height: auto; left: 50%; bottom: 9px;
   transform: translateX(-50%) scale(0.5); opacity: 0;
   transition: opacity 0.4s ease, transform 0.6s cubic-bezier(.4,0,.2,1);
 }
 .flood-bowl.flooded .flood-sunk-rock { opacity: 1; transform: translateX(-50%) scale(0.92); }
 .flood-stream {
-  position: absolute; top: 100%; width: 5px; height: 0; background: rgba(120,190,225,0.75);
+  position: absolute; top: 100%; width: 8px; height: 0; background: rgba(120,190,225,0.75);
   transition: height 0.5s ease; border-radius: 3px;
 }
 .flood-stream--l { left: 22%; } .flood-stream--r { right: 22%; }
-.flood-bowl.flooded .flood-stream { height: 46px; }
+.flood-bowl.flooded .flood-stream { height: 71px; }
 .flood-tray-water { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: rgba(120,190,225,0.5); transition: height 0.6s ease 0.3s; }
 .flood-bowl.flooded ~ .flood-tray .flood-tray-water { height: 62%; }
 .flood-rock-zone { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.flood-rock { width: 82px; height: auto; cursor: grab; touch-action: none; filter: drop-shadow(0 6px 10px rgba(20,40,60,0.28)); transition: opacity 0.3s ease; }
+.flood-rock { width: 127px; height: auto; cursor: grab; touch-action: none; filter: drop-shadow(0 6px 10px rgba(20,40,60,0.28)); transition: opacity 0.3s ease; }
 .flood-rock.dragging { cursor: grabbing; }
 .flood-rock.placed { opacity: 0; pointer-events: none; }
 .flood-hint { font-family: 'Assistant', sans-serif; font-size: 15px; color: #8a97a3; margin: 0; }
@@ -3409,12 +3412,15 @@ html, body {
 .meas-vessels { display: flex; direction: rtl; align-items: flex-end; gap: 30px; }
 .meas-vessel { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .meas-vessel.drop-hover { outline: 3px dashed var(--subject-500); outline-offset: 4px; border-radius: 12px; }
-.meas-cyl-img { width: 120px; height: auto; display: block; border-radius: 8px; }
+/* ~1.5× the original 120/130×84/150×34 set. The vessels are what the learner drags onto and reads,
+   and they used a little over half the stage height; the four steps all land in the same frame, so
+   the whole sequence gains from the extra size. Scaled together to keep the bowl-and-tray pairing. */
+.meas-cyl-img { width: 180px; height: auto; display: block; border-radius: 8px; }
 .meas-badge { position: absolute; top: 44%; right: -6px; transform: translateX(100%); background: #fff; border: 2px solid var(--subject-500); color: #1e2a38; font-family: 'Assistant', sans-serif; font-weight: 700; font-size: 13px; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
 .meas-vessel-label { font-family: 'Assistant', sans-serif; font-size: 14px; font-weight: 600; color: #6a7683; text-align: center; max-width: 150px; }
-.meas-bowl { position: relative; width: 130px; height: 84px; border: 3px solid #7fb8d6; border-top: none; border-radius: 0 0 40px 40px; background: rgba(255,255,255,0.25); overflow: hidden; }
-.meas-bowl-water { position: absolute; left: 3px; right: 3px; top: 6px; bottom: 3px; background: rgba(120,190,225,0.5); border-radius: 0 0 36px 36px; border-top: 2px solid rgba(255,255,255,0.85); }
-.meas-tray { position: relative; width: 150px; height: 34px; margin-top: 8px; border: 3px solid #7fb8d6; border-top: none; border-radius: 0 0 10px 10px; overflow: hidden; }
+.meas-bowl { position: relative; width: 195px; height: 126px; border: 3px solid #7fb8d6; border-top: none; border-radius: 0 0 60px 60px; background: rgba(255,255,255,0.25); overflow: hidden; }
+.meas-bowl-water { position: absolute; left: 3px; right: 3px; top: 9px; bottom: 3px; background: rgba(120,190,225,0.5); border-radius: 0 0 54px 54px; border-top: 2px solid rgba(255,255,255,0.85); }
+.meas-tray { position: relative; width: 225px; height: 51px; margin-top: 12px; border: 3px solid #7fb8d6; border-top: none; border-radius: 0 0 15px 15px; overflow: hidden; }
 .meas-tray-water { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: rgba(120,190,225,0.5); transition: height 0.5s ease; }
 .meas-vessel.overflowed .meas-tray-water { height: 70%; }
 /* Step 4 (storyboard slide 37): the tray becomes the drag source for the pour. `overflow: hidden`
