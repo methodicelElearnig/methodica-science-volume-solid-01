@@ -3348,14 +3348,23 @@ html, body {
    slide — it was a code-only addition — and being a solid subject-coloured pill it read as a
    button the learner could press (QA 2026-08-24, slides 19 and 20). The pair is identified by the
    two-question progress bar instead, which is what the deck actually specifies. */
-.dnd-question--warmup { top: calc(50% - 24px); width: 900px; gap: 12px; }
+.dnd-question--warmup { top: calc(50% - 24px); width: 1100px; gap: 12px; }
 .dnd-question--warmup .scq-qtext { font-size: 24px; }
-.dnd-question--warmup .dnd-board { gap: 12px; }
-.dnd-question--warmup .dnd-targets { gap: 8px; }
-.dnd-question--warmup .dnd-target-label { flex-basis: 300px; font-size: 17px; padding: 8px 14px; }
-.dnd-question--warmup .dnd-slot { min-height: 46px; }
-.dnd-question--warmup .dnd-pill { font-size: 15px; padding: 7px 12px; }
-.dnd-question--warmup .dnd-source { min-height: 46px; padding: 8px; }
+.dnd-question--warmup .dnd-board { gap: 16px; }
+/* QA 2026-08-24 (slide 19): the five landing places go ACROSS, not down, and all five are the same
+   size regardless of how long their label runs. `flex: 1 1 0` + `min-width: 0` is what makes them
+   equal — with the default `flex-basis: auto` the widest label ("מדידה במאזניים דיגיטליים") would
+   set its own column wider than the rest. Each target stacks label over slot. */
+.dnd-question--warmup .dnd-targets { flex-direction: row; gap: 10px; align-items: stretch; direction: rtl; }
+.dnd-question--warmup .dnd-target { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 8px; }
+.dnd-question--warmup .dnd-target-label {
+  flex: 0 0 auto; min-height: 62px; justify-content: center; text-align: center;
+  font-size: 15px; line-height: 1.25; padding: 8px 10px;
+}
+/* The slot is sized to the pills it receives, so a dropped pill neither rattles around nor
+   stretches its column. */
+.dnd-question--warmup .dnd-slot { flex: 1 1 auto; min-height: 128px; padding: 6px; }
+.dnd-question--warmup .dnd-source { min-height: 128px; padding: 10px; justify-content: center; }
 
 /* ═══════════════════════════════════════════════════════
    TEMPLATE — ImageHotspotQuestion (S15). Reuses SCQ controller.
@@ -3380,6 +3389,11 @@ html, body {
   width: 760px; display: flex; flex-direction: column; align-items: center; gap: 18px;
 }
 .dq-question .scq-qtext { display: block; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: right; line-height: 2.2; }
+/* Slide 46 keeps these three as separate lines: a blue title, then plain instruction and stem. */
+.dq-title { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-500); text-align: right; direction: rtl; line-height: 1.4; }
+.dq-instruction { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030; text-align: right; direction: rtl; line-height: 1.4; }
+/* The menu is its own centred block under the sentence, not an inline word in it. */
+.dropdown--block { display: block; align-self: center; margin-top: 4px; }
 .dq-sentence { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030; line-height: 2.2; text-align: right; direction: rtl; }
 .dropdown { position: relative; display: inline-block; }
 /* No fixed height — the trigger runs at the 24px question size, so a 24px box would
@@ -3668,7 +3682,17 @@ html, body {
   width: var(--pw, 84px); height: auto; display: block; border-radius: 6px;
   pointer-events: none; user-select: none; -webkit-user-drag: none;
 }
-.dnd-question--warmup .dnd-pill--img { padding: 6px 10px; }
+/* QA 2026-08-24 (slide 19): every draggable the same height AND width. They were sized by their
+   own content — each item authored its own `--pw` between 64 and 90px, and the label decided the
+   width — so no two matched. A fixed box makes them uniform; the label wraps to two lines inside
+   it, which QA said was fine, and the photo is contained rather than cropped so the differing
+   source ratios still sit tidily in the same frame. */
+.dnd-question--warmup .dnd-pill {
+  width: 150px; height: 116px; padding: 6px 8px; gap: 4px;
+  font-size: 14px; line-height: 1.2; text-align: center;
+}
+.dnd-question--warmup .dnd-pill--img { padding: 6px 8px; }
+.dnd-question--warmup .dnd-pill-img { width: 100%; height: 58px; object-fit: contain; }
 
 /* ── Image beside the cloze sentence (S19) ────────────────── */
 .dq-question--withimage {

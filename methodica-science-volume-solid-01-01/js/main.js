@@ -1836,18 +1836,23 @@ function dqPick(screen, id, label) {
   if (tr) tr.textContent = label;
   document.getElementById(screen + '-answers').classList.add('hidden');
 }
+/* Space reserved beside the longest option for the open-arrow. */
+const DQ_CARET_ROOM = 50;
 function dqEnter(screen) {
   const s = SCQ_REG[screen];
   const trigger = document.getElementById(screen + '-dropdown-trigger');
   const list = document.getElementById(screen + '-answers');
   if (trigger && list) {
-    // The trigger box must be exactly as wide as the option list. list.offsetWidth
-    // ignores the canvas-wide scale() transform (unlike getBoundingClientRect), so
-    // this stays correct at any zoom. Briefly un-hide to measure — .hidden is
-    // display:none, which can't be measured — then restore, all before paint.
+    /* The trigger is sized to the longest word in the list PLUS room for the caret. The list is
+       content-sized by its widest option, so list.offsetWidth is that longest word; the caret is
+       absolutely positioned and so contributes nothing, which is why it needs adding explicitly —
+       without it the arrow sat on top of the chosen word (QA 2026-08-24, slide 20, which suggested
+       ~50px). list.offsetWidth ignores the canvas-wide scale() transform (unlike
+       getBoundingClientRect), so this stays correct at any zoom. Briefly un-hide to measure —
+       .hidden is display:none, which cannot be measured — then restore, all before paint. */
     const wasHidden = list.classList.contains('hidden');
     if (wasHidden) list.classList.remove('hidden');
-    trigger.style.width = list.offsetWidth + 'px';
+    trigger.style.width = (list.offsetWidth + DQ_CARET_ROOM) + 'px';
     if (wasHidden) list.classList.add('hidden');
   }
   if (trigger && s && !s.done) {
