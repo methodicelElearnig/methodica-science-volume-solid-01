@@ -3080,12 +3080,20 @@ html, body {
   transition: background 0.15s, color 0.15s;
 }
 .path-toggle-opt.is-active { background: var(--subject-500); color: #fff; }
+/* The chevrons are inline SVG, not the ‹ › glyphs they used to be. Those are Bidi_Mirrored
+   characters and nothing isolated them, so in this RTL document each rendered mirrored — the
+   right-hand "previous" button pointed left and the left-hand "next" button pointed right, which
+   is the reversal QA reported on 2026-08-24. A drawn path has no directionality to mirror.
+   flex here is what actually centres the icon: the glyph version was centred only by the default
+   inline-box baseline inside a 44px pill, which is why it also sat slightly high. */
 .comic-arrow {
   min-width: 54px; height: 44px; padding: 0 16px;
+  display: inline-flex; align-items: center; justify-content: center;
   background: #fff; color: var(--subject-700);
   border: 1px solid var(--subject-700); border-radius: 1000px;
   font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 700; cursor: pointer;
 }
+.comic-arrow__icon { display: block; }
 .comic-arrow:disabled { color: #AEAEAE; border-color: #AEAEAE; cursor: not-allowed; }
 .comic-dots { display: flex; gap: 8px; direction: rtl; }
 .comic-dot.is-active { background: var(--subject-500); }
@@ -3111,6 +3119,19 @@ html, body {
 /* Screens whose answers form their own column: the head takes that column's width so
    title, stem and options share one right edge. */
 .exp-head--question { width: 604px; max-width: 100%; }
+/* QA 2026-08-24, sweeping over every question in the unit: a question's stem and its answers must
+   clear the top edge of the canvas by at least 100px. Scoped to the QUESTION members of the .exp
+   family rather than .exp itself — the applet screens share that container, and stealing 76px from
+   their stage would push the vessels (454px on s22) out of the space they were sized to fill.
+   .exp--content is the same requirement for the read-only screens QA called out by name (s30/s31). */
+.exp--question,
+.exp--content { padding-top: 100px; }
+/* s30 has no heading — slide 39's line belongs to the mascot — so its figure is free to sit in the
+   middle of what is left rather than hard against the top. */
+.exp-stage--centered {
+  flex: 1 1 auto; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+}
 .exp-title { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-500); text-align: right; line-height: 1.4; }
 .exp-instruction { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030; text-align: right; line-height: 1.4; }
 
@@ -3241,8 +3262,19 @@ html, body {
   position: absolute; top: 100%; width: 8px; height: 0; background: rgba(120,190,225,0.75);
   transition: height 0.5s ease; border-radius: 3px;
 }
-.flood-stream--l { left: 22%; } .flood-stream--r { right: 22%; }
-.flood-bowl.flooded .flood-stream { height: 71px; }
+/* Out at the bowl's sides, where water actually spills over a rim — they used to run down its
+   middle, from under the bowl rather than off its edges (QA 2026-08-24, slide 13). */
+.flood-stream--l { left: 4%; } .flood-stream--r { right: 4%; }
+.flood-bowl.flooded .flood-stream { height: 44px; }
+/* And they stop once the tray below has filled: the spill is over, so the streams retract instead
+   of pouring forever. .drained is set from floodDrop() after the tray's own fill finishes.
+   Retracting by HEIGHT alone is deliberate: the stream grows from the bowl's rim downward, so
+   collapsing it reads as the flow drying up in a way fading to transparent does not, and it
+   reuses the `transition: height` the element already carries.
+   ⚠️ Verifying this in the Browser-pane preview needs `* { transition: none !important }` injected
+   first — that preview freezes transition clocks, so any transitioned property reads stuck at its
+   START value and the stream measures 0 forever whatever the cascade says. */
+.flood-scene.drained .flood-stream { height: 0; }
 .flood-tray-water { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: rgba(120,190,225,0.5); transition: height 0.6s ease 0.3s; }
 .flood-bowl.flooded ~ .flood-tray .flood-tray-water { height: 62%; }
 .flood-rock-zone { display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -3290,7 +3322,7 @@ html, body {
 }
 .dnd-question .scq-qtext {
   font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
-  text-align: center; direction: rtl;
+  text-align: right; direction: rtl;
 }
 .dnd-board { display: flex; flex-direction: column; gap: 18px; }
 .dnd-targets { display: flex; flex-direction: column; gap: 12px; }
@@ -3322,20 +3354,28 @@ html, body {
 .dnd-pill.dragging { cursor: grabbing; opacity: 0.5; }
 .pointer-drag-ghost.dnd-pill { box-shadow: 0 8px 18px rgba(0,32,96,0.24); }
 
-/* Warm-up label + compact 5-row matching layout */
-.warmup-tag {
-  align-self: center; background: var(--subject-500); color: #fff;
-  font-family: 'Assistant', sans-serif; font-size: 14px; font-weight: 700;
-  padding: 3px 16px; border-radius: 1000px;
-}
-.dnd-question--warmup { top: calc(50% - 24px); width: 900px; gap: 12px; }
+/* Compact 5-row matching layout for the warm-up pair.
+   The "חימום" pill that used to sit above these questions is gone: it appears on no storyboard
+   slide — it was a code-only addition — and being a solid subject-coloured pill it read as a
+   button the learner could press (QA 2026-08-24, slides 19 and 20). The pair is identified by the
+   two-question progress bar instead, which is what the deck actually specifies. */
+.dnd-question--warmup { top: calc(50% - 24px); width: 1100px; gap: 12px; }
 .dnd-question--warmup .scq-qtext { font-size: 24px; }
-.dnd-question--warmup .dnd-board { gap: 12px; }
-.dnd-question--warmup .dnd-targets { gap: 8px; }
-.dnd-question--warmup .dnd-target-label { flex-basis: 300px; font-size: 17px; padding: 8px 14px; }
-.dnd-question--warmup .dnd-slot { min-height: 46px; }
-.dnd-question--warmup .dnd-pill { font-size: 15px; padding: 7px 12px; }
-.dnd-question--warmup .dnd-source { min-height: 46px; padding: 8px; }
+.dnd-question--warmup .dnd-board { gap: 16px; }
+/* QA 2026-08-24 (slide 19): the five landing places go ACROSS, not down, and all five are the same
+   size regardless of how long their label runs. `flex: 1 1 0` + `min-width: 0` is what makes them
+   equal — with the default `flex-basis: auto` the widest label ("מדידה במאזניים דיגיטליים") would
+   set its own column wider than the rest. Each target stacks label over slot. */
+.dnd-question--warmup .dnd-targets { flex-direction: row; gap: 10px; align-items: stretch; direction: rtl; }
+.dnd-question--warmup .dnd-target { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 8px; }
+.dnd-question--warmup .dnd-target-label {
+  flex: 0 0 auto; min-height: 62px; justify-content: center; text-align: center;
+  font-size: 15px; line-height: 1.25; padding: 8px 10px;
+}
+/* The slot is sized to the pills it receives, so a dropped pill neither rattles around nor
+   stretches its column. */
+.dnd-question--warmup .dnd-slot { flex: 1 1 auto; min-height: 128px; padding: 6px; }
+.dnd-question--warmup .dnd-source { min-height: 128px; padding: 10px; justify-content: center; }
 
 /* ═══════════════════════════════════════════════════════
    TEMPLATE — ImageHotspotQuestion (S15). Reuses SCQ controller.
@@ -3349,7 +3389,7 @@ html, body {
 }
 .hotspot-question .scq-qtext {
   font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
-  text-align: center; direction: rtl;
+  text-align: right; direction: rtl;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -3359,8 +3399,13 @@ html, body {
   position: absolute; left: 50%; top: calc(50% - 24px); transform: translate(-50%, -50%);
   width: 760px; display: flex; flex-direction: column; align-items: center; gap: 18px;
 }
-.dq-question .scq-qtext { display: block; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: center; line-height: 2.2; }
-.dq-sentence { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030; line-height: 2.2; text-align: center; direction: rtl; }
+.dq-question .scq-qtext { display: block; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: right; line-height: 2.2; }
+/* Slide 46 keeps these three as separate lines: a blue title, then plain instruction and stem. */
+.dq-title { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-500); text-align: right; direction: rtl; line-height: 1.4; }
+.dq-instruction { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030; text-align: right; direction: rtl; line-height: 1.4; }
+/* The menu is its own centred block under the sentence, not an inline word in it. */
+.dropdown--block { display: block; align-self: center; margin-top: 4px; }
+.dq-sentence { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030; line-height: 2.2; text-align: right; direction: rtl; }
 .dropdown { position: relative; display: inline-block; }
 /* No fixed height — the trigger runs at the 24px question size, so a 24px box would
    clip it; content + padding size it instead. min-height is what a filled trigger
@@ -3400,6 +3445,13 @@ html, body {
 .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
 .flip-front, .flip-back { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 16px; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
 .flip-front .char-slot { width: 100%; height: 100%; aspect-ratio: auto; }
+/* Licensed card art (storyboard slides 30-32), replacing the "איור להפקה" placeholders. The photos
+   are cropped to the card's own inner ratio — 228x268 inside the 16px padding, so 0.85, portrait —
+   and `cover` absorbs any residual rounding rather than letterboxing. */
+.flip-front-img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  border-radius: 10px; user-select: none; -webkit-user-drag: none;
+}
 .flip-back {
   transform: rotateY(180deg); background: var(--subject-100); border: 2px solid var(--subject-500);
   flex-direction: column; gap: 10px; text-align: center; direction: rtl;
@@ -3439,6 +3491,18 @@ html, body {
 /* Step 4 (storyboard slide 37): the tray becomes the drag source for the pour. `overflow: hidden`
    above is what clips its water, so the grab affordance goes on the tray itself rather than on a
    child that would be clipped away. */
+/* The graduated measuring vessel on s34 (storyboard slide 38). Its water is an overlay on the
+   0-250 SVG, calibrated to that drawing: the tube runs y=46..434 in a 480 viewBox with 0 mL at
+   y=420, so the fill sits (480-434)/480 = 9.58% off the bottom and 250 mL is (434-60)/480 = 77.9%
+   tall. Inner walls are x=58..142 of 200, i.e. 29% in from each side. */
+.meas-mv-wrap { position: relative; display: block; }
+.meas-mv-water {
+  position: absolute; left: 30%; right: 30%; bottom: 9.58%;
+  height: 0; background: rgba(120,190,225,0.5);
+  border-top: 2px solid rgba(255,255,255,0.85);
+  transition: height 0.7s ease; pointer-events: none;
+}
+.meas-vessel.filled .meas-mv-water { height: 77.9%; }
 .meas-tray.is-pourable { cursor: grab; touch-action: none; box-shadow: 0 0 0 3px var(--subject-200); }
 .meas-tray.is-pourable:hover { box-shadow: 0 0 0 3px var(--subject-400); }
 .meas-tray.dragging { cursor: grabbing; opacity: 0.5; }
@@ -3483,7 +3547,7 @@ html, body {
 .peak-intro-text { font-family: 'Assistant', sans-serif; font-size: 21px; font-weight: 400; color: #303030; line-height: 1.55; }
 .peak-question { position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%); width: 820px; display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
 .peak-step { align-self: center; background: var(--subject-100); color: var(--subject-700); font-family: 'Assistant', sans-serif; font-size: 15px; font-weight: 700; padding: 4px 16px; border-radius: 1000px; }
-.peak-question .scq-qtext { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: center; direction: rtl; line-height: 1.4; }
+.peak-question .scq-qtext { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: right; direction: rtl; line-height: 1.4; }
 /* Options are the template .scq-opt pill; the container carries .scq-answers for the
    flex column + gap and .peak-opt is only the JS hook peakSelect()/peakEnter() select on.
    .scq-opt is pinned to 604px for the 760px --textonly layout, so widen it to fill the
@@ -3648,7 +3712,17 @@ html, body {
   width: var(--pw, 84px); height: auto; display: block; border-radius: 6px;
   pointer-events: none; user-select: none; -webkit-user-drag: none;
 }
-.dnd-question--warmup .dnd-pill--img { padding: 6px 10px; }
+/* QA 2026-08-24 (slide 19): every draggable the same height AND width. They were sized by their
+   own content — each item authored its own `--pw` between 64 and 90px, and the label decided the
+   width — so no two matched. A fixed box makes them uniform; the label wraps to two lines inside
+   it, which QA said was fine, and the photo is contained rather than cropped so the differing
+   source ratios still sit tidily in the same frame. */
+.dnd-question--warmup .dnd-pill {
+  width: 150px; height: 116px; padding: 6px 8px; gap: 4px;
+  font-size: 14px; line-height: 1.2; text-align: center;
+}
+.dnd-question--warmup .dnd-pill--img { padding: 6px 8px; }
+.dnd-question--warmup .dnd-pill-img { width: 100%; height: 58px; object-fit: contain; }
 
 /* ── Image beside the cloze sentence (S19) ────────────────── */
 .dq-question--withimage {
@@ -3740,9 +3814,16 @@ html, body {
    the copy left rather than let the two clip corners. */
 .screen.has-companion .peak-intro { left: calc(50% - 110px); }
 
+/* `aspect-ratio` here for the same reason .companion-say > .companion declares it (see the long
+   note there): a <video> with no loaded metadata falls back to the default 300×150 box, so
+   `height: auto` alone mis-sizes every sprite until the mp4 header arrives. That rule only covered
+   sprites inside a .companion-say group; the free-standing ones injected from CHARACTER_SLOTS were
+   left to the 300×150 fallback and visibly resized on load. Same `--ca` contract as the grouped
+   variant — default square, and an instance whose pose is 16:9 sets `--ca: 16 / 9`. */
 .companion {
   position: absolute; z-index: 8;
   width: var(--cw, 190px); height: auto; display: block;
+  aspect-ratio: var(--ca, 1 / 1); object-fit: contain;
   pointer-events: none; user-select: none; -webkit-user-drag: none;
 }
 .companion--center { left: 50%; transform: translateX(-50%); }

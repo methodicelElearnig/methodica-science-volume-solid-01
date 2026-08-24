@@ -7,7 +7,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 /* ─── Constants ─────────────────────────────────────────── */
-const TOTAL_SCREENS = 33;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice, S23–S28 comic slides 13–18, S29 guess-Q (sb24), S30/S31 overflow can (sb39/40), S32 practice rules (sb50). Bump as screens are added.
+const TOTAL_SCREENS = 35;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice, S23–S28 comic slides 13–18, S29 guess-Q (sb24), S30/S31 overflow can (sb39/40), S32 practice rules (sb50), S33 flooding result (sb29), S34 measurement steps 3-4 (sb36-38). Bump as screens are added.
                            // Must equal the live `.screen` count — index_dev.html derives its jump range from that,
                            // while goTo() rejects n >= TOTAL_SCREENS. The two silently disagree if only one is edited.
 
@@ -235,7 +235,8 @@ function startCompanionMedia(el) {
    2026-08-24, which put each prop on the screen arguing the other case. */
 const CHARACTER_SLOTS = {
   s9:  { pose: 'soap',             w: 160, right: 30, bottom:  95 },  /* sb26 — dissolving */
-  s11: { pose: 'pingpong',         w: 160, right: 30, bottom:  97 },  /* sb29 — floating */
+  /* s11 has no slot: its slide-29 companion (the ping-pong ball) moved to s33 with the
+     rest of that slide, and is authored there inside a .companion-say group. */
   s12: { pose: 'stretch',          w: 200, right: 40, bottom:  89 }   /* sb41 */
 };
 /* S7's two path cards are the mascot in two poses. Not a CHARACTER_SLOTS entry:
@@ -281,6 +282,10 @@ function renderCompanion(n) {
   el.src = characterAsset(slot.pose);
   startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
+  /* Square is the CSS default; a 16:9 pose declares its own so the box is right from
+     first paint instead of after the mp4 header lands. (Every pose in this component
+     is square today — the line is here so a wide one can be slotted without surprise.) */
+  el.style.setProperty('--ca', slot.ca || '');
   el.classList.toggle('companion--center', slot.center === true);
   /* A grouped sprite is positioned BY the group, so writing slot offsets onto it would be
      a second, conflicting source of truth. (Reachable only if a screen ever has both.) */
@@ -347,6 +352,7 @@ function resetScreenState(n) {
     // Aquarium ruler applet + SingleChoiceQuestion.
     aqEnter();
   }
+  if (n === 33) { syncPathToggle(); }
   if (n === 11) {
     // Flooding / overflow applet.
     floodEnter();
@@ -355,9 +361,9 @@ function resetScreenState(n) {
   if (n === 21) { guessEnter('s21'); }             // guess-question (no feedback)
   if (n === 29) { guessEnter('s29'); }             // guess-question sb24 (no feedback)
   if (n === 30 || n === 31) { syncPathToggle(); }  // overflow-can info screens
-  if (n === 22) { measEnter(); }                   // multi-step measurement applet
-  if (n === 18) { ddqEnter('s18'); }               // warm-up 1 (matching)
-  if (n === 19) { dqEnter('s19'); }                // warm-up 2 (dropdown)
+  if (n === 22 || n === 34) { measEnter(); }                   // multi-step measurement applet
+  if (n === 18) { warmupEnter(0, 's18', ddqEnter); }   // warm-up 1 (matching)
+  if (n === 19) { warmupEnter(1, 's19', dqEnter); }    // warm-up 2 (dropdown)
   if (n === 13) { practiceEnter(0, 's13'); }
   if (n === 14) { practiceEnter(1, 's14'); }
   if (n === 15) { practiceEnter(2, 's15'); }
@@ -401,9 +407,11 @@ function goBack() {
   if (currentScreen === 10) { goTo(7); return; }        // aquarium (experiments entry) → back to path choice
   if (currentScreen === 21) { goTo(9); return; }        // guess-Q → back to displacement
   if (currentScreen === 11) { goTo(21); return; }       // flooding → back to guess-Q
-  if (currentScreen === 20) { goTo(11); return; }       // flip-cards → back to flooding
+  if (currentScreen === 33) { goTo(11); return; }       // flooding result → back to the applet
+  if (currentScreen === 20) { goTo(33); return; }       // flip-cards → back to the flooding result
   if (currentScreen === 22) { goTo(20); return; }       // measurement applet → back to flip-cards
-  if (currentScreen === 30) { goTo(22); return; }       // overflow can → back to measurement applet
+  if (currentScreen === 34) { goTo(22); return; }       // steps 3-4 → back to steps 1-2
+  if (currentScreen === 30) { goTo(34); return; }       // overflow can → back to measurement applet
   if (currentScreen === 31) { goTo(30); return; }       // overflow can (how) → back to the question
   if (currentScreen === 12) { goTo(7); return; }        // practice transition → back to path choice
   if (currentScreen === 18) { goTo(12); return; }       // warm-up 1 → transition
@@ -432,9 +440,11 @@ function advanceScreen() {
   if (currentScreen === 29) { if (!guessPicked['s29']) return; goTo(9); return; }        // guess-Q (sb24) → displacement
   if (currentScreen === 9)  { if (!dispPlaced) return; goTo(21); return; } // displacement → guess-Q
   if (currentScreen === 21) { if (!guessPicked['s21']) return; goTo(11); return; }       // guess-Q → flooding
-  if (currentScreen === 11) { if (!floodPlaced) return; goTo(20); return; }             // flooding → flip-cards
+  if (currentScreen === 11) { if (!floodPlaced) return; goTo(33); return; }             // flooding → its result (sb29)
+  if (currentScreen === 33) { goTo(20); return; }                                       // flooding result → flip-cards
   if (currentScreen === 20) { const c = document.getElementById('s20-continue'); if (c && c.disabled) return; goTo(22); return; } // flip-cards → measurement applet
-  if (currentScreen === 22) { if (!measDone) return; goTo(30); return; }                 // measurement applet → overflow can
+  if (currentScreen === 22) { if (measStep <= 2) return; goTo(34); return; }   // steps 1-2 done → steps 3-4
+  if (currentScreen === 34) { if (!measDone) return; goTo(30); return; }       // applet complete → overflow can                 // measurement applet → overflow can
   if (currentScreen === 30) { goTo(31); return; }                                        // overflow can: question → how it works
   if (currentScreen === 31) { goTo(MERGE_SCREEN); return; }                              // overflow can → merge
   if (currentScreen === 12) { goTo(18); return; }                                       // transition → warm-up 1
@@ -551,7 +561,7 @@ const COMIC_SCREENS = [8, 23, 24, 25, 26, 27, 28];
 // Experiments path (pedagogical order ≠ screen-number order, wired explicitly):
 //   entry = S10 aquarium (geometric) → S9 displacement → (flooding, tbd)
 const EXPERIMENTS_ENTRY = 10;
-const EXPERIMENTS_SCREENS = [9, 10, 11, 20, 21, 22, 29, 30, 31];   // membership list for the path toggle, NOT the order
+const EXPERIMENTS_SCREENS = [9, 10, 11, 20, 21, 22, 29, 30, 31, 33, 34];   // membership list for the path toggle, NOT the order
                                                                     // (runtime order is 10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31)
 const MERGE_SCREEN = 12;                       // both paths (comic end / flip-cards end) continue here
 function selectPathOption(cardEl) {
@@ -639,7 +649,9 @@ const COMIC_DATA = {
       src: 'assets/img/comic/12.jpg',
       alt: 'ארכימדס במעבדה עתיקה. מימין הוא עומד ליד תיבת מתכת על השולחן ופונה אל הלומדים, משמאל הוא מודד את התיבה בעזרת סרגל.',
       bubbles: [
-        { type: 'caption', text: 'ארכימדס הגיע עד לימינו כדי ללמד אותנו על השיטות לחישוב נפח שהוא המציא.' },
+        /* Slide 12's band belongs to the RIGHT scene (Archimedes addressing the learner), not to
+           the whole composite — it ran under both halves until QA 2026-08-24. */
+        { type: 'caption', half: 'right', text: 'ארכימדס הגיע עד לימינו כדי ללמד אותנו על השיטות לחישוב נפח שהוא המציא.' },
         { type: 'speech', tail: 'left', r: -3, t: 5, w: 21,
           text: 'בואו נתחיל בתזכורת! איך מודדים גוף בעל צורה הנדסית מוגדרת כמו גליל או תיבה?' },
         { type: 'speech', tail: 'left', r: 51, t: 38, w: 25,
@@ -661,7 +673,10 @@ const COMIC_DATA = {
       alt: 'מימין ארכימדס מודד תיבה בעזרת סרגל ומחשב את נפחה, משמאל מונחים על השולחן מפתח, בלוט וגולה.',
       bubbles: [
         { type: 'narration', r: 27, t: 4, w: 22, text: 'ככה מודדים נפח של גוף הנדסי' },
-        { type: 'thought', tail: 'down-left', r: 3, t: 22, w: 21,
+        /* Side beak, not down-left: the bubble sits at the panel's right edge and Archimedes'
+           head is to its LEFT, so trailing circles downward pointed them away from the thinker
+           (QA 2026-08-24). Widened too — the thought frame's new padding needs the room. */
+        { type: 'thought', tail: 'left', r: 3, t: 20, w: 26,
           text: 'יש לנו קובייה שכל צלע שלה = 10 ס"מ. 10·10·10 = 1,000. נפח הקובייה = 1,000 סמ"ק!' },
         { type: 'narration', r: 56, t: 6, w: 30,
           text: 'אבל מה לגבי גוף שאינו הנדסי, כמו מפתח, בלוט, או גולה?' }
@@ -690,7 +705,11 @@ const COMIC_DATA = {
       { src: 'assets/img/comic/15c.jpg',
         alt: 'ארכימדס מרים אצבע למעלה בסימן "הבנתי!".',
         bubbles: [
-          { type: 'speech', tail: 'down-left', r: 3, t: 5, w: 32,
+          /* Dropped from t:5 and flipped to a top beak: at the top of the frame the bubble sat
+             across his face, and a down-beak pointed away from him. Sitting lower with the beak
+             on the upper edge, it clears the face and still leads back to his head (QA
+             2026-08-24, which suggested exactly this). */
+          { type: 'speech', tail: 'up-left', r: 3, t: 30, w: 32,
             text: 'אה! כמות המים החדשה פחות כמות המים המקורית = נפח הגולה!' }
         ] },
       { src: 'assets/img/comic/15d.jpg',
@@ -841,6 +860,10 @@ function comicBubbleHtml(b, k) {
   const docked = (type === 'caption');   // banner is width-docked but honours --t
   let cls = 'speech-bubble speech-bubble--' + type;
   if (b.tail) cls += ' speech-bubble--tail-' + b.tail;
+  /* A caption normally docks across the whole frame. On a COMPOSITE panel (two scenes side by
+     side, e.g. s8 / storyboard slide 12) the deck gives each scene its own band, so `half` scopes
+     one to the scene it belongs to instead of letting it run under both. */
+  if (docked && b.half) cls += ' speech-bubble--caption-' + b.half;
   let style = '--k:' + k + ';';
   if (!docked) {
     style += '--r:' + (b.r != null ? b.r : 5) + '%;'
@@ -1008,8 +1031,12 @@ function comicUpdateNav(screenId) {
   const last = cfg.panels.length - 1;
   const prev = document.getElementById(screenId + '-prev');
   const next = document.getElementById(screenId + '-next');
-  if (prev) prev.disabled = st.i === 0;
-  if (next) next.disabled = st.i === last;
+  /* HIDDEN at the ends, not greyed: a disabled arrow still occupies its slot and reads as an
+     affordance the learner has failed to use. Requested by QA 2026-08-24 for the first and last
+     panel. `disabled` is kept in step so a hidden button can never be reached by keyboard.
+     comicBuild() separately hides both for a single-panel screen (n < 2). */
+  if (prev) { prev.disabled = st.i === 0;    prev.hidden = st.i === 0; }
+  if (next) { next.disabled = st.i === last; next.hidden = st.i === last; }
   document.querySelectorAll('#' + screenId + '-dots .comic-dot').forEach(function (d, k) {
     d.classList.toggle('is-active', k === st.i);
     d.classList.toggle('is-seen', !!st.seen[k]);
@@ -1348,10 +1375,14 @@ function floodDrop() {
   document.getElementById('flood-bowl').classList.add('flooded');
   const inst = document.getElementById('flood-instruction');
   if (inst) inst.textContent = 'האבן שקעה והמים גלשו לכלי האיסוף — בואו נבין למה.';
+  /* The tray's fill is `height 0.6s ease 0.3s`, so it lands at 900ms — the same beat the
+     explanation appears on. Marking the scene drained then stops the spill streams, because by
+     that point every drop that was going to leave the bowl has arrived (QA 2026-08-24, slide 13:
+     the lines should disappear once the flow stops). */
   setTimeout(function () {
-    const ex = document.getElementById('flood-explain'); if (ex) ex.hidden = false;
     const rs = document.getElementById('flood-reset');    if (rs) rs.hidden = false;
     const cont = document.getElementById('s11-continue');  if (cont) cont.disabled = false;
+    document.querySelector('#s11 .flood-scene')?.classList.add('drained');
   }, 900);
   xapiSend('interacted', 'question', { response: 'overflow' }, { category: 'flooding-applet' });
 }
@@ -1361,8 +1392,8 @@ function floodReset() {
   rock.classList.remove('placed'); rock.style.transform = '';
   document.getElementById('flood-hint').textContent = 'גררו את האבן לקערה';
   document.getElementById('flood-bowl').classList.remove('flooded');
-  document.getElementById('flood-instruction').textContent = 'לגוף שאינו נכנס למשורה. הכניסו את האבן לתוך הקערה הגדולה המלאה במים.';
-  document.getElementById('flood-explain').hidden = true;
+  document.querySelector('#s11 .flood-scene')?.classList.remove('drained');
+  document.getElementById('flood-instruction').textContent = 'הכניסו את האבן לתוך הקערה הגדולה המלאה במים.';
   document.getElementById('flood-reset').hidden = true;
   document.getElementById('s11-continue').disabled = true;
 }
@@ -1373,7 +1404,7 @@ function floodEnter() {
     document.getElementById('flood-rock').classList.add('placed');
     document.getElementById('flood-hint').textContent = '';
     document.getElementById('flood-bowl').classList.add('flooded');
-    document.getElementById('flood-explain').hidden = false;
+    document.querySelector('#s11 .flood-scene')?.classList.add('drained');
     document.getElementById('flood-reset').hidden = false;
     document.getElementById('s11-continue').disabled = false;
   } else {
@@ -1461,6 +1492,38 @@ function updateProgressQuestion(container, state) {
 }
 function syncPracticeNav(screen) {
   updateProgressQuestion(document.querySelector('#' + screen + ' .progress-question'), practiceProgress);
+}
+
+/* The warm-up pair (s18 matching, s19 dropdown) gets its own bar. Storyboard slides 42 and 46 ask
+   for it in as many words — "מקטע זה מלווה בסרגל שאלה, שאלה 1 מתוך 2" and "…2 מתוך 2" — and QA
+   2026-08-24 (slide 20) asked for the same design and behaviour as the five-question bar.
+
+   Nothing about the component needed changing: .progress-question bakes in no count and
+   updateProgressQuestion() already takes any state object. Only the state was singular, so this is
+   a second one beside practiceProgress rather than a second renderer. */
+var warmupProgress = {
+  questions: [
+    { number: 1, visited: true,  state: 'current',      screen: 18 },  // item 03 — matching (DnD)
+    { number: 2, visited: false, state: 'not-answered', screen: 19 }   // item 04 — dropdown
+  ]
+};
+function syncWarmupNav(screen) {
+  updateProgressQuestion(document.querySelector('#' + screen + ' .progress-question'), warmupProgress);
+}
+/* Mirrors practiceEnter: mark visited, promote to current, paint, then hand off to the template's
+   own enter(). idx is the 0-based position in warmupProgress.questions. */
+function warmupEnter(idx, screen, enterFn) {
+  const q = warmupProgress.questions[idx];
+  q.visited = true;
+  if (q.state === 'not-answered') q.state = 'current';
+  syncWarmupNav(screen);
+  enterFn(screen);
+}
+function warmupFinish(idx, screen, isCorrect) {
+  const q = warmupProgress.questions[idx];
+  q.state = isCorrect ? 'correct' : 'incorrect';
+  q.visited = true;
+  syncWarmupNav(screen);
 }
 function practiceEnter(idx, screen) {
   const q = practiceProgress.questions[idx];
@@ -1745,6 +1808,7 @@ ddqRegister({
     correct:   { title: 'נכון! כל הכבוד.', body: ['לכל משימת מדידה מתאים כלי אחר: נוזל נמזג למשורה, אורך נמדד בסרגל, מסה במאזניים.', 'נפח של גוף קטן שנכנס למשורה — בדחיקת מים; ושל גוף גדול — בשיטת ההצפה.'] },
     incorrect: { title: 'לא מדויק — ההתאמה הנכונה מוצגת.', body: ['כוס מים → מזיגה למשורה • צלע קובייה → סרגל • מסת אבטיח → מאזניים.', 'צדף קטן → דחיקת מים • בובה גדולה → שיטת ההצפה.'] }
   },
+  onFinish: function (ok) { warmupFinish(0, 's18', ok); },
   onContinue: function () { goTo(19); }
 });
 attachPopupDrag(document.getElementById('s18-ddq-popup'));
@@ -1758,9 +1822,10 @@ scqRegister({
     correct: { title: 'נכון!', body: ['כשמכניסים גוף למים הוא תופס מקום, ולכן המים עולים.', 'ההפרש בין קריאת המפלס אחרי ולפני = נפח הגוף.'] },
     wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'הגוף תופס מקום בתוך המים, ולכן מפלס המים עולה.'] }
   },
-  onFinish: function (ok) {   // reflect result on the dropdown trigger
+  onFinish: function (ok) {   // reflect result on the dropdown trigger, and on the warm-up bar
     const t = document.getElementById('s19-dropdown-trigger');
     if (t) { t.classList.remove('correct', 'wrong'); t.classList.add(ok ? 'correct' : 'wrong'); }
+    warmupFinish(1, 's19', ok);
   },
   onContinue: function () { goTo(32); }   // → practice rules (sb50) → Q1
 });
@@ -1781,18 +1846,23 @@ function dqPick(screen, id, label) {
   if (tr) tr.textContent = label;
   document.getElementById(screen + '-answers').classList.add('hidden');
 }
+/* Space reserved beside the longest option for the open-arrow. */
+const DQ_CARET_ROOM = 50;
 function dqEnter(screen) {
   const s = SCQ_REG[screen];
   const trigger = document.getElementById(screen + '-dropdown-trigger');
   const list = document.getElementById(screen + '-answers');
   if (trigger && list) {
-    // The trigger box must be exactly as wide as the option list. list.offsetWidth
-    // ignores the canvas-wide scale() transform (unlike getBoundingClientRect), so
-    // this stays correct at any zoom. Briefly un-hide to measure — .hidden is
-    // display:none, which can't be measured — then restore, all before paint.
+    /* The trigger is sized to the longest word in the list PLUS room for the caret. The list is
+       content-sized by its widest option, so list.offsetWidth is that longest word; the caret is
+       absolutely positioned and so contributes nothing, which is why it needs adding explicitly —
+       without it the arrow sat on top of the chosen word (QA 2026-08-24, slide 20, which suggested
+       ~50px). list.offsetWidth ignores the canvas-wide scale() transform (unlike
+       getBoundingClientRect), so this stays correct at any zoom. Briefly un-hide to measure —
+       .hidden is display:none, which cannot be measured — then restore, all before paint. */
     const wasHidden = list.classList.contains('hidden');
     if (wasHidden) list.classList.remove('hidden');
-    trigger.style.width = list.offsetWidth + 'px';
+    trigger.style.width = (list.offsetWidth + DQ_CARET_ROOM) + 'px';
     if (wasHidden) list.classList.add('hidden');
   }
   if (trigger && s && !s.done) {
@@ -1815,23 +1885,34 @@ document.addEventListener('click', function (e) {
    unlocks once every card has been revealed at least once.
    ═══════════════════════════════════════════════════════════ */
 const flipState = {};
+/* One card open at a time — opening one turns the others back over (QA 2026-08-24, slide 14).
+   flipState is the SEEN ledger, not the open one: it keeps recording every card the learner has
+   turned, because that is what unlocks Continue, and it must not be cleared when a card closes. */
 function flipCard(screen, cardEl) {
+  const wrap = cardEl.closest('.flip-grid') || document.getElementById(screen + '-flip');
+  if (wrap) wrap.querySelectorAll('.flip-card.flipped').forEach(c => {
+    if (c !== cardEl) c.classList.remove('flipped');
+  });
   cardEl.classList.add('flipped');
   (flipState[screen] = flipState[screen] || {})[cardEl.dataset.card] = true;
   flipUpdateContinue(screen);
 }
+/* Gated on the SEEN ledger, not on what is currently face-up. Since only one card can be open at
+   a time now, "every card is .flipped" is a state that can never occur — reading the DOM here
+   would leave Continue disabled forever. */
 function flipUpdateContinue(screen) {
   const cards = document.querySelectorAll('#' + screen + '-flip .flip-card');
-  const all = cards.length > 0 && [...cards].every(c => c.classList.contains('flipped'));
+  const seen = flipState[screen] || {};
+  const all = cards.length > 0 && [...cards].every(c => !!seen[c.dataset.card]);
   const cont = document.getElementById(screen + '-continue');
   if (cont) cont.disabled = !all;
 }
 function flipEnter(screen) {
   syncPathToggle();
-  const revealed = flipState[screen] || {};
-  document.querySelectorAll('#' + screen + '-flip .flip-card').forEach(c => {
-    c.classList.toggle('flipped', !!revealed[c.dataset.card]);
-  });
+  /* Back to all-face-down on re-entry: with one card open at a time there is no "the cards were
+     like this when I left" to restore, and re-flipping every seen card would put the screen in a
+     state the learner can no longer reach by clicking. Continue still reflects the ledger. */
+  document.querySelectorAll('#' + screen + '-flip .flip-card').forEach(c => c.classList.remove('flipped'));
   flipUpdateContinue(screen);
 }
 
@@ -1840,6 +1921,17 @@ function flipEnter(screen) {
    a companion bubble appears and Continue unlocks. No scoring.
    ═══════════════════════════════════════════════════════════ */
 const guessPicked = {};
+/* The mascot and his line arrive TOGETHER, on the pick — QA 2026-08-24 asked for this on every
+   guess screen: he used to stand there from arrival with nothing to say, which reads as a loading
+   glitch rather than a reaction. So the whole .companion-say group is what toggles, not the bubble
+   alone; the bubble's own authored `hidden` is cleared at the same time so revealing the group
+   reveals both. Screens are display:none until they are the current one, so nothing flashes. */
+function guessSayToggle(screen, show) {
+  const bubble = document.getElementById(screen + '-guess-bubble');
+  if (!bubble) return;
+  bubble.classList.toggle('hidden', !show);
+  bubble.closest('.companion-say')?.classList.toggle('hidden', !show);
+}
 /* The options are template .scq-opt pills, so the picked state is `.selected` — the class
    .scq-opt.selected .scq-radio keys on to fill the radio — and aria-checked follows it. */
 function guessPick(screen, btn) {
@@ -1850,7 +1942,7 @@ function guessPick(screen, btn) {
   btn.classList.add('selected');
   btn.setAttribute('aria-checked', 'true');
   guessPicked[screen] = btn.dataset.id;
-  document.getElementById(screen + '-guess-bubble')?.classList.remove('hidden');
+  guessSayToggle(screen, true);
   const cont = document.getElementById(screen + '-continue'); if (cont) cont.disabled = false;
   xapiSend('interacted', 'question', { response: btn.dataset.id }, { category: 'guess' });
 }
@@ -1862,7 +1954,7 @@ function guessEnter(screen) {
     o.classList.toggle('selected', sel);
     o.setAttribute('aria-checked', sel ? 'true' : 'false');
   });
-  document.getElementById(screen + '-guess-bubble')?.classList.toggle('hidden', !picked);
+  guessSayToggle(screen, !!picked);
   const cont = document.getElementById(screen + '-continue'); if (cont) cont.disabled = !picked;
 }
 
@@ -1873,20 +1965,39 @@ function guessEnter(screen) {
    Numeric inputs have no feedback (any value proceeds).
    ═══════════════════════════════════════════════════════════ */
 const MEAS = {
-  1: { obj: true, objImg: 's22-chess-king.svg', objLabel: 'כלי שח-מט', correct: 'cyl',  instruction: 'שלב 1: גררו את כלי השח-מט אל כלי המדידה המתאים.' },
-  2: { input: true, instruction: 'שלב 2: הכלי שקע והמים עלו — מדדו והקלידו את נפחו.', inputLabel: 'נפח כלי השח-מט (מ"ל):', reveal: 'נפח כלי השח-מט הוא 15 מ"ל. מפלס המים עלה מ-50 ל-65 מ"ל, ולכן: 65 − 50 = 15.' },
+  1: { screen: 22, obj: true, objImg: 's22-chess-king.svg', objLabel: 'כלי שח-מט', correct: 'cyl',
+       instruction: 'שלב 1: גררו את כלי השח-מט אל כלי המדידה המתאים.' },
+  2: { screen: 22, input: true, instruction: 'שלב 2: מדדו את מפלס המים במשורה כעת והקלידו את נפחו של כלי השח-מט.',
+       inputLabel: 'נפח כלי השח-מט (מ"ל):',
+       reveal: 'נפח כלי השח-מט הוא 15 מ"ל. מפלס המים המקורי במשורה היה 50 מ"ל והוא עלה ל-65 מ"ל, ולכן: 65 − 50 = 15.' },
   /* Deck slide 36 states the instruction without explaining WHY the cylinder is wrong — naming
      "too big for the cylinder" here would hand over the judgement this step exists to test. */
-  3: { obj: true, objImg: 's22-hammer.svg', objLabel: 'פטיש', correct: 'bowl', instruction: 'שלב 3: גררו את הפטיש אל כלי המדידה המתאים.' },
-  /* `pour` gates the input behind a real action: slide 37's notes say the level reaches 250 מ"ל
-     "לאחר שהלומד שופך את המים לתוך כלי המדידה" — after the LEARNER pours, not on arrival. The
-     wrong-target path reuses #meas-error, which slide 37 also carries. */
-  4: { input: true, last: true, pour: true, correct: 'cyl', instruction: 'שלב 4: שפכו את המים מכלי האיסוף אל תוך כלי המדידה והקלידו את נפח הפטיש.', inputLabel: 'נפח הפטיש (מ"ל):', reveal: 'המים שנשפכו היו בנפח 250 מ"ל — כלומר נפח הפטיש הוא 250 מ"ל, כי הוא הציף החוצה כמות מים השווה לנפחו!' }
+  3: { screen: 34, obj: true, objImg: 's22-hammer.svg', objLabel: 'פטיש', correct: 'bowl',
+       instruction: 'שלב 3: גררו את הפטיש אל כלי המדידה המתאים.' },
+  /* `pour` gates the input behind a real action: slide 37 says the level reaches 250 מ"ל "לאחר
+     שהלומד שופך את המים לתוך כלי המדידה" — after the LEARNER pours. The target is the graduated
+     MEASURING VESSEL (`mv`), not the משורה: slide 36 is explicit that the משורה still reads 65,
+     and slide 38 puts the 250 in "כלי המדידה". Those are two different vessels. */
+  4: { screen: 34, input: true, last: true, pour: true, correct: 'mv',
+       instruction: 'שלב 4: שפכו את המים מכלי האיסוף אל תוך כלי המדידה והקלידו את נפח הפטיש.',
+       inputLabel: 'נפח הפטיש (מ"ל):',
+       reveal: 'המים שנשפכו היו בנפח 250 מ"ל — כלומר נפח הפטיש הוא 250 מ"ל, כי הוא הציף החוצה כמות מים השווה לנפחו!' }
 };
-let measStep = 1, measDone = false, measRevealed = false, measPoured = false, measDnd = null;
+let measStep = 1, measDone = false, measRevealed = false, measPoured = false;
+const measDnd = {};
+
+/* The four steps run across TWO screens (QA 2026-08-24, slide 15): steps 1-2 on s22, steps 3-4 on
+   s34. Each screen owns its own copy of the stage, so every element id is prefixed — `meas-` on
+   s22, `meas2-` on s34 — and every lookup goes through mEl(). MEAS[step].screen is the single
+   source of truth for which half a step belongs to. */
+function measPrefix(step) { return MEAS[step || measStep].screen === 22 ? 'meas' : 'meas2'; }
+function mEl(name, step) { return document.getElementById(measPrefix(step) + '-' + name); }
+function measScreenId(step) { return 's' + MEAS[step || measStep].screen; }
+
 function measInitDnd() {
-  if (measDnd) return;
-  measDnd = createPointerDnd({
+  const pfx = measPrefix();
+  if (measDnd[pfx]) return;
+  const d = createPointerDnd({
     canDrag: function (dragId) {
       if (dragId === 'tray') return !!MEAS[measStep].pour && !measPoured;
       return !!MEAS[measStep].obj;
@@ -1896,22 +2007,28 @@ function measInitDnd() {
       else measDropVessel(vesselId);
     },
   });
-  measDnd.attachSource(document.getElementById('meas-object'), 'obj');
-  measDnd.attachSource(document.getElementById('meas-tray'), 'tray');
-  measDnd.attachTarget(document.getElementById('meas-cyl'), 'cyl');
-  measDnd.attachTarget(document.getElementById('meas-bowl'), 'bowl');
+  const src  = document.getElementById(pfx + '-object');
+  const tray = document.getElementById(pfx + '-tray');
+  if (src)  d.attachSource(src, 'obj');
+  if (tray) d.attachSource(tray, 'tray');
+  ['cyl', 'bowl', 'mv'].forEach(function (v) {
+    const t = document.getElementById(pfx + '-' + v);
+    if (t) d.attachTarget(t, v);
+  });
+  measDnd[pfx] = d;
 }
 function measShowError() {
-  const err = document.getElementById('meas-error');
+  const err = mEl('error');
+  if (!err) return;
   err.classList.remove('hidden');
   setTimeout(function () { err.classList.add('hidden'); }, 1800);
 }
-/* Pouring the collection tray into the משורה — step 4 only. Anywhere but the cylinder is wrong. */
+/* Pouring the collection tray into the graduated measuring vessel — step 4 only. */
 function measPourInto(v) {
   const cfg = MEAS[measStep];
   if (!cfg.pour || measPoured) return;
-  const tray = document.getElementById('meas-tray');
-  tray.classList.remove('dragging'); tray.style.transform = '';
+  const tray = mEl('tray');
+  if (tray) { tray.classList.remove('dragging'); tray.style.transform = ''; }
   if (v !== cfg.correct) { measShowError(); return; }
   measPoured = true;
   measRender();
@@ -1924,59 +2041,65 @@ function measDropVessel(v) {
   else measShowError();
 }
 function measInputChange() {
-  const inp = document.getElementById('meas-input');
-  document.getElementById('meas-confirm').disabled = inp.value.trim() === '';
+  const inp = mEl('input');
+  mEl('confirm').disabled = inp.value.trim() === '';
 }
 function measConfirm() {
   const cfg = MEAS[measStep];
   if (!cfg.input) return;
   measRevealed = true;
-  xapiSend('interacted', 'question', { response: document.getElementById('meas-input').value }, { category: 'measurement-applet' });
+  xapiSend('interacted', 'question', { response: mEl('input').value }, { category: 'measurement-applet' });
   if (cfg.last) measDone = true;
   measRender();
 }
+/* Step 2 -> 3 crosses the screen boundary, so "המשך לשלב הבא" navigates rather than repainting. */
 function measNext() {
+  const wasScreen = MEAS[measStep].screen;
+  const inp = mEl('input');
+  if (inp) inp.value = '';
   measStep++; measRevealed = false;
-  const inp = document.getElementById('meas-input'); if (inp) inp.value = '';
+  if (MEAS[measStep] && MEAS[measStep].screen !== wasScreen) { goTo(MEAS[measStep].screen); return; }
   measRender();
 }
 function measRender() {
   const step = measStep, cfg = MEAS[step];
-  document.getElementById('meas-instruction').textContent = cfg.instruction;
+  const el = function (n) { return mEl(n); };
+  if (!el('instruction')) return;              // this half of the applet is not in the DOM
+  el('instruction').textContent = cfg.instruction;
   const isDrag = !!cfg.obj, isInput = !!cfg.input;
   /* On a pour step the input waits for the pour; on every other input step it is immediate. */
   const inputReady = isInput && (!cfg.pour || measPoured);
-  const objZone = document.getElementById('meas-object-zone');
-  objZone.classList.toggle('hidden', !isDrag);
+  el('object-zone').classList.toggle('hidden', !isDrag);
   if (isDrag) {
-    document.getElementById('meas-object-icon').innerHTML = '<img class="meas-obj-img" src="assets/img/' + cfg.objImg + '" alt="" draggable="false">';
-    document.getElementById('meas-object-label').textContent = cfg.objLabel;
-    const obj = document.getElementById('meas-object'); obj.classList.remove('dragging'); obj.style.transform = '';
+    el('object-icon').innerHTML = '<img class="meas-obj-img" src="assets/img/' + cfg.objImg + '" alt="" draggable="false">';
+    el('object-label').textContent = cfg.objLabel;
+    const obj = el('object'); obj.classList.remove('dragging'); obj.style.transform = '';
   }
-  const inputRow = document.getElementById('meas-input-row');
-  inputRow.classList.toggle('hidden', !(inputReady && !measRevealed));
-  if (isInput) document.getElementById('meas-input-label').textContent = cfg.inputLabel;
-  if (inputReady && !measRevealed) {
-    const inp = document.getElementById('meas-input');
-    document.getElementById('meas-confirm').disabled = inp.value.trim() === '';
-  }
-  const reveal = document.getElementById('meas-reveal');
+  el('input-row').classList.toggle('hidden', !(inputReady && !measRevealed));
+  if (isInput) el('input-label').textContent = cfg.inputLabel;
+  if (inputReady && !measRevealed) el('confirm').disabled = el('input').value.trim() === '';
+  const reveal = el('reveal');
   reveal.classList.toggle('hidden', !measRevealed);
   if (measRevealed) reveal.textContent = cfg.reveal;
-  document.getElementById('meas-next').classList.toggle('hidden', !(measRevealed && !cfg.last));
-  document.getElementById('meas-error').classList.add('hidden');
+  el('next').classList.toggle('hidden', !(measRevealed && !cfg.last));
+  el('error').classList.add('hidden');
   /* The tray is only grabbable while its pour is still pending. */
-  const awaitingPour = !!cfg.pour && !measPoured;
-  document.getElementById('meas-tray').classList.toggle('is-pourable', awaitingPour);
-  document.getElementById('meas-pour-hint').classList.toggle('hidden', !awaitingPour);
-  /* 50 before the king goes in, 65 after it, 250 once the collected water is poured across. */
-  document.getElementById('meas-cyl-badge').textContent =
-    measPoured ? '250 מ"ל' : (step >= 2 ? '65 מ"ל' : '50 מ"ל');
-  document.getElementById('meas-cyl').classList.toggle('has-king', step >= 2);
-  /* The tray holds the spilled water from step 3 until the learner pours it out. */
-  document.getElementById('meas-bowl').classList.toggle('overflowed', step >= 4 && !measPoured);
-  document.getElementById('s22-continue').disabled = !measDone;
+  if (el('tray')) el('tray').classList.toggle('is-pourable', awaitingPourFlag(cfg));
+  if (el('pour-hint')) el('pour-hint').classList.toggle('hidden', !awaitingPourFlag(cfg));
+  /* The משורה reads 50 before the king goes in and 65 after — and STAYS at 65 through steps 3-4
+     (slide 36 says so). The 250 belongs to the measuring vessel, which only exists on s34. */
+  el('cyl-badge').textContent = (step >= 2) ? '65 מ"ל' : '50 מ"ל';
+  el('cyl').classList.toggle('has-king', step >= 2);
+  if (el('mv')) {
+    el('mv').classList.toggle('filled', measPoured);
+    el('mv-badge').textContent = measPoured ? '250 מ"ל' : '0 מ"ל';
+  }
+  /* The tray holds the water the hammer displaced until the learner pours it across. */
+  if (el('bowl')) el('bowl').classList.toggle('overflowed', step >= 4 && !measPoured);
+  const cont = document.getElementById(measScreenId() + '-continue');
+  if (cont) cont.disabled = (cfg.screen === 34) ? !measDone : !(step > 2 || measRevealed);
 }
+function awaitingPourFlag(cfg) { return !!cfg.pour && !measPoured; }
 function measEnter() {
   measInitDnd();
   syncPathToggle();
@@ -2040,16 +2163,18 @@ var SCREEN_TO_SUBCONTENT = {
   27: ['02', 9],
   28: ['02', 10],
 
-  /* item 02 — experiments branch, in flow order (10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31) */
+  /* item 02 — experiments branch, in flow order (10 → 29 → 9 → 21 → 11 → 33 → 20 → 22 → 30 → 31) */
   10: ['02', 11],     // aquarium ruler + the item's ONLY catalog question (q1)
   29: ['02', 12],     // guess (sb24)
   9:  ['02', 13],     // displacement applet
   21: ['02', 14],     // guess
-  11: ['02', 15],     // flooding applet
-  20: ['02', 16],     // flip cards — real-world uses
-  22: ['02', 17],     // measurement applet
-  30: ['02', 18],     // overflow can — the question
-  31: ['02', 19],     // overflow can — how it works
+  11: ['02', 15],     // flooding applet (sb28)
+  33: ['02', 16],     // flooding result (sb29) — split out of the applet
+  20: ['02', 17],     // flip cards — real-world uses
+  22: ['02', 18],     // measurement applet — steps 1-2 (sb33-35)
+  34: ['02', 19],     // measurement applet — steps 3-4 (sb36-38)
+  30: ['02', 20],     // overflow can — the question
+  31: ['02', 21],     // overflow can — how it works
 
   /* item 02 — where both branches merge and the item ends */
   12: ['02', 20],     // כל הכבוד! סיימתם את שלב הלימוד
@@ -2107,7 +2232,7 @@ var RESUME_PLAIN_VARS = ['dispPlaced', 'aqMeasured', 'floodPlaced',
 
 /* Typed answers live only in the DOM — no variable holds them — so they travel by element id.
    Reading them at capture time is safe: no branch clears these, only disables. */
-var RESUME_INPUT_IDS = ['s2-open-text', 'meas-input'];
+var RESUME_INPUT_IDS = ['s2-open-text', 'meas-input', 'meas2-input'];
 var RESUME_TEXT_IDS  = [];
 
 function captureResumeInputs() {
@@ -2285,10 +2410,10 @@ function restoreScreenUI(n) {
            never repaints the marks or a mid-attempt selection. */
     if (SCQ_RESTORE_SCREENS.indexOf(n) !== -1) scqRestoreUI('s' + n);
 
-    /* 3. s22 — measRender() recomputes everything from measStep/measDone/measRevealed/measPoured
+    /* 3. s22/s34 — measRender() recomputes everything from measStep/measDone/measRevealed/measPoured
            EXCEPT the confirm button, which it derives from #meas-input's live value; that value is
            restored after measRender has already run. */
-    if (n === 22 && typeof measInputChange === 'function') measInputChange();
+    if ((n === 22 || n === 34) && typeof measInputChange === 'function') measInputChange();
 
     /* 4. the comic sliders — comicSliderEnter() runs comicBuild(), which seeds a FRESH record when
            comicState[sid] is absent (as it is after a reload) and then pages to i:0. The second

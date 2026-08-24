@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 480" width="200" height="480" role="img" aria-label="משורה מדורגת עד 250 מ&quot;ל">
+  <!-- 250 mL sibling of s9-cylinder.svg. The measurement applet pours a collection vessel into
+       this one and the level must be READABLE at 250 (storyboard slide 37, QA 2026-08-24 slide
+       15); s9's cylinder tops out at 100 and its water CSS is calibrated to that, so this is a
+       separate instrument rather than a rescale of the shared one.
+       Scale: y = 420 - 1.44*V  (0 mL at y=420, 250 mL at y=60 — the same 360px span as s9). -->
+
+  <!-- base: tapered stem into a flared foot -->
+  <path d="M84 434 L78 446 Q76 450 82 452 L118 452 Q124 450 122 446 L116 434 Z"
+        fill="#e4f1f9" stroke="#7fb8d6" stroke-width="2.5" stroke-linejoin="round"/>
+  <ellipse cx="100" cy="455" rx="56" ry="13" fill="#e4f1f9" stroke="#7fb8d6" stroke-width="2.5"/>
+  <ellipse cx="100" cy="452" rx="56" ry="13" fill="#f2f9fd" stroke="#7fb8d6" stroke-width="2.5"/>
+
+  <!-- glass tube -->
+  <rect x="58" y="46" width="84" height="388" rx="7" fill="#eaf5fc" fill-opacity="0.55" stroke="#7fb8d6" stroke-width="2.5"/>
+  <!-- top rim. No pour spout: QA asked for the half-circle "tail" at the top to go. -->
+  <ellipse cx="100" cy="46" rx="42" ry="7.5" fill="#f2f9fd" stroke="#7fb8d6" stroke-width="2.5"/>
+  <!-- left highlight streak -->
+  <rect x="68" y="60" width="7" height="360" rx="3.5" fill="#ffffff" opacity="0.5"/>
+
+  <!-- graduated scale (right side): major ticks every 50 mL -->
+  <g stroke="#a85d2a" stroke-width="2" stroke-linecap="round">
+    <line x1="124" y1="60"  x2="138" y2="60"/>
+    <line x1="124" y1="132" x2="138" y2="132"/>
+    <line x1="124" y1="204" x2="138" y2="204"/>
+    <line x1="124" y1="276" x2="138" y2="276"/>
+    <line x1="124" y1="348" x2="138" y2="348"/>
+  </g>
+  <!-- minor ticks every 25 mL -->
+  <g stroke="#a85d2a" stroke-width="1.3" stroke-linecap="round" opacity="0.8">
+    <line x1="130" y1="96"  x2="138" y2="96"/>
+    <line x1="130" y1="168" x2="138" y2="168"/>
+    <line x1="130" y1="240" x2="138" y2="240"/>
+    <line x1="130" y1="312" x2="138" y2="312"/>
+    <line x1="130" y1="384" x2="138" y2="384"/>
+  </g>
+  <g fill="#a85d2a" font-family="Assistant, Arial, sans-serif" font-size="13" font-weight="700" text-anchor="end">
+    <text x="120" y="64">250</text>
+    <text x="120" y="136">200</text>
+    <text x="120" y="208">150</text>
+    <text x="120" y="280">100</text>
+    <text x="120" y="352">50</text>
+  </g>
+  <text x="138" y="40" fill="#a85d2a" font-family="Assistant, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="end">ml</text>
+</svg>
