@@ -3417,6 +3417,13 @@ html, body {
 .meas-tray { position: relative; width: 150px; height: 34px; margin-top: 8px; border: 3px solid #7fb8d6; border-top: none; border-radius: 0 0 10px 10px; overflow: hidden; }
 .meas-tray-water { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: rgba(120,190,225,0.5); transition: height 0.5s ease; }
 .meas-vessel.overflowed .meas-tray-water { height: 70%; }
+/* Step 4 (storyboard slide 37): the tray becomes the drag source for the pour. `overflow: hidden`
+   above is what clips its water, so the grab affordance goes on the tray itself rather than on a
+   child that would be clipped away. */
+.meas-tray.is-pourable { cursor: grab; touch-action: none; box-shadow: 0 0 0 3px var(--subject-200); }
+.meas-tray.is-pourable:hover { box-shadow: 0 0 0 3px var(--subject-400); }
+.meas-tray.dragging { cursor: grabbing; opacity: 0.5; }
+.meas-pour-hint { font-family: 'Assistant', sans-serif; font-size: 14px; color: #8a97a3; margin: 0; text-align: center; }
 .meas-side { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 380px; }
 .meas-object-zone { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .meas-object { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 20px; background: #fff; border: 2px solid var(--subject-400); border-radius: 14px; cursor: grab; touch-action: none; box-shadow: 0 3px 10px rgba(0,32,96,0.14); }

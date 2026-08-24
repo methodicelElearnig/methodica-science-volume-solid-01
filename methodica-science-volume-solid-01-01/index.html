@@ -259,7 +259,7 @@
            unusually short/ultra-wide windows (≤~640, matching the 21:9 case already noted
            for S5). Comfortably clear at every taller ratio (720/800/960 all gain margin). -->
       <p class="companion-bubble" style="--bubble-w: 500px; align-self: flex-end;">ארכימדס לא היה גאון יוצא דופן שיודע את התשובות לכל דבר, אלא אדם שראה דברים בצורה שונה מאחרים, כמו בדוגמה של מפלס המים העולים באמבטיה.</p>
-      <img class="companion" src="assets/img/character-orange-towel.png?v=2" aria-hidden="true"
+      <img class="companion" src="assets/img/character-orange-towel.png?v=2" alt="" aria-hidden="true"
            data-pose="towel" draggable="false" style="--cw: 178px;">
     </div>
     <div class="hook-content">
@@ -1185,8 +1185,13 @@
           </div>
           <div class="meas-vessel" id="meas-bowl" data-vessel="bowl">
             <div class="meas-bowl"><div class="meas-bowl-water" id="meas-bowl-water"></div></div>
-            <div class="meas-tray"><div class="meas-tray-water" id="meas-tray-water"></div></div>
+            <!-- Step 4 (storyboard slide 37) makes the tray itself the drag source: the learner
+                 pours it into the משורה. It is a child of the bowl vessel, which is also a drop
+                 target — harmless, because the drag ghost is pointer-events:none so the drop
+                 hit-test sees the cylinder underneath, not this node. -->
+            <div class="meas-tray" id="meas-tray"><div class="meas-tray-water" id="meas-tray-water"></div></div>
             <span class="meas-vessel-label">קערת הצפה + כלי איסוף</span>
+            <p class="meas-pour-hint hidden" id="meas-pour-hint">גררו את כלי האיסוף אל המשורה</p>
           </div>
         </div>
 

@@ -229,9 +229,13 @@ function startCompanionMedia(el) {
    only makes sense next to a bubble that also lives in the markup — a slot as well would
    be two sources of truth for one offset. renderCompanion() adopts those sprites and
    refreshes only which character they show. */
+/* The prop the mascot holds is the caveat's illustration, so it must match the bubble beside
+   it: sb26 (S9) warns about bodies that DISSOLVE — he holds a bar of soap; sb29 (S11) warns
+   about bodies that FLOAT — he holds a ping-pong ball. These two were transposed until
+   2026-08-24, which put each prop on the screen arguing the other case. */
 const CHARACTER_SLOTS = {
-  s9:  { pose: 'pingpong',         w: 160, right: 30, bottom:  95 },  /* sb26 */
-  s11: { pose: 'soap',             w: 160, right: 30, bottom:  97 },  /* sb29 */
+  s9:  { pose: 'soap',             w: 160, right: 30, bottom:  95 },  /* sb26 — dissolving */
+  s11: { pose: 'pingpong',         w: 160, right: 30, bottom:  97 },  /* sb29 — floating */
   s12: { pose: 'stretch',          w: 200, right: 40, bottom:  89 }   /* sb41 */
 };
 /* S7's two path cards are the mascot in two poses. Not a CHARACTER_SLOTS entry:
@@ -1871,29 +1875,53 @@ function guessEnter(screen) {
 const MEAS = {
   1: { obj: true, objImg: 's22-chess-king.svg', objLabel: 'כלי שח-מט', correct: 'cyl',  instruction: 'שלב 1: גררו את כלי השח-מט אל כלי המדידה המתאים.' },
   2: { input: true, instruction: 'שלב 2: הכלי שקע והמים עלו — מדדו והקלידו את נפחו.', inputLabel: 'נפח כלי השח-מט (מ"ל):', reveal: 'נפח כלי השח-מט הוא 15 מ"ל. מפלס המים עלה מ-50 ל-65 מ"ל, ולכן: 65 − 50 = 15.' },
-  3: { obj: true, objImg: 's22-hammer.svg', objLabel: 'פטיש', correct: 'bowl', instruction: 'שלב 3: הפטיש גדול מדי למשורה — גררו אותו אל כלי המדידה המתאים.' },
-  4: { input: true, last: true, instruction: 'שלב 4: שפכו את המים שנשפכו לכלי המדידה והקלידו את נפח הפטיש.', inputLabel: 'נפח הפטיש (מ"ל):', reveal: 'המים שנשפכו היו בנפח 250 מ"ל — כלומר נפח הפטיש הוא 250 מ"ל, כי הוא הציף החוצה כמות מים השווה לנפחו!' }
+  /* Deck slide 36 states the instruction without explaining WHY the cylinder is wrong — naming
+     "too big for the cylinder" here would hand over the judgement this step exists to test. */
+  3: { obj: true, objImg: 's22-hammer.svg', objLabel: 'פטיש', correct: 'bowl', instruction: 'שלב 3: גררו את הפטיש אל כלי המדידה המתאים.' },
+  /* `pour` gates the input behind a real action: slide 37's notes say the level reaches 250 מ"ל
+     "לאחר שהלומד שופך את המים לתוך כלי המדידה" — after the LEARNER pours, not on arrival. The
+     wrong-target path reuses #meas-error, which slide 37 also carries. */
+  4: { input: true, last: true, pour: true, correct: 'cyl', instruction: 'שלב 4: שפכו את המים מכלי האיסוף אל תוך כלי המדידה והקלידו את נפח הפטיש.', inputLabel: 'נפח הפטיש (מ"ל):', reveal: 'המים שנשפכו היו בנפח 250 מ"ל — כלומר נפח הפטיש הוא 250 מ"ל, כי הוא הציף החוצה כמות מים השווה לנפחו!' }
 };
-let measStep = 1, measDone = false, measRevealed = false, measDnd = null;
+let measStep = 1, measDone = false, measRevealed = false, measPoured = false, measDnd = null;
 function measInitDnd() {
   if (measDnd) return;
   measDnd = createPointerDnd({
-    canDrag: function () { return !!MEAS[measStep].obj; },
-    onDrop: function (id, vesselId) { measDropVessel(vesselId); },
+    canDrag: function (dragId) {
+      if (dragId === 'tray') return !!MEAS[measStep].pour && !measPoured;
+      return !!MEAS[measStep].obj;
+    },
+    onDrop: function (id, vesselId) {
+      if (id === 'tray') measPourInto(vesselId);
+      else measDropVessel(vesselId);
+    },
   });
   measDnd.attachSource(document.getElementById('meas-object'), 'obj');
+  measDnd.attachSource(document.getElementById('meas-tray'), 'tray');
   measDnd.attachTarget(document.getElementById('meas-cyl'), 'cyl');
   measDnd.attachTarget(document.getElementById('meas-bowl'), 'bowl');
+}
+function measShowError() {
+  const err = document.getElementById('meas-error');
+  err.classList.remove('hidden');
+  setTimeout(function () { err.classList.add('hidden'); }, 1800);
+}
+/* Pouring the collection tray into the משורה — step 4 only. Anywhere but the cylinder is wrong. */
+function measPourInto(v) {
+  const cfg = MEAS[measStep];
+  if (!cfg.pour || measPoured) return;
+  const tray = document.getElementById('meas-tray');
+  tray.classList.remove('dragging'); tray.style.transform = '';
+  if (v !== cfg.correct) { measShowError(); return; }
+  measPoured = true;
+  measRender();
+  xapiSend('interacted', 'question', { response: 'poured' }, { category: 'measurement-applet' });
 }
 function measDropVessel(v) {
   const cfg = MEAS[measStep];
   if (!cfg.obj) return;
   if (v === cfg.correct) { measRevealed = false; measStep++; measRender(); }
-  else {
-    const err = document.getElementById('meas-error');
-    err.classList.remove('hidden');
-    setTimeout(function () { err.classList.add('hidden'); }, 1800);
-  }
+  else measShowError();
 }
 function measInputChange() {
   const inp = document.getElementById('meas-input');
@@ -1916,6 +1944,8 @@ function measRender() {
   const step = measStep, cfg = MEAS[step];
   document.getElementById('meas-instruction').textContent = cfg.instruction;
   const isDrag = !!cfg.obj, isInput = !!cfg.input;
+  /* On a pour step the input waits for the pour; on every other input step it is immediate. */
+  const inputReady = isInput && (!cfg.pour || measPoured);
   const objZone = document.getElementById('meas-object-zone');
   objZone.classList.toggle('hidden', !isDrag);
   if (isDrag) {
@@ -1924,9 +1954,9 @@ function measRender() {
     const obj = document.getElementById('meas-object'); obj.classList.remove('dragging'); obj.style.transform = '';
   }
   const inputRow = document.getElementById('meas-input-row');
-  inputRow.classList.toggle('hidden', !(isInput && !measRevealed));
+  inputRow.classList.toggle('hidden', !(inputReady && !measRevealed));
   if (isInput) document.getElementById('meas-input-label').textContent = cfg.inputLabel;
-  if (isInput && !measRevealed) {
+  if (inputReady && !measRevealed) {
     const inp = document.getElementById('meas-input');
     document.getElementById('meas-confirm').disabled = inp.value.trim() === '';
   }
@@ -1935,9 +1965,16 @@ function measRender() {
   if (measRevealed) reveal.textContent = cfg.reveal;
   document.getElementById('meas-next').classList.toggle('hidden', !(measRevealed && !cfg.last));
   document.getElementById('meas-error').classList.add('hidden');
-  document.getElementById('meas-cyl-badge').textContent = (step >= 2) ? '65 מ"ל' : '50 מ"ל';
+  /* The tray is only grabbable while its pour is still pending. */
+  const awaitingPour = !!cfg.pour && !measPoured;
+  document.getElementById('meas-tray').classList.toggle('is-pourable', awaitingPour);
+  document.getElementById('meas-pour-hint').classList.toggle('hidden', !awaitingPour);
+  /* 50 before the king goes in, 65 after it, 250 once the collected water is poured across. */
+  document.getElementById('meas-cyl-badge').textContent =
+    measPoured ? '250 מ"ל' : (step >= 2 ? '65 מ"ל' : '50 מ"ל');
   document.getElementById('meas-cyl').classList.toggle('has-king', step >= 2);
-  document.getElementById('meas-bowl').classList.toggle('overflowed', step >= 4);
+  /* The tray holds the spilled water from step 3 until the learner pours it out. */
+  document.getElementById('meas-bowl').classList.toggle('overflowed', step >= 4 && !measPoured);
   document.getElementById('s22-continue').disabled = !measDone;
 }
 function measEnter() {
@@ -2066,7 +2103,7 @@ var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-01.json'
    would serialise to {} and restoring it would convince the enter() that the applet is already wired
    when it is not. */
 var RESUME_PLAIN_VARS = ['dispPlaced', 'aqMeasured', 'floodPlaced',
-                         'measStep', 'measDone', 'measRevealed'];
+                         'measStep', 'measDone', 'measRevealed', 'measPoured'];
 
 /* Typed answers live only in the DOM — no variable holds them — so they travel by element id.
    Reading them at capture time is safe: no branch clears these, only disables. */
@@ -2232,7 +2269,7 @@ function applyResumeDom(st) {
 
    Everything NOT listed here is deliberately absent because its enter() already handles it:
    the three applets branch on dispPlaced / aqMeasured / floodPlaced to redraw the completed look;
-   measEnter→measRender rebuilds entirely from measStep / measDone / measRevealed; flipEnter repaints
+   measEnter→measRender rebuilds entirely from measStep / measDone / measRevealed / measPoured; flipEnter repaints
    from flipState; guessEnter from guessPicked; imgqEnter from imgqRevealed; ddqEnter+ddqRender paint
    the answered board, per-slot correct/wrong included, from {checked, done, placement}. Adding
    redundant painters here would be dead code that drifts. */
@@ -2248,9 +2285,9 @@ function restoreScreenUI(n) {
            never repaints the marks or a mid-attempt selection. */
     if (SCQ_RESTORE_SCREENS.indexOf(n) !== -1) scqRestoreUI('s' + n);
 
-    /* 3. s22 — measRender() recomputes everything from measStep/measDone/measRevealed EXCEPT the
-           confirm button, which it derives from #meas-input's live value; that value is restored
-           after measRender has already run. */
+    /* 3. s22 — measRender() recomputes everything from measStep/measDone/measRevealed/measPoured
+           EXCEPT the confirm button, which it derives from #meas-input's live value; that value is
+           restored after measRender has already run. */
     if (n === 22 && typeof measInputChange === 'function') measInputChange();
 
     /* 4. the comic sliders — comicSliderEnter() runs comicBuild(), which seeds a FRESH record when
