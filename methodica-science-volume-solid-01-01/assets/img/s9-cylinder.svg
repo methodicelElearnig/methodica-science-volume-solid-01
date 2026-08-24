@@ -1,11 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 480" width="200" height="480" role="img" aria-label="משורה מדורגת">
-  <!-- base foot -->
-  <ellipse cx="100" cy="454" rx="54" ry="13" fill="#e4f1f9" stroke="#7fb8d6" stroke-width="2.5"/>
-  <rect x="86" y="430" width="28" height="20" fill="#e4f1f9" stroke="#7fb8d6" stroke-width="2.5"/>
+  <!-- base: tapered stem into a flared foot -->
+  <path d="M84 434 L78 446 Q76 450 82 452 L118 452 Q124 450 122 446 L116 434 Z"
+        fill="#e4f1f9" stroke="#7fb8d6" stroke-width="2.5" stroke-linejoin="round"/>
+  <ellipse cx="100" cy="455" rx="56" ry="13" fill="#e4f1f9" stroke="#7fb8d6" stroke-width="2.5"/>
+  <ellipse cx="100" cy="452" rx="56" ry="13" fill="#f2f9fd" stroke="#7fb8d6" stroke-width="2.5"/>
   <!-- glass tube -->
   <rect x="58" y="46" width="84" height="388" rx="7" fill="#eaf5fc" fill-opacity="0.55" stroke="#7fb8d6" stroke-width="2.5"/>
-  <!-- top rim + pour spout -->
-  <path d="M60 46 q-10 -2 -8 -12 q2 -6 10 -4" fill="none" stroke="#7fb8d6" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- top rim. No pour spout: QA asked for the half-circle "tail" at the top to go. -->
   <ellipse cx="100" cy="46" rx="42" ry="7.5" fill="#f2f9fd" stroke="#7fb8d6" stroke-width="2.5"/>
   <!-- left highlight streak -->
   <rect x="68" y="60" width="7" height="360" rx="3.5" fill="#ffffff" opacity="0.5"/>
