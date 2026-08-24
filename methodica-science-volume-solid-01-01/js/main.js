@@ -1875,23 +1875,34 @@ document.addEventListener('click', function (e) {
    unlocks once every card has been revealed at least once.
    ═══════════════════════════════════════════════════════════ */
 const flipState = {};
+/* One card open at a time — opening one turns the others back over (QA 2026-08-24, slide 14).
+   flipState is the SEEN ledger, not the open one: it keeps recording every card the learner has
+   turned, because that is what unlocks Continue, and it must not be cleared when a card closes. */
 function flipCard(screen, cardEl) {
+  const wrap = cardEl.closest('.flip-grid') || document.getElementById(screen + '-flip');
+  if (wrap) wrap.querySelectorAll('.flip-card.flipped').forEach(c => {
+    if (c !== cardEl) c.classList.remove('flipped');
+  });
   cardEl.classList.add('flipped');
   (flipState[screen] = flipState[screen] || {})[cardEl.dataset.card] = true;
   flipUpdateContinue(screen);
 }
+/* Gated on the SEEN ledger, not on what is currently face-up. Since only one card can be open at
+   a time now, "every card is .flipped" is a state that can never occur — reading the DOM here
+   would leave Continue disabled forever. */
 function flipUpdateContinue(screen) {
   const cards = document.querySelectorAll('#' + screen + '-flip .flip-card');
-  const all = cards.length > 0 && [...cards].every(c => c.classList.contains('flipped'));
+  const seen = flipState[screen] || {};
+  const all = cards.length > 0 && [...cards].every(c => !!seen[c.dataset.card]);
   const cont = document.getElementById(screen + '-continue');
   if (cont) cont.disabled = !all;
 }
 function flipEnter(screen) {
   syncPathToggle();
-  const revealed = flipState[screen] || {};
-  document.querySelectorAll('#' + screen + '-flip .flip-card').forEach(c => {
-    c.classList.toggle('flipped', !!revealed[c.dataset.card]);
-  });
+  /* Back to all-face-down on re-entry: with one card open at a time there is no "the cards were
+     like this when I left" to restore, and re-flipping every seen card would put the screen in a
+     state the learner can no longer reach by clicking. Continue still reflects the ledger. */
+  document.querySelectorAll('#' + screen + '-flip .flip-card').forEach(c => c.classList.remove('flipped'));
   flipUpdateContinue(screen);
 }
 
