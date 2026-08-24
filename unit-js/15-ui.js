@@ -58,9 +58,9 @@ function appScale() {
 /* ── Image zoom ───────────────────────────────────────────────────────
    Enlarges any content image whose wrapper carries a [data-zoom-src] button.
 
-   Only part 01 has the #img-zoom-modal markup and any [data-zoom-src] buttons. Sharing these is
-   inert in the other five: every lookup is guarded and returns early, and initImgZoom's delegated
-   listener never matches. That is cheaper than keeping a sixth of the UI layer in one part. */
+   The modal markup and the buttons are PROVISIONED HERE, not authored per part (see
+   provisionImgZoom below). Part 01 still carries two hand-written buttons on s5/s6 from before
+   that; provisioning skips any frame that already has one, so both forms coexist. */
 /* Target ~75% of the canvas (70-80% requested) on whichever axis is tighter, in the
    photo's own proportions — never a fixed square. Computed here rather than in CSS
    because #app's own design-pixel size varies with window aspect ratio (scaleApp() grows
@@ -68,14 +68,68 @@ function appScale() {
    scaleApp()), so "70-80% of the canvas" has to be measured live, not hardcoded. */
 var IMG_ZOOM_TARGET = 0.75;
 
+/* Every wrapper that counts as a zoomable content-image frame. Each is already position:relative
+   (the .scq-figure rule says so in its own comment, "anchor for .img-zoom-btn"), which the
+   absolutely-positioned button needs. */
+var IMG_ZOOM_FRAMES = '.hook-img-frame, .scq-figure, .hotspot-photo, .scq-img-inner, .zoomable-img-inner';
+
+var IMG_ZOOM_ICON =
+  '<svg class="img-zoom-btn__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" ' +
+  'xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+  '<circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="2"/>' +
+  '<path d="M13.2 13.2L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
+var IMG_ZOOM_MODAL_HTML =
+  '<div class="img-zoom-modal__backdrop" data-zoom-close="true"></div>' +
+  '<div class="img-zoom-modal__panel" role="dialog" aria-modal="true" aria-label="תצוגת תמונה מוגדלת">' +
+  '<button class="img-zoom-modal__close" type="button" aria-label="סגירת התמונה" data-zoom-close="true">' +
+  '<svg class="img-zoom-modal__close-icon" aria-hidden="true" width="15" height="15" viewBox="0 0 15 15" ' +
+  'fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.192 1.192L13.808 13.808M13.808 1.192L1.192 13.808" ' +
+  'stroke="currentColor" stroke-width="2.383" stroke-linecap="round"/></svg></button>' +
+  '<div class="img-zoom-modal__stage" id="img-zoom-modal-stage"></div></div>';
+
+/* The 720 global-components rule makes zoom mandatory on every content image, and hand-authoring
+   the button into ~15 frames across five index.html files would be five copies of one decision
+   that then drift. Provisioning walks the frames once at boot instead — the same reason the
+   companion sprite is injected rather than authored into every screen.
+
+   The modal is created here too when a part lacks it, so a part needs no zoom markup at all. */
+function provisionImgZoom() {
+  let modal = document.getElementById('img-zoom-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'img-zoom-modal';
+    modal.className = 'img-zoom-modal hidden';
+    modal.setAttribute('aria-hidden', 'true');
+    modal.innerHTML = IMG_ZOOM_MODAL_HTML;
+    document.body.appendChild(modal);
+  }
+  document.querySelectorAll(IMG_ZOOM_FRAMES).forEach(function (frame) {
+    if (frame.querySelector('.img-zoom-btn')) return;      // authored one already there
+    const img = frame.querySelector('img');
+    if (!img) return;                                      // applet frames draw their own SVG
+    const btn = document.createElement('button');
+    btn.className = 'img-zoom-btn';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'הגדלת התמונה');
+    btn.dataset.zoomSrc = img.getAttribute('src') || '';
+    btn.dataset.zoomAlt = img.getAttribute('alt') || '';
+    btn.innerHTML = IMG_ZOOM_ICON;
+    frame.appendChild(btn);
+  });
+}
+
 function openImageZoom(btn) {
   const modal = document.getElementById('img-zoom-modal');
   const stage = document.getElementById('img-zoom-modal-stage');
   if (!modal || !stage || !btn) return;
-  const wrapper = btn.closest('.hook-img-frame, .scq-img-inner, .zoomable-img-inner');
+  const wrapper = btn.closest(IMG_ZOOM_FRAMES);
   if (!wrapper) return;
   const clone = wrapper.cloneNode(true);
-  clone.querySelectorAll('.img-zoom-btn').forEach(b => b.remove());
+  /* Strip every control, not just the zoom button: .hotspot-photo carries scq-opt overlay buttons
+     with live onclick handlers, and a cloned one would answer the question from inside the zoom
+     view — where the learner is looking, not choosing. The clone is a picture, never a control. */
+  clone.querySelectorAll('button').forEach(b => b.remove());
   clone.classList.add('img-zoom-clone');
 
   const srcImg = wrapper.querySelector('img');
@@ -107,14 +161,20 @@ function closeImageZoom() {
 }
 
 /* Delegated open/close. Registered from 90-boot.js.
-   Escape is NOT handled here: part 01's own keydown listener already closes the zoom before it
-   falls through to comic panel paging, and a second handler would only close an already-closed
-   modal. If a future part gains the zoom markup without that listener, add Escape here. */
+   Escape IS handled here now: the zoom reaches all six parts, and only part 01 has a keydown
+   listener of its own. Part 01 closes the zoom before falling through to comic paging, so by the
+   time this handler runs there the modal is already hidden and closeImageZoom() is a no-op. */
 function initImgZoom() {
+  provisionImgZoom();
   document.addEventListener('click', function (e) {
     const openBtn = e.target.closest('[data-zoom-src]');
     if (openBtn) { openImageZoom(openBtn); return; }
     if (e.target.closest('[data-zoom-close="true"]')) closeImageZoom();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    const modal = document.getElementById('img-zoom-modal');
+    if (modal && !modal.classList.contains('hidden')) closeImageZoom();
   });
 }
 
