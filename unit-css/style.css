@@ -3445,6 +3445,13 @@ html, body {
 .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
 .flip-front, .flip-back { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 16px; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
 .flip-front .char-slot { width: 100%; height: 100%; aspect-ratio: auto; }
+/* Licensed card art (storyboard slides 30-32), replacing the "איור להפקה" placeholders. The photos
+   are cropped to the card's own inner ratio — 228x268 inside the 16px padding, so 0.85, portrait —
+   and `cover` absorbs any residual rounding rather than letterboxing. */
+.flip-front-img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  border-radius: 10px; user-select: none; -webkit-user-drag: none;
+}
 .flip-back {
   transform: rotateY(180deg); background: var(--subject-100); border: 2px solid var(--subject-500);
   flex-direction: column; gap: 10px; text-align: center; direction: rtl;
