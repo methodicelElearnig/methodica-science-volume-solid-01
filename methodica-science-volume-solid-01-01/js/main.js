@@ -7,7 +7,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 /* ─── Constants ─────────────────────────────────────────── */
-const TOTAL_SCREENS = 34;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice, S23–S28 comic slides 13–18, S29 guess-Q (sb24), S30/S31 overflow can (sb39/40), S32 practice rules (sb50), S33 flooding result (sb29). Bump as screens are added.
+const TOTAL_SCREENS = 35;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice, S23–S28 comic slides 13–18, S29 guess-Q (sb24), S30/S31 overflow can (sb39/40), S32 practice rules (sb50), S33 flooding result (sb29), S34 measurement steps 3-4 (sb36-38). Bump as screens are added.
                            // Must equal the live `.screen` count — index_dev.html derives its jump range from that,
                            // while goTo() rejects n >= TOTAL_SCREENS. The two silently disagree if only one is edited.
 
@@ -361,7 +361,7 @@ function resetScreenState(n) {
   if (n === 21) { guessEnter('s21'); }             // guess-question (no feedback)
   if (n === 29) { guessEnter('s29'); }             // guess-question sb24 (no feedback)
   if (n === 30 || n === 31) { syncPathToggle(); }  // overflow-can info screens
-  if (n === 22) { measEnter(); }                   // multi-step measurement applet
+  if (n === 22 || n === 34) { measEnter(); }                   // multi-step measurement applet
   if (n === 18) { warmupEnter(0, 's18', ddqEnter); }   // warm-up 1 (matching)
   if (n === 19) { warmupEnter(1, 's19', dqEnter); }    // warm-up 2 (dropdown)
   if (n === 13) { practiceEnter(0, 's13'); }
@@ -410,7 +410,8 @@ function goBack() {
   if (currentScreen === 33) { goTo(11); return; }       // flooding result → back to the applet
   if (currentScreen === 20) { goTo(33); return; }       // flip-cards → back to the flooding result
   if (currentScreen === 22) { goTo(20); return; }       // measurement applet → back to flip-cards
-  if (currentScreen === 30) { goTo(22); return; }       // overflow can → back to measurement applet
+  if (currentScreen === 34) { goTo(22); return; }       // steps 3-4 → back to steps 1-2
+  if (currentScreen === 30) { goTo(34); return; }       // overflow can → back to measurement applet
   if (currentScreen === 31) { goTo(30); return; }       // overflow can (how) → back to the question
   if (currentScreen === 12) { goTo(7); return; }        // practice transition → back to path choice
   if (currentScreen === 18) { goTo(12); return; }       // warm-up 1 → transition
@@ -442,7 +443,8 @@ function advanceScreen() {
   if (currentScreen === 11) { if (!floodPlaced) return; goTo(33); return; }             // flooding → its result (sb29)
   if (currentScreen === 33) { goTo(20); return; }                                       // flooding result → flip-cards
   if (currentScreen === 20) { const c = document.getElementById('s20-continue'); if (c && c.disabled) return; goTo(22); return; } // flip-cards → measurement applet
-  if (currentScreen === 22) { if (!measDone) return; goTo(30); return; }                 // measurement applet → overflow can
+  if (currentScreen === 22) { if (measStep <= 2) return; goTo(34); return; }   // steps 1-2 done → steps 3-4
+  if (currentScreen === 34) { if (!measDone) return; goTo(30); return; }       // applet complete → overflow can                 // measurement applet → overflow can
   if (currentScreen === 30) { goTo(31); return; }                                        // overflow can: question → how it works
   if (currentScreen === 31) { goTo(MERGE_SCREEN); return; }                              // overflow can → merge
   if (currentScreen === 12) { goTo(18); return; }                                       // transition → warm-up 1
@@ -559,7 +561,7 @@ const COMIC_SCREENS = [8, 23, 24, 25, 26, 27, 28];
 // Experiments path (pedagogical order ≠ screen-number order, wired explicitly):
 //   entry = S10 aquarium (geometric) → S9 displacement → (flooding, tbd)
 const EXPERIMENTS_ENTRY = 10;
-const EXPERIMENTS_SCREENS = [9, 10, 11, 20, 21, 22, 29, 30, 31, 33];   // membership list for the path toggle, NOT the order
+const EXPERIMENTS_SCREENS = [9, 10, 11, 20, 21, 22, 29, 30, 31, 33, 34];   // membership list for the path toggle, NOT the order
                                                                     // (runtime order is 10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31)
 const MERGE_SCREEN = 12;                       // both paths (comic end / flip-cards end) continue here
 function selectPathOption(cardEl) {
@@ -1963,20 +1965,39 @@ function guessEnter(screen) {
    Numeric inputs have no feedback (any value proceeds).
    ═══════════════════════════════════════════════════════════ */
 const MEAS = {
-  1: { obj: true, objImg: 's22-chess-king.svg', objLabel: 'כלי שח-מט', correct: 'cyl',  instruction: 'שלב 1: גררו את כלי השח-מט אל כלי המדידה המתאים.' },
-  2: { input: true, instruction: 'שלב 2: הכלי שקע והמים עלו — מדדו והקלידו את נפחו.', inputLabel: 'נפח כלי השח-מט (מ"ל):', reveal: 'נפח כלי השח-מט הוא 15 מ"ל. מפלס המים עלה מ-50 ל-65 מ"ל, ולכן: 65 − 50 = 15.' },
+  1: { screen: 22, obj: true, objImg: 's22-chess-king.svg', objLabel: 'כלי שח-מט', correct: 'cyl',
+       instruction: 'שלב 1: גררו את כלי השח-מט אל כלי המדידה המתאים.' },
+  2: { screen: 22, input: true, instruction: 'שלב 2: מדדו את מפלס המים במשורה כעת והקלידו את נפחו של כלי השח-מט.',
+       inputLabel: 'נפח כלי השח-מט (מ"ל):',
+       reveal: 'נפח כלי השח-מט הוא 15 מ"ל. מפלס המים המקורי במשורה היה 50 מ"ל והוא עלה ל-65 מ"ל, ולכן: 65 − 50 = 15.' },
   /* Deck slide 36 states the instruction without explaining WHY the cylinder is wrong — naming
      "too big for the cylinder" here would hand over the judgement this step exists to test. */
-  3: { obj: true, objImg: 's22-hammer.svg', objLabel: 'פטיש', correct: 'bowl', instruction: 'שלב 3: גררו את הפטיש אל כלי המדידה המתאים.' },
-  /* `pour` gates the input behind a real action: slide 37's notes say the level reaches 250 מ"ל
-     "לאחר שהלומד שופך את המים לתוך כלי המדידה" — after the LEARNER pours, not on arrival. The
-     wrong-target path reuses #meas-error, which slide 37 also carries. */
-  4: { input: true, last: true, pour: true, correct: 'cyl', instruction: 'שלב 4: שפכו את המים מכלי האיסוף אל תוך כלי המדידה והקלידו את נפח הפטיש.', inputLabel: 'נפח הפטיש (מ"ל):', reveal: 'המים שנשפכו היו בנפח 250 מ"ל — כלומר נפח הפטיש הוא 250 מ"ל, כי הוא הציף החוצה כמות מים השווה לנפחו!' }
+  3: { screen: 34, obj: true, objImg: 's22-hammer.svg', objLabel: 'פטיש', correct: 'bowl',
+       instruction: 'שלב 3: גררו את הפטיש אל כלי המדידה המתאים.' },
+  /* `pour` gates the input behind a real action: slide 37 says the level reaches 250 מ"ל "לאחר
+     שהלומד שופך את המים לתוך כלי המדידה" — after the LEARNER pours. The target is the graduated
+     MEASURING VESSEL (`mv`), not the משורה: slide 36 is explicit that the משורה still reads 65,
+     and slide 38 puts the 250 in "כלי המדידה". Those are two different vessels. */
+  4: { screen: 34, input: true, last: true, pour: true, correct: 'mv',
+       instruction: 'שלב 4: שפכו את המים מכלי האיסוף אל תוך כלי המדידה והקלידו את נפח הפטיש.',
+       inputLabel: 'נפח הפטיש (מ"ל):',
+       reveal: 'המים שנשפכו היו בנפח 250 מ"ל — כלומר נפח הפטיש הוא 250 מ"ל, כי הוא הציף החוצה כמות מים השווה לנפחו!' }
 };
-let measStep = 1, measDone = false, measRevealed = false, measPoured = false, measDnd = null;
+let measStep = 1, measDone = false, measRevealed = false, measPoured = false;
+const measDnd = {};
+
+/* The four steps run across TWO screens (QA 2026-08-24, slide 15): steps 1-2 on s22, steps 3-4 on
+   s34. Each screen owns its own copy of the stage, so every element id is prefixed — `meas-` on
+   s22, `meas2-` on s34 — and every lookup goes through mEl(). MEAS[step].screen is the single
+   source of truth for which half a step belongs to. */
+function measPrefix(step) { return MEAS[step || measStep].screen === 22 ? 'meas' : 'meas2'; }
+function mEl(name, step) { return document.getElementById(measPrefix(step) + '-' + name); }
+function measScreenId(step) { return 's' + MEAS[step || measStep].screen; }
+
 function measInitDnd() {
-  if (measDnd) return;
-  measDnd = createPointerDnd({
+  const pfx = measPrefix();
+  if (measDnd[pfx]) return;
+  const d = createPointerDnd({
     canDrag: function (dragId) {
       if (dragId === 'tray') return !!MEAS[measStep].pour && !measPoured;
       return !!MEAS[measStep].obj;
@@ -1986,22 +2007,28 @@ function measInitDnd() {
       else measDropVessel(vesselId);
     },
   });
-  measDnd.attachSource(document.getElementById('meas-object'), 'obj');
-  measDnd.attachSource(document.getElementById('meas-tray'), 'tray');
-  measDnd.attachTarget(document.getElementById('meas-cyl'), 'cyl');
-  measDnd.attachTarget(document.getElementById('meas-bowl'), 'bowl');
+  const src  = document.getElementById(pfx + '-object');
+  const tray = document.getElementById(pfx + '-tray');
+  if (src)  d.attachSource(src, 'obj');
+  if (tray) d.attachSource(tray, 'tray');
+  ['cyl', 'bowl', 'mv'].forEach(function (v) {
+    const t = document.getElementById(pfx + '-' + v);
+    if (t) d.attachTarget(t, v);
+  });
+  measDnd[pfx] = d;
 }
 function measShowError() {
-  const err = document.getElementById('meas-error');
+  const err = mEl('error');
+  if (!err) return;
   err.classList.remove('hidden');
   setTimeout(function () { err.classList.add('hidden'); }, 1800);
 }
-/* Pouring the collection tray into the משורה — step 4 only. Anywhere but the cylinder is wrong. */
+/* Pouring the collection tray into the graduated measuring vessel — step 4 only. */
 function measPourInto(v) {
   const cfg = MEAS[measStep];
   if (!cfg.pour || measPoured) return;
-  const tray = document.getElementById('meas-tray');
-  tray.classList.remove('dragging'); tray.style.transform = '';
+  const tray = mEl('tray');
+  if (tray) { tray.classList.remove('dragging'); tray.style.transform = ''; }
   if (v !== cfg.correct) { measShowError(); return; }
   measPoured = true;
   measRender();
@@ -2014,59 +2041,65 @@ function measDropVessel(v) {
   else measShowError();
 }
 function measInputChange() {
-  const inp = document.getElementById('meas-input');
-  document.getElementById('meas-confirm').disabled = inp.value.trim() === '';
+  const inp = mEl('input');
+  mEl('confirm').disabled = inp.value.trim() === '';
 }
 function measConfirm() {
   const cfg = MEAS[measStep];
   if (!cfg.input) return;
   measRevealed = true;
-  xapiSend('interacted', 'question', { response: document.getElementById('meas-input').value }, { category: 'measurement-applet' });
+  xapiSend('interacted', 'question', { response: mEl('input').value }, { category: 'measurement-applet' });
   if (cfg.last) measDone = true;
   measRender();
 }
+/* Step 2 -> 3 crosses the screen boundary, so "המשך לשלב הבא" navigates rather than repainting. */
 function measNext() {
+  const wasScreen = MEAS[measStep].screen;
+  const inp = mEl('input');
+  if (inp) inp.value = '';
   measStep++; measRevealed = false;
-  const inp = document.getElementById('meas-input'); if (inp) inp.value = '';
+  if (MEAS[measStep] && MEAS[measStep].screen !== wasScreen) { goTo(MEAS[measStep].screen); return; }
   measRender();
 }
 function measRender() {
   const step = measStep, cfg = MEAS[step];
-  document.getElementById('meas-instruction').textContent = cfg.instruction;
+  const el = function (n) { return mEl(n); };
+  if (!el('instruction')) return;              // this half of the applet is not in the DOM
+  el('instruction').textContent = cfg.instruction;
   const isDrag = !!cfg.obj, isInput = !!cfg.input;
   /* On a pour step the input waits for the pour; on every other input step it is immediate. */
   const inputReady = isInput && (!cfg.pour || measPoured);
-  const objZone = document.getElementById('meas-object-zone');
-  objZone.classList.toggle('hidden', !isDrag);
+  el('object-zone').classList.toggle('hidden', !isDrag);
   if (isDrag) {
-    document.getElementById('meas-object-icon').innerHTML = '<img class="meas-obj-img" src="assets/img/' + cfg.objImg + '" alt="" draggable="false">';
-    document.getElementById('meas-object-label').textContent = cfg.objLabel;
-    const obj = document.getElementById('meas-object'); obj.classList.remove('dragging'); obj.style.transform = '';
+    el('object-icon').innerHTML = '<img class="meas-obj-img" src="assets/img/' + cfg.objImg + '" alt="" draggable="false">';
+    el('object-label').textContent = cfg.objLabel;
+    const obj = el('object'); obj.classList.remove('dragging'); obj.style.transform = '';
   }
-  const inputRow = document.getElementById('meas-input-row');
-  inputRow.classList.toggle('hidden', !(inputReady && !measRevealed));
-  if (isInput) document.getElementById('meas-input-label').textContent = cfg.inputLabel;
-  if (inputReady && !measRevealed) {
-    const inp = document.getElementById('meas-input');
-    document.getElementById('meas-confirm').disabled = inp.value.trim() === '';
-  }
-  const reveal = document.getElementById('meas-reveal');
+  el('input-row').classList.toggle('hidden', !(inputReady && !measRevealed));
+  if (isInput) el('input-label').textContent = cfg.inputLabel;
+  if (inputReady && !measRevealed) el('confirm').disabled = el('input').value.trim() === '';
+  const reveal = el('reveal');
   reveal.classList.toggle('hidden', !measRevealed);
   if (measRevealed) reveal.textContent = cfg.reveal;
-  document.getElementById('meas-next').classList.toggle('hidden', !(measRevealed && !cfg.last));
-  document.getElementById('meas-error').classList.add('hidden');
+  el('next').classList.toggle('hidden', !(measRevealed && !cfg.last));
+  el('error').classList.add('hidden');
   /* The tray is only grabbable while its pour is still pending. */
-  const awaitingPour = !!cfg.pour && !measPoured;
-  document.getElementById('meas-tray').classList.toggle('is-pourable', awaitingPour);
-  document.getElementById('meas-pour-hint').classList.toggle('hidden', !awaitingPour);
-  /* 50 before the king goes in, 65 after it, 250 once the collected water is poured across. */
-  document.getElementById('meas-cyl-badge').textContent =
-    measPoured ? '250 מ"ל' : (step >= 2 ? '65 מ"ל' : '50 מ"ל');
-  document.getElementById('meas-cyl').classList.toggle('has-king', step >= 2);
-  /* The tray holds the spilled water from step 3 until the learner pours it out. */
-  document.getElementById('meas-bowl').classList.toggle('overflowed', step >= 4 && !measPoured);
-  document.getElementById('s22-continue').disabled = !measDone;
+  if (el('tray')) el('tray').classList.toggle('is-pourable', awaitingPourFlag(cfg));
+  if (el('pour-hint')) el('pour-hint').classList.toggle('hidden', !awaitingPourFlag(cfg));
+  /* The משורה reads 50 before the king goes in and 65 after — and STAYS at 65 through steps 3-4
+     (slide 36 says so). The 250 belongs to the measuring vessel, which only exists on s34. */
+  el('cyl-badge').textContent = (step >= 2) ? '65 מ"ל' : '50 מ"ל';
+  el('cyl').classList.toggle('has-king', step >= 2);
+  if (el('mv')) {
+    el('mv').classList.toggle('filled', measPoured);
+    el('mv-badge').textContent = measPoured ? '250 מ"ל' : '0 מ"ל';
+  }
+  /* The tray holds the water the hammer displaced until the learner pours it across. */
+  if (el('bowl')) el('bowl').classList.toggle('overflowed', step >= 4 && !measPoured);
+  const cont = document.getElementById(measScreenId() + '-continue');
+  if (cont) cont.disabled = (cfg.screen === 34) ? !measDone : !(step > 2 || measRevealed);
 }
+function awaitingPourFlag(cfg) { return !!cfg.pour && !measPoured; }
 function measEnter() {
   measInitDnd();
   syncPathToggle();
@@ -2138,9 +2171,10 @@ var SCREEN_TO_SUBCONTENT = {
   11: ['02', 15],     // flooding applet (sb28)
   33: ['02', 16],     // flooding result (sb29) — split out of the applet
   20: ['02', 17],     // flip cards — real-world uses
-  22: ['02', 18],     // measurement applet
-  30: ['02', 19],     // overflow can — the question
-  31: ['02', 20],     // overflow can — how it works
+  22: ['02', 18],     // measurement applet — steps 1-2 (sb33-35)
+  34: ['02', 19],     // measurement applet — steps 3-4 (sb36-38)
+  30: ['02', 20],     // overflow can — the question
+  31: ['02', 21],     // overflow can — how it works
 
   /* item 02 — where both branches merge and the item ends */
   12: ['02', 20],     // כל הכבוד! סיימתם את שלב הלימוד
@@ -2198,7 +2232,7 @@ var RESUME_PLAIN_VARS = ['dispPlaced', 'aqMeasured', 'floodPlaced',
 
 /* Typed answers live only in the DOM — no variable holds them — so they travel by element id.
    Reading them at capture time is safe: no branch clears these, only disables. */
-var RESUME_INPUT_IDS = ['s2-open-text', 'meas-input'];
+var RESUME_INPUT_IDS = ['s2-open-text', 'meas-input', 'meas2-input'];
 var RESUME_TEXT_IDS  = [];
 
 function captureResumeInputs() {
@@ -2376,10 +2410,10 @@ function restoreScreenUI(n) {
            never repaints the marks or a mid-attempt selection. */
     if (SCQ_RESTORE_SCREENS.indexOf(n) !== -1) scqRestoreUI('s' + n);
 
-    /* 3. s22 — measRender() recomputes everything from measStep/measDone/measRevealed/measPoured
+    /* 3. s22/s34 — measRender() recomputes everything from measStep/measDone/measRevealed/measPoured
            EXCEPT the confirm button, which it derives from #meas-input's live value; that value is
            restored after measRender has already run. */
-    if (n === 22 && typeof measInputChange === 'function') measInputChange();
+    if ((n === 22 || n === 34) && typeof measInputChange === 'function') measInputChange();
 
     /* 4. the comic sliders — comicSliderEnter() runs comicBuild(), which seeds a FRESH record when
            comicState[sid] is absent (as it is after a reload) and then pages to i:0. The second

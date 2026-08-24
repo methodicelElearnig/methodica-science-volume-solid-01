@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=19">
+  <link rel="stylesheet" href="../unit-css/style.css?v=20">
   <link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body data-subject-theme="science">
@@ -1237,7 +1237,6 @@
                  hit-test sees the cylinder underneath, not this node. -->
             <div class="meas-tray" id="meas-tray"><div class="meas-tray-water" id="meas-tray-water"></div></div>
             <span class="meas-vessel-label">קערת הצפה + כלי איסוף</span>
-            <p class="meas-pour-hint hidden" id="meas-pour-hint">גררו את כלי האיסוף אל המשורה</p>
           </div>
         </div>
 
@@ -1266,6 +1265,79 @@
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s22-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S34 — Storyboard slides 36-38 · measurement applet, steps 3-4 ═══
+       The second half of the applet. QA 2026-08-24 (slide 15) asked for steps 1-2 and 3-4 to be
+       separated, and the deck's own reason is legible once you read slides 36/38 together: the
+       משורה still reads 65 here (slide 36) while the 250 belongs to a DIFFERENT vessel, "כלי
+       המדידה" (slide 38). One screen cannot show a cylinder that is both.
+       Every id carries the `meas2-` prefix; mEl() in main.js picks the prefix from MEAS[step].screen.
+       Flow: measurement steps 1-2 S22 → S34 → overflow can S30. -->
+  <section class="screen" data-screen="34" id="s34">
+    <div class="exp">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      </div>
+      <div class="exp-head">
+        <h1 class="exp-title">בואו נמדוד נפח של חפצים שונים!</h1>
+        <p class="exp-instruction" id="meas2-instruction"></p>
+      </div>
+
+      <div class="meas-stage">
+        <div class="meas-vessels">
+          <!-- The משורה carries over from step 2 and stays at 65 מ"ל — it is not the vessel that
+               ends up reading 250. It is still a drop target so dragging the hammer here can be
+               refused, which is the judgement step 3 tests. -->
+          <div class="meas-vessel" id="meas2-cyl" data-vessel="cyl">
+            <img class="meas-cyl-img" src="assets/img/s9-cylinder.svg" alt="משורה מדורגת" draggable="false">
+            <div class="meas-badge" id="meas2-cyl-badge">65 מ"ל</div>
+            <span class="meas-vessel-label">משורה</span>
+          </div>
+          <div class="meas-vessel" id="meas2-bowl" data-vessel="bowl">
+            <div class="meas-bowl"><div class="meas-bowl-water" id="meas2-bowl-water"></div></div>
+            <div class="meas-tray" id="meas2-tray"><div class="meas-tray-water" id="meas2-tray-water"></div></div>
+            <span class="meas-vessel-label">קערת הצפה + כלי איסוף</span>
+            <p class="meas-pour-hint hidden" id="meas2-pour-hint">גררו את כלי האיסוף אל כלי המדידה</p>
+          </div>
+          <!-- The graduated measuring vessel the collected water is poured into. Slide 38 puts the
+               250 reading here. 0-250 scale, so the level is readable — the משורה's 0-100 one is not. -->
+          <div class="meas-vessel" id="meas2-mv" data-vessel="mv">
+            <div class="meas-mv-wrap">
+              <img class="meas-cyl-img" src="assets/img/s22-cylinder-250.svg" alt="כלי מדידה מדורג עד 250 מ&quot;ל" draggable="false">
+              <div class="meas-mv-water"></div>
+            </div>
+            <div class="meas-badge" id="meas2-mv-badge">0 מ"ל</div>
+            <span class="meas-vessel-label">כלי מדידה</span>
+          </div>
+        </div>
+
+        <div class="meas-side">
+          <div class="meas-object-zone" id="meas2-object-zone">
+            <div class="meas-object" id="meas2-object"><span class="meas-object-icon" id="meas2-object-icon"></span><span class="meas-object-label" id="meas2-object-label">פטיש</span></div>
+            <p class="meas-obj-hint" id="meas2-obj-hint">גררו לכלי המתאים</p>
+          </div>
+          <p class="meas-error hidden" id="meas2-error">זאת אינה השיטה הנכונה, נסו שוב!</p>
+          <div class="meas-input-row hidden" id="meas2-input-row">
+            <label class="meas-input-label" id="meas2-input-label" for="meas2-input">הקלידו את נפח הכלי:</label>
+            <span class="meas-input-wrap"><input type="number" id="meas2-input" class="meas-input" inputmode="numeric" oninput="measInputChange()"> <span class="meas-input-unit">מ"ל</span></span>
+            <button class="btn-hint-primary meas-confirm" id="meas2-confirm" type="button" disabled onclick="measConfirm()">אישור</button>
+          </div>
+          <button class="btn-hint-primary meas-next hidden" id="meas2-next" type="button" onclick="measNext()">המשך לשלב הבא</button>
+        </div>
+      </div>
+    </div>
+    <div class="companion-say companion-say--left" style="left: 24px; bottom: 84px;">
+      <video class="companion" src="assets/img/character-orange-wet-object.mp4?v=2" alt="" aria-hidden="true"
+           data-pose="wet-object" draggable="false" autoplay loop muted playsinline style="--cw: 150px;"></video>
+      <p class="companion-bubble hidden" id="meas2-reveal" style="--bubble-w: 300px;"></p>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s34-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
@@ -1453,7 +1525,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=35"></script>
+<script src="js/main.js?v=37"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

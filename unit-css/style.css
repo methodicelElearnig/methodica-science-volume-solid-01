@@ -3484,6 +3484,18 @@ html, body {
 /* Step 4 (storyboard slide 37): the tray becomes the drag source for the pour. `overflow: hidden`
    above is what clips its water, so the grab affordance goes on the tray itself rather than on a
    child that would be clipped away. */
+/* The graduated measuring vessel on s34 (storyboard slide 38). Its water is an overlay on the
+   0-250 SVG, calibrated to that drawing: the tube runs y=46..434 in a 480 viewBox with 0 mL at
+   y=420, so the fill sits (480-434)/480 = 9.58% off the bottom and 250 mL is (434-60)/480 = 77.9%
+   tall. Inner walls are x=58..142 of 200, i.e. 29% in from each side. */
+.meas-mv-wrap { position: relative; display: block; }
+.meas-mv-water {
+  position: absolute; left: 30%; right: 30%; bottom: 9.58%;
+  height: 0; background: rgba(120,190,225,0.5);
+  border-top: 2px solid rgba(255,255,255,0.85);
+  transition: height 0.7s ease; pointer-events: none;
+}
+.meas-vessel.filled .meas-mv-water { height: 77.9%; }
 .meas-tray.is-pourable { cursor: grab; touch-action: none; box-shadow: 0 0 0 3px var(--subject-200); }
 .meas-tray.is-pourable:hover { box-shadow: 0 0 0 3px var(--subject-400); }
 .meas-tray.dragging { cursor: grabbing; opacity: 0.5; }
