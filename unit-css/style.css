@@ -76,6 +76,19 @@
   --subject-900: #002060;
   --subject-alpha-100: rgba(0, 186, 255, 0);
   --subject-alpha-200: rgba(0, 186, 255, 0.3);
+
+  /* Primary-action fill, shared by .btn-continue, .scq-check, .s13-continue and
+     .btn-hint-primary. It was written out at all four sites as the same literal
+     gradient, so the four could drift independently; it is one declaration now.
+
+     ⚠️ NOT theme-bound yet, and this is a real gap, not an oversight. None of the
+     three stops is a Subject/* value (nearest are --subject-600/700/800, all
+     different), so the math block below cannot reach it and a math-themed unit
+     would keep science-blue buttons while every tokened element around them turned
+     purple. The fix is one --cta-gradient override in that block — but the guidelines
+     say not to invent gradient values, so the math stops have to come from the
+     design system before it can be written. */
+  --cta-gradient: linear-gradient(180deg, #005FBE 9%, #0059B2 23.36%, #003971 100%);
 }
 
 body[data-subject-theme="math"] {
@@ -187,7 +200,7 @@ html, body {
   z-index: 12;                  /* above the ::after white bar (z-index 9) */
   min-width: 140px;
   padding: 6.5px 40px;          /* same pill metrics as .scq-check */
-  background: linear-gradient(180deg, #005FBE 9%, #0059B2 23.36%, #003971 100%);
+  background: var(--cta-gradient);
   color: #fff;
   border: none; border-radius: 1000px;
   font-family: 'Assistant', sans-serif;
@@ -563,7 +576,7 @@ html, body {
   text-align: center;
 }
 .scq-check:not(:disabled) {
-  background: linear-gradient(180deg, #005FBE 9%, #0059B2 23.36%, #003971 100%);
+  background: var(--cta-gradient);
   color: #fff; cursor: pointer;
 }
 .scq-check:not(:disabled):hover { font-weight: 600; }
@@ -2384,7 +2397,7 @@ html, body {
 }
 
 .s13-continue:not(.disabled) {
-  background: linear-gradient(180deg, #005FBE 9%, #0059B2 23.36%, #003971 100%);
+  background: var(--cta-gradient);
   color: white;
   cursor: pointer;
 }
@@ -2934,7 +2947,7 @@ html, body {
 .btn-hint-primary {
   align-self: flex-start;
   min-width: 160px; padding: 12px 34px;
-  background: linear-gradient(180deg, #005FBE 9%, #0059B2 23.36%, #003971 100%);
+  background: var(--cta-gradient);
   color: #fff; border: none; border-radius: 1000px;
   font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 400;
   cursor: pointer; transition: font-weight 0.1s;
