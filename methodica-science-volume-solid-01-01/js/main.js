@@ -699,7 +699,11 @@ const COMIC_DATA = {
       { src: 'assets/img/comic/15c.jpg',
         alt: 'ארכימדס מרים אצבע למעלה בסימן "הבנתי!".',
         bubbles: [
-          { type: 'speech', tail: 'down-left', r: 3, t: 5, w: 32,
+          /* Dropped from t:5 and flipped to a top beak: at the top of the frame the bubble sat
+             across his face, and a down-beak pointed away from him. Sitting lower with the beak
+             on the upper edge, it clears the face and still leads back to his head (QA
+             2026-08-24, which suggested exactly this). */
+          { type: 'speech', tail: 'up-left', r: 3, t: 30, w: 32,
             text: 'אה! כמות המים החדשה פחות כמות המים המקורית = נפח הגולה!' }
         ] },
       { src: 'assets/img/comic/15d.jpg',
@@ -1857,6 +1861,17 @@ function flipEnter(screen) {
    a companion bubble appears and Continue unlocks. No scoring.
    ═══════════════════════════════════════════════════════════ */
 const guessPicked = {};
+/* The mascot and his line arrive TOGETHER, on the pick — QA 2026-08-24 asked for this on every
+   guess screen: he used to stand there from arrival with nothing to say, which reads as a loading
+   glitch rather than a reaction. So the whole .companion-say group is what toggles, not the bubble
+   alone; the bubble's own authored `hidden` is cleared at the same time so revealing the group
+   reveals both. Screens are display:none until they are the current one, so nothing flashes. */
+function guessSayToggle(screen, show) {
+  const bubble = document.getElementById(screen + '-guess-bubble');
+  if (!bubble) return;
+  bubble.classList.toggle('hidden', !show);
+  bubble.closest('.companion-say')?.classList.toggle('hidden', !show);
+}
 /* The options are template .scq-opt pills, so the picked state is `.selected` — the class
    .scq-opt.selected .scq-radio keys on to fill the radio — and aria-checked follows it. */
 function guessPick(screen, btn) {
@@ -1867,7 +1882,7 @@ function guessPick(screen, btn) {
   btn.classList.add('selected');
   btn.setAttribute('aria-checked', 'true');
   guessPicked[screen] = btn.dataset.id;
-  document.getElementById(screen + '-guess-bubble')?.classList.remove('hidden');
+  guessSayToggle(screen, true);
   const cont = document.getElementById(screen + '-continue'); if (cont) cont.disabled = false;
   xapiSend('interacted', 'question', { response: btn.dataset.id }, { category: 'guess' });
 }
@@ -1879,7 +1894,7 @@ function guessEnter(screen) {
     o.classList.toggle('selected', sel);
     o.setAttribute('aria-checked', sel ? 'true' : 'false');
   });
-  document.getElementById(screen + '-guess-bubble')?.classList.toggle('hidden', !picked);
+  guessSayToggle(screen, !!picked);
   const cont = document.getElementById(screen + '-continue'); if (cont) cont.disabled = !picked;
 }
 
