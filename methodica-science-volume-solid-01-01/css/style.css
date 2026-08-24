@@ -369,32 +369,37 @@
   transition: top 1s cubic-bezier(.4,0,.2,1);
 }
 .disp-cylinder-wrap.risen .disp-badge { top: 41%; }
-/* width matches the <svg> width attribute in index.html (44 native × 1.12,
-   scaled so the ruler's 0→10cm span matches the cube wall's px/cm — see
-   unit-css/style.css § "APPLET — Aquarium ruler measurement"). */
-.aq-ruler { position: relative; width: 49.28px; cursor: grab; touch-action: none; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.18)); }
+/* width matches the <svg> width attribute in index.html (44 native × 1.12, then × 1.4 with the
+   cube — 49.28 → 68.99), scaled so the ruler's 0→10cm span matches the cube wall's px/cm — see
+   unit-css/style.css § "APPLET — Aquarium ruler measurement". Never change this without changing
+   .aq-cube-wrap's width by the same factor: the learner reads the measurement off these two. */
+.aq-ruler { position: relative; width: 68.99px; cursor: grab; touch-action: none; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.18)); }
 .aq-ruler-svg { display: block; }
+/* Sized at ~1.55× the original 156×108 bowl / 236×50 tray. The scene used barely a third of the
+   525px the stage gives it, which left the whole overflow demonstration — the point of the screen —
+   playing out in a small corner. Every length below scales together so the water, the rim and the
+   spill streams keep their proportions; the rock in .flood-rock-zone scales with them. */
 .flood-bowl {
-  position: relative; width: 156px; height: 108px;
-  border: 3px solid #7fb8d6; border-top: none; border-radius: 6px 6px 46px 46px;
+  position: relative; width: 242px; height: 167px;
+  border: 3px solid #7fb8d6; border-top: none; border-radius: 9px 9px 71px 71px;
   background: linear-gradient(180deg, rgba(234,245,252,0.55), rgba(220,240,250,0.25));
   box-shadow: inset 6px 0 10px rgba(255,255,255,0.4), inset -8px 0 12px rgba(120,170,190,0.14);
 }
 /* glass rim across the top */
 .flood-bowl::before {
-  content: ''; position: absolute; left: -3px; right: -3px; top: -5px; height: 10px;
+  content: ''; position: absolute; left: -3px; right: -3px; top: -8px; height: 15px;
   border: 3px solid #7fb8d6; border-radius: 50%;
   background: rgba(242,249,253,0.7);
 }
 .flood-bowl-water {
-  position: absolute; left: 3px; right: 3px; top: 5px; bottom: 3px;
+  position: absolute; left: 3px; right: 3px; top: 8px; bottom: 3px;
   background: linear-gradient(180deg, rgba(120,190,225,0.5), rgba(150,205,232,0.34));
-  border-radius: 3px 3px 42px 42px;
+  border-radius: 3px 3px 65px 65px;
   border-top: 2px solid rgba(255,255,255,0.9);
 }
 .flood-tray {
-  width: 236px; height: 50px; margin-top: 46px; position: relative; overflow: hidden;
-  border: 3px solid #7fb8d6; border-top: none; border-radius: 4px 4px 16px 16px;
+  width: 366px; height: 78px; margin-top: 71px; position: relative; overflow: hidden;
+  border: 3px solid #7fb8d6; border-top: none; border-radius: 6px 6px 25px 25px;
   background: linear-gradient(180deg, rgba(234,245,252,0.5), rgba(220,240,250,0.2));
   box-shadow: inset 6px 0 10px rgba(255,255,255,0.35);
 }
