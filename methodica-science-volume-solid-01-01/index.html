@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=14">
+  <link rel="stylesheet" href="../unit-css/style.css?v=15">
   <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body data-subject-theme="science">
@@ -798,11 +798,11 @@
        ═══════════════════════════════════════════════════════════ -->
   <section class="screen" data-screen="12" id="s12">
     <div class="transition-content">
-      <h1 class="transition-title">כל הכבוד! סיימתם את שלב הלימוד</h1>
-      <p class="transition-sub">עכשיו נעבור לתרגול ונענה על כמה שאלות על מדידת נפח של מוצקים.</p>
+      <h1 class="transition-title">מה נשאר לנו בראש?</h1>
+      <p class="transition-sub">שתי שאלות חימום קלילות לפני שנתקדם</p>
     </div>
     <div class="nav-bar">
-      <button class="btn-continue" id="s12-continue" onclick="advanceScreen()">לתרגול</button>
+      <button class="btn-continue" id="s12-continue" onclick="advanceScreen()">קחו אותי לשאלות</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
@@ -1018,7 +1018,6 @@
   <!-- ═══ S18 — Warm-up 1 (item 03) · DragAndDropQuestion (task → tool, 5-way) ═══ -->
   <section class="screen" data-screen="18" id="s18">
     <div class="dnd-question dnd-question--warmup">
-      <p class="warmup-tag">חימום</p>
       <p class="scq-qtext">ל-5 מדענים צעירים ניתנו משימות מדידה שונות. התאימו כל משימה לכלי המתאים לה.</p>
       <div class="dnd-board">
         <div class="dnd-targets" id="s18-ddq-targets"></div>
@@ -1048,7 +1047,6 @@
         <img src="assets/img/s19-sharpener.jpg" alt="מחדד עפרונות קטן">
       </div>
       <div class="dq-side">
-      <p class="warmup-tag">חימום</p>
       <p class="scq-qtext">עיקרון דחיקת המים — השלימו את המשפט בעזרת תפריט המילים:</p>
       <p class="dq-sentence">כדי למדוד נפח של מחדד, נכניס אותו למים שבמשורה ונבדוק כמה הם
         <span class="dropdown" id="s19-dropdown">
@@ -1274,18 +1272,24 @@
        does by design what the S11 bowl-and-tray applet improvised.
        Flow: measurement applet S22 → S30 → S31 → merge S12. -->
   <section class="screen" data-screen="30" id="s30">
-    <div class="exp">
+    <div class="exp exp--content">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
         <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
         <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
       </div>
-      <div class="exp-head">
-        <h1 class="exp-title">הכלי של המעבדה</h1>
-        <p class="exp-instruction">במעבדות משתמשים בכלי ייעודי למדידת נפח של מוצק בשיטת ההצפה. בחנו אותו וחשבו: איך הוא עובד?</p>
+      <!-- No heading here on purpose. Storyboard slide 39 puts this line in the mascot's mouth —
+           its note has him holding the instrument — so it is his speech bubble, not a headline
+           over a figure (QA 2026-08-24, slide 16). The stage centres the figure vertically. -->
+      <div class="exp-stage exp-stage--centered">
+        <div class="scq-figure" style="width: 300px">
+          <img src="assets/img/s30-overflow-can.jpg" alt="כלי גלילי ממתכת עם צינורית יוצאת מדופנו, ולידו כוס מדידה מזכוכית עם סימוני מ&quot;ל">
+        </div>
       </div>
-      <div class="scq-figure" style="width: 300px">
-        <img src="assets/img/s30-overflow-can.jpg" alt="כלי גלילי ממתכת עם צינורית יוצאת מדופנו, ולידו כוס מדידה מזכוכית עם סימוני מ&quot;ל">
-      </div>
+    </div>
+    <div class="companion-say companion-say--left" style="left: 24px; bottom: 96px;">
+      <video class="companion" src="assets/img/character-orange-ask.mp4?v=2" alt="" aria-hidden="true"
+           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 150px;"></video>
+      <p class="companion-bubble" style="--bubble-w: 330px;">במעבדות משתמשים בכלי ייעודי למדידת נפח של מוצק בשיטת ההצפה. בחנו אותו וחשבו: איך הוא עובד?</p>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s30-continue" onclick="advanceScreen()">אז איך זה עובד?</button>
@@ -1296,7 +1300,7 @@
 
   <!-- ═══ S31 — Storyboard slide 40 · How the overflow can works (answer) ═══ -->
   <section class="screen" data-screen="31" id="s31">
-    <div class="exp">
+    <div class="exp exp--content">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
         <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
         <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
@@ -1304,16 +1308,19 @@
       <div class="exp-head">
         <h1 class="exp-title">הכלי עובד כך</h1>
       </div>
+      <!-- The list comes FIRST in the DOM so that, in this direction:rtl row, it takes the
+           physical RIGHT — under the heading, where QA 2026-08-24 (slide 17) asked for it. The
+           figure follows and falls to the left. Swapping these two swaps the sides. -->
       <div class="steps-row">
-        <div class="scq-figure" style="width: 260px">
-          <img src="assets/img/s31-overflow-can-steps.jpg" alt="מים זורמים מהצינורית של הכלי המתכתי אל תוך כוס המדידה שמתחתיה">
-        </div>
         <ol class="steps-list">
           <li>ממלאים מים עד מתחת לגובה הצינורית.</li>
           <li>מניחים כלי מדידה מתחת לפתח הצינורית.</li>
           <li>מכניסים לכלי את החפץ שרוצים למדוד.</li>
           <li>מודדים! נפח המים שעבר לכלי המדידה הוא בדיוק נפח החפץ.</li>
         </ol>
+        <div class="scq-figure" style="width: 260px">
+          <img src="assets/img/s31-overflow-can-steps.jpg" alt="מים זורמים מהצינורית של הכלי המתכתי אל תוך כוס המדידה שמתחתיה">
+        </div>
       </div>
     </div>
     <div class="nav-bar">
@@ -1400,7 +1407,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=29"></script>
+<script src="js/main.js?v=30"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

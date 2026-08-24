@@ -3122,8 +3122,16 @@ html, body {
 /* QA 2026-08-24, sweeping over every question in the unit: a question's stem and its answers must
    clear the top edge of the canvas by at least 100px. Scoped to the QUESTION members of the .exp
    family rather than .exp itself — the applet screens share that container, and stealing 76px from
-   their stage would push the vessels (454px on s22) out of the space they were sized to fill. */
-.exp--question { padding-top: 100px; }
+   their stage would push the vessels (454px on s22) out of the space they were sized to fill.
+   .exp--content is the same requirement for the read-only screens QA called out by name (s30/s31). */
+.exp--question,
+.exp--content { padding-top: 100px; }
+/* s30 has no heading — slide 39's line belongs to the mascot — so its figure is free to sit in the
+   middle of what is left rather than hard against the top. */
+.exp-stage--centered {
+  flex: 1 1 auto; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+}
 .exp-title { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-500); text-align: right; line-height: 1.4; }
 .exp-instruction { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030; text-align: right; line-height: 1.4; }
 
@@ -3335,12 +3343,11 @@ html, body {
 .dnd-pill.dragging { cursor: grabbing; opacity: 0.5; }
 .pointer-drag-ghost.dnd-pill { box-shadow: 0 8px 18px rgba(0,32,96,0.24); }
 
-/* Warm-up label + compact 5-row matching layout */
-.warmup-tag {
-  align-self: center; background: var(--subject-500); color: #fff;
-  font-family: 'Assistant', sans-serif; font-size: 14px; font-weight: 700;
-  padding: 3px 16px; border-radius: 1000px;
-}
+/* Compact 5-row matching layout for the warm-up pair.
+   The "חימום" pill that used to sit above these questions is gone: it appears on no storyboard
+   slide — it was a code-only addition — and being a solid subject-coloured pill it read as a
+   button the learner could press (QA 2026-08-24, slides 19 and 20). The pair is identified by the
+   two-question progress bar instead, which is what the deck actually specifies. */
 .dnd-question--warmup { top: calc(50% - 24px); width: 900px; gap: 12px; }
 .dnd-question--warmup .scq-qtext { font-size: 24px; }
 .dnd-question--warmup .dnd-board { gap: 12px; }
