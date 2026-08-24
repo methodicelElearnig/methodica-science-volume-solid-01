@@ -24,4 +24,4 @@ build/
 *.log
 
 # Metadata sender — contains a live API key once configured; never commit
-send-metadata.ps1
+docs-and-tools/send-metadata.ps1

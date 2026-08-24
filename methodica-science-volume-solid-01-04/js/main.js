@@ -1,12 +1,10 @@
+'use strict';
 /* ═══════════════════════════════════════════════════════════
    js/main.js — 720 Science · Volume of a Solid · Part 04 (advanced)
    S0 intro + 8 SingleChoice questions with progress dots, two scenario
    screens, and one combined result for the last three. On completion →
    Part 05 (peak א). Engine + SCQ + progress + report + xAPI.
    ═══════════════════════════════════════════════════════════ */
-var XAPI_ID_PREFIX = "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/";
-function shortId(u){ return String(u || "").split("/").pop(); }
-'use strict';
 
 const TOTAL_SCREENS = 12;  // S0 intro + S1–S8 + scenarios S9/S10 + result S11
 
@@ -36,15 +34,6 @@ const scenarioAt     = n => SCENARIOS.find(s => s.screen === n);
 const scenarioBefore = n => SCENARIOS.find(s => s.before === n);
 const PART_05_URL = '../methodica-science-volume-solid-01-05/index.html';
 window.lomdaState = window.lomdaState || {};
-let currentScreen = 0;
-
-function scaleApp() {
-  const app = document.getElementById('app');
-  const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 710);
-  app.style.width = (window.innerWidth / scale) + 'px'; app.style.height = (window.innerHeight / scale) + 'px';
-  app.style.transform = 'scale(' + scale + ')'; app.style.left = '0px'; app.style.top = '0px';
-}
-window.addEventListener('resize', scaleApp); scaleApp();
 
 /* Build the empty progress navs from data-count (avoids repeating markup). */
 function buildProgressNav() {
@@ -59,14 +48,6 @@ function buildProgressNav() {
 }
 buildProgressNav();
 
-function goTo(n) {
-  if (n < 0 || n >= TOTAL_SCREENS) return;
-  document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
-  const prev = document.querySelector('.screen.active'); if (prev) prev.classList.remove('active');
-  currentScreen = n;
-  const next = document.getElementById('s' + n); if (next) next.classList.add('active');
-  resetScreenState(n);
-}
 /* ═══════════════════════════════════════════════════════════
    COMPONENT — Companion character
    The learner picks a mascot on part-01 S0; localStorage is the only
@@ -90,15 +71,28 @@ function getCharacter() {
    <img onerror> fallback: onerror would fire a real 404 on nearly every
    screen and this unit's QA gate checks the network log for zero 404s.
    Landing a produced GIF is one line here plus the file. */
-const CHARACTER_ASSETS = { selection: 'png' };
+const CHARACTER_ASSETS = { selection: 'png', dumbbells: 'mp4', ask: 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
+  /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
+     (their near-white matte lifted to pure #FFFFFF) under their existing names, so a
+     browser holding the old copy would keep showing the grey box on the white canvas.
+     Bump it whenever a character asset is re-exported. Over file:// the query is ignored
+     rather than breaking the load, so it is safe there too. */
   return 'assets/img/character-' + getCharacter() + '-' +
-         (ext ? pose : 'selection') + '.' + (ext || 'png');
+         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=2';
 }
-/* s7 and s11 are NOT here: they author their sprite in index.html, because the position
-   only makes sense next to a bubble that also lives in the markup. Keeping a slot for
-   them too would mean two sources of truth for the same offsets. */
+/* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
+function startCompanionMedia(el) {
+  if (el.tagName !== 'VIDEO') return;
+  el.load();
+  const p = el.play();
+  if (p && p.catch) p.catch(function () {});
+}
+/* s7 and s11 are NOT here: they author their sprite in index.html inside a .companion-say
+   group, because the position only makes sense next to a bubble that also lives in the
+   markup. Keeping a slot for them too would mean two sources of truth for the same
+   offsets — and now the group, not a number, is what holds the pair together. */
 const CHARACTER_SLOTS = {
   s0: { pose: 'dumbbells', w: 200, right: 40, bottom: 95 }     /* sb113 */
 };
@@ -106,33 +100,44 @@ function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
   if (!screen) return;
   const slot = CHARACTER_SLOTS['s' + n];
-  let el = screen.querySelector(':scope > .companion');
+  /* NOT `:scope > .companion`: a sprite authored inside a .companion-say group is nested,
+     and missing it would leave the orange src baked into the markup in front of a learner
+     who chose turquoise. */
+  let el = screen.querySelector('.companion');
   /* An AUTHORED sprite (data-pose in the markup, no slot) must survive this function —
      only which character it shows is refreshed. Removing every sprite on a slot-less
      screen deleted s11's. An INJECTED one is still cleaned up when its slot goes away. */
   if (!slot) {
     if (el && el.dataset.injected === '1') { el.remove(); el = null; }
-    else if (el) el.src = characterAsset(el.dataset.pose || 'selection');
+    else if (el) { el.src = characterAsset(el.dataset.pose || 'selection'); startCompanionMedia(el); }
     screen.classList.toggle('has-companion', !!el);
     return;
   }
+  const tag = CHARACTER_ASSETS[slot.pose] === 'mp4' ? 'video' : 'img';
+  if (el && el.dataset.injected === '1' && el.tagName.toLowerCase() !== tag) { el.remove(); el = null; }
   if (!el) {
-    el = document.createElement('img');
+    el = document.createElement(tag);
     el.className = 'companion';
     el.alt = '';                                   // decorative, carries no information
     el.setAttribute('aria-hidden', 'true');
     el.draggable = false;
     el.dataset.injected = '1';
+    if (tag === 'video') { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
     screen.appendChild(el);
   }
   // Lets a template reserve room for the sprite instead of being drawn over.
   screen.classList.add('has-companion');
   el.src = characterAsset(slot.pose);
+  startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
   el.classList.toggle('companion--center', slot.center === true);
-  ['left', 'right', 'top', 'bottom'].forEach(function (k) {
-    el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
-  });
+  /* A grouped sprite is positioned BY the group, so writing slot offsets onto it would be
+     a second, conflicting source of truth. (Reachable only if a screen ever has both.) */
+  if (!el.closest('.companion-say')) {
+    ['left', 'right', 'top', 'bottom'].forEach(function (k) {
+      el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
+    });
+  }
 }
 
 function resetScreenState(n) {
@@ -197,15 +202,6 @@ function renderFeedbackPopup(screen, type, popups) {
   popup.classList.remove('hidden');
 }
 function scqClosePopup(screen) { document.getElementById(screen + '-scq-popup')?.classList.add('hidden'); }
-function attachPopupDrag(popup) {
-  if (!popup || popup._dragWired) return; popup._dragWired = true;
-  let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
-  const header = popup.querySelector('.scq-popup-header') || popup;
-  function scale() { const app = document.getElementById('app'); const m = app && app.style.transform.match(/scale\(([^)]+)\)/); return m ? parseFloat(m[1]) : 1; }
-  header.addEventListener('pointerdown', e => { if (e.target.closest('.scq-popup-close')) return; dragging = true; sx = e.clientX; sy = e.clientY; const r = popup.getBoundingClientRect(), sc = scale(); ox = r.left / sc; oy = r.top / sc; popup.style.bottom = 'auto'; header.setPointerCapture(e.pointerId); e.preventDefault(); });
-  header.addEventListener('pointermove', e => { if (!dragging) return; const sc = scale(); popup.style.left = (ox + (e.clientX - sx) / sc) + 'px'; popup.style.top = (oy + (e.clientY - sy) / sc) + 'px'; });
-  header.addEventListener('pointerup', () => { dragging = false; }); header.addEventListener('pointercancel', () => { dragging = false; });
-}
 
 /* ═══ SingleChoiceQuestion ═══ */
 const SCQ_REG = {};
@@ -218,20 +214,29 @@ function scqSelect(screen, id) {
   scqOpts(screen).forEach(o => { const sel = o.dataset.id === id; o.classList.toggle('selected', sel); o.setAttribute('aria-checked', sel ? 'true' : 'false'); });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) chk.disabled = false;
 }
-/* Fire-and-forget xAPI — defer the (possibly synchronous) send to a macrotask so it
-   never blocks a click's visual feedback (the browser only paints after the handler
-   returns). Pre-navigation 'completed' sends and init stay synchronous. */
-function xapiSend() {
-  const args = arguments;
-  setTimeout(function () { try { sendStatement720.apply(null, args); } catch (e) {} }, 0);
-}
 function scqCheck(screen) {
   const s = SCQ_REG[screen], cfg = s.cfg;
   if (s.answered) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
   if (!s.sel) return;
   s.attempts++;
   const correct = s.sel === cfg.correctId;
-  xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question', { success: !!correct, score: { scaled: correct ? 1 : 0 } }, { questionId: cfg.questionId });
+
+  /* xAPI: ids resolved HERE, not at registration — xapiQ() reads window.METADATA, which the library
+     fetches asynchronously while registerPractice() runs during parse. parentId is the containing
+     item, mandatory per v2.4 §2. `response` is the option's visible text, which was missing entirely.
+     A silent question (maxAttempts 1) always closes on its single attempt. */
+  const q = xapiQ(cfg.item, cfg.qKey);
+  xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question',
+    { response: xapiAnswerText(document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]')),
+      success: !!correct,
+      score: { scaled: correct ? 1 : 0 } },
+    { questionId: q.questionId, parentId: q.parentId });
+
+  /* Outside the send: xapiSend swallows exceptions and the score must not depend on reporting.
+     Recorded only on the closing attempt. */
+  if (correct || s.attempts >= cfg.maxAttempts) {
+    XAPI_Q_RESULTS[cfg.item + '/' + cfg.qKey] = !!correct;
+  }
   /* Silent question (cfg.silent, maxAttempts 1): record the answer and move on without
      revealing anything — no popup, no correct/wrong marking on the options. The verdict
      surfaces once, on RESULT_SCREEN. */
@@ -257,7 +262,8 @@ function scqFinish(screen, ok) {
 }
 function scqHint(screen) {
   const s = SCQ_REG[screen]; if (!s || s.answered) return;
-  xapiSend('requested.1', 'question', null, { questionId: s.cfg.questionId });
+  /* Reported on open. No parentId: v2.4 mandates it for answered/evaluated only. */
+  xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey).questionId });
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
@@ -277,7 +283,31 @@ function scqReset(screen) {
 /* ═══ Progress dots + practice wiring (8 questions → Part 05) ═══ */
 var practiceProgress = { questions: [] };
 for (let i = 1; i <= 8; i++) practiceProgress.questions.push({ number: i, visited: i === 1, state: i === 1 ? 'current' : 'not-answered', screen: i });
-function goToNextPart() { try { sendStatement720('completed', 'onlinelesson'); } catch (e) {} window.location.href = PART_05_URL + window.location.search; }
+/* Correct answers out of the eight, read from XAPI_Q_RESULTS so the number reported and the number
+   scored cannot drift from each other. */
+function practiceScore() {
+  return xapiCorrectCount();
+}
+
+function goToNextPart() {
+  /* Closes item 05 — the last one open, since the result screen still belongs to it. */
+  try { xapiFinishItems(); } catch (e) {}
+
+  /* Explicit result: the library's aggregate is an all-correct AND, which would report failure for
+     any partial pass. Denominator is 8 — the eight questions the learner was promised (and the eight
+     progress dots), which here also matches the metadata count.
+
+     success:true unconditionally, on the same reading confirmed for part 02: this component has no
+     pass threshold anywhere in its code and always proceeds to Part 05, so completing it IS the
+     success condition and score.scaled carries the performance. */
+  try {
+    sendCompletedOnce('done', currentPartSlug(), 'onlinelesson',
+      { success: true, score: { scaled: practiceScore() / 8 } });
+  } catch (e) { console.error('[xAPI] completed component 04', e); }
+
+  if (RESUME_ENABLED) writeForwardState('methodica-science-volume-solid-01-05');
+  window.location.href = PART_05_URL + window.location.search;
+}
 /* What the nav is allowed to SHOW, as opposed to what has been recorded. A silent
    question that has been answered still reads as 'current' — visited, verdict withheld —
    until the result screen unseals it. */
@@ -314,8 +344,6 @@ function _practiceOnContinue(idx) {
 }
 function registerPractice(idx, cfg) { cfg.screen = 's' + practiceProgress.questions[idx].screen; cfg.onFinish = _practiceOnFinish(idx, cfg.screen); cfg.onContinue = _practiceOnContinue(idx); scqRegister(cfg); attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup')); }
 
-const QID = XAPI_ID_PREFIX;
-const P = 'methodica-science-volume-solid-01-04-';
 /* ═══ Feedback copy — storyboard slides 115-139 ═══
    The deck gives every question a five-slide block: question, retry, hint, correct,
    wrong-final. Three things follow from that and were wrong before:
@@ -337,26 +365,26 @@ const fbPopups = explanation => ({
   wrong2:  { title: FB_WRONG2,    body: explanation }
 });
 
-registerPractice(0, { correctId: 'a', questionId: QID + P + '01/q1', popups: fbPopups([   /* sb117/118 */
+registerPractice(0, { correctId: 'a', item: '01', qKey: 'q1', popups: fbPopups([   /* sb117/118 */
   'הטבעת העלתה את מפלס המים במשורה.',
   'העלייה בגובה המים היא הרמז שאפשר למדוד באמצעותו את נפח הטבעת, משום שנפח המים שנדחקו שווה לנפח החלק השקוע של הטבעת.']) });
-registerPractice(1, { correctId: 'b', questionId: QID + P + '02/q1', popups: fbPopups([   /* sb122/123 */
+registerPractice(1, { correctId: 'b', item: '02', qKey: 'q1', popups: fbPopups([   /* sb122/123 */
   'עדשים הם מוצק גרגרי וניתן למדוד את נפחם באמצעות כוס מדידה:',
   'ממלאים את הכוס בעדשים וקוראים את הנפח לפי השנתות שעליה.']) });
-registerPractice(2, { correctId: 'a', questionId: QID + P + '03/q1', popups: fbPopups([   /* sb127/128 */
+registerPractice(2, { correctId: 'a', item: '03', qKey: 'q1', popups: fbPopups([   /* sb127/128 */
   'המדידות מהימנות משום שהתוצאות החוזרות קרובות מאוד זו לזו.']) });
-registerPractice(3, { correctId: 'b', questionId: QID + P + '04/q1', popups: fbPopups([   /* sb133/134 */
+registerPractice(3, { correctId: 'b', item: '04', qKey: 'q1', popups: fbPopups([   /* sb133/134 */
   'אם ליאן תעטוף משקולת קטנה בסליים ותכניס למשורה – הסליים ישקע והיא תוכל למדוד את הנפח שלו.']) });
-registerPractice(4, { correctId: 'd', questionId: QID + P + '04/q2', popups: fbPopups([   /* sb138/139 */
+registerPractice(4, { correctId: 'd', item: '04', qKey: 'q2', popups: fbPopups([   /* sb138/139 */
   'נפח המים הסופי במשורה = נפח מים התחלתי + נפח משקולת + נפח סליים.',
   'צריך להוריד מהנפח שהתקבל את הנפח ההתחלתי ואת נפח המשקולת כדי לקבל את נפח הסליים.']) });
 
 /* סעיפים א-ג of the marbles question run silent: one attempt, no popup, no marking.
    See SILENT_SCREENS at the top — storyboard 141 promises results only at the end and
    144/145 deliver them for all three at once, so there is nothing to show per question. */
-registerPractice(5, { correctId: 'a', silent: true, maxAttempts: 1, questionId: QID + P + '05/q1' });
-registerPractice(6, { correctId: 'a', silent: true, maxAttempts: 1, questionId: QID + P + '05/q2' });
-registerPractice(7, { correctId: 'b', silent: true, maxAttempts: 1, questionId: QID + P + '05/q3' });
+registerPractice(5, { correctId: 'a', silent: true, maxAttempts: 1, item: '05', qKey: 'q1' });
+registerPractice(6, { correctId: 'a', silent: true, maxAttempts: 1, item: '05', qKey: 'q2' });
+registerPractice(7, { correctId: 'b', silent: true, maxAttempts: 1, item: '05', qKey: 'q3' });
 
 /* ═══ Combined result for סעיפים א-ג — storyboard 144/145 ═══
    Both slides carry the SAME body (the correct answer for each סעיף); only the title and
@@ -387,45 +415,188 @@ function renderSectionResult() {
   document.getElementById('s11-result-bubble').textContent = v.bubble;
 }
 
-/* ═══ Report modal ═══ */
-function openReportModal() { document.getElementById('report-modal').removeAttribute('hidden'); setTimeout(function () { document.getElementById('report-type')?.focus(); }, 40); }
-function tryCloseReportModal() { const t = document.getElementById('report-type').value, x = document.getElementById('report-text').value.trim(); if (t || x) { document.getElementById('report-modal').setAttribute('hidden', ''); document.getElementById('report-confirm-modal').removeAttribute('hidden'); } else forceCloseReportModal(); }
-function forceCloseReportModal() { document.getElementById('report-modal').setAttribute('hidden', ''); document.getElementById('report-confirm-modal').setAttribute('hidden', ''); resetReportForm(); }
-function backToReportForm() { document.getElementById('report-confirm-modal').setAttribute('hidden', ''); document.getElementById('report-modal').removeAttribute('hidden'); }
-var REPORT_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSfFq5XFtH1pPpLgV5RWT4m3NanYPW5GKremqTvkp6zKjEGqcw/formResponse';
-var SCREEN_TO_SUB = { 1:'01', 2:'02', 3:'03', 4:'04', 5:'04', 6:'05', 7:'05', 8:'05' };
-function submitReport() {
-  const typeSel = document.getElementById('report-type'), textVal = document.getElementById('report-text').value.trim(), errEl = document.getElementById('report-error');
-  if (!typeSel.value || !textVal) { if (errEl) errEl.removeAttribute('hidden'); (typeSel.value ? document.getElementById('report-text') : typeSel).focus(); return; }
-  if (errEl) errEl.setAttribute('hidden', '');
-  const now = new Date(), meta = window.METADATA || {}, body = new URLSearchParams();
-  body.append('entry.301404029_year', now.getFullYear()); body.append('entry.301404029_month', now.getMonth() + 1); body.append('entry.301404029_day', now.getDate());
-  body.append('entry.2066097581_hour', now.getHours()); body.append('entry.2066097581_minute', now.getMinutes());
-  body.append('entry.1933069481', shortId(meta.learningUnitId)); body.append('entry.2070680092', shortId(meta.id));
-  const sub = SCREEN_TO_SUB[currentScreen];
-  body.append('entry.1555704258', sub ? shortId(meta.id) + '-' + sub : ''); body.append('entry.1671046914', String(currentScreen));
-  body.append('entry.1179822443', typeSel.options[typeSel.selectedIndex].text); body.append('entry.806447525', textVal);
-  fetch(REPORT_FORM_ACTION, { method: 'POST', mode: 'no-cors', body: body }).catch(function (e) {});
-  showReportThanks();
+/* ═══════════════════════════════════════════════════════════
+   xAPI (720) — per-part seams
+   ═══════════════════════════════════════════════════════════ */
+
+/* Replaces the legacy SCREEN_TO_SUB, which was string-valued (no page number), under a name nothing
+   shared reads, and covered only screens 1–8 — so a problem report filed from the intro, either
+   scenario screen or the result screen went out with an EMPTY item.
+
+   Flow order here is not screen order: 0 → 1 → 2 → 3 → 9 → 4 → 5 → 10 → 6 → 7 → 8 → 11. The two
+   scenario screens set up a question without asking one, so each belongs INSIDE the item it
+   introduces — screen 9 is page 1 of item 04, screen 10 page 1 of item 05. Keeping them inside is
+   what makes the item lifecycle come out right: item 03 closes and item 04 opens when the learner
+   reaches screen 9, item 04 closes and 05 opens at screen 10 (by which point both of item 04's
+   questions are answered), and item 05 stays open across its three silent questions AND the combined
+   result screen, closing only in goToNextPart(). */
+var SCREEN_TO_SUBCONTENT = {
+  0:  null,           // intro
+  1:  ['01', 1],      // Q1 — the ring
+  2:  ['02', 1],      // Q2 — lentils
+  3:  ['03', 1],      // Q3 — reliability
+  9:  ['04', 1],      // sb129 Liyan's slime — narrative opening of item 04
+  4:  ['04', 2],      // Q4 = item 04 / q1
+  5:  ['04', 3],      // Q5 = item 04 / q2
+  10: ['05', 1],      // sb140 Gili's marbles — narrative opening of item 05
+  6:  ['05', 2],      // Q6 = item 05 / q1   (silent)
+  7:  ['05', 3],      // Q7 = item 05 / q2   (silent)
+  8:  ['05', 4],      // Q8 = item 05 / q3   (silent)
+  11: ['05', 5]       // sb144/145 combined verdict for סעיפים א-ג
+};
+
+var XAPI_COMP_SLUG = 'methodica-science-volume-solid-01-04';
+var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
+
+var XAPI_EVAL_ITEMS = { '01': 1, '02': 1, '03': 1, '04': 1, '05': 1 };
+
+/* Items 04 and 05 span several questions (2 and 3), so their own 'completed' needs an explicit
+   result — the library's all-correct AND would report success:false for a partial pass without
+   saying how partial. Items 01–03 hold one question each, where the AND is already exactly right,
+   so they are deliberately absent from this map.
+
+   Item 05's all-or-nothing success mirrors what the learner is actually shown: SECTION_RESULT has
+   exactly two states, 'צדקת בכל הסעיפים' and 'התשובה אינה נכונה במלואה'. */
+function _itemScore(item, qKeys) {
+  const n = qKeys.filter(k => XAPI_Q_RESULTS[item + '/' + k]).length;
+  return { success: n === qKeys.length, score: { scaled: n / qKeys.length } };
 }
-function showReportThanks() { document.querySelectorAll('#report-modal .report-field, #report-modal .report-actions, #report-modal .report-modal-body').forEach(el => el.setAttribute('hidden', '')); document.getElementById('report-thanks')?.removeAttribute('hidden'); }
-function resetReportForm() { document.getElementById('report-type').value = ''; document.getElementById('report-text').value = ''; document.getElementById('report-char-count').textContent = '0 / 250'; document.getElementById('report-error')?.setAttribute('hidden', ''); document.getElementById('report-thanks')?.setAttribute('hidden', ''); document.querySelectorAll('#report-modal .report-field, #report-modal .report-actions, #report-modal .report-modal-body').forEach(el => el.removeAttribute('hidden')); }
-(function wireReport() {
-  document.getElementById('flag-btn')?.addEventListener('click', openReportModal);
-  const ta = document.getElementById('report-text'), cc = document.getElementById('report-char-count');
-  if (ta && cc) ta.addEventListener('input', function () { cc.textContent = ta.value.length + ' / 250'; });
-  document.addEventListener('keydown', function (ev) { if (ev.key !== 'Escape') return; const cm = document.getElementById('report-confirm-modal'), rm = document.getElementById('report-modal'); if (cm && !cm.hasAttribute('hidden')) { forceCloseReportModal(); return; } if (rm && !rm.hasAttribute('hidden')) { tryCloseReportModal(); return; } });
-})();
+var XAPI_ITEM_RESULT = {
+  '04': function () { return _itemScore('04', ['q1', 'q2']); },
+  '05': function () { return _itemScore('05', ['q1', 'q2', 'q3']); }
+};
 
-/* ═══ Dev bridge ═══ */
-window.addEventListener('message', e => { if (!e.data || e.data.type !== 'DEV_GOTO') return; const n = parseInt(e.data.screen, 10); if (!isNaN(n)) goTo(n); });
-if (window.parent !== window) { window.parent.postMessage({ type: 'DEV_READY', total: document.querySelectorAll('.screen').length }, '*'); }
+/* Per-part seam read by unit-js/50-loader.js. */
+var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-04.json';
 
-/* ═══ xAPI ═══ */
-(function initXAPI() {
-  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') { return; }
-  var CDN = 'https://lomdot.education.gov.il/metodica/720active/common/';
-  function loadScript(src, cb) { var s = document.createElement('script'); s.src = src; s.onload = cb; s.onerror = function () { cb(); }; document.head.appendChild(s); }
-  function poll(cb) { if (window.jsXAPI_MetadataReady) cb(); else setTimeout(function () { poll(cb); }, 200); }
-  loadScript(CDN + 'xapiwrapper.min.js', function () { loadScript(CDN + 'xapi-720-f.js', function () { try { getXAPIParameters('../metadata/methodica-science-volume-solid-01-04.json'); poll(function () { try { ADL.XAPIWrapper.changeConfig({ endpoint: window.slxapi.endpoint, auth: window.slxapi.auth }); sendStatement720('initialized', 'onlinelesson'); loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {}); } catch (e) {} }); } catch (e) {} }); });
-})();
+/* ═══════════════════════════════════════════════════════════
+   RESUME — this component's payload
+   Eight SCQ questions, three of which grade SILENTLY, plus one revealed-once result screen. The
+   silent trio is what makes this part's restore distinctive: their verdicts are recorded but
+   deliberately not shown until screen 11, so the payload must carry BOTH the answer and whether the
+   reveal has happened, or a resumed learner sees the wrong one of the two.
+   ═══════════════════════════════════════════════════════════ */
+
+/* resultRevealed is a plain boolean at file scope, so it travels verbatim. It has to travel: it is
+   the difference between "answered, verdict withheld" and "answered, verdict shown", and
+   visibleState() reads it for every dot. Restoring the answers without it would leak the three
+   withheld verdicts to a learner who has not reached the result screen yet. */
+var RESUME_PLAIN_VARS = ['resultRevealed'];
+var RESUME_INPUT_IDS  = [];
+var RESUME_TEXT_IDS   = [];
+
+/* Mutable half of SCQ_REG only — cfg holds functions and popup copy. */
+function captureScqState() {
+  return Object.keys(SCQ_REG).reduce(function (o, k) {
+    var s = SCQ_REG[k];
+    o[k] = { sel: s.sel, attempts: s.attempts, answered: !!s.answered, done: !!s.done };
+    return o;
+  }, {});
+}
+
+function applyScqState(scq) {
+  if (!scq) return;
+  Object.keys(scq).forEach(function (k) {
+    var s = SCQ_REG[k];
+    if (!s) return;
+    s.sel = scq[k].sel; s.attempts = scq[k].attempts;
+    s.answered = !!scq[k].answered; s.done = !!scq[k].done;
+  });
+}
+
+/* Positional, WITHOUT `screen` — that is a static table entry and a stale document must not override
+   a later renumber. `number` is likewise static. */
+function capturePracticeState() {
+  return practiceProgress.questions.map(function (q) {
+    return { visited: !!q.visited, state: q.state };
+  });
+}
+
+function applyPracticeState(practice) {
+  if (!practice) return;
+  practice.forEach(function (p, i) {
+    var q = practiceProgress.questions[i];
+    if (!q) return;
+    q.visited = !!p.visited; q.state = p.state;
+  });
+}
+
+/* ⚠️ Every object here is COPIED, never referenced. practiceEnter() mutates practiceProgress
+   (`q.visited = true`, `q.state = 'current'`), so a payload holding a live reference would mutate
+   along with it — and the snapshot the shared goTo() takes BEFORE resetScreenState() would already
+   contain the change it exists to undo. That failure is silent and total. */
+function capturePartPayload() {
+  var st = {
+    currentScreen: currentScreen,
+    qResults: Object.assign({}, XAPI_Q_RESULTS),
+    scq: captureScqState(),
+    practice: capturePracticeState(),
+    vars: {}
+  };
+  /* eval keeps this list-driven: these are file-scope let/var bindings, so they are not reachable as
+     window properties. */
+  RESUME_PLAIN_VARS.forEach(function (k) {
+    try { st.vars[k] = eval(k); } catch (e) {}
+  });
+  return st;
+}
+
+/* The parameter MUST stay named `st` — the eval below assigns through that name, and renaming it
+   fails SILENTLY: the assignment throws, the caller's try/catch swallows it, and the learner's
+   answers vanish with nothing in the console. See unit-js/README.md. */
+function applyResumeVars(st) {
+  if (st.qResults) XAPI_Q_RESULTS = Object.assign({}, st.qResults);
+  applyScqState(st.scq);
+  applyPracticeState(st.practice);
+  if (st.vars) {
+    Object.keys(st.vars).forEach(function (k) {
+      if (RESUME_PLAIN_VARS.indexOf(k) === -1) return;   // never assign an unlisted name
+      try { eval(k + ' = st.vars[k];'); } catch (e) {}
+    });
+  }
+}
+
+function applyResumeDom(st) {}
+
+/* Repaints the answered look. Mirrors scqCheck's DOM writes and nothing else — no state mutation, no
+   statements, no popup (goTo() closes popups by design; re-opening one on arrival would be new UI).
+
+   A SILENT question is deliberately left unmarked even when answered: its whole contract is that no
+   verdict shows until the result screen. scqEnter() has already relabelled its button to 'המשך' and
+   disabled the options from the restored `done` flag, which is the entire visible state it should
+   have. */
+function restoreScreenUI(n) {
+  try {
+    if (n === RESULT_SCREEN) {
+      /* Rebuilt from the restored practice states, and only reachable once resultRevealed is true —
+         which resetScreenState() sets on entry anyway. */
+      renderSectionResult();
+      syncPracticeNav('s' + n);
+      return;
+    }
+
+    var screen = 's' + n;
+    var s = SCQ_REG[screen];
+    if (!s || isSilent(n)) return;
+
+    if (s.done) {
+      scqMark(screen, s.cfg.correctId, 'correct');
+      if (s.sel && s.sel !== s.cfg.correctId) scqMark(screen, s.sel, 'wrong');
+      return;
+    }
+    if (s.attempts >= 1 && s.sel) scqMark(screen, s.sel, 'wrong');
+    if (s.sel && !s.attempts) {
+      var o = document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]');
+      if (o) { o.classList.add('selected'); o.setAttribute('aria-checked', 'true'); }
+    }
+    var chk = document.getElementById(screen + '-scq-check');
+    if (chk) chk.disabled = !s.sel;
+  } catch (e) { console.error('[resume] restoreScreenUI', e); }
+}
+
+/* ── xAPI ready hook ──
+   Loads the unit metadata but reports NO unit-scope 'initialized' — this component is not the one
+   that opens the unit. Preserved from the pre-extraction code; see the note in component 01. */
+function onXapiReady() {
+  loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {});
+}

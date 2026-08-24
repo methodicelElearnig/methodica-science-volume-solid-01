@@ -83,3 +83,22 @@
   top: -4.25px;
   border-top: 28px solid #fff;
 }
+
+/* Optional side beak — opt-in per instance with .speech-bubble--tail-right /
+   --tail-left; the default stays the in-flow bottom-centre one above.
+   Same quarter-turn trick as component 01, scaled to this component's 56×28
+   triangle: CSS rotate is clockwise, so +90deg points the apex LEFT and -90deg
+   RIGHT. The rotated footprint is 28 wide × 56 tall, so -42px would centre the
+   box 14px outside the wrapper edge; the wrapper carries 4px of padding, so -38px
+   is what lands the beak's base flush on the frame's edge. --tail-y names the
+   beak's CENTRE, measured from the bubble's top; set it inline when the beak has
+   to aim at a particular speaker.
+   `position: absolute` is what takes the beak out of the flex column — without it
+   the bubble would still reserve 28px of column height for the old beak. */
+.speech-bubble--tail-right .speech-bubble__tail,
+.speech-bubble--tail-left  .speech-bubble__tail {
+  position: absolute;
+  top: calc(var(--tail-y, 44px) - 14px);
+}
+.speech-bubble--tail-right .speech-bubble__tail { right: -38px; transform: rotate(-90deg); }
+.speech-bubble--tail-left  .speech-bubble__tail { left:  -38px; transform: rotate(90deg); }

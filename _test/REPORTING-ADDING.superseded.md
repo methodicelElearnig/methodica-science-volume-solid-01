@@ -1,3 +1,19 @@
+> # ⚠️ SUPERSEDED — DOCUMENTS A DIFFERENT UNIT
+>
+> This file was found in the root of `methodica-science-volume-solid-01`, but it describes
+> **`methodica-science-mass-measure-01`**: 25 mentions of `mass-measure`, **zero** of
+> `volume-solid`. It also describes five components (this unit has six) and prescribes
+> `xapi-720-f.js` as the current library (this unit is moving to `-i`/`-j`).
+>
+> Retired on 2026-08-10 and moved here out of the repo root, so that no stage of the
+> reconstruction is reviewed against the wrong document. Kept rather than deleted only because its
+> per-part instrumentation tables are useful *as a reference for that other unit*.
+>
+> **For this unit, read instead:** `REPORT-XAPI.md`, `RESUME.md`, `ROUTING-AND-RETAKE.md`,
+> `unit-js/README.md`.
+
+---
+
 # Reporting — What Was Added
 
 This document summarizes the **xAPI (720) reporting** and **problem-reporting**

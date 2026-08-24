@@ -1,0 +1,84 @@
+{
+  "_comment": [
+    "Stage 0 sweep baseline — captured BEFORE any reconstruction work, on the unmodified repo.",
+    "Procedure: dev server on 8744, load each part's index.html, inject _test/xapi-720-j.js via",
+    "  (new Function(await (await fetch('/_test/xapi-720-j.js')).text()))()",
+    "then `await window.__sweep()`. The stub is injected AFTER load rather than via ?xapiLib because",
+    "?xapiLib does not exist until Stage 2 — until then a hard localhost guard in each main.js",
+    "returns before the library ever loads, so window.sendStatement720 is undefined and every",
+    "xapiSend() is swallowed by its own try/catch. Injecting post-load gives the handlers a sender.",
+    "__sweep() calls __reset() first, so boot-time statements are excluded by design and only what",
+    "goTo() emits is measured. That is the invariant a pure move must preserve.",
+    "",
+    "GATE for Stage 2: re-running this procedure must reproduce `visited` and `statements` exactly.",
+    "Stage 3 is EXPECTED to add item-level initialized/completed once XAPI_USING_G turns true."
+  ],
+  "capturedAt": "2026-08-10",
+  "parts": {
+    "methodica-science-volume-solid-01-01": {
+      "totalScreens": 33,
+      "screenIds": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32],
+      "navigationFaults": [],
+      "statements": [
+        { "verb": "experienced", "objectType": "question", "category": "comic-slide-12", "result": null },
+        { "verb": "experienced", "objectType": "question", "category": "comic-slide-14", "result": null }
+      ],
+      "dupes": []
+    },
+    "methodica-science-volume-solid-01-02": {
+      "totalScreens": 8,
+      "screenIds": [0,1,2,3,4,5,6,7],
+      "navigationFaults": [],
+      "statements": [],
+      "dupes": []
+    },
+    "methodica-science-volume-solid-01-03": {
+      "totalScreens": null,
+      "screenIds": [0],
+      "navigationFaults": [{ "screen": 0, "error": "ReferenceError: goTo is not defined" }],
+      "statements": [],
+      "dupes": [],
+      "_note": "Part 03 declares neither TOTAL_SCREENS nor goTo(). It is a single-screen part that never navigates, so this is inert today — but the shared goTo() reads TOTAL_SCREENS, so Stage 2 must add `var TOTAL_SCREENS = 1;`. Expect this fault to DISAPPEAR at Stage 2; that is the one intended deviation from this baseline."
+    },
+    "methodica-science-volume-solid-01-04": {
+      "totalScreens": 12,
+      "screenIds": [0,1,2,3,4,5,6,7,8,9,10,11],
+      "navigationFaults": [],
+      "statements": [],
+      "dupes": []
+    },
+    "methodica-science-volume-solid-01-05": {
+      "totalScreens": 7,
+      "screenIds": [0,1,2,3,4,5,6],
+      "navigationFaults": [],
+      "statements": [
+        { "verb": "completed", "objectType": "onlinelesson", "result": { "success": true, "score": { "scaled": 0 } } }
+      ],
+      "dupes": [],
+      "_note": "DEFECT, not desired behaviour. Merely NAVIGATING onto screen 5 reports a component 'completed' — and reports the assessment as PASSED (success:true, hardcoded) with scaled:0, for a learner who answered nothing. The send sits inside resetScreenState(5), which goTo() calls on every entry. Fixed in Stage 4 by moving it to a synchronous peakFinish() driven by peakContinue()."
+    },
+    "methodica-science-volume-solid-01-06": {
+      "totalScreens": 7,
+      "screenIds": [0,1,2,3,4,5,6],
+      "navigationFaults": [],
+      "statements": [
+        { "verb": "completed", "objectType": "onlinelesson", "result": { "success": true,  "score": { "scaled": 0 } } },
+        { "verb": "completed", "objectType": "onlinelesson", "result": { "success": false, "score": { "scaled": 0 } } }
+      ],
+      "dupes": ["completed|methodica-science-volume-solid-01-06|onlinelesson||"],
+      "_note": "DEFECT. Part 06 sends the component 'completed' from BOTH end screens (s5 pass, s6 fail), so one navigation pass emits it twice — the duplicate the ledger exists to prevent, reproduced here before any change. Same resetScreenState() cause as part 05."
+    }
+  },
+  "findings": {
+    "confirmedLive": [
+      "D6 — parts 05/06 emit component 'completed' from resetScreenState(), so it repeats on every entry. Part 06 emits two per sweep. Part 05 additionally hardcodes success:true.",
+      "D1 — zero item-level statements anywhere: the sweep produces no initialized/completed per item, because the loaded library letter (-f) is not matched by the XAPI_USING_G regex.",
+      "D7 — the localhost guard leaves window.sendStatement720 undefined on a dev server, so nothing is observable locally without this harness.",
+      "Part 03 declares neither goTo() nor TOTAL_SCREENS."
+    ],
+    "newInThisPass": [
+      "The sweep oracle MUST be async. Parts 05/06 send through xapiSend() = setTimeout(…,0), so a synchronous read of the log reports zero statements for exactly the screens most likely to over-report. Found by the oracle lying about part 05. Same deferral that defeats the resume stub (risk R1).",
+      "Part 01 line 924 sends verb 'experienced', which is NOT in the 720 v2.4 verb list and has no VERB_IRIS entry. Severity is low, not fatal: the library falls back to 'http://adlnet.gov/expapi/verbs/' + verb, which for 'experienced' happens to be a real ADL verb, so the statement is valid — just off-spec. Stage 4 judgement call: the item-level initialized/completed pair from xapiOnScreen() already records that the learner engaged the comic item, so this is probably redundant rather than merely off-spec."
+    ]
+  }
+}

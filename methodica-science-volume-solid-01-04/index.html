@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · תרגול מתקדם</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=3">
+  <link rel="stylesheet" href="../unit-css/style.css?v=9">
   <link rel="stylesheet" href="css/style.css?v=1">
 </head>
 <body data-subject-theme="science">
@@ -21,7 +21,8 @@
       <h1 class="transition-title">תרגול מתקדם</h1>
       <p class="transition-sub">כמה שאלות מאתגרות שמשלבות את כל מה שלמדתם על מדידת נפח.</p>
     </div>
-    <div class="nav-bar"><button class="btn-continue" id="s0-continue" onclick="advanceScreen()">קדימה</button></div>
+    <div class="nav-bar"><button class="btn-back" id="back-to-prev-part" onclick="goBackToPrevPart()" hidden>חזרה</button>
+      <button class="btn-continue" id="s0-continue" onclick="advanceScreen()">קדימה</button></div>
   </section>
 
   <!-- 8 practice questions (Q1–Q8). Progress nav injected by JS from a template. -->
@@ -46,7 +47,7 @@
     <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s1-scq-check" type="button" disabled onclick="scqCheck('s1')">צדקתי?</button><button class="scq-hint" id="s1-scq-hint" type="button" onclick="scqHint('s1')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
   <div class="scq-popup hidden" id="s1-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s1')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s1-scq-popup-title"></p></div><div class="scq-popup-body" id="s1-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s1-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s1')"><div class="scq-hint-box" role="dialog" aria-modal="true"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s1')" aria-label="סגור">✕</button><h2 class="scq-hint-title">מה קורה כשנכנסים לאמבטיה?</h2><p>העלייה של מפלס המים קשורה למים עצמם או למקום שהגוף שלנו תופס?</p></div></div>
+  <div class="scq-hint-overlay hidden" id="s1-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s1')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>מה קורה כשנכנסים לאמבטיה?</strong></p><p>העלייה של מפלס המים קשורה למים עצמם או למקום שהגוף שלנו תופס?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s1')">חזרה לשאלה</button></div></div>
 
   <section class="screen" data-screen="2" id="s2">
     <nav class="progress-question" data-count="8"></nav>
@@ -69,7 +70,7 @@
     <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s2-scq-check" type="button" disabled onclick="scqCheck('s2')">צדקתי?</button><button class="scq-hint" id="s2-scq-hint" type="button" onclick="scqHint('s2')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
   <div class="scq-popup hidden" id="s2-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s2')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s2-scq-popup-title"></p></div><div class="scq-popup-body" id="s2-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s2-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s2')"><div class="scq-hint-box" role="dialog" aria-modal="true"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s2')" aria-label="סגור">✕</button><h2 class="scq-hint-title">חשבו:</h2><p><b>האם צריך למדוד כל עדש בנפרד?</b></p><p>האם ניתן להתייחס לעדשים כמו חומר שנשפך ומקבל את צורת כלי המדידה?</p></div></div>
+  <div class="scq-hint-overlay hidden" id="s2-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s2')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><b>האם צריך למדוד כל עדש בנפרד?</b></p><p>האם ניתן להתייחס לעדשים כמו חומר שנשפך ומקבל את צורת כלי המדידה?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s2')">חזרה לשאלה</button></div></div>
 
   <section class="screen" data-screen="3" id="s3">
     <nav class="progress-question" data-count="8"></nav>
@@ -94,7 +95,7 @@
     <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s3-scq-check" type="button" disabled onclick="scqCheck('s3')">צדקתי?</button><button class="scq-hint" id="s3-scq-hint" type="button" onclick="scqHint('s3')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
   <div class="scq-popup hidden" id="s3-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s3')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s3-scq-popup-title"></p></div><div class="scq-popup-body" id="s3-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s3-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s3')"><div class="scq-hint-box" role="dialog" aria-modal="true"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s3')" aria-label="סגור">✕</button><h2 class="scq-hint-title">מהו טווח הערכים שנמדדו?</h2><p>במהימנות גבוהה הערכים קרובים זה לזה.</p></div></div>
+  <div class="scq-hint-overlay hidden" id="s3-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s3')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>מהו טווח הערכים שנמדדו?</strong></p><p>במהימנות גבוהה הערכים קרובים זה לזה.</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s3')">חזרה לשאלה</button></div></div>
 
   <!-- ═══ S9 — Liyan slime scenario (storyboard slide 129) ═══
        Sits BETWEEN s3 and s4 in the flow, but keeps the next free id so none of the
@@ -143,7 +144,7 @@
     <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s4-scq-check" type="button" disabled onclick="scqCheck('s4')">צדקתי?</button><button class="scq-hint" id="s4-scq-hint" type="button" onclick="scqHint('s4')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
   <div class="scq-popup hidden" id="s4-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s4')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s4-scq-popup-title"></p></div><div class="scq-popup-body" id="s4-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s4-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s4')"><div class="scq-hint-box" role="dialog" aria-modal="true"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s4')" aria-label="סגור">✕</button><h2 class="scq-hint-title">רמז</h2><p>מה יכול לגרום למשהו שצף במים – לשקוע?</p></div></div>
+  <div class="scq-hint-overlay hidden" id="s4-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s4')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p>מה יכול לגרום למשהו שצף במים – לשקוע?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s4')">חזרה לשאלה</button></div></div>
 
   <section class="screen" data-screen="5" id="s5">
     <nav class="progress-question" data-count="8"></nav>
@@ -168,7 +169,7 @@
     <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s5-scq-check" type="button" disabled onclick="scqCheck('s5')">צדקתי?</button><button class="scq-hint" id="s5-scq-hint" type="button" onclick="scqHint('s5')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
   <div class="scq-popup hidden" id="s5-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s5')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s5-scq-popup-title"></p></div><div class="scq-popup-body" id="s5-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s5-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s5')"><div class="scq-hint-box" role="dialog" aria-modal="true"><button class="scq-hint-close" type="button" onclick="scqCloseHint('s5')" aria-label="סגור">✕</button><h2 class="scq-hint-title">מה במשורה?</h2><p>מדדנו את המשקולת ואת הסליים ביחד.</p></div></div>
+  <div class="scq-hint-overlay hidden" id="s5-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s5')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>מה במשורה?</strong></p><p>מדדנו את המשקולת ואת הסליים ביחד.</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s5')">חזרה לשאלה</button></div></div>
 
   <!-- ═══ S10 — Gili marbles scenario (storyboard slide 140) ═══
        Sits between s5 and s6; id is the next free one and the order lives in the
@@ -241,16 +242,19 @@
          and reveals results only at the end. The deck stands him bottom-right, but the four
          options occupy that column here (the deck's own options sit off-canvas), so he goes
          bottom-left under the photo with the bubble to his right, beak pointing at him.
-         The sprite is authored here rather than left to renderCompanion(): a screen-specific
+         The pair is authored here rather than left to renderCompanion(): a screen-specific
          one-off has no sync cost, and this way it paints with the markup instead of waiting
-         on main.js. renderCompanion() adopts an existing `:scope > .companion` and only
-         refreshes src and offsets, so the turquoise/orange choice still applies. -->
-    <img class="companion" src="assets/img/character-orange-selection.png" alt="" aria-hidden="true"
-         data-pose="ask" draggable="false" style="--cw: 132px; left: 46px; bottom: 80px;">
-    <p class="thought-bubble thought-bubble--pinned" style="left: 214px; bottom: 96px; max-width: 330px;">
-      סקרנים לדעת אם צדקתם?<br />
-      בגלל שכל כך התקדמנו, נענה בלי רמזים ונדע אם צדקנו רק בסוף!<br />
-      איזה מתח....</p>
+         on main.js. renderCompanion() adopts the existing `.companion` and only refreshes
+         its src, so the turquoise/orange choice still applies. The .companion-say group is
+         what holds sprite and bubble together — only the group is positioned. -->
+    <div class="companion-say companion-say--left" style="left: 46px; bottom: 80px;">
+      <video class="companion" src="assets/img/character-orange-ask.mp4?v=2" aria-hidden="true"
+           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 132px;"></video>
+      <p class="companion-bubble" style="--bubble-w: 330px;">
+        סקרנים לדעת אם צדקתם?<br />
+        בגלל שכל כך התקדמנו, נענה בלי רמזים ונדע אם צדקנו רק בסוף!<br />
+        איזה מתח....</p>
+    </div>
     <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s7-scq-check" type="button" disabled onclick="scqCheck('s7')">המשך</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
 
@@ -281,17 +285,19 @@
        141/142/143 no feedback slides of their own and 144/145 one verdict for all three.
        Title and tone switch on whether all three were right; the body — the correct answer
        for each סעיף — is identical in both, so renderSectionResult() fills it in rather than
-       the markup carrying two copies. -->
+       the markup carrying two copies. His reflective line is the .companion-say group down the
+       left, so the verdict card keeps the right-hand half to itself. -->
   <section class="screen" data-screen="11" id="s11">
     <nav class="progress-question" data-count="8"></nav>
     <div class="section-result" id="s11-result">
       <p class="section-result-title" id="s11-result-title"></p>
       <div class="section-result-body" id="s11-result-body"></div>
     </div>
-    <img class="companion" src="assets/img/character-orange-selection.png" alt="" aria-hidden="true"
-         data-pose="ask" draggable="false" style="--cw: 150px; left: 40px; bottom: 84px;">
-    <p class="thought-bubble thought-bubble--pinned" id="s11-result-bubble"
-       style="left: 214px; bottom: 147px; max-width: 240px;"></p>
+    <div class="companion-say companion-say--left" style="left: 40px; bottom: 84px;">
+      <video class="companion" src="assets/img/character-orange-ask.mp4?v=2" aria-hidden="true"
+           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 150px;"></video>
+      <p class="companion-bubble" id="s11-result-bubble" style="--bubble-w: 240px;"></p>
+    </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s11-continue" onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
@@ -327,6 +333,15 @@
   </div>
 
 </div><!-- /#app -->
-<script src="js/main.js?v=10"></script>
+<script src="../unit-js/10-identity.js?v=2"></script>
+<script src="../unit-js/15-ui.js?v=2"></script>
+<script src="../unit-js/20-xapi.js?v=3"></script>
+<script src="../unit-js/25-report.js?v=1"></script>
+<script src="../unit-js/30-nav.js?v=3"></script>
+<script src="../unit-js/40-resume.js?v=1"></script>
+<script src="../unit-js/50-loader.js?v=3"></script>
+<script src="../unit-js/60-devbridge.js?v=1"></script>
+<script src="js/main.js?v=23"></script>
+<script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

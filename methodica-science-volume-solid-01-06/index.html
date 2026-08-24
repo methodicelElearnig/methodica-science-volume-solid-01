@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · שאלת שיא (מועד ב)</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=3">
+  <link rel="stylesheet" href="../unit-css/style.css?v=9">
   <link rel="stylesheet" href="css/style.css?v=1">
 </head>
 <body data-subject-theme="science">
@@ -22,73 +22,74 @@
       <h1 class="peak-intro-title">פסל ספינה טרופה לאקווריום</h1>
       <p class="peak-intro-text">ארז קנה פסל של ספינה טרופה לאקווריום, ורצה למדוד את נפחו. הוא השתמש בשיטת ההצפה ומדד שלוש פעמים: 1,250 · 1,240 · 1,260 מ"ל. לפניכם 4 סעיפים — ענו על כולם, ובסוף תקבלו משוב. יש לענות נכון על 3 מתוך 4 כדי לסיים בהצלחה.</p>
     </div>
-    <div class="nav-bar"><button class="btn-continue" id="s0-continue" onclick="peakStart()">התחילו</button></div>
+    <div class="nav-bar"><button class="btn-back" id="back-to-prev-part" onclick="goBackToPrevPart()" hidden>חזרה</button>
+      <button class="btn-continue" id="s0-continue" onclick="peakStart()">התחילו</button></div>
   </section>
 
   <section class="screen" data-screen="1" id="s1">
     <div class="peak-question peak-question--withimage">
-      <div class="scq-figure" style="flex-basis: 340px">
+      <div class="scq-figure" style="width: 340px">
         <img src="assets/img/s0-aquarium-statue.jpg" alt="אקווריום ובתוכו פסל של ספינה טרופה">
       </div>
       <div class="peak-side">
         <div class="peak-step">סעיף א · 1 מתוך 4</div>
         <p class="scq-qtext">ארז הניח את האקווריום על כלי איסוף, מילא אותו במים עד הסוף והכניס פנימה את הפסל. את המים שנשפכו הוא אסף ומדד. באיזו שיטה ארז השתמש למדידת נפח הפסל?</p>
-        <div class="peak-options" id="s1-opts" role="radiogroup" aria-label="באיזו שיטה">
-          <button class="peak-opt" type="button" data-id="a" onclick="peakSelect(1,'a',this)">שיטת ההצפה</button>
-          <button class="peak-opt" type="button" data-id="b" onclick="peakSelect(1,'b',this)">שיטת דחיקת המים</button>
-          <button class="peak-opt" type="button" data-id="c" onclick="peakSelect(1,'c',this)">מדידת הפסל בסרגל</button>
-          <button class="peak-opt" type="button" data-id="d" onclick="peakSelect(1,'d',this)">מדידת הפסל במאזניים</button>
+        <div class="scq-answers peak-options" id="s1-opts" role="radiogroup" aria-label="באיזו שיטה">
+          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(1,'a',this)"><span class="scq-opt-text">שיטת ההצפה</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(1,'b',this)"><span class="scq-opt-text">שיטת דחיקת המים</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(1,'c',this)"><span class="scq-opt-text">מדידת הפסל בסרגל</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(1,'d',this)"><span class="scq-opt-text">מדידת הפסל במאזניים</span><span class="scq-radio" aria-hidden="true"></span></button>
         </div>
       </div>
     </div>
     <div class="nav-bar"><button class="scq-hint peak-hint" id="s1-hint" type="button" onclick="peakHint(1)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s1-continue" disabled onclick="peakContinue(1)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
-  <div class="scq-hint-overlay hidden" id="s1-hint-overlay" onclick="if(event.target===this)peakCloseHint(1)"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="peakCloseHint(1)" aria-label="סגור">✕</button><h2 class="scq-hint-title">הפסל לא נכנס למשורה</h2><p>איזו שיטה מאפשרת למדוד נפח של גוף מוצק שאינו נכנס במשורה?</p></div></div>
+  <div class="scq-hint-overlay hidden" id="s1-hint-overlay" onclick="if(event.target===this)peakCloseHint(1)"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>הפסל לא נכנס למשורה</strong></p><p>איזו שיטה מאפשרת למדוד נפח של גוף מוצק שאינו נכנס במשורה?</p></div></div></div><button class="scq-hint-close" type="button" onclick="peakCloseHint(1)">חזרה לשאלה</button></div></div>
 
   <section class="screen" data-screen="2" id="s2">
     <div class="peak-question">
       <div class="peak-step">סעיף ב · 2 מתוך 4</div>
       <p class="scq-qtext">ממוצע המדידות הוא 1,250 מ"ל. מהו נפח הפסל, ובאיזו יחידת מידה נוספת אפשר לבטא אותו?</p>
-      <div class="peak-options" id="s2-opts" role="radiogroup" aria-label="נפח הפסל ויחידות">
-        <button class="peak-opt" type="button" data-id="a" onclick="peakSelect(2,'a',this)">1,250 סמ"ק השווים ל-1.25 ליטר</button>
-        <button class="peak-opt" type="button" data-id="b" onclick="peakSelect(2,'b',this)">125 סמ"ק השווים ל-0.125 ליטר</button>
-        <button class="peak-opt" type="button" data-id="c" onclick="peakSelect(2,'c',this)">12,500 סמ"ק השווים ל-12.5 ליטר</button>
-        <button class="peak-opt" type="button" data-id="d" onclick="peakSelect(2,'d',this)">12.5 סמ"ק השווים ל-0.0125 ליטר</button>
+      <div class="scq-answers peak-options" id="s2-opts" role="radiogroup" aria-label="נפח הפסל ויחידות">
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(2,'a',this)"><span class="scq-opt-text">1,250 סמ"ק השווים ל-1.25 ליטר</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(2,'b',this)"><span class="scq-opt-text">125 סמ"ק השווים ל-0.125 ליטר</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(2,'c',this)"><span class="scq-opt-text">12,500 סמ"ק השווים ל-12.5 ליטר</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(2,'d',this)"><span class="scq-opt-text">12.5 סמ"ק השווים ל-0.0125 ליטר</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
     <div class="nav-bar"><button class="scq-hint peak-hint" id="s2-hint" type="button" onclick="peakHint(2)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s2-continue" disabled onclick="peakContinue(2)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
-  <div class="scq-hint-overlay hidden" id="s2-hint-overlay" onclick="if(event.target===this)peakCloseHint(2)"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="peakCloseHint(2)" aria-label="סגור">✕</button><h2 class="scq-hint-title">תזכורת!</h2><p>למדנו ביחידות קודמות ש: 1 מ"ל = 1 סמ"ק, ו-1,000 מ"ל = 1 ליטר.</p></div></div>
+  <div class="scq-hint-overlay hidden" id="s2-hint-overlay" onclick="if(event.target===this)peakCloseHint(2)"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>תזכורת!</strong></p><p>למדנו ביחידות קודמות ש: 1 מ"ל = 1 סמ"ק, ו-1,000 מ"ל = 1 ליטר.</p></div></div></div><button class="scq-hint-close" type="button" onclick="peakCloseHint(2)">חזרה לשאלה</button></div></div>
 
   <section class="screen" data-screen="3" id="s3">
     <div class="peak-question">
       <div class="peak-step">סעיף ג · 3 מתוך 4</div>
       <p class="scq-qtext">אחותו של ארז טענה: "כמות המים שנאספה — 1,250 מ"ל — שווה בדיוק לנפח הפסל". איזה מהמשפטים נכון?</p>
-      <div class="peak-options" id="s3-opts" role="radiogroup" aria-label="איזה משפט נכון">
-        <button class="peak-opt" type="button" data-id="a" onclick="peakSelect(3,'a',this)">האקווריום הוא כלי גדול ולכן הנפח שנמדוד בו תמיד יהיה מדויק</button>
-        <button class="peak-opt" type="button" data-id="b" onclick="peakSelect(3,'b',this)">כיוון שהאקווריום היה מלא עד הקצה, נפח המים שנדחקו החוצה שווה לנפח הפסל בדיוק</button>
-        <button class="peak-opt" type="button" data-id="c" onclick="peakSelect(3,'c',this)">לא ניתן לדעת נפח של גוף בלי להכניס אותו למשורה לבדיקה</button>
-        <button class="peak-opt" type="button" data-id="d" onclick="peakSelect(3,'d',this)">בגלל שהפסל עשוי מתכת וכבד, הוא דוחק הרבה מים החוצה</button>
+      <div class="scq-answers peak-options" id="s3-opts" role="radiogroup" aria-label="איזה משפט נכון">
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(3,'a',this)"><span class="scq-opt-text">האקווריום הוא כלי גדול ולכן הנפח שנמדוד בו תמיד יהיה מדויק</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(3,'b',this)"><span class="scq-opt-text">כיוון שהאקווריום היה מלא עד הקצה, נפח המים שנדחקו החוצה שווה לנפח הפסל בדיוק</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(3,'c',this)"><span class="scq-opt-text">לא ניתן לדעת נפח של גוף בלי להכניס אותו למשורה לבדיקה</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(3,'d',this)"><span class="scq-opt-text">בגלל שהפסל עשוי מתכת וכבד, הוא דוחק הרבה מים החוצה</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
     <div class="nav-bar"><button class="scq-hint peak-hint" id="s3-hint" type="button" onclick="peakHint(3)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s3-continue" disabled onclick="peakContinue(3)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
-  <div class="scq-hint-overlay hidden" id="s3-hint-overlay" onclick="if(event.target===this)peakCloseHint(3)"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="peakCloseHint(3)" aria-label="סגור">✕</button><h2 class="scq-hint-title">חשבו</h2><p>על מה מבוססות השיטות למדידת נפח שאותן למדנו ביחידה?</p></div></div>
+  <div class="scq-hint-overlay hidden" id="s3-hint-overlay" onclick="if(event.target===this)peakCloseHint(3)"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p>על מה מבוססות השיטות למדידת נפח שאותן למדנו ביחידה?</p></div></div></div><button class="scq-hint-close" type="button" onclick="peakCloseHint(3)">חזרה לשאלה</button></div></div>
 
   <section class="screen" data-screen="4" id="s4">
     <div class="peak-question">
       <div class="peak-step">סעיף ד · 4 מתוך 4</div>
       <p class="scq-qtext">כדי לבסס את הטענה שנפח הפסל הוא 1,250 סמ"ק, יש לתמוך בה בטיעון מדעי. איזה מהמשפטים הוא טיעון מדעי הנתמך בראיה?</p>
-      <div class="peak-options" id="s4-opts" role="radiogroup" aria-label="טיעון מדעי">
-        <button class="peak-opt" type="button" data-id="a" onclick="peakSelect(4,'a',this)">בשיטת ההצפה נאספו בממוצע 1,250 מ"ל מים, ונפח המים שנדחק שווה לנפח הגוף שהוכנס למים</button>
-        <button class="peak-opt" type="button" data-id="b" onclick="peakSelect(4,'b',this)">נפח הפסל הוא כ-1,250 סמ"ק, משום שכל גוף שמכניסים למים דוחק מים וכך ניתן לדעת את נפחו</button>
-        <button class="peak-opt" type="button" data-id="c" onclick="peakSelect(4,'c',this)">נפח הפסל הוא כ-1,250 סמ"ק, משום שהפסל נראה גדול ותופס מקום רב באקווריום</button>
-        <button class="peak-opt" type="button" data-id="d" onclick="peakSelect(4,'d',this)">נפח הפסל הוא כ-1,250 סמ"ק, משום שהמוכרת בחנות העריכה שזהו נפחו והיא בעלת ניסיון רב בתחום</button>
+      <div class="scq-answers peak-options" id="s4-opts" role="radiogroup" aria-label="טיעון מדעי">
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(4,'a',this)"><span class="scq-opt-text">בשיטת ההצפה נאספו בממוצע 1,250 מ"ל מים, ונפח המים שנדחק שווה לנפח הגוף שהוכנס למים</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(4,'b',this)"><span class="scq-opt-text">נפח הפסל הוא כ-1,250 סמ"ק, משום שכל גוף שמכניסים למים דוחק מים וכך ניתן לדעת את נפחו</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(4,'c',this)"><span class="scq-opt-text">נפח הפסל הוא כ-1,250 סמ"ק, משום שהפסל נראה גדול ותופס מקום רב באקווריום</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(4,'d',this)"><span class="scq-opt-text">נפח הפסל הוא כ-1,250 סמ"ק, משום שהמוכרת בחנות העריכה שזהו נפחו והיא בעלת ניסיון רב בתחום</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
     <div class="nav-bar"><button class="scq-hint peak-hint" id="s4-hint" type="button" onclick="peakHint(4)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s4-continue" disabled onclick="peakContinue(4)">סיום</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
-  <div class="scq-hint-overlay hidden" id="s4-hint-overlay" onclick="if(event.target===this)peakCloseHint(4)"><div class="scq-hint-box" role="dialog" aria-modal="true" aria-label="רמז"><button class="scq-hint-close" type="button" onclick="peakCloseHint(4)" aria-label="סגור">✕</button><h2 class="scq-hint-title">איך אנחנו יודעים שהטענה נכונה?</h2><p>בטיעון מדעי נחפש ממצא שנמדד בניסוי או בתצפית.</p></div></div>
+  <div class="scq-hint-overlay hidden" id="s4-hint-overlay" onclick="if(event.target===this)peakCloseHint(4)"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>איך אנחנו יודעים שהטענה נכונה?</strong></p><p>בטיעון מדעי נחפש ממצא שנמדד בניסוי או בתצפית.</p></div></div></div><button class="scq-hint-close" type="button" onclick="peakCloseHint(4)">חזרה לשאלה</button></div></div>
 
   <!-- S5 success / S6 failure — both TERMINAL (מועד ב is the last attempt) -->
   <section class="screen" data-screen="5" id="s5">
@@ -133,6 +134,15 @@
   </div>
 
 </div><!-- /#app -->
-<script src="js/main.js?v=2"></script>
+<script src="../unit-js/10-identity.js?v=2"></script>
+<script src="../unit-js/15-ui.js?v=2"></script>
+<script src="../unit-js/20-xapi.js?v=3"></script>
+<script src="../unit-js/25-report.js?v=1"></script>
+<script src="../unit-js/30-nav.js?v=3"></script>
+<script src="../unit-js/40-resume.js?v=1"></script>
+<script src="../unit-js/50-loader.js?v=3"></script>
+<script src="../unit-js/60-devbridge.js?v=1"></script>
+<script src="js/main.js?v=16"></script>
+<script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>
