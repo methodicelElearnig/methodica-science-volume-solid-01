@@ -643,7 +643,9 @@ const COMIC_DATA = {
       src: 'assets/img/comic/12.jpg',
       alt: 'ארכימדס במעבדה עתיקה. מימין הוא עומד ליד תיבת מתכת על השולחן ופונה אל הלומדים, משמאל הוא מודד את התיבה בעזרת סרגל.',
       bubbles: [
-        { type: 'caption', text: 'ארכימדס הגיע עד לימינו כדי ללמד אותנו על השיטות לחישוב נפח שהוא המציא.' },
+        /* Slide 12's band belongs to the RIGHT scene (Archimedes addressing the learner), not to
+           the whole composite — it ran under both halves until QA 2026-08-24. */
+        { type: 'caption', half: 'right', text: 'ארכימדס הגיע עד לימינו כדי ללמד אותנו על השיטות לחישוב נפח שהוא המציא.' },
         { type: 'speech', tail: 'left', r: -3, t: 5, w: 21,
           text: 'בואו נתחיל בתזכורת! איך מודדים גוף בעל צורה הנדסית מוגדרת כמו גליל או תיבה?' },
         { type: 'speech', tail: 'left', r: 51, t: 38, w: 25,
@@ -665,7 +667,10 @@ const COMIC_DATA = {
       alt: 'מימין ארכימדס מודד תיבה בעזרת סרגל ומחשב את נפחה, משמאל מונחים על השולחן מפתח, בלוט וגולה.',
       bubbles: [
         { type: 'narration', r: 27, t: 4, w: 22, text: 'ככה מודדים נפח של גוף הנדסי' },
-        { type: 'thought', tail: 'down-left', r: 3, t: 22, w: 21,
+        /* Side beak, not down-left: the bubble sits at the panel's right edge and Archimedes'
+           head is to its LEFT, so trailing circles downward pointed them away from the thinker
+           (QA 2026-08-24). Widened too — the thought frame's new padding needs the room. */
+        { type: 'thought', tail: 'left', r: 3, t: 20, w: 26,
           text: 'יש לנו קובייה שכל צלע שלה = 10 ס"מ. 10·10·10 = 1,000. נפח הקובייה = 1,000 סמ"ק!' },
         { type: 'narration', r: 56, t: 6, w: 30,
           text: 'אבל מה לגבי גוף שאינו הנדסי, כמו מפתח, בלוט, או גולה?' }
@@ -845,6 +850,10 @@ function comicBubbleHtml(b, k) {
   const docked = (type === 'caption');   // banner is width-docked but honours --t
   let cls = 'speech-bubble speech-bubble--' + type;
   if (b.tail) cls += ' speech-bubble--tail-' + b.tail;
+  /* A caption normally docks across the whole frame. On a COMPOSITE panel (two scenes side by
+     side, e.g. s8 / storyboard slide 12) the deck gives each scene its own band, so `half` scopes
+     one to the scene it belongs to instead of letting it run under both. */
+  if (docked && b.half) cls += ' speech-bubble--caption-' + b.half;
   let style = '--k:' + k + ';';
   if (!docked) {
     style += '--r:' + (b.r != null ? b.r : 5) + '%;'
@@ -1012,8 +1021,12 @@ function comicUpdateNav(screenId) {
   const last = cfg.panels.length - 1;
   const prev = document.getElementById(screenId + '-prev');
   const next = document.getElementById(screenId + '-next');
-  if (prev) prev.disabled = st.i === 0;
-  if (next) next.disabled = st.i === last;
+  /* HIDDEN at the ends, not greyed: a disabled arrow still occupies its slot and reads as an
+     affordance the learner has failed to use. Requested by QA 2026-08-24 for the first and last
+     panel. `disabled` is kept in step so a hidden button can never be reached by keyboard.
+     comicBuild() separately hides both for a single-panel screen (n < 2). */
+  if (prev) { prev.disabled = st.i === 0;    prev.hidden = st.i === 0; }
+  if (next) { next.disabled = st.i === last; next.hidden = st.i === last; }
   document.querySelectorAll('#' + screenId + '-dots .comic-dot').forEach(function (d, k) {
     d.classList.toggle('is-active', k === st.i);
     d.classList.toggle('is-seen', !!st.seen[k]);

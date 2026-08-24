@@ -86,10 +86,12 @@
 }
 
 /* Bubble text: RTL, 19px. #303030 on #fff = 12.6:1. */
+/* Regular weight, not 500: QA 2026-08-24 asked for the comic text unbolded, and 400 is the
+   approved body weight (the ramp is 400/600/700 — 500 was never in it). */
 .speech-bubble__text {
   font-family: 'Assistant', sans-serif;
   font-size: 19px;
-  font-weight: 500;
+  font-weight: 400;
   color: #303030;
   text-align: right;
   direction: rtl;
@@ -159,9 +161,13 @@
 
 /* ── Variant: thought bubble (cloud) ──
    Lobed frame + two trailing circles instead of a beak. */
+/* The frame is very nearly an ellipse, and a rectangle of text only fits inside an ellipse if it
+   is inset by roughly 29% of each axis — 16px/22px was nowhere near it, so long thoughts spilled
+   over the curve and the first word clipped (QA 2026-08-24, s24). The generous padding buys that
+   inset; keep it if the radii are ever retuned. */
 .speech-bubble--thought .speech-bubble__frame {
   border-radius: 46% 54% 48% 52% / 62% 58% 42% 38%;
-  padding: 16px 22px;
+  padding: 30px 38px;
 }
 .speech-bubble--thought .speech-bubble__text { font-style: italic; }
 .speech-bubble--thought .speech-bubble__tail { width: 34px; height: 34px; }
@@ -202,7 +208,14 @@
   padding: 10px 18px;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
 }
-.speech-bubble--caption .speech-bubble__text { color: #fff; font-weight: 500; }
+/* Only the colour differs from the ordinary bubble now — QA asked for the dark-blue caption band
+   to read as the same design as the bubbles, unbolded. Weight comes from .speech-bubble__text. */
+.speech-bubble--caption .speech-bubble__text { color: #fff; }
+/* Half-width captions for composite panels: the frame holds two scenes, and slide 12 gives each
+   its own band rather than one running under both. 50% minus the 3% edge inset and half the 2%
+   centre gap, so the two bands sit inside their own scene and clear the seam. */
+.speech-bubble--caption-right { left: 51%; right: 3%; }
+.speech-bubble--caption-left  { left: 3%;  right: 51%; }
 
 /* ── Variant: banner ("זוהי שיטת …") — docked across the panel width; --t
    picks the band (default near the top, ~78% to sit low instead).

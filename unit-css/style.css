@@ -3080,12 +3080,20 @@ html, body {
   transition: background 0.15s, color 0.15s;
 }
 .path-toggle-opt.is-active { background: var(--subject-500); color: #fff; }
+/* The chevrons are inline SVG, not the ‹ › glyphs they used to be. Those are Bidi_Mirrored
+   characters and nothing isolated them, so in this RTL document each rendered mirrored — the
+   right-hand "previous" button pointed left and the left-hand "next" button pointed right, which
+   is the reversal QA reported on 2026-08-24. A drawn path has no directionality to mirror.
+   flex here is what actually centres the icon: the glyph version was centred only by the default
+   inline-box baseline inside a 44px pill, which is why it also sat slightly high. */
 .comic-arrow {
   min-width: 54px; height: 44px; padding: 0 16px;
+  display: inline-flex; align-items: center; justify-content: center;
   background: #fff; color: var(--subject-700);
   border: 1px solid var(--subject-700); border-radius: 1000px;
   font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 700; cursor: pointer;
 }
+.comic-arrow__icon { display: block; }
 .comic-arrow:disabled { color: #AEAEAE; border-color: #AEAEAE; cursor: not-allowed; }
 .comic-dots { display: flex; gap: 8px; direction: rtl; }
 .comic-dot.is-active { background: var(--subject-500); }
