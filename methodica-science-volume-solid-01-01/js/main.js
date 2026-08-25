@@ -234,7 +234,9 @@ function startCompanionMedia(el) {
    about bodies that FLOAT — he holds a ping-pong ball. These two were transposed until
    2026-08-24, which put each prop on the screen arguing the other case. */
 const CHARACTER_SLOTS = {
-  s9:  { pose: 'soap',             w: 160, right: 30, bottom:  95 },  /* sb26 — dissolving */
+  /* s9 has no slot any more: slide 26 gives its mascot a LINE (the caveat about bodies that do
+     not dissolve), so he is authored in the markup inside a .companion-say group and revealed
+     with the explanation — a silent CHARACTER_SLOTS sprite cannot carry a bubble. */
   /* s11 has no slot: its slide-29 companion (the ping-pong ball) moved to s33 with the
      rest of that slide, and is authored there inside a .companion-say group. */
   /* QA 2026-08-25 (slide 20): bigger, and centred under the two lines of text rather than
@@ -1138,6 +1140,7 @@ function dispDrop() {
   if (inst) inst.textContent = 'הגולה שקעה והמים עלו — בואו נבין למה.';
   setTimeout(function () {
     const ex = document.getElementById('disp-explain'); if (ex) ex.hidden = false;
+    const say = document.getElementById('s9-say');       if (say) say.hidden = false;
     const rs = document.getElementById('disp-reset');    if (rs) rs.hidden = false;
     const cont = document.getElementById('s9-continue');  if (cont) cont.disabled = false;
   }, 900);
@@ -1152,6 +1155,7 @@ function dispReset() {
   document.getElementById('disp-badge').textContent = '50 מ"ל';
   document.getElementById('disp-instruction').textContent = 'הכניסו את הגולה אל תוך המשורה.';
   document.getElementById('disp-explain').hidden = true;
+  document.getElementById('s9-say').hidden = true;
   document.getElementById('disp-reset').hidden = true;
   document.getElementById('s9-continue').disabled = true;
 }
@@ -1165,6 +1169,7 @@ function dispEnter() {
     document.getElementById('disp-cylinder').classList.add('risen');
     document.getElementById('disp-badge').textContent = '62 מ"ל';
     document.getElementById('disp-explain').hidden = false;
+    document.getElementById('s9-say').hidden = false;
     document.getElementById('disp-reset').hidden = false;
     document.getElementById('s9-continue').disabled = false;
   } else {

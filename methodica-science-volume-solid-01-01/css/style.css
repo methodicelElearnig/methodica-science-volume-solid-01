@@ -380,8 +380,12 @@
   pointer-events: none;
 }
 .disp-cylinder-wrap.risen .disp-sunk-marble { top: 82%; transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+/* QA 2026-08-25 (slide 17): the water-level marker belongs to the RIGHT of the cylinder, not the
+   left, where it sat next to the marble's parking spot and read as the marble's label. It still
+   tracks the surface, so it is the level readout the deck asks for: 50 at rest, 62 once the
+   marble is in. */
 .disp-badge {
-  position: absolute; left: -8px; top: 50%; transform: translate(-100%, -50%);
+  position: absolute; right: -8px; top: 50%; transform: translate(100%, -50%);
   background: #fff; border: 2px solid var(--subject-500); color: #1e2a38;
   font-family: 'Assistant', sans-serif; font-weight: 700; font-size: 15px;
   padding: 3px 11px; border-radius: 999px; white-space: nowrap;
@@ -483,3 +487,18 @@
    .companion-say--inline already means, so the markup uses it and this only adds the spacing
    — the old absolutely-anchored group is what put the bubble on top of the conclusion line. */
 .split-say { margin-top: 4px; }
+
+/* S9 two-column stage, storyboard slide 26 (QA 2026-08-25, slide 17).
+   `direction: ltr` on the row is what puts the applet physically LEFT and the explanation
+   RIGHT while the text inside each column stays RTL -- the same lever .aq-stage and
+   .split-stage use. .disp-stage's own `direction: rtl` in unit-css is overridden here
+   because this sheet loads second. */
+#s9 .disp-stage { direction: ltr; align-items: center; gap: 40px; }
+#s9 .disp-applet { flex: 0 0 auto; display: flex; direction: rtl; align-items: center; gap: 46px; }
+#s9 .disp-side {
+  flex: 1 1 auto; min-width: 0; direction: rtl;
+  display: flex; flex-direction: column; align-items: stretch; gap: 10px;
+}
+/* The mascot is a flow item at the foot of the right column, so his bubble can never land
+   on the cylinder the way an absolutely-anchored group did. */
+#s9 .companion-say { align-self: flex-start; }

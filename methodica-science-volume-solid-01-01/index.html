@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=27">
+  <link rel="stylesheet" href="../unit-css/style.css?v=28">
   <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body data-subject-theme="science">
@@ -603,30 +603,50 @@
         <p class="exp-instruction" id="disp-instruction">הכניסו את הגולה אל תוך המשורה.</p>
       </div>
 
+      <!-- Two columns, as storyboard slide 26 lays it out (QA 2026-08-25, slide 17): the vessel on
+           the left, and on the right the explanation with the mascot under it. The stage used to be
+           one RTL row with the explanation at the far left, which left nowhere for a speaking
+           mascot -- his bubble landed on top of the cylinder. -->
       <div class="disp-stage">
-        <div class="disp-cylinder-wrap" id="disp-cylinder">
-          <img class="disp-cylinder-img" src="assets/img/s9-cylinder.svg" alt="משורה מדורגת עם מים עד קו 50 מ&quot;ל" draggable="false">
-          <div class="disp-water" id="disp-water"></div>
-          <img class="disp-sunk-marble" id="disp-sunk-marble" src="assets/img/s9-marble.svg" alt="" draggable="false">
-          <div class="disp-badge" id="disp-badge">50 מ"ל</div>
+        <div class="disp-applet">
+          <div class="disp-cylinder-wrap" id="disp-cylinder">
+            <img class="disp-cylinder-img" src="assets/img/s9-cylinder.svg" alt="משורה מדורגת עם מים עד קו 50 מ&quot;ל" draggable="false">
+            <div class="disp-water" id="disp-water"></div>
+            <img class="disp-sunk-marble" id="disp-sunk-marble" src="assets/img/s9-marble.svg" alt="" draggable="false">
+            <div class="disp-badge" id="disp-badge">50 מ"ל</div>
+          </div>
+
+          <div class="disp-marble-zone">
+            <img id="disp-marble" src="assets/img/s9-marble.svg" alt="גולת זכוכית ירוקה — נִתנת לגרירה" draggable="false">
+            <p class="disp-drag-hint" id="disp-drag-hint">גררו אותי למשורה</p>
+          </div>
         </div>
 
-        <div class="disp-marble-zone">
-          <img id="disp-marble" src="assets/img/s9-marble.svg" alt="גולת זכוכית ירוקה — נִתנת לגרירה" draggable="false">
-          <p class="disp-drag-hint" id="disp-drag-hint">גררו אותי למשורה</p>
-        </div>
-
-        <div class="disp-explain" id="disp-explain" hidden>
-          <h2 class="disp-explain-title">מה קרה כאן?</h2>
-          <p>מפלס המים עלה ברגע שהגולה נכנסה למשורה.</p>
-          <p><strong>עיקרון ארכימדס:</strong> כשמכניסים גוף למים, מפלס המים עולה בכמות השווה לנפח הגוף בדיוק.</p>
-          <p class="disp-calc">נפח סופי − נפח מקורי = נפח הגולה<br><strong>62 − 50 = 12 מ"ל</strong></p>
-          <p class="disp-note">העיקרון תקף לגופים שאינם מתמוססים במים. גוף הרגיש למים אפשר לעטוף בשכבת מגן דקה ואטומה למים לפני ההכנסה למשורה.</p>
+        <div class="disp-side">
+          <!-- Copy is storyboard slide 26 verbatim: the principle is one sentence with the bold on
+               its closing clause rather than on a "עיקרון ארכימדס:" label the deck does not
+               have, and the conclusion is spelled out in words. -->
+          <div class="disp-explain" id="disp-explain" hidden>
+            <h2 class="disp-explain-title">מה קרה כאן?</h2>
+            <p>מפלס המים עלה ברגע שהגולה נכנסה למשורה.</p>
+            <p>עיקרון ארכימדס אומר שכשמכניסים גוף למים, מפלס המים עולה <strong>בכמות שווה לנפח הגוף בדיוק.</strong></p>
+            <p class="disp-calc"><strong>נפח המים הסופי פחות נפח המים המקורי<br>=<br>נפח הגולה!</strong></p>
+          </div>
+          <!-- Slide 26 gives this caveat to the mascot rather than to the panel. Hidden until the
+               marble is in, so it arrives WITH the explanation instead of pre-empting it -- the
+               deck's "גיף מופיע אחרי 5 שניות". He replaces the silent CHARACTER_SLOTS sprite
+               that used to stand in the corner saying nothing. -->
+          <div class="companion-say companion-say--inline companion-say--right" id="s9-say" hidden>
+            <p class="companion-bubble" style="--bubble-w: 300px;">עיקרון זה תקף לגופים שלא מתמוססים במים.<br><br>אפשר לעטוף גופים שרגישים למים בשכבת מגן דקה לפני שמכניסים למשורה.</p>
+            <video class="companion" src="assets/img/character-orange-soap.mp4?v=2" alt="" aria-hidden="true"
+                 data-pose="soap" draggable="false" autoplay loop muted playsinline style="--cw: 170px;"></video>
+          </div>
         </div>
       </div>
 
       <button class="disp-reset" id="disp-reset" type="button" onclick="dispReset()" hidden>מדידה מחדש</button>
     </div>
+
     <div class="nav-bar">
       <button class="btn-continue" id="s9-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
@@ -777,7 +797,12 @@
           <img class="flood-rock" id="flood-rock" src="assets/img/s11-rock.png" alt="אבן — נִתנת לגרירה" draggable="false">
           <p class="flood-hint" id="flood-hint">גררו את האבן לקערה</p>
         </div>
-
+          <div class="companion-say companion-say--inline companion-say--right" id="s9-say" hidden>
+            <p class="companion-bubble" style="--bubble-w: 320px;">עיקרון זה תקף לגופים שלא מתמוססים במים.<br><br>אפשר לעטוף גופים שרגישים למים בשכבת מגן דקה לפני שמכניסים למשורה.</p>
+            <video class="companion" src="assets/img/character-orange-soap.mp4?v=2" alt="" aria-hidden="true"
+                 data-pose="soap" draggable="false" autoplay loop muted playsinline style="--cw: 200px;"></video>
+          </div>
+        </div>
       </div>
 
       <button class="disp-reset" id="flood-reset" type="button" onclick="floodReset()" hidden>ניסוי מחדש</button>
