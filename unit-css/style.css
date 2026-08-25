@@ -2844,8 +2844,10 @@ html, body {
 }
 .hook-title {
   font-family: 'Assistant', sans-serif;
-  font-size: 34px; font-weight: 800; color: var(--subject-500);
-  text-align: center;
+  /* QA 2026-08-25 (slide 1): 24px, matching the narration — the hook screen is one block of
+     text and the title is not sized above it. Right-aligned with the rest of the column. */
+  font-size: 24px; font-weight: 800; color: var(--subject-500);
+  text-align: right;
 }
 .hook-stage {
   display: flex; flex-direction: row-reverse; align-items: center;
@@ -2873,7 +2875,7 @@ html, body {
    floor, so it is gone rather than kept as a second way to draw a bubble. */
 
 .hook-open-prompt {
-  font-size: 22px !important; font-weight: 700 !important; color: var(--subject-500) !important;
+  font-size: 24px !important; font-weight: 400 !important; color: var(--subject-500) !important;
 }
 .hook-open-label {
   font-family: 'Assistant', sans-serif;
@@ -2944,7 +2946,7 @@ html, body {
 }
 .imgq-subtitle {
   font-family: 'Assistant', sans-serif;
-  font-size: 22px; font-weight: 400; color: #303030; text-align: center;
+  font-size: 24px; font-weight: 400; color: #303030; text-align: center;
 }
 .imgq-cards {
   display: flex; flex-direction: row; justify-content: center; gap: 28px;
@@ -2981,7 +2983,7 @@ html, body {
 }
 .imgq-card.revealed.correct .imgq-check { display: block; }
 .imgq-card-caption {
-  font-size: 19px; font-weight: 600; color: #303030;
+  font-size: 20px; font-weight: 600; color: #303030;
   text-align: center; direction: rtl; line-height: 1.35;
 }
 .imgq-card-feedback {
@@ -3266,8 +3268,10 @@ html, body {
   position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%);
   width: 760px; display: flex; flex-direction: column; align-items: stretch; gap: 20px;
 }
+/* QA 2026-08-25 (slides 24, 30): the stem is regular weight and only its closing question is
+   bold, which each screen marks up with <strong> — so the base weight drops to 400. */
 .scq-question--textonly .scq-qtext {
-  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030;
   text-align: right; direction: rtl; line-height: 1.4;
 }
 .scq-question--textonly .scq-answers { width: 100%; }
@@ -3289,7 +3293,8 @@ html, body {
    of each other). Reset the positioning, not just the type. Same reset on .hotspot-question below. */
 .dnd-question .scq-qtext {
   position: static; width: auto; padding-top: 0;
-  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
+  /* QA 2026-08-25 (slides 21, 28): weight 500, not 700 — it is an instruction line. */
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030;
   text-align: right; direction: rtl;
 }
 .dnd-board { display: flex; flex-direction: column; gap: 18px; }
@@ -3373,7 +3378,9 @@ html, body {
 .dq-question .scq-qtext { display: block; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: right; line-height: 2.2; }
 /* Slide 46 keeps these three as separate lines: a blue title, then plain instruction and stem. */
 .dq-title { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-500); text-align: right; direction: rtl; line-height: 1.4; }
-.dq-instruction { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030; text-align: right; direction: rtl; line-height: 1.4; }
+/* QA 2026-08-25 (slide 22): the instruction and the cloze sentence below it are one block and
+   must carry the same weight; the sentence is 500, so this follows it. */
+.dq-instruction { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030; text-align: right; direction: rtl; line-height: 1.4; }
 /* The menu is its own centred block under the sentence, not an inline word in it. */
 .dropdown--block { display: block; align-self: center; margin-top: 4px; }
 .dq-sentence { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030; line-height: 2.2; text-align: right; direction: rtl; }
@@ -3987,3 +3994,5 @@ html, body {
    default 28px would aim the beak above his head: raise `--tail-y` on that instance until it
    is back inside his silhouette. No extra rule needed — the group is bottom-aligned, so the
    sprite always occupies the bottom of the bubble's own height range. */
+
+.scq-question--textonly .scq-qtext strong { font-weight: 700; color: #303030; }

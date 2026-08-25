@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=23">
+  <link rel="stylesheet" href="../unit-css/style.css?v=25">
   <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body data-subject-theme="science">
@@ -80,7 +80,7 @@
         <div class="hook-narration">
           <p>רוני קיבלה גלאי מתכות חדש והיא מנסה למצוא דברי ערך על חוף הים.</p>
           <p>היא מצאה תליון בצורת כוכב ורוצה לגלות מאיזו מתכת הוא עשוי.</p>
-          <p>לשם כך עליה למדוד בין השאר את נפח התליון.</p>
+          <p>לשם כך עליה למדוד בין השאר את <strong>נפח</strong> התליון.</p>
           <div class="companion-say companion-say--inline companion-say--right">
             <p class="companion-bubble" style="--bubble-w: 300px;">
               איך רוני יכולה לדעת מה נפח התליון?</p>
@@ -208,7 +208,9 @@
          .companion-say group in the free top band (the storyboard also stands him top-right
          here, in a toga). Absolute rather than --inline: a 170px sprite in the flow would
          push the stage down by its full height. -->
-    <div class="companion-say companion-say--right" style="right: 30px; top: 22px;">
+    <!-- top: 100px, not 22 — QA 2026-08-25 (slide 4) applies the unit-wide 100px top clearance
+         to this group as well. -->
+    <div class="companion-say companion-say--right" style="right: 30px; top: 100px;">
       <p class="companion-bubble" style="--bubble-w: 380px;">ידעתם שהשיטה למדידת נפח הומצאה לפני אלפי שנים ביוון העתיקה?</p>
       <video class="companion" src="assets/img/character-orange-toga.mp4?v=2" aria-hidden="true"
            data-pose="toga" draggable="false" autoplay loop muted playsinline style="--cw: 170px;"></video>
@@ -244,7 +246,9 @@
     <!-- His remark leaves .hook-narration and joins him in a .companion-say group, same
          pattern as S5/S21/S22/S23/S26/S29 — absolute (not --inline), anchored where his
          silent CHARACTER_SLOTS sprite used to sit (right:49/bottom:96), now authored. -->
-    <div class="companion-say companion-say--right" style="right: 49px; bottom: 96px;">
+    <!-- bottom: 196px, not 96 — QA 2026-08-25 (slide 5) raises this screen's content by 100px;
+         see the matching #s6 .hook-content rule in css/style.css. -->
+    <div class="companion-say companion-say--right" style="right: 49px; bottom: 196px;">
       <!-- .hook-content is vertically CENTERED (unlike S1/S3/S5's top band), so the
            narration's last line has almost no cushion above the nav bar — a narrower/
            taller bubble collides with it. --bubble-w: 500px keeps this to 3 lines instead
@@ -848,7 +852,7 @@
       <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
     </nav>
     <div class="scq-question scq-question--textonly">
-      <p class="scq-qtext">הילה מילאה משורה במים עד לקו 50 מ"ל, והכניסה פנימה אבן קטנה. גובה המים במשורה עלה ל-73 מ"ל. מה נפח האבן?</p>
+      <p class="scq-qtext">הילה מילאה משורה במים עד לקו 50 מ"ל, והכניסה פנימה אבן קטנה.<br>גובה המים במשורה עלה ל-73 מ"ל.<br><strong>מה נפח האבן?</strong></p>
       <div class="scq-answers" id="s13-answers" role="radiogroup" aria-label="מה נפח האבן?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s13','a')"><span class="scq-opt-text">73 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s13','b')"><span class="scq-opt-text">50 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -985,7 +989,7 @@
         <img src="assets/img/s16-crystals.jpg" alt="קריסטלים גדולים ושקופים מונחים על משטח">
       </div>
       <div class="scq-side">
-      <p class="scq-qtext">אופק ואחיו קיבלו קריסטלים ענקיים. הם מילאו כלי במים עד הקצה, השקיעו קריסטל, אספו את המים שנשפכו ומדדו את נפחם. אופק טוען: "בעזרת כמות המים שנשפכו אפשר לדעת את נפח הקריסטל". האם אופק צודק?</p>
+      <p class="scq-qtext">אופק ואחיו קיבלו קריסטלים ענקיים. הם מילאו כלי במים עד הקצה, השקיעו קריסטל, אספו את המים שנשפכו ומדדו את נפחם. אופק טוען: "בעזרת כמות המים שנשפכו אפשר לדעת את נפח הקריסטל".<br><strong>האם אופק צודק?</strong></p>
       <div class="scq-answers" id="s16-answers" role="radiogroup" aria-label="האם אופק צודק?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s16','a')"><span class="scq-opt-text">לא, מים שנשפכים מכלי לא יכולים לשמש למדידת נפח</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s16','b')"><span class="scq-opt-text">לא, ניתן להשתמש בשיטה זו רק למדידת גופים הנדסיים</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -1052,7 +1056,7 @@
       <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
     </nav>
     <div class="dnd-question dnd-question--warmup">
-      <p class="scq-qtext">ל-5 מדענים צעירים ניתנו משימות מדידה שונות. התאימו כל משימה לכלי המתאים לה.</p>
+      <p class="scq-qtext">ל-5 מדענים צעירים ניתנו משימות מדידה שונות.<br>התאימו כל משימה לכלי המתאים לה.</p>
       <div class="dnd-board">
         <div class="dnd-targets" id="s18-ddq-targets"></div>
         <div class="dnd-source-wrap">
@@ -1194,7 +1198,7 @@
          which leaves 430px — enough for a 140px sprite and a 260px bubble. -->
     <div class="companion-say companion-say--left" style="left: 14px; top: 154px;">
       <video class="companion" src="assets/img/character-orange-ask.mp4?v=2" aria-hidden="true"
-           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 140px;"></video>
+           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 252px;"></video>
       <p class="companion-bubble hidden" id="s21-guess-bubble" style="--bubble-w: 260px;">בואו נלמד בדיוק איך לעשות את זה!</p>
     </div>
     <div class="nav-bar">
@@ -1355,12 +1359,12 @@
       </div>
       <div class="exp-head exp-head--question">
         <h1 class="exp-title">מדידת נפח לגוף שאינו הנדסי</h1>
-        <p class="exp-instruction">נחשו – איך נמדוד נפח של גופים שאינם הנדסיים, כמו אלה שבתמונה?</p>
+        <p class="exp-instruction">נחשו – איך נמדוד נפח של <strong>גופים שאינם הנדסיים</strong>, כמו אלה שבתמונה?</p>
       </div>
       <div class="scq-figure" style="width: 460px">
         <img src="assets/img/s29-nongeometric.jpg" alt="גולת זכוכית, אגוז, מפתח ישן וחייל צעצוע מונחים בשורה על משטח עץ">
       </div>
-      <div class="scq-answers guess-options" id="s29-guess" role="radiogroup" aria-label="נחשו – איך נמדוד נפח של גופים שאינם הנדסיים, כמו אלה שבתמונה?">
+      <div class="scq-answers guess-options" id="s29-guess" role="radiogroup" aria-label="נחשו – איך נמדוד נפח של <strong>גופים שאינם הנדסיים</strong>, כמו אלה שבתמונה?">
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s29', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s29', this)"><span class="scq-opt-text">נחתוך אותם לחלקים ונמדוד עם סרגל</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s29', this)"><span class="scq-opt-text">נכניס אותם למים</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -1374,7 +1378,7 @@
          centred figure (460px wide here, so 410px of room). -->
     <div class="companion-say companion-say--left" style="left: 14px; top: 154px;">
       <video class="companion" src="assets/img/character-orange-ask.mp4?v=2" aria-hidden="true"
-           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 140px;"></video>
+           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 252px;"></video>
       <p class="companion-bubble hidden" id="s29-guess-bubble" style="--bubble-w: 240px;">אל תדאגו, לא תישארו סקרנים! עכשיו נלמד איך עושים את זה!</p>
     </div>
     <div class="nav-bar">

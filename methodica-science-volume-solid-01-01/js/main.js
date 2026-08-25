@@ -237,7 +237,10 @@ const CHARACTER_SLOTS = {
   s9:  { pose: 'soap',             w: 160, right: 30, bottom:  95 },  /* sb26 — dissolving */
   /* s11 has no slot: its slide-29 companion (the ping-pong ball) moved to s33 with the
      rest of that slide, and is authored there inside a .companion-say group. */
-  s12: { pose: 'stretch',          w: 200, right: 40, bottom:  89 }   /* sb41 */
+  /* QA 2026-08-25 (slide 20): bigger, and centred under the two lines of text rather than
+     tucked into the right corner. `center` swaps the right offset for a 50% + translate,
+     so `right` must go — leaving both would write two conflicting anchors. */
+  s12: { pose: 'stretch',          w: 260, bottom:  89, center: true }   /* sb41 */
 };
 /* S7's two path cards are the mascot in two poses. Not a CHARACTER_SLOTS entry:
    these sit inside the option cards as content, not as a floating sprite. */
@@ -1796,11 +1799,16 @@ ddqRegister({
     // Storyboard slide 42 puts a small photo inside each task card. The שדף photo
     // is the one from S17 (slide 42 illustrates this task with a בלוט, which the
     // script later renamed to צדף — reusing S17's shell keeps art and copy agreed).
-    { id: 'wu-cup',   label: 'כמה מים יש בכוס?',                    img: 'assets/img/s18-task-water-cup.jpg',  w: 72 },
-    { id: 'wu-cube',  label: 'מה אורך הצלע של הקובייה?',            img: 'assets/img/s18-task-rubik.jpg',      w: 66 },
+    /* QA 2026-08-25 (slide 21): DELIBERATELY out of order. These five used to sit in the same
+       sequence as `targets` below, so the nth pill was always the answer to the nth target and the
+       matching could be done by position without reading anything. The order asked for is melon
+       first, cube second-to-last, cup last; the other two fill the middle. Checked against
+       correctMap: no pill now sits at the index of its own target. */
     { id: 'wu-melon', label: 'מה המסה של האבטיח?',                  img: 'assets/img/s18-task-watermelon.jpg', w: 64 },
+    { id: 'wu-doll',  label: 'מהו הנפח של בובת הפלסטיק הגדולה?',    img: 'assets/img/s18-task-doll.jpg',       w: 90 },
     { id: 'wu-shell', label: 'מהו הנפח של הצדף הקטן?',              img: 'assets/img/s17-shell.png',           w: 68 },
-    { id: 'wu-doll',  label: 'מהו הנפח של בובת הפלסטיק הגדולה?',    img: 'assets/img/s18-task-doll.jpg',       w: 90 }
+    { id: 'wu-cube',  label: 'מה אורך הצלע של הקובייה?',            img: 'assets/img/s18-task-rubik.jpg',      w: 66 },
+    { id: 'wu-cup',   label: 'כמה מים יש בכוס?',                    img: 'assets/img/s18-task-water-cup.jpg',  w: 72 }
   ],
   targets: [
     { id: 'wt-pour',     label: 'מזיגה למשורה' },

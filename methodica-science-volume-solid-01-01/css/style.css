@@ -235,8 +235,11 @@
   border-radius: 1000px;
   padding: 8px 20px;
 }
+/* QA 2026-08-25 (slides 9, 11): the banner strips carried 800 while every other bubble sits at
+   400 — "זוהי שיטת דחיקת המים!" and "זוהי שיטת ההצפה!" read as shouted. The white-on-blue pill
+   already carries the emphasis; the weight does not need to. */
 .speech-bubble--banner .speech-bubble__text {
-  color: #fff; font-weight: 800; font-size: 22px; text-align: center;
+  color: #fff; font-weight: 400; font-size: 22px; text-align: center;
 }
 
 /* ── Variant: side note (caveats / footnotes inside a panel) ── */
@@ -427,3 +430,20 @@
 }
 .meas-object-icon { display: flex; align-items: center; justify-content: center; height: 56px; }
 .meas-obj-img { height: 56px; width: auto; display: block; }
+
+/* QA 2026-08-25 (slide 20). Scoped to S12 on purpose: .transition-title is shared with
+   parts 02 and 04, whose transition screens QA has not asked to resize. */
+#s12 .transition-title { font-size: 40px; }
+#s12 .transition-sub   { font-size: 24px; }
+
+/* QA 2026-08-25 (slide 5): S6's image + narration move up 100px to close the empty band above
+   them. .hook-content is centred with `top: calc(50% - 37px)`, so the offset goes on top
+   rather than on the transform, which is already carrying the centring translate. */
+#s6 .hook-content { top: calc(50% - 137px); }
+
+/* QA 2026-08-25 (slide 20) again: the sprite grew and moved to the centre, so the two lines of
+   text have to move off its head. .transition-content is centred on the canvas, and the canvas
+   is only 710 design px tall at the reference aspect — at that height a centred text block and
+   a 260px sprite anchored 89px off the bottom overlap by ~26px. Lifting the text 90px clears it
+   there and simply adds air on the taller canvases a narrower window produces. */
+#s12 .transition-content { top: calc(50% - 127px); }
