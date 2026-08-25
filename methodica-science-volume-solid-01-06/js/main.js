@@ -55,8 +55,8 @@ function startCompanionMedia(el) {
 /* s5 is the SUCCESS end screen and s6 the RETRY one — not the other way round. */
 const CHARACTER_SLOTS = {
   s0: { pose: 'two-fingers', w: 210, right: 40, bottom: 95 },  /* sb160 */
-  s5: { pose: 'party',       w: 230, left:  30, bottom: 105 }, /* sb173 */
-  s6: { pose: 'panting',     w: 220, left:  30, bottom:  95, ca: '16 / 9' }  /* sb172 */
+  s5: { pose: 'party',       w: 210, into: 's5-say' },         /* sb170 */
+  s6: { pose: 'panting',     w: 200, into: 's6-say', ca: '16 / 9' }          /* sb171 */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
@@ -64,7 +64,10 @@ function renderCompanion(n) {
   const slot = CHARACTER_SLOTS['s' + n];
   // Lets a template reserve room for the sprite instead of being drawn over.
   screen.classList.toggle('has-companion', !!slot);
-  let el = screen.querySelector(':scope > .companion');
+  /* `into` hands the sprite to a .companion-say group so the group's own bottom-alignment
+     aims the bubble's beak at him — see the peak result screens. */
+  const host = slot && slot.into ? (document.getElementById(slot.into) || screen) : screen;
+  let el = screen.querySelector('.companion');
   if (!slot) { if (el) el.remove(); return; }
   const tag = CHARACTER_ASSETS[slot.pose] === 'mp4' ? 'video' : 'img';
   if (el && el.tagName.toLowerCase() !== tag) { el.remove(); el = null; }
@@ -75,8 +78,8 @@ function renderCompanion(n) {
     el.setAttribute('aria-hidden', 'true');
     el.draggable = false;
     if (tag === 'video') { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
-    screen.appendChild(el);
   }
+  if (el.parentElement !== host) host.appendChild(el);
   el.src = characterAsset(slot.pose);
   startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
@@ -87,6 +90,39 @@ function renderCompanion(n) {
   ['left', 'right', 'top', 'bottom'].forEach(function (k) {
     el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
   });
+}
+
+/* ═══ Peak result — storyboard 170 (all four right) / 171 (not all) ═══
+   Both slides carry the SAME body — the model answer to each סעיף — and differ only in title and
+   in the companion's reflective prompt, so the body is written once. Same shape as part 04's
+   SECTION_RESULT, which the deck gives its silent סעיפים group.
+   Departures from the deck: it bolds the "א." / "ב." markers but not "ג." / "ד."; all four are
+   bold here.
+   Slide 170 writes the volume as "12,50 סמ"ק" — a transposition of 1,250, which is what every
+   other line on the same slide and the question itself use; slide 171 opens סעיף א with "א. .". */
+const PEAK_RESULT = {
+  correct: { title: 'כל התשובות נכונות! כל הכבוד!',
+             bubble: 'מהו "טיפ זהב" לחבר או לחברה שייגשו לשאלה הזו מחר בבוקר?' },
+  partial: { title: 'התשובה אינה נכונה במלואה.<br />הנה התשובות הנכונות.',
+             bubble: 'רגע לחשוב: מה יכול לעזור לך לזהות טעויות כאלו בעתיד?' },
+  body: [
+    '<b>א.</b> הפסל הוא גוף שאינו הנדסי ואינו נכנס במשורה, לכן ארז בחר <b>בשיטת ההצפה</b>.',
+    '<b>ב.</b> בשיטת ההצפה נפח המים שנאספו שווה לנפח הפסל.<br />למדנו ש: 1 מ"ל = 1 סמ"ק, ו-1,000 מ"ל = 1 ליטר.<br />ולכן 1,250 סמ"ק שווים ל־1.25 ליטר.',
+    '<b>ג.</b> כאשר האקווריום מלא עד הקצה, כל המים שגולשים החוצה נדחקים על ידי הגוף שהוכנס לתוכו. לכן, כמות המים שנאספה שווה לנפח הפסל שנמצא בתוך המים.',
+    '<b>ד.</b> הטיעון המדעי הנתמך בראייה הוא: בשיטת ההצפה נאספו בממוצע 1,250 מ"ל מים, ונפח המים שנדחק שווה לנפח הגוף שהוכנס למים.'
+  ]
+};
+/* The title follows the DECK's split (all four right), the screen follows the pass threshold. */
+function renderPeakResult(n) {
+  const card = document.getElementById('s' + n + '-result');
+  if (!card) return;
+  const allRight = peakScore() === PEAK_PARTS;
+  const v = allRight ? PEAK_RESULT.correct : PEAK_RESULT.partial;
+  card.classList.toggle('section-result--retry', !allRight);
+  document.getElementById('s' + n + '-result-title').innerHTML = v.title;
+  document.getElementById('s' + n + '-result-body').innerHTML =
+    PEAK_RESULT.body.map(x => '<p>' + x + '</p>').join('');
+  document.getElementById('s' + n + '-result-bubble').textContent = v.bubble;
 }
 
 /* ⚠️ NOTHING HERE MAY REPORT. resetScreenState() runs on every navigation, every back-navigation
@@ -100,6 +136,7 @@ function resetScreenState(n) {
   renderCompanion(n);
   if (n >= 1 && n <= PEAK_PARTS) peakEnter(n);
   if (n === 5 || n === 6) {
+    renderPeakResult(n);
     const el = document.getElementById('s' + n + '-score');
     if (el) el.textContent = 'ענית נכון על ' + peakScore() + ' מתוך ' + PEAK_PARTS + ' סעיפים.';
   }

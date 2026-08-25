@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · שאלת שיא</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=32">
+  <link rel="stylesheet" href="../unit-css/style.css?v=33">
   <link rel="stylesheet" href="css/style.css?v=1">
 </head>
 <body data-subject-theme="science">
@@ -96,22 +96,33 @@
   </section>
   <div class="scq-hint-overlay hidden" id="s4-hint-overlay" onclick="if(event.target===this)peakCloseHint(4)"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>עד כמה המדידה חריגה?</strong></p><p>מה ניתן להניח מכך שהמדידה רחוקה מאוד משאר המדידות?</p></div></div></div><button class="scq-hint-close" type="button" onclick="peakCloseHint(4)">חזרה לשאלה</button></div></div>
 
-  <!-- S5 success / S6 failure end screens -->
+  <!-- S5 / S6 — storyboard 157 (all correct) / 158 (not all). One card with the model answer to every סעיף and the
+       companion's reflective line to its left, exactly as the deck lays those slides out. The four
+       sub-parts run single-attempt with NO per-question feedback (the deck asks for that), so this
+       card is the only feedback in the component — it used to be a score line and an encouragement
+       sentence, and the answers were never shown at all.
+       Which variant shows is keyed on ALL FOUR being right, as the deck titles them; which SCREEN
+       the learner lands on is keyed on the pass threshold. The two are not the same question, so a
+       3/4 pass reads "התשובה אינה נכונה במלואה" on the success screen — correct on both counts. -->
   <section class="screen" data-screen="5" id="s5">
-    <div class="peak-end peak-end--success">
-      <span class="peak-end-icon" aria-hidden="true">🎉</span>
-      <h1 class="peak-end-title">כל הכבוד! סיימתם את היחידה בהצלחה</h1>
+    <div class="section-result section-result--peak" id="s5-result">
+      <p class="section-result-title" id="s5-result-title"></p>
+      <div class="section-result-body" id="s5-result-body"></div>
       <p class="peak-end-score" id="s5-score"></p>
-      <p class="peak-end-text">הוכחתם שאתם יודעים לבחור שיטת מדידה מתאימה, לחשב נפח ולנמק בצורה מדעית. מצוין!</p>
+    </div>
+    <div class="companion-say companion-say--right" id="s5-say" style="left: 44px; bottom: 96px;">
+      <p class="companion-bubble" id="s5-result-bubble" style="--bubble-w: 262px;"></p>
     </div>
   </section>
 
   <section class="screen" data-screen="6" id="s6">
-    <div class="peak-end peak-end--retry">
-      <span class="peak-end-icon" aria-hidden="true">💪</span>
-      <h1 class="peak-end-title">כמעט שם!</h1>
+    <div class="section-result section-result--peak" id="s6-result">
+      <p class="section-result-title" id="s6-result-title"></p>
+      <div class="section-result-body" id="s6-result-body"></div>
       <p class="peak-end-score" id="s6-score"></p>
-      <p class="peak-end-text">ניתן לכם עוד הזדמנות עם שאלת שיא נוספת. קחו נשימה — ובהצלחה!</p>
+    </div>
+    <div class="companion-say companion-say--right" id="s6-say" style="left: 44px; bottom: 96px;">
+      <p class="companion-bubble" id="s6-result-bubble" style="--bubble-w: 262px;"></p>
     </div>
     <div class="nav-bar"><button class="btn-continue" id="s6-continue" onclick="peakGoRetake()">לשאלת השיא הבאה</button></div>
   </section>
@@ -148,7 +159,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=18"></script>
+<script src="js/main.js?v=19"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

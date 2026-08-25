@@ -55,8 +55,8 @@ function startCompanionMedia(el) {
 /* s5 is the SUCCESS end screen and s6 the RETRY one — not the other way round. */
 const CHARACTER_SLOTS = {
   s0: { pose: 'run',   w: 210, right: 40, bottom: 95, ca: '16 / 9' },        /* sb147 */
-  s5: { pose: 'cheer', w: 220, left:  30, bottom: 110, ca: '16 / 9' },       /* sb157 */
-  s6: { pose: 'think', w: 220, left:  30, bottom: 110 }        /* sb158 */
+  s5: { pose: 'cheer', w: 200, into: 's5-say', ca: '16 / 9' },              /* sb157 */
+  s6: { pose: 'think', w: 200, into: 's6-say' }                              /* sb158 */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
@@ -64,7 +64,10 @@ function renderCompanion(n) {
   const slot = CHARACTER_SLOTS['s' + n];
   // Lets a template reserve room for the sprite instead of being drawn over.
   screen.classList.toggle('has-companion', !!slot);
-  let el = screen.querySelector(':scope > .companion');
+  /* `into` hands the sprite to a .companion-say group so the group's own bottom-alignment
+     aims the bubble's beak at him — see the peak result screens. */
+  const host = slot && slot.into ? (document.getElementById(slot.into) || screen) : screen;
+  let el = screen.querySelector('.companion');
   if (!slot) { if (el) el.remove(); return; }
   const tag = CHARACTER_ASSETS[slot.pose] === 'mp4' ? 'video' : 'img';
   if (el && el.tagName.toLowerCase() !== tag) { el.remove(); el = null; }
@@ -75,8 +78,8 @@ function renderCompanion(n) {
     el.setAttribute('aria-hidden', 'true');
     el.draggable = false;
     if (tag === 'video') { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
-    screen.appendChild(el);
   }
+  if (el.parentElement !== host) host.appendChild(el);
   el.src = characterAsset(slot.pose);
   startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
@@ -87,6 +90,37 @@ function renderCompanion(n) {
   ['left', 'right', 'top', 'bottom'].forEach(function (k) {
     el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
   });
+}
+
+/* ═══ Peak result — storyboard 157 (all four right) / 158 (not all) ═══
+   Both slides carry the SAME body — the model answer to each סעיף — and differ only in title and
+   in the companion's reflective prompt, so the body is written once. Same shape as part 04's
+   SECTION_RESULT, which the deck gives its silent סעיפים group.
+   Departures from the deck: it bolds the "א." / "ב." markers but not "ג." / "ד."; all four are
+   bold here. */
+const PEAK_RESULT = {
+  correct: { title: 'כל התשובות נכונות! כל הכבוד!',
+             bubble: 'קחו שנייה לחגוג את ההצלחה. מה הניצחון הקטן שלכם בתרגיל הזה?' },
+  partial: { title: 'התשובה אינה נכונה במלואה.<br />הנה התשובות הנכונות.',
+             bubble: 'אם תפגשו מחר שאלה דומה, מה יהיה הדבר הראשון שתעשו כדי להצליח?' },
+  body: [
+    '<b>א.</b> נפח הפסלון = נפח המים הסופי פחות נפח המים המקורי = <b>60 סמ"ק</b>.',
+    '<b>ב.</b> בוצעו 3 מדידות כדי <b>לצמצם טעויות מקריות ולקבל קריאה מהימנה</b>. כדאי <b>לדווח על הממוצע</b> = 60 סמ"ק.',
+    '<b>ג.</b> איריס צודקת: שלוש תוצאות המדידה קרובות מאוד זו לזו, מה שמוכיח שהתוצאות יציבות ואינן מקריות.',
+    '<b>ד.</b> המדידה חריגה מאוד וסביר שנפלה בה טעות. <b>יש למדוד מחדש ולא להכליל את הערך 80 בחישוב הסופי</b>.'
+  ]
+};
+/* The title follows the DECK's split (all four right), the screen follows the pass threshold. */
+function renderPeakResult(n) {
+  const card = document.getElementById('s' + n + '-result');
+  if (!card) return;
+  const allRight = peakScore() === PEAK_PARTS;
+  const v = allRight ? PEAK_RESULT.correct : PEAK_RESULT.partial;
+  card.classList.toggle('section-result--retry', !allRight);
+  document.getElementById('s' + n + '-result-title').innerHTML = v.title;
+  document.getElementById('s' + n + '-result-body').innerHTML =
+    PEAK_RESULT.body.map(x => '<p>' + x + '</p>').join('');
+  document.getElementById('s' + n + '-result-bubble').textContent = v.bubble;
 }
 
 /* ⚠️ NOTHING HERE MAY REPORT. resetScreenState() runs on every navigation, every back-navigation
@@ -102,6 +136,7 @@ function resetScreenState(n) {
   renderCompanion(n);
   if (n >= 1 && n <= PEAK_PARTS) peakEnter(n);
   if (n === 5 || n === 6) {
+    renderPeakResult(n);
     const el = document.getElementById('s' + n + '-score');
     if (el) el.textContent = 'ענית נכון על ' + peakScore() + ' מתוך ' + PEAK_PARTS + ' סעיפים.';
   }

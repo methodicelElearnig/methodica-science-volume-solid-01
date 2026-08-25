@@ -3858,6 +3858,19 @@ html, body {
    paragraph direction and the expression would read back to front. Isolate it. */
 .section-result-expr { unicode-bidi: isolate; direction: ltr; }
 
+/* The peak components reuse the card on their end screens (storyboard 157/158, 170/171). No
+   progress nav above it there, and four סעיפים of answer instead of three, so it starts higher
+   and sets its own type scale: part 06's answer is the longest text in the unit and has to clear
+   the 74px bar on a 720px canvas. */
+.section-result--peak {
+  top: 104px; left: 620px; right: 44px;
+  padding: 18px 24px;
+  font-size: 18px; line-height: 1.45;
+}
+.section-result--peak .section-result-title { font-size: 22px; margin-bottom: 12px; }
+.section-result--peak .section-result-body > p { margin: 0 0 10px; }
+.section-result--peak .peak-end-score { margin: 14px 0 0; font-size: 18px; }
+
 /* ═══════════════════════════════════════════════════════
    Storyboard stems that MIX weights
    The deck puts the scenario in regular and bolds only one run — the closing question
