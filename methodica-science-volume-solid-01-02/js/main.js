@@ -176,7 +176,7 @@ function scqShowPopup(screen, type) {
   const cfg = SCQ_REG[screen].cfg.popups[type];
   popup.style.background = (type === 'correct') ? '#edf8ed' : '#ffdbdc';
   popup.style.left = '2px'; popup.style.top = 'auto'; popup.style.bottom = '84px';
-  document.getElementById(screen + '-scq-popup-title').textContent = cfg.title;
+  document.getElementById(screen + '-scq-popup-title').innerHTML = cfg.title;
   document.getElementById(screen + '-scq-popup-body').innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
   popup.classList.remove('hidden');
 }
@@ -340,53 +340,56 @@ function registerPractice(idx, cfg) {
   attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup'));
 }
 
+/* ═══ Feedback copy — the storyboard's, per QA/TEXT-FIDELITY.md §Agreed policy ═══
+   The deck gives each question its own retry / correct / wrong-final slides, and the correct
+   and wrong-final slides carry the SAME explanation — so it is written once per question and
+   fbPopups() hands it to both. Same shape as part 04, which was ported first.
+   Departures, all under §Deck defects:
+     - the wrong-final line "התשובה הנכונה מסומנת." is uniform. Slides 82 and 97 omit it where
+       their siblings carry it, and the unit marks the correct option on every wrong-final.
+     - slide 107 leaves the correct-answer title as the placeholder "טקסט משוב"; it takes the
+       deck's usual "נכון מאוד!".
+     - deck expressions are wrapped in .section-result-expr: digits and operators are
+       bidi-neutral and reorder inside an RTL paragraph without it. */
+const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['<b>שננסה שוב?</b>'] };
+const FB_WRONG2 = 'התשובה אינה נכונה.<br />התשובה הנכונה מסומנת.';
+const fbPopups = (correctTitle, explanation) => ({
+  retry:   FB_RETRY,
+  correct: { title: correctTitle, body: explanation },
+  wrong2:  { title: FB_WRONG2,    body: explanation }
+});
+
 registerPractice(0, {  // Basic 1 — non-geometric body
   correctId: 'b', item: '01',
-  popups: {
-    retry:   { title: 'התשובה אינה נכונה.', body: ['גוף הנדסי בנוי מקווים ישרים או מעגלים.', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['מפלצת הפלסטלינה היא גוף בעל צורה לא-סדירה, שאי אפשר לחשב את נפחו בנוסחה.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'לבנה, קופסה וקובייה הן צורות הנדסיות; מפלצת הפלסטלינה אינה.'] }
-  }
+  popups: fbPopups('נכון מאוד!', [   /* sb79/81/82 */
+    'למפלצת יש צורה הנדסית שאינה מוגדרת: הצורה שלה לא אחידה, לא בנויה מקווים ישרים או מעגלים, ואי-אפשר לחשב את נפחה בעזרת נוסחה.'])
 });
 registerPractice(1, {  // Basic 2 — who is right
   correctId: 'b', item: '02',
-  popups: {
-    retry:   { title: 'התשובה אינה נכונה.', body: ['מה מודדים מאזניים וסרגל?', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['שירלי צודקת: לגוף לא-הנדסי מודדים נפח בשיטת דחיקת המים.', 'מאזניים מודדים מסה וסרגל מודד אורך — לא נפח.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'שירלי צודקת — דחיקת מים מתאימה לגוף לא-הנדסי.'] }
-  }
+  popups: fbPopups('נכון מאוד!', [   /* sb85/86 */
+    'לגוף שאינו הנדסי מודדים את הנפח בעזרת דחיקת מים – מכניסים אותו למשורה ובודקים בכמה המים עלו. ההפרש בין כמות המים המקורית לכמות החדשה = נפח הגוף!'])
 });
 registerPractice(2, {  // Basic 3 — which tool
   correctId: 'b', item: '03',
-  popups: {
-    retry:   { title: 'התשובה אינה נכונה.', body: ['צריך כלי עם שנתות נפח.', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['במשורה יש סימוני נפח שמאפשרים לקרוא את מפלס המים לפני ואחרי.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'המשורה היא הכלי בעל שנתות הנפח.'] }
-  }
+  popups: fbPopups('נכון מאוד!', [   /* sb88/90/91 */
+    'ניתן להכניס גוף מסוים למשורה עם מים ולמדוד את הנפח שלו לפי כמות המים שעלתה.'])
 });
 registerPractice(3, {  // Basic 4 — flooding 760
   correctId: 'b', item: '04',
-  popups: {
-    retry:   { title: 'התשובה אינה נכונה.', body: ['הכלי היה מלא עד הקצה.', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['נפח הגליל = 760 מ"ל — בדיוק כמות המים שגלשה, כי הכלי היה מלא עד הקצה.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'בשיטת ההצפה נפח המים שגלשו = נפח הגוף = 760 מ"ל.'] }
-  }
+  popups: fbPopups('נכון מאוד!', [   /* sb93/95/96 */
+    'גוף שנכנס למים גורם להצפת מים בכמות זהה לנפח שלו בדיוק. לכן נפח הגליל הוא בדיוק 760 מ"ל.'])
 });
 registerPractice(4, {  // Standard-ב 1 — rise area
   correctId: 'b', item: '05',
-  popups: {
-    retry:   { title: 'התשובה אינה נכונה.', body: ['הבובה דחקה את המים כלפי מעלה.', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['התוספת שמעל המפלס המקורי היא נפח המים שנדחק — כלומר נפח הבובה.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'האזור שנוסף מעל המפלס המקורי מייצג את עליית המים.'] }
-  }
+  popups: fbPopups('תשובה נכונה!', [   /* sb100/102/103 */
+    'האזור שבו רואים את כמות המים שעלתה במשורה הוא זה שמייצג את נפח המפלצת.'])
 });
 registerPractice(5, {  // Standard-ב 2 — single bead = 10
   correctId: 'a', item: '06',
-  popups: {
-    retry:   { title: 'התשובה אינה נכונה.', body: ['חשבו: 130 − 100 = הנפח של 3 חרוזים.', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['3 חרוזים העלו את המים ב-30 מ"ל, ולכן חרוז אחד = 30 ÷ 3 = 10 סמ"ק.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'ההפרש 30 סמ"ק הוא נפח 3 החרוזים; חרוז אחד = 30 ÷ 3 = 10 סמ"ק.'] }
-  }
+  popups: fbPopups('נכון מאוד!', [   /* sb105/107/108 */
+    'שלושת החרוזים יחד העלו את מפלס המים ב־30 מ"ל <span class="section-result-expr">(130−100)</span>.',
+    'לכן נפחם הכולל הוא 30 סמ"ק.',
+    'מכיוון שכל החרוזים זהים, נחלק את הנפח הכולל ב-3 ונגלה שנפחו של כל חרוז הוא 10 סמ"ק.'])
 });
 
 /* ═══════════════════════════════════════════════════════════

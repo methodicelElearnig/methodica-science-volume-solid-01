@@ -1262,7 +1262,7 @@ function scqShowPopup(screen, type) {
   const cfg = SCQ_REG[screen].cfg.popups[type];
   popup.style.background = (type === 'correct') ? '#edf8ed' : '#ffdbdc';
   popup.style.left = '2px'; popup.style.top = 'auto'; popup.style.bottom = '84px';  // reset to default on every open
-  document.getElementById(screen + '-scq-popup-title').textContent = cfg.title;
+  document.getElementById(screen + '-scq-popup-title').innerHTML = cfg.title;
   document.getElementById(screen + '-scq-popup-body').innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
   popup.classList.remove('hidden');
 }
@@ -1353,17 +1353,36 @@ function aqEnter() {
   scqEnter('s10');
 }
 
+/* ═══ Feedback copy — the storyboard's, per QA/TEXT-FIDELITY.md §Agreed policy ═══
+   The deck gives each question its own retry / correct / wrong-final slides, and the correct
+   and wrong-final slides carry the SAME explanation — so it is written once per question and
+   fbPopups() hands it to both. Same shape as part 04, which was ported first.
+   Departures, all under §Deck defects:
+     - the wrong-final line "התשובה הנכונה מסומנת." is uniform. Slides 23 and 55 omit it where
+       their siblings carry it, and the unit marks the correct option on every wrong-final.
+     - slide 60 writes "מוצגת" where 65 and 75 write "מסומנת" for the same marked-option screen.
+     - slides 74/75 explain the answer in terms of "נפח הספינה" — a ship, left over from an
+       earlier revision; the question asks about a crystal, so the subject follows the question.
+     - deck expressions are wrapped in .section-result-expr: digits and operators are
+       bidi-neutral and reorder inside an RTL paragraph without it. */
+const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['<b>שננסה שוב?</b>'] };
+const FB_WRONG2 = 'התשובה אינה נכונה.<br />התשובה הנכונה מסומנת.';
+const fbPopups = (correctTitle, explanation) => ({
+  retry:   FB_RETRY,
+  correct: { title: correctTitle, body: explanation },
+  wrong2:  { title: FB_WRONG2,    body: explanation }
+});
+
 /* Register the aquarium SCQ instance */
 scqRegister({
   screen: 's10',
   correctId: 'd',
   startLocked: true,
   item: '02',
-  popups: {
-    retry:   { title: 'התשובה אינה נכונה.', body: ['לא נורא, גם מטעויות לומדים.', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['צלע הקובייה = 10 ס"מ.', 'נפח = 10 × 10 × 10 = 1,000 סמ"ק.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'צלע הקובייה = 10 ס"מ, ולכן הנפח = 10 × 10 × 10 = 1,000 סמ"ק.'] }
-  },
+  popups: fbPopups('נכון מאוד!', [   /* sb20/22/23 */
+    'למדידת נפח של תיבה משתמשים בסרגל: מודדים את אחת מצלעות הקובייה ומכפילים אותו בעצמו שלוש פעמים — פעם אחת לאורך, פעם אחת לרוחב ופעם אחת לגובה.',
+    'אורך הצלע במקרה זה הוא 10 ס"מ וכיוון שכל הצלעות בקובייה זהות:',
+    '<span class="section-result-expr">10·10·10=1,000</span>']),
   onContinue: function () { goTo(9); }   // aquarium → displacement applet
 });
 attachPopupDrag(document.getElementById('s10-scq-popup'));
@@ -1574,38 +1593,29 @@ function registerPractice(idx, cfg) {
 registerPractice(0, {
   correctId: 'c',
   item: '05',
-  popups: {
-    retry:   { title: 'התשובה אינה נכונה.', body: ['לא נורא, גם מטעויות לומדים.', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['נפח האבן = 73 − 50 = 23 סמ"ק.', 'ההפרש בין הקריאה הסופית לקריאה ההתחלתית הוא נפח הגוף.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'נפח האבן = 73 − 50 = 23 סמ"ק (הקריאה הסופית פחות ההתחלתית).'] }
-  }
+  popups: fbPopups('נכון מאוד!', [   /* sb52/54/55 */
+    'נפח הגוף שווה לכמות המים שדחק — כלומר ההפרש בין הנפח הסופי לנפח ההתחלתי.',
+    '<span class="section-result-expr">73 – 50 = 23</span>',
+    'נפח האבן = 23 סמ"ק'])
 });
 registerPractice(1, {
   correctId: 'a',
   item: '06',
-  popups: {
-    retry:   { title: 'התשובה אינה נכונה.', body: ['חשבו: הכדור גדול מדי למשורה.', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['הכדור גדול מדי למשורה, לכן משתמשים בשיטת ההצפה:', 'כמות המים שנשפכו = נפח הכדור.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'לגוף גדול שאינו נכנס למשורה משתמשים בשיטת ההצפה — נפח המים שנשפכו = נפח הכדור.'] }
-  }
+  popups: fbPopups('תשובה נכונה!', [   /* sb57/59/60 */
+    'נפח המים שישפכו מהכלי שווה בדיוק לנפח הכדור, כך ניתן למדוד נפח של גוף שלא נכנס במשורה — זוהי שיטת ההצפה.'])
 });
 registerPractice(2, {
   correctId: 'd',
   item: '07',
-  popups: {
-    retry:   { title: 'התשובה אינה נכונה.', body: ['איזה טיעון מבוסס על מדידה בפועל?', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['רק המדידה בשיטת דחיקת המים מבוססת על ראיה שנמדדה:', 'המים עלו מ-50 ל-70, ולכן נפח הכפית = 20 מ"ל.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'רק שיטת דחיקת המים מתאימה לגוף לא-הנדסי ומבוססת על ראיה שנמדדה.'] }
-  }
+  popups: fbPopups('תשובה נכונה!', [   /* sb62/64/65 */
+    'הילד מימין השתמש בנתון מדעי שנמדד בפועל על ידי שיטת דחיקת המים.',
+    'שאר הילדים הסתמכו על השערות או על מדידות שאינן מתאימות למדידת נפח של גוף בעל צורה שאינה הנדסית.'])
 });
 registerPractice(4, {
   correctId: 'd',
   item: '09',
-  popups: {
-    retry:   { title: 'התשובה אינה נכונה.', body: ['הכלי היה מלא עד הקצה — מה זה אומר על המים שנשפכו?', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['אופק צודק: נפח המים שנשפכו שווה לנפח הקריסטל.', 'הכלי היה מלא עד הקצה, ולכן כל המים שנדחקו מייצגים את נפח הגוף.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'נפח המים שנשפכו = נפח הקריסטל (הכלי היה מלא עד הקצה). שימו לב: נפח ולא מסה.'] }
-  }
+  popups: fbPopups('תשובה נכונה!', [   /* sb72/74/75 */
+    'בשיטת ההצפה נפח המים שנשפכו מהכלי שווה לנפח הגוף שהוכנס אליו. לכן, אם מודדים את נפח המים שנאספו במשורה, אפשר לדעת מה נפח הקריסטל.'])
 });
 
 /* ═══════════════════════════════════════════════════════════
@@ -1904,11 +1914,9 @@ scqRegister({
   screen: 's19',
   correctId: 'a',
   item: '04',
-  popups: {
-    retry:   { title: 'התשובה אינה נכונה.', body: ['חשבו: הגוף תופס מקום בתוך המים.', 'נסו שוב!'] },
-    correct: { title: 'נכון!', body: ['כשמכניסים גוף למים הוא תופס מקום, ולכן המים עולים.', 'ההפרש בין קריאת המפלס אחרי ולפני = נפח הגוף.'] },
-    wrong2:  { title: 'התשובה אינה נכונה.', body: ['התשובה הנכונה מסומנת.', 'הגוף תופס מקום בתוך המים, ולכן מפלס המים עולה.'] }
-  },
+  popups: fbPopups('נכון מאוד!', [   /* sb48/49 */
+    'כשמכניסים גוף מוצק למים, הגוף תופס מקום בתוך המשורה ולכן מפלס המים עולה.',
+    'ההפרש בין קריאת הנפח לפני הכנסת הגוף ולאחריה שווה לנפח הגוף.']),
   onFinish: function (ok) {   // reflect result on the dropdown trigger, and on the warm-up bar
     const t = document.getElementById('s19-dropdown-trigger');
     if (t) { t.classList.remove('correct', 'wrong'); t.classList.add(ok ? 'correct' : 'wrong'); }
