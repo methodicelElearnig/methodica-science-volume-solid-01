@@ -98,6 +98,10 @@
   line-height: 1.4;
   margin: 0;
   word-break: break-word;
+  /* Bubble copy carries its own line breaks as \n in COMIC_DATA. comicBubbleHtml() runs the
+     text through esc(), so markup cannot be used for this. pre-line still collapses runs of
+     spaces, so bubbles without a \n render exactly as before. */
+  white-space: pre-line;
 }
 
 /* Bubble tail: down-pointing beak with the same white fill + blue stroke.
@@ -169,7 +173,6 @@
   border-radius: 46% 54% 48% 52% / 62% 58% 42% 38%;
   padding: 30px 38px;
 }
-.speech-bubble--thought .speech-bubble__text { font-style: italic; }
 .speech-bubble--thought .speech-bubble__tail { width: 34px; height: 34px; }
 .speech-bubble--thought .speech-bubble__tail::before,
 .speech-bubble--thought .speech-bubble__tail::after {

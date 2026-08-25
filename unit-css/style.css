@@ -527,16 +527,6 @@ html, body {
   direction: ltr;
   width: 100%;
 }
-.scq-popup-close {
-  flex-shrink: 0;
-  width: 30px; height: 30px;
-  border: none; border-radius: 50%;
-  background: transparent;
-  color: #555; font-size: 16px; line-height: 1;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  padding: 0;
-}
 .scq-popup-title {
   flex: 1;
   font-family: 'Assistant', sans-serif;
@@ -950,16 +940,6 @@ html, body {
   direction: ltr;   /* X on physical left, title fills physical right */
   width: 100%;
 }
-.ddq-popup-close {
-  flex-shrink: 0;
-  width: 30px; height: 30px;
-  border: none; border-radius: 50%;
-  background: transparent;
-  color: #555; font-size: 16px; line-height: 1;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  padding: 0;
-}
 .ddq-popup-title {
   flex: 1;
   font-family: 'Assistant', sans-serif;
@@ -977,50 +957,14 @@ html, body {
 }
 .ddq-popup-body p:last-child { margin-bottom: 0; }
 
-.scq-popup-close,
-.ddq-popup-close {
-  position: relative;
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border: 1px solid #303030;
-  border-radius: 50%;
-  background: #fff;
-  color: transparent;
-  font-size: 0;
-  line-height: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  overflow: hidden;
-}
 
-.scq-popup-close::before,
-.scq-popup-close::after,
-.ddq-popup-close::before,
-.ddq-popup-close::after {
-  content: '';
-  position: absolute;
-  width: 12px;
-  height: 1.8px;
-  background: #303030;
-  border-radius: 999px;
-  left: 50%;
-  top: 50%;
-  transform-origin: center;
-}
 
-.scq-popup-close::before,
-.ddq-popup-close::before {
-  transform: translate(-50%, -50%) rotate(45deg);
-}
 
-.scq-popup-close::after,
-.ddq-popup-close::after {
-  transform: translate(-50%, -50%) rotate(-45deg);
-}
+
+/* The feedback popups' ✕ button was removed from the markup in all 19 places
+   (QA 2026-08-25, slide 26 — they close on advance, for correct and wrong alike),
+   so .scq-popup-close / .ddq-popup-close and their ✕ glyph rules went with it.
+   The hint overlay keeps its own separate close button (.scq-hint-close). */
 
 /* ── Content block: centered column starting 64px from top ── */
 .vpv-content {
@@ -2900,7 +2844,7 @@ html, body {
 }
 .hook-title {
   font-family: 'Assistant', sans-serif;
-  font-size: 34px; font-weight: 800; color: var(--subject-900);
+  font-size: 34px; font-weight: 800; color: var(--subject-500);
   text-align: center;
 }
 .hook-stage {
@@ -2921,7 +2865,7 @@ html, body {
 }
 .hook-narration p {
   font-family: 'Assistant', sans-serif;
-  font-size: 21px; font-weight: 400; color: #303030; line-height: 1.5;
+  font-size: 24px; font-weight: 400; color: #303030; line-height: 1.25;
 }
 /* The mascot's line on these screens is now .companion-bubble inside a .companion-say
    group (end of this sheet), which stands him next to what he says and points the beak at
@@ -2929,7 +2873,7 @@ html, body {
    floor, so it is gone rather than kept as a second way to draw a bubble. */
 
 .hook-open-prompt {
-  font-size: 22px !important; font-weight: 700 !important; color: var(--subject-900) !important;
+  font-size: 22px !important; font-weight: 700 !important; color: var(--subject-500) !important;
 }
 .hook-open-label {
   font-family: 'Assistant', sans-serif;
@@ -2996,7 +2940,7 @@ html, body {
 .imgq-head { display: flex; flex-direction: column; gap: 6px; align-items: center; }
 .imgq-title {
   font-family: 'Assistant', sans-serif;
-  font-size: 32px; font-weight: 800; color: var(--subject-900); text-align: center;
+  font-size: 32px; font-weight: 800; color: var(--subject-500); text-align: center;
 }
 .imgq-subtitle {
   font-family: 'Assistant', sans-serif;
@@ -3119,6 +3063,13 @@ html, body {
 /* Screens whose answers form their own column: the head takes that column's width so
    title, stem and options share one right edge. */
 .exp-head--question { width: 604px; max-width: 100%; }
+/* QA 2026-08-25 (slides 6, 10, 15, 18): that 604px column was being centred by .exp's
+   `align-items: center`, leaving 338px of dead canvas to its right — the question read as
+   floating in the middle instead of sitting on the page's right edge like every other block.
+   `flex-start` on a column flex in RTL is the INLINE start, i.e. the right edge; the head and
+   the options move together so they keep the shared right edge .exp-head--question exists for. */
+.exp--question .exp-head--question,
+.exp--question .guess-options { align-self: flex-start; }
 /* QA 2026-08-24, sweeping over every question in the unit: a question's stem and its answers must
    clear the top edge of the canvas by at least 100px. Scoped to the QUESTION members of the .exp
    family rather than .exp itself — the applet screens share that container, and stealing 76px from
@@ -3188,10 +3139,14 @@ html, body {
 }
 .scq-popup-header { display: flex; align-items: flex-start; gap: 8px; padding: 12px 16px 4px; cursor: grab; touch-action: none; }
 .scq-popup-header:active { cursor: grabbing; }
-.scq-popup-close { margin-inline-start: auto; background: none; border: none; font-size: 18px; cursor: pointer; color: #303030; line-height: 1; }
+/* The ✕ that used to sit here is gone from the markup in all 19 places (QA 2026-08-25, slide 26:
+   feedback popups close on advance, not by dismissal), so its rule went with it. The popup is still
+   draggable by its header. */
 .scq-popup-title { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 800; color: #1c3a2a; }
 .scq-popup-body { padding: 0 16px 14px; }
-.scq-popup-body p { font-family: 'Assistant', sans-serif; font-size: 17px; font-weight: 400; color: #303030; line-height: 1.45; margin: 3px 0; }
+/* 17px here was shadowing the 20px rule earlier in this sheet; QA 2026-08-25 (slide 26) sets ALL
+   feedback text at 20px, so the two now agree. */
+.scq-popup-body p { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400; color: #303030; line-height: 1.45; margin: 3px 0; }
 
 /* Hint overlay — DEFINED ONCE, near the top of this sheet (search `.scq-hint-popup`).
    A white-box variant (.scq-hint-box + its own .scq-hint-overlay/-close/-title) used to
@@ -3226,7 +3181,14 @@ html, body {
 /* No .measured/disabled dimming — the ruler stays fully draggable, with no
    attempt limit, for as long as the learner is on this screen. The SCQ
    answer below has its own separate check/hint/attempts machinery. */
-.aq-ruler-hint { font-family: 'Assistant', sans-serif; font-size: 14px; color: #8a97a3; margin: 0; max-width: 120px; text-align: center; }
+/* QA 2026-08-25 (slide 14): this box must NEVER change size. .aq-ruler-zone is a column flex sized
+   by its widest child, so when aqMeasure() used to empty the hint the zone went 120 → 69px, .aq-applet
+   went 480 → 429px, and .aq-stage re-centred the row — sliding the cube 51px left while the ruler,
+   moved by `transform`, stayed put. The learner's alignment was destroyed by the act of succeeding.
+   Hence a FIXED width (not max-width) and a min-height covering both lines; aqMeasure() hides the
+   hint with .is-spent (visibility) instead of clearing textContent, so the box survives either way. */
+.aq-ruler-hint { font-family: 'Assistant', sans-serif; font-size: 14px; color: #8a97a3; margin: 0; width: 120px; min-height: 37px; text-align: center; }
+.aq-ruler-hint.is-spent { visibility: hidden; }
 
 .aq-side {
   flex: 1 1 auto; min-width: 0; direction: rtl;
@@ -3296,7 +3258,7 @@ html, body {
   position: absolute; left: 50%; top: calc(50% - 37px); transform: translate(-50%, -50%);
   width: 760px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;
 }
-.transition-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-900); }
+.transition-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-500); }
 .transition-sub { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 400; color: #303030; line-height: 1.5; }
 
 /* Text-only SingleChoiceQuestion layout (practice questions) */
@@ -3320,7 +3282,13 @@ html, body {
   position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%);
   width: 860px; display: flex; flex-direction: column; align-items: stretch; gap: 20px;
 }
+/* QA 2026-08-25 (slides 21, 28): the base .scq-qtext is `position: absolute; right:0; top:0`,
+   which is right for the image+question layout it was written for and wrong here — this container
+   is a column flex, so an absolute stem leaves the flow and lands ON the first row of targets
+   (measured 48px of overlap on S18, which is why the stem and the landing-place labels drew on top
+   of each other). Reset the positioning, not just the type. Same reset on .hotspot-question below. */
 .dnd-question .scq-qtext {
+  position: static; width: auto; padding-top: 0;
   font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
   text-align: right; direction: rtl;
 }
@@ -3387,7 +3355,10 @@ html, body {
   position: absolute; left: 50%; top: calc(50% - 16px); transform: translate(-50%, -50%);
   width: 820px; display: flex; flex-direction: column; align-items: center; gap: 18px;
 }
+/* QA 2026-08-25 (slide 27): same absolute-stem defect as .dnd-question above — the stem drew over
+   the first student's statement, which is why two texts rendered on top of each other. */
 .hotspot-question .scq-qtext {
+  position: static; width: 100%; padding-top: 0;
   font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
   text-align: right; direction: rtl;
 }
@@ -3457,7 +3428,7 @@ html, body {
   flex-direction: column; gap: 10px; text-align: center; direction: rtl;
   font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 400; color: #234a2c; line-height: 1.45;
 }
-.flip-back strong { font-size: 21px; font-weight: 800; color: var(--subject-900); display: block; }
+.flip-back strong { font-size: 21px; font-weight: 800; color: var(--subject-500); display: block; }
 
 /* ═══════════════════════════════════════════════════════
    COMPONENT — Guess-question (no feedback, S21)
@@ -3527,7 +3498,7 @@ html, body {
   position: absolute; left: 50%; top: calc(50% - 37px); transform: translate(-50%, -50%);
   width: 860px; display: flex; flex-direction: column; gap: 16px; direction: rtl; text-align: right;
 }
-.task-title { font-family: 'Assistant', sans-serif; font-size: 32px; font-weight: 800; color: var(--subject-900); text-align: center; }
+.task-title { font-family: 'Assistant', sans-serif; font-size: 32px; font-weight: 800; color: var(--subject-500); text-align: center; }
 .task-intro { font-family: 'Assistant', sans-serif; font-size: 21px; font-weight: 500; color: #303030; line-height: 1.5; text-align: center; }
 .task-list { list-style: decimal; padding-inline-start: 26px; display: flex; flex-direction: column; gap: 12px; }
 .task-list li { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400; color: #303030; line-height: 1.5; }
@@ -3543,7 +3514,7 @@ html, body {
 /* ═══ PeakAssessment (Parts 05/06) ═══ */
 .peak-intro { position: absolute; left: 50%; top: calc(50% - 37px); transform: translate(-50%, -50%); width: 820px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
 .peak-badge { background: var(--subject-900); color: #fff; font-family: 'Assistant', sans-serif; font-size: 16px; font-weight: 800; padding: 5px 22px; border-radius: 1000px; }
-.peak-intro-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-900); }
+.peak-intro-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-500); }
 .peak-intro-text { font-family: 'Assistant', sans-serif; font-size: 21px; font-weight: 400; color: #303030; line-height: 1.55; }
 .peak-question { position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%); width: 820px; display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
 .peak-step { align-self: center; background: var(--subject-100); color: var(--subject-700); font-family: 'Assistant', sans-serif; font-size: 15px; font-weight: 700; padding: 4px 16px; border-radius: 1000px; }
@@ -3556,7 +3527,7 @@ html, body {
 .peak-options .scq-opt { width: 100%; }
 .peak-end { position: absolute; left: 50%; top: calc(50% - 37px); transform: translate(-50%, -50%); width: 760px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
 .peak-end-icon { font-size: 64px; line-height: 1; }
-.peak-end-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-900); }
+.peak-end-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-500); }
 .peak-end--retry .peak-end-title { color: var(--subject-700); }
 .peak-end-score { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 700; color: var(--subject-700); }
 .peak-end-text { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400; color: #303030; line-height: 1.5; }
@@ -3850,7 +3821,7 @@ html, body {
 .section-result--retry { background: #fff6f6; border-color: #d98b8f; }
 .section-result-title {
   margin: 0 0 16px;
-  font-size: 24px; font-weight: 700; color: var(--subject-900);
+  font-size: 24px; font-weight: 700; color: var(--subject-500);
 }
 .section-result--retry .section-result-title { color: #8f2f34; }
 .section-result-body > p { margin: 0 0 14px; }
@@ -3995,7 +3966,7 @@ html, body {
 }
 .companion-bubble p { margin: 4px 0; }
 /* The hook and story screens set his line in bold Subject/900 (storyboard 4, 6, 9). */
-.companion-bubble--strong { font-size: 22px; font-weight: 700; color: var(--subject-900); }
+.companion-bubble--strong { font-size: 22px; font-weight: 700; color: var(--subject-500); }
 
 /* Beak: two stacked triangles — the outline one, then a white one inset by the 3px
    border — so the outline stays continuous around the point. Same trick as

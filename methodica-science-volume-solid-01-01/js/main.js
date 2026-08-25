@@ -677,7 +677,7 @@ const COMIC_DATA = {
            head is to its LEFT, so trailing circles downward pointed them away from the thinker
            (QA 2026-08-24). Widened too — the thought frame's new padding needs the room. */
         { type: 'thought', tail: 'left', r: 3, t: 20, w: 26,
-          text: 'יש לנו קובייה שכל צלע שלה = 10 ס"מ. 10·10·10 = 1,000. נפח הקובייה = 1,000 סמ"ק!' },
+          text: 'יש לנו קובייה שכל צלע שלה = 10 ס"מ.\n10·10·10 = 1,000.\nנפח הקובייה = 1,000 סמ"ק!' },
         { type: 'narration', r: 56, t: 6, w: 30,
           text: 'אבל מה לגבי גוף שאינו הנדסי, כמו מפתח, בלוט, או גולה?' }
       ]
@@ -1309,10 +1309,16 @@ function aqInitDnd() {
   aqDnd.attachSource(document.getElementById('aq-ruler'), 'ruler');
   aqDnd.attachTarget(document.getElementById('aq-cube'), 'aq-cube');
 }
+/* Toggling visibility, never textContent — see the .aq-ruler-hint comment in unit-css/style.css.
+   Clearing the text collapsed the hint's box and dragged the cube 51px sideways (QA 2026-08-25,
+   slide 14), which invalidated the ruler alignment the learner had just made. */
+function aqHintSpent(spent) {
+  document.getElementById('aq-ruler-hint').classList.toggle('is-spent', !!spent);
+}
 function aqMeasure() {
   if (aqMeasured) return;
   aqMeasured = true;
-  document.getElementById('aq-ruler-hint').textContent = '';
+  aqHintSpent(true);
   scqSetLocked('s10', false);   // unlock the volume question
   xapiSend('interacted', 'question', { response: '10cm' }, { category: 'aquarium-ruler' });
 }
@@ -1321,13 +1327,13 @@ function aqReset() {
   const ruler = document.getElementById('aq-ruler');
   ruler.style.transform = '';
   delete ruler.dataset.pdragOffX; delete ruler.dataset.pdragOffY;
-  document.getElementById('aq-ruler-hint').textContent = 'גררו את הסרגל לדופן הצהובה';
+  aqHintSpent(false);
 }
 function aqEnter() {
   aqInitDnd();
   syncPathToggle();
   if (aqMeasured) {
-    document.getElementById('aq-ruler-hint').textContent = '';
+    aqHintSpent(true);
     scqSetLocked('s10', false);
   } else {
     aqReset();
