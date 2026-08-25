@@ -230,5 +230,49 @@ for (const p of parts) {
   }
 }
 
+/* ── 6. markup structure of each index.html ──────────────────────────────────────────────
+   Gate 3 counts data-screen attributes with a regex, which cannot see NESTING. On 2026-08-25 a
+   bad splice left S11 with one extra </div> and a duplicated #s9-say block: the browser
+   auto-closed #app at S11, so 17 of the 35 screens became siblings of #app rather than children,
+   and S11's orphaned nav bar then rendered as a SECOND bar stacked on every screen's real one.
+   Every gate above passed, and because the stray bar sat at identical coordinates to the real
+   one, per-screen geometry measurement missed it too — it was caught only by eye, from a
+   screenshot. The cheap invariants that would have caught it automatically:
+     a. no duplicate id anywhere in the file
+     b. <div> and </div> balance across the whole file
+     c. <div>/</div> balance WITHIN each <section class="screen"> ... </section>
+   (c) is what localises the damage to one screen instead of just "the file is off by one". */
+console.log('\n6. markup structure (nesting + unique ids)');
+const DIV_OPEN = /<div\b[^>]*>/g;
+const DIV_CLOSE = /<\/div>/g;
+const countOf = (str, re) => (str.match(re) || []).length;
+
+for (const p of parts) {
+  const html = read(indexHtml(p));
+  const problems = [];
+
+  const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
+  const seen = new Set(), dup = new Set();
+  for (const id of ids) { if (seen.has(id)) dup.add(id); seen.add(id); }
+  if (dup.size) problems.push(`duplicate id(s): ${[...dup].join(', ')}`);
+
+  const open = countOf(html, DIV_OPEN), close = countOf(html, DIV_CLOSE);
+  if (open !== close) problems.push(`<div> ${open} vs </div> ${close} across the file`);
+
+  /* Screens do not nest, so scanning from one screen's opening tag to its </section> is exact. */
+  const secRe = /<section\b[^>]*\bdata-screen="(\d+)"[^>]*>/g;
+  let m;
+  while ((m = secRe.exec(html))) {
+    const end = html.indexOf('</section>', m.index);
+    if (end === -1) { problems.push(`screen ${m[1]}: no closing </section>`); continue; }
+    const body = html.slice(m.index + m[0].length, end);
+    const o = countOf(body, DIV_OPEN), c = countOf(body, DIV_CLOSE);
+    if (o !== c) problems.push(`screen ${m[1]}: <div> ${o} vs </div> ${c}`);
+  }
+
+  if (problems.length) problems.forEach((x) => fail(`${p}: ${x}`));
+  else pass(`${p}: ids unique, div nesting balanced file-wide and per screen`);
+}
+
 console.log(failures ? `\n${failures} failure(s)` : '\nall checks passed');
 process.exit(failures ? 1 : 0);
