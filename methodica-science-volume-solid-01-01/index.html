@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=25">
+  <link rel="stylesheet" href="../unit-css/style.css?v=27">
   <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body data-subject-theme="science">
@@ -795,26 +795,33 @@
        floating bodies is the mascot's line here, per the same note, and he holds the ping-pong
        ball slide 29 gives him. Flow: flooding S11 → S33 → flip-cards S20. -->
   <section class="screen" data-screen="33" id="s33">
-    <div class="exp exp--content">
+    <!-- Two columns, as storyboard slide 29 lays it out (QA 2026-08-25, slide 19): the photo on
+         the left, and on the right the heading, the paragraph, the boxed conclusion and then the
+         mascot with his caveat. The previous single centred column stacked the bubble on top of
+         the conclusion line and hid it. Copy is the deck's: סלע rather than אבן, the drainage as a
+         second sentence, and the caveat split into its two sentences. -->
+    <div class="exp exp--content exp--split">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
         <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
         <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
       </div>
-      <div class="exp-head">
-        <h1 class="exp-title">מה קרה כאן?</h1>
-        <p class="exp-instruction">המים בקערה גלשו ברגע שהאבן נכנסה אליה, והמים העודפים התנקזו לכלי האיסוף התחתון.</p>
-      </div>
-      <div class="exp-stage--centered">
-        <div class="scq-figure" style="width: 460px">
-          <img src="assets/img/s33-pour-to-cylinder.jpg" alt="מים נמזגים מקערת האיסוף אל תוך משורה מדורגת המסומנת עד 250 מ&quot;ל">
+      <div class="split-stage">
+        <div class="split-figure">
+          <div class="scq-figure" style="width: 100%">
+            <img src="assets/img/s33-pour-to-cylinder.jpg" alt="מים נמזגים מקערת האיסוף אל תוך משורה מדורגת המסומנת עד 250 מ&quot;ל">
+          </div>
+        </div>
+        <div class="split-side">
+          <h1 class="exp-title">מה קרה כאן?</h1>
+          <p class="exp-instruction">המים בקערה גלשו ברגע שהסלע נכנס אליה.<br>המים העודפים התנקזו בכלי האיסוף התחתון.</p>
+          <p class="split-conclusion"><strong>כמות המים שגלשו מהקערה<br>=<br>נפח הסלע!</strong></p>
+          <div class="companion-say companion-say--inline companion-say--right split-say">
+            <p class="companion-bubble" style="--bubble-w: 330px;">עבור גופים קלים שצפים במים ניתן לחבר משקולת כדי שישקעו לתחתית הכלי.<br><br>לא לשכוח להוריד את נפח המשקולת מהתוצאה הסופית!</p>
+            <video class="companion" src="assets/img/character-orange-pingpong.mp4?v=2" alt="" aria-hidden="true"
+                 data-pose="pingpong" draggable="false" autoplay loop muted playsinline style="--cw: 230px;"></video>
+          </div>
         </div>
       </div>
-      <p class="disp-calc"><strong>כמות המים שגלשו מהקערה = נפח האבן!</strong></p>
-    </div>
-    <div class="companion-say companion-say--left" style="left: 24px; bottom: 96px;">
-      <video class="companion" src="assets/img/character-orange-pingpong.mp4?v=2" alt="" aria-hidden="true"
-           data-pose="pingpong" draggable="false" autoplay loop muted playsinline style="--cw: 150px;"></video>
-      <p class="companion-bubble" style="--bubble-w: 330px;">לגופים קלים שצפים במים אפשר לחבר משקולת שתשקיע אותם — ולהחסיר את נפח המשקולת מהתוצאה הסופית.</p>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s33-continue" onclick="advanceScreen()">המשך</button>
@@ -889,7 +896,7 @@
         <img src="assets/img/s14-bowling-ball.jpg" alt="כדור באולינג שחור על פס ייצור במפעל">
       </div>
       <div class="scq-side">
-      <p class="scq-qtext">במפעל לייצור כדורי באולינג רצו לבדוק את נפח הכדור האחרון שיצא מפס הייצור. איזו שיטה מתאימה למדידת נפח הכדור?</p>
+      <p class="scq-qtext">במפעל לייצור כדורי באולינג קרתה תקלה המשפיעה על נפח הכדורים ועלולה לפגום ביכולת לשחק עם הכדורים.<br><br>לאחר תיקון התקלה מנהל המפעל רצה לבדוק את הנפח של הכדור האחרון שיצא מפס הייצור כדי לוודא שהתקלה אכן נפתרה.<br><br><strong>איזו שיטה מתאימה למדידת נפח הכדור?</strong></p>
       <div class="scq-answers" id="s14-answers" role="radiogroup" aria-label="איזו שיטה מתאימה למדידת נפח הכדור?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s14','a')"><span class="scq-opt-text">להכניס את הכדור לכלי עם מים ולמדוד כמה מים נשפכו</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s14','b')"><span class="scq-opt-text">להעריך את נפח הכדור לפי העין</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -933,14 +940,14 @@
          The two RIGHTMOST children's bubbles go in the first (physically right,
          under RTL) column so each bubble sits on the same side as its child. -->
     <div class="hotspot-question hotspot-question--photo">
-      <p class="scq-qtext">הילדים במעבדה מנסים למדוד נפח של כפית ממתכת. לחצו על הילד שהטיעון שלו מדעי ומבוסס על ראיה.</p>
+      <p class="scq-qtext">הילדים במעבדה מנסים למדוד נפח של כפית עשויה ממתכת כדי לייצר סדרת כפיות זהות.<br>לחצו על הילד שהטיעון שלו הוא <strong>מדעי</strong> ומבוסס על <strong>ראיה</strong>.</p>
       <div class="hotspot-stage" id="s15-answers" role="radiogroup" aria-label="איזה טיעון מדעי ומבוסס על ראיה?">
-        <div class="hotspot-bubbles">
+        <div class="hotspot-bubbles hotspot-bubbles--right">
           <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s15','d')">
-            <span class="scq-opt-text">הכנסתי את הכפית למשורה עם מים. המים עלו מ-50 ל-70 מ"ל, ולכן נפח הכפית הוא 20 מ"ל</span>
+            <span class="scq-opt-text">הכנסתי את הכפית למשורה עם מים. המים עלו מ-50 ל-70 מ"ל, ולכן נפח הכפית הוא 20 מ"ל.</span>
           </button>
           <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s15','b')">
-            <span class="scq-opt-text">הסתכלתי על הכפית והערכתי לפי העין שהנפח הוא בערך 20 מ"ל</span>
+            <span class="scq-opt-text">הסתכלתי על הכפית והערכתי לפי העין שהנפח הוא בערך 20 מ"ל.</span>
           </button>
         </div>
         <div class="hotspot-photo" style="width: 628px">
@@ -950,12 +957,12 @@
           <button class="scq-opt hotspot-area" type="button" data-id="c" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','c')" style="--x:39%;--y:58%;--w:13%;--h:46%"></button>
           <button class="scq-opt hotspot-area" type="button" data-id="a" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','a')" style="--x:24%;--y:58%;--w:13%;--h:46%"></button>
         </div>
-        <div class="hotspot-bubbles">
+        <div class="hotspot-bubbles hotspot-bubbles--left">
           <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s15','c')">
-            <span class="scq-opt-text">הנחתי את הכפית על מאזניים וקיבלתי 25 גרם, לכן הנפח הוא 25</span>
+            <span class="scq-opt-text">הנחתי את הכפית על מאזניים וקיבלתי 25 גרם. לכן הנפח הוא 25.</span>
           </button>
           <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s15','a')">
-            <span class="scq-opt-text">מדדתי את הכפית בסרגל, ובכל פעם יצא אורך אחר. החלטתי שהנפח = אורך × רוחב × גובה</span>
+            <span class="scq-opt-text">מדדתי את הכפית בסרגל, ובכל פעם יצא לי אורך אחר. החלטתי לקבוע שהנפח יהיה האורך · רוחב · גובה.</span>
           </button>
         </div>
       </div>
@@ -1456,10 +1463,20 @@
        The 80% rule itself lives in goToNextPart(); this screen is what tells
        the learner about it.  Flow: warm-up 2 S19 → S32 → practice Q1 S13. -->
   <section class="screen" data-screen="32" id="s32">
-    <div class="transition-content">
-      <h1 class="transition-title">אפשר להתחיל!</h1>
-      <p class="transition-sub">סיימנו את שלב הלימוד, נעבור לתרגול הראשון ונענה על <strong>5 שאלות</strong>.<br>צריך לענות נכון על 4 שאלות (80%) לפחות.</p>
-      <p class="transition-note">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</p>
+    <!-- Laid out as storyboard slide 50 lays it out (QA 2026-08-25, slide 23). There is no
+         heading here: "אפשר להתחיל!" is the deck's BUTTON label, and it was being drawn twice —
+         once as an <h1> and once on the continue button. The count is the emphasis instead:
+         "5 שאלות" on its own line at 40px. The closing line is the mascot's, so it moves into a
+         bubble beside him rather than floating under the text. -->
+    <div class="transition-content transition-content--intro">
+      <p class="transition-sub">סיימנו את שלב הלימוד, נעבור לתרגול הראשון ונענה על</p>
+      <p class="transition-count">5 שאלות</p>
+      <p class="transition-sub">צריך לענות נכון על 4 שאלות (80%) לפחות.</p>
+    </div>
+    <div class="companion-say companion-say--right" style="right: 150px; bottom: 150px;">
+      <p class="companion-bubble" style="--bubble-w: 300px;">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</p>
+      <video class="companion" src="assets/img/character-orange-ask.mp4?v=2" aria-hidden="true"
+           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 220px;"></video>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s32-continue" onclick="advanceScreen()">קחו אותי לשאלות</button>

@@ -447,3 +447,39 @@
    a 260px sprite anchored 89px off the bottom overlap by ~26px. Lifting the text 90px clears it
    there and simply adds air on the taller canvases a narrower window produces. */
 #s12 .transition-content { top: calc(50% - 127px); }
+
+/* S32 practice intro, storyboard slide 50 (QA 2026-08-25, slide 23). The count carries the
+   emphasis the deleted heading used to: its own line at 40px bold. The block also sits higher
+   than a plain .transition-content so the mascot and his bubble have the lower half. */
+#s32 .transition-content--intro { top: calc(50% - 150px); gap: 4px; }
+#s32 .transition-count {
+  font-family: 'Assistant', sans-serif; font-size: 40px; font-weight: 800;
+  color: #303030; line-height: 1.2; margin: 4px 0;
+}
+
+/* ── Two-column content screen (S33, storyboard slide 29) ──────────────────────────────
+   QA 2026-08-25 (slide 19). The deck puts the photo in the left half and stacks heading,
+   paragraph, boxed conclusion and the mascot down the right. `direction: ltr` on the row is
+   what puts the figure physically LEFT while the text inside each column stays RTL — the same
+   trick .aq-stage uses. */
+.exp--split { padding-top: 100px; }
+.split-stage {
+  flex: 1 1 auto; min-height: 0; width: 100%; max-width: 1160px;
+  display: flex; direction: ltr; align-items: center; justify-content: center; gap: 40px;
+}
+.split-figure { flex: 0 0 440px; max-width: 440px; }
+.split-side {
+  flex: 1 1 auto; min-width: 0; direction: rtl;
+  display: flex; flex-direction: column; align-items: stretch; gap: 12px;
+}
+/* The blue-bordered conclusion box of slide 29. */
+.split-conclusion {
+  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 700;
+  color: #303030; text-align: center; direction: rtl; line-height: 1.35;
+  border: 2px solid var(--subject-500); border-radius: 12px;
+  padding: 12px 18px; margin: 0;
+}
+/* The mascot sits INSIDE the right column, so the group is a flow item. That is exactly what
+   .companion-say--inline already means, so the markup uses it and this only adds the spacing
+   — the old absolutely-anchored group is what put the bubble on top of the conclusion line. */
+.split-say { margin-top: 4px; }
