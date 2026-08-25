@@ -3268,10 +3268,8 @@ html, body {
   position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%);
   width: 760px; display: flex; flex-direction: column; align-items: stretch; gap: 20px;
 }
-/* QA 2026-08-25 (slides 24, 30): the stem is regular weight and only its closing question is
-   bold, which each screen marks up with <strong> — so the base weight drops to 400. */
 .scq-question--textonly .scq-qtext {
-  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030;
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
   text-align: right; direction: rtl; line-height: 1.4;
 }
 .scq-question--textonly .scq-answers { width: 100%; }
@@ -4017,6 +4015,7 @@ html, body {
    is back inside his silhouette. No extra rule needed — the group is bottom-aligned, so the
    sprite always occupies the bottom of the bubble's own height range. */
 
+/* A stem that drops to regular weight (see part 01's sheet) still needs its <strong> to read. */
 .scq-question--textonly .scq-qtext strong { font-weight: 700; color: #303030; }
 
 /* QA 2026-08-25 (slide 29): the התשובה-שלי / תשובה-נכונה switch inside a wrong-answer

@@ -502,3 +502,10 @@
 /* The mascot is a flow item at the foot of the right column, so his bubble can never land
    on the cylinder the way an absolutely-anchored group did. */
 #s9 .companion-say { align-self: flex-start; }
+
+/* QA 2026-08-25 (slides 24, 30) asked for the practice stems to carry bold ONLY on their
+   closing question, which S13 and S16 now mark up with <strong>. Scoped to this component:
+   .scq-question--textonly is shared with part 02 (s4, s6) and part 04 (s1), whose stems have
+   no <strong> and were not in this QA round — changing the shared rule would silently unbold
+   them. S14 and S16 use the same treatment via their own wrappers. */
+#s13 .scq-qtext, #s14 .scq-qtext, #s16 .scq-qtext { font-weight: 400; }
