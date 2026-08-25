@@ -187,11 +187,17 @@
 .speech-bubble--thought.speech-bubble--tail-down-right .speech-bubble__tail,
 .speech-bubble--thought.speech-bubble--tail-down-left  .speech-bubble__tail { bottom: -30px; }
 /* Side beak, thought variant: the circles are round, so the 34×34 box is placed
-   rather than rotated. It already trails down-LEFT, so the left variant needs no
-   transform and the right one mirrors it. The -9px is half the 18px lead circle,
-   so --tail-y means the same thing here as on a speech beak: the centre of what
-   touches the bubble. */
-.speech-bubble--thought.speech-bubble--tail-left  .speech-bubble__tail { left:  -34px; right: auto; top: calc(var(--tail-y, 38px) - 9px); bottom: auto; transform: none; }
+   rather than rotated. The -9px is half the 18px lead circle, so --tail-y means the same thing
+   here as on a speech beak: the centre of what touches the bubble. That is what --tail-right
+   still does.
+   --tail-LEFT is the exception, and deliberately so. Its one user is S24, where the thinker
+   stands ABOVE-left of the bubble rather than level with it, so a trail leaving the left edge
+   sideways pointed at his shoulder. It leaves over the top-left shoulder of the ellipse instead:
+   `left` positive tucks the box inside the bubble's left edge (the ellipse curves away there, so
+   the circles still read as outside it), the larger --tail-y subtraction lifts it clear of the
+   top, and the rotation turns the trail to run up-left toward his head. Values set by hand
+   against the artwork — they are aimed at THIS panel, so re-aim them if the art changes. */
+.speech-bubble--thought.speech-bubble--tail-left  .speech-bubble__tail { left:   34px; right: auto; top: calc(var(--tail-y, 38px) - 69px); bottom: auto; transform: rotate(90deg); }
 .speech-bubble--thought.speech-bubble--tail-right .speech-bubble__tail { right: -34px; left:  auto; top: calc(var(--tail-y, 38px) - 9px); bottom: auto; transform: scaleX(-1); }
 
 /* ── Variant: narration caption bar ──
