@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=21">
-  <link rel="stylesheet" href="css/style.css?v=9">
+  <link rel="stylesheet" href="../unit-css/style.css?v=30">
+  <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -80,7 +80,7 @@
         <div class="hook-narration">
           <p>רוני קיבלה גלאי מתכות חדש והיא מנסה למצוא דברי ערך על חוף הים.</p>
           <p>היא מצאה תליון בצורת כוכב ורוצה לגלות מאיזו מתכת הוא עשוי.</p>
-          <p>לשם כך עליה למדוד בין השאר את נפח התליון.</p>
+          <p>לשם כך עליה למדוד בין השאר את <strong>נפח</strong> התליון.</p>
           <div class="companion-say companion-say--inline companion-say--right">
             <p class="companion-bubble" style="--bubble-w: 300px;">
               איך רוני יכולה לדעת מה נפח התליון?</p>
@@ -208,7 +208,9 @@
          .companion-say group in the free top band (the storyboard also stands him top-right
          here, in a toga). Absolute rather than --inline: a 170px sprite in the flow would
          push the stage down by its full height. -->
-    <div class="companion-say companion-say--right" style="right: 30px; top: 22px;">
+    <!-- top: 100px, not 22 — QA 2026-08-25 (slide 4) applies the unit-wide 100px top clearance
+         to this group as well. -->
+    <div class="companion-say companion-say--right" style="right: 30px; top: 100px;">
       <p class="companion-bubble" style="--bubble-w: 380px;">ידעתם שהשיטה למדידת נפח הומצאה לפני אלפי שנים ביוון העתיקה?</p>
       <video class="companion" src="assets/img/character-orange-toga.mp4?v=2" aria-hidden="true"
            data-pose="toga" draggable="false" autoplay loop muted playsinline style="--cw: 170px;"></video>
@@ -244,7 +246,9 @@
     <!-- His remark leaves .hook-narration and joins him in a .companion-say group, same
          pattern as S5/S21/S22/S23/S26/S29 — absolute (not --inline), anchored where his
          silent CHARACTER_SLOTS sprite used to sit (right:49/bottom:96), now authored. -->
-    <div class="companion-say companion-say--right" style="right: 49px; bottom: 96px;">
+    <!-- bottom: 196px, not 96 — QA 2026-08-25 (slide 5) raises this screen's content by 100px;
+         see the matching #s6 .hook-content rule in css/style.css. -->
+    <div class="companion-say companion-say--right" style="right: 49px; bottom: 196px;">
       <!-- .hook-content is vertically CENTERED (unlike S1/S3/S5's top band), so the
            narration's last line has almost no cushion above the nav bar — a narrower/
            taller bubble collides with it. --bubble-w: 500px keeps this to 3 lines instead
@@ -599,30 +603,50 @@
         <p class="exp-instruction" id="disp-instruction">הכניסו את הגולה אל תוך המשורה.</p>
       </div>
 
+      <!-- Two columns, as storyboard slide 26 lays it out (QA 2026-08-25, slide 17): the vessel on
+           the left, and on the right the explanation with the mascot under it. The stage used to be
+           one RTL row with the explanation at the far left, which left nowhere for a speaking
+           mascot -- his bubble landed on top of the cylinder. -->
       <div class="disp-stage">
-        <div class="disp-cylinder-wrap" id="disp-cylinder">
-          <img class="disp-cylinder-img" src="assets/img/s9-cylinder.svg" alt="משורה מדורגת עם מים עד קו 50 מ&quot;ל" draggable="false">
-          <div class="disp-water" id="disp-water"></div>
-          <img class="disp-sunk-marble" id="disp-sunk-marble" src="assets/img/s9-marble.svg" alt="" draggable="false">
-          <div class="disp-badge" id="disp-badge">50 מ"ל</div>
+        <div class="disp-applet">
+          <div class="disp-cylinder-wrap" id="disp-cylinder">
+            <img class="disp-cylinder-img" src="assets/img/s9-cylinder.svg" alt="משורה מדורגת עם מים עד קו 50 מ&quot;ל" draggable="false">
+            <div class="disp-water" id="disp-water"></div>
+            <img class="disp-sunk-marble" id="disp-sunk-marble" src="assets/img/s9-marble.svg" alt="" draggable="false">
+            <div class="disp-badge" id="disp-badge">50 מ"ל</div>
+          </div>
+
+          <div class="disp-marble-zone">
+            <img id="disp-marble" src="assets/img/s9-marble.svg" alt="גולת זכוכית ירוקה — נִתנת לגרירה" draggable="false">
+            <p class="disp-drag-hint" id="disp-drag-hint">גררו אותי למשורה</p>
+          </div>
         </div>
 
-        <div class="disp-marble-zone">
-          <img id="disp-marble" src="assets/img/s9-marble.svg" alt="גולת זכוכית ירוקה — נִתנת לגרירה" draggable="false">
-          <p class="disp-drag-hint" id="disp-drag-hint">גררו אותי למשורה</p>
-        </div>
-
-        <div class="disp-explain" id="disp-explain" hidden>
-          <h2 class="disp-explain-title">מה קרה כאן?</h2>
-          <p>מפלס המים עלה ברגע שהגולה נכנסה למשורה.</p>
-          <p><strong>עיקרון ארכימדס:</strong> כשמכניסים גוף למים, מפלס המים עולה בכמות השווה לנפח הגוף בדיוק.</p>
-          <p class="disp-calc">נפח סופי − נפח מקורי = נפח הגולה<br><strong>62 − 50 = 12 מ"ל</strong></p>
-          <p class="disp-note">העיקרון תקף לגופים שאינם מתמוססים במים. גוף הרגיש למים אפשר לעטוף בשכבת מגן דקה ואטומה למים לפני ההכנסה למשורה.</p>
+        <div class="disp-side">
+          <!-- Copy is storyboard slide 26 verbatim: the principle is one sentence with the bold on
+               its closing clause rather than on a "עיקרון ארכימדס:" label the deck does not
+               have, and the conclusion is spelled out in words. -->
+          <div class="disp-explain" id="disp-explain" hidden>
+            <h2 class="disp-explain-title">מה קרה כאן?</h2>
+            <p>מפלס המים עלה ברגע שהגולה נכנסה למשורה.</p>
+            <p>עיקרון ארכימדס אומר שכשמכניסים גוף למים, מפלס המים עולה <strong>בכמות שווה לנפח הגוף בדיוק.</strong></p>
+            <p class="disp-calc"><strong>נפח המים הסופי פחות נפח המים המקורי<br>=<br>נפח הגולה!</strong></p>
+          </div>
+          <!-- Slide 26 gives this caveat to the mascot rather than to the panel. Hidden until the
+               marble is in, so it arrives WITH the explanation instead of pre-empting it -- the
+               deck's "גיף מופיע אחרי 5 שניות". He replaces the silent CHARACTER_SLOTS sprite
+               that used to stand in the corner saying nothing. -->
+          <div class="companion-say companion-say--inline companion-say--right" id="s9-say" hidden>
+            <p class="companion-bubble" style="--bubble-w: 300px;">עיקרון זה תקף לגופים שלא מתמוססים במים.<br><br>אפשר לעטוף גופים שרגישים למים בשכבת מגן דקה לפני שמכניסים למשורה.</p>
+            <video class="companion" src="assets/img/character-orange-soap.mp4?v=2" alt="" aria-hidden="true"
+                 data-pose="soap" draggable="false" autoplay loop muted playsinline style="--cw: 170px;"></video>
+          </div>
         </div>
       </div>
 
       <button class="disp-reset" id="disp-reset" type="button" onclick="dispReset()" hidden>מדידה מחדש</button>
     </div>
+
     <div class="nav-bar">
       <button class="btn-continue" id="s9-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
@@ -732,7 +756,6 @@
        leaves them showing; goTo() closes them by id suffix. -->
   <div class="scq-popup hidden" id="s10-scq-popup" role="status" aria-live="polite">
     <div class="scq-popup-header">
-      <button class="scq-popup-close" type="button" onclick="scqClosePopup('s10')" aria-label="סגור">✕</button>
       <p class="scq-popup-title" id="s10-scq-popup-title"></p>
     </div>
     <div class="scq-popup-body" id="s10-scq-popup-body"></div>
@@ -774,7 +797,12 @@
           <img class="flood-rock" id="flood-rock" src="assets/img/s11-rock.png" alt="אבן — נִתנת לגרירה" draggable="false">
           <p class="flood-hint" id="flood-hint">גררו את האבן לקערה</p>
         </div>
-
+          <div class="companion-say companion-say--inline companion-say--right" id="s9-say" hidden>
+            <p class="companion-bubble" style="--bubble-w: 320px;">עיקרון זה תקף לגופים שלא מתמוססים במים.<br><br>אפשר לעטוף גופים שרגישים למים בשכבת מגן דקה לפני שמכניסים למשורה.</p>
+            <video class="companion" src="assets/img/character-orange-soap.mp4?v=2" alt="" aria-hidden="true"
+                 data-pose="soap" draggable="false" autoplay loop muted playsinline style="--cw: 200px;"></video>
+          </div>
+        </div>
       </div>
 
       <button class="disp-reset" id="flood-reset" type="button" onclick="floodReset()" hidden>ניסוי מחדש</button>
@@ -792,26 +820,33 @@
        floating bodies is the mascot's line here, per the same note, and he holds the ping-pong
        ball slide 29 gives him. Flow: flooding S11 → S33 → flip-cards S20. -->
   <section class="screen" data-screen="33" id="s33">
-    <div class="exp exp--content">
+    <!-- Two columns, as storyboard slide 29 lays it out (QA 2026-08-25, slide 19): the photo on
+         the left, and on the right the heading, the paragraph, the boxed conclusion and then the
+         mascot with his caveat. The previous single centred column stacked the bubble on top of
+         the conclusion line and hid it. Copy is the deck's: סלע rather than אבן, the drainage as a
+         second sentence, and the caveat split into its two sentences. -->
+    <div class="exp exp--content exp--split">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
         <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
         <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
       </div>
-      <div class="exp-head">
-        <h1 class="exp-title">מה קרה כאן?</h1>
-        <p class="exp-instruction">המים בקערה גלשו ברגע שהאבן נכנסה אליה, והמים העודפים התנקזו לכלי האיסוף התחתון.</p>
-      </div>
-      <div class="exp-stage--centered">
-        <div class="scq-figure" style="width: 460px">
-          <img src="assets/img/s33-pour-to-cylinder.jpg" alt="מים נמזגים מקערת האיסוף אל תוך משורה מדורגת המסומנת עד 250 מ&quot;ל">
+      <div class="split-stage">
+        <div class="split-figure">
+          <div class="scq-figure" style="width: 100%">
+            <img src="assets/img/s33-pour-to-cylinder.jpg" alt="מים נמזגים מקערת האיסוף אל תוך משורה מדורגת המסומנת עד 250 מ&quot;ל">
+          </div>
+        </div>
+        <div class="split-side">
+          <h1 class="exp-title">מה קרה כאן?</h1>
+          <p class="exp-instruction">המים בקערה גלשו ברגע שהסלע נכנס אליה.<br>המים העודפים התנקזו בכלי האיסוף התחתון.</p>
+          <p class="split-conclusion"><strong>כמות המים שגלשו מהקערה<br>=<br>נפח הסלע!</strong></p>
+          <div class="companion-say companion-say--inline companion-say--right split-say">
+            <p class="companion-bubble" style="--bubble-w: 330px;">עבור גופים קלים שצפים במים ניתן לחבר משקולת כדי שישקעו לתחתית הכלי.<br><br>לא לשכוח להוריד את נפח המשקולת מהתוצאה הסופית!</p>
+            <video class="companion" src="assets/img/character-orange-pingpong.mp4?v=2" alt="" aria-hidden="true"
+                 data-pose="pingpong" draggable="false" autoplay loop muted playsinline style="--cw: 230px;"></video>
+          </div>
         </div>
       </div>
-      <p class="disp-calc"><strong>כמות המים שגלשו מהקערה = נפח האבן!</strong></p>
-    </div>
-    <div class="companion-say companion-say--left" style="left: 24px; bottom: 96px;">
-      <video class="companion" src="assets/img/character-orange-pingpong.mp4?v=2" alt="" aria-hidden="true"
-           data-pose="pingpong" draggable="false" autoplay loop muted playsinline style="--cw: 150px;"></video>
-      <p class="companion-bubble" style="--bubble-w: 330px;">לגופים קלים שצפים במים אפשר לחבר משקולת שתשקיע אותם — ולהחסיר את נפח המשקולת מהתוצאה הסופית.</p>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s33-continue" onclick="advanceScreen()">המשך</button>
@@ -849,7 +884,7 @@
       <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
     </nav>
     <div class="scq-question scq-question--textonly">
-      <p class="scq-qtext">הילה מילאה משורה במים עד לקו 50 מ"ל, והכניסה פנימה אבן קטנה. גובה המים במשורה עלה ל-73 מ"ל. מה נפח האבן?</p>
+      <p class="scq-qtext">הילה מילאה משורה במים עד לקו 50 מ"ל, והכניסה פנימה אבן קטנה.<br>גובה המים במשורה עלה ל-73 מ"ל.<br><strong>מה נפח האבן?</strong></p>
       <div class="scq-answers" id="s13-answers" role="radiogroup" aria-label="מה נפח האבן?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s13','a')"><span class="scq-opt-text">73 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s13','b')"><span class="scq-opt-text">50 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -865,7 +900,7 @@
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
-  <div class="scq-popup hidden" id="s13-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s13')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s13-scq-popup-title"></p></div><div class="scq-popup-body" id="s13-scq-popup-body"></div></div>
+  <div class="scq-popup hidden" id="s13-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s13-scq-popup-title"></p></div><div class="scq-popup-body" id="s13-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s13-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s13')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p>נפח הגוף = הקריאה הסופית פחות הקריאה ההתחלתית של מפלס המים.</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s13')">חזרה לשאלה</button></div></div>
 
   <!-- ═══ S14 — Standard practice Q2 (item 06) · bowling-ball flooding ═══ -->
@@ -886,7 +921,7 @@
         <img src="assets/img/s14-bowling-ball.jpg" alt="כדור באולינג שחור על פס ייצור במפעל">
       </div>
       <div class="scq-side">
-      <p class="scq-qtext">במפעל לייצור כדורי באולינג רצו לבדוק את נפח הכדור האחרון שיצא מפס הייצור. איזו שיטה מתאימה למדידת נפח הכדור?</p>
+      <p class="scq-qtext">במפעל לייצור כדורי באולינג קרתה תקלה המשפיעה על נפח הכדורים ועלולה לפגום ביכולת לשחק עם הכדורים.<br><br>לאחר תיקון התקלה מנהל המפעל רצה לבדוק את הנפח של הכדור האחרון שיצא מפס הייצור כדי לוודא שהתקלה אכן נפתרה.<br><br><strong>איזו שיטה מתאימה למדידת נפח הכדור?</strong></p>
       <div class="scq-answers" id="s14-answers" role="radiogroup" aria-label="איזו שיטה מתאימה למדידת נפח הכדור?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s14','a')"><span class="scq-opt-text">להכניס את הכדור לכלי עם מים ולמדוד כמה מים נשפכו</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s14','b')"><span class="scq-opt-text">להעריך את נפח הכדור לפי העין</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -903,7 +938,7 @@
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
-  <div class="scq-popup hidden" id="s14-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s14')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s14-scq-popup-title"></p></div><div class="scq-popup-body" id="s14-scq-popup-body"></div></div>
+  <div class="scq-popup hidden" id="s14-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s14-scq-popup-title"></p></div><div class="scq-popup-body" id="s14-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s14-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s14')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p>הכדור גדול מדי כדי להיכנס למשורה — איזו שיטה מתאימה לגופים גדולים?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s14')">חזרה לשאלה</button></div></div>
 
   <!-- ═══ S15 — Standard practice Q3 (item 07) · scientific-integrity argument ═══ -->
@@ -930,14 +965,14 @@
          The two RIGHTMOST children's bubbles go in the first (physically right,
          under RTL) column so each bubble sits on the same side as its child. -->
     <div class="hotspot-question hotspot-question--photo">
-      <p class="scq-qtext">הילדים במעבדה מנסים למדוד נפח של כפית ממתכת. לחצו על הילד שהטיעון שלו מדעי ומבוסס על ראיה.</p>
+      <p class="scq-qtext">הילדים במעבדה מנסים למדוד נפח של כפית עשויה ממתכת כדי לייצר סדרת כפיות זהות.<br>לחצו על הילד שהטיעון שלו הוא <strong>מדעי</strong> ומבוסס על <strong>ראיה</strong>.</p>
       <div class="hotspot-stage" id="s15-answers" role="radiogroup" aria-label="איזה טיעון מדעי ומבוסס על ראיה?">
-        <div class="hotspot-bubbles">
+        <div class="hotspot-bubbles hotspot-bubbles--right">
           <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s15','d')">
-            <span class="scq-opt-text">הכנסתי את הכפית למשורה עם מים. המים עלו מ-50 ל-70 מ"ל, ולכן נפח הכפית הוא 20 מ"ל</span>
+            <span class="scq-opt-text">הכנסתי את הכפית למשורה עם מים. המים עלו מ-50 ל-70 מ"ל, ולכן נפח הכפית הוא 20 מ"ל.</span>
           </button>
           <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s15','b')">
-            <span class="scq-opt-text">הסתכלתי על הכפית והערכתי לפי העין שהנפח הוא בערך 20 מ"ל</span>
+            <span class="scq-opt-text">הסתכלתי על הכפית והערכתי לפי העין שהנפח הוא בערך 20 מ"ל.</span>
           </button>
         </div>
         <div class="hotspot-photo" style="width: 628px">
@@ -947,12 +982,12 @@
           <button class="scq-opt hotspot-area" type="button" data-id="c" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','c')" style="--x:39%;--y:58%;--w:13%;--h:46%"></button>
           <button class="scq-opt hotspot-area" type="button" data-id="a" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','a')" style="--x:24%;--y:58%;--w:13%;--h:46%"></button>
         </div>
-        <div class="hotspot-bubbles">
+        <div class="hotspot-bubbles hotspot-bubbles--left">
           <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s15','c')">
-            <span class="scq-opt-text">הנחתי את הכפית על מאזניים וקיבלתי 25 גרם, לכן הנפח הוא 25</span>
+            <span class="scq-opt-text">הנחתי את הכפית על מאזניים וקיבלתי 25 גרם. לכן הנפח הוא 25.</span>
           </button>
           <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s15','a')">
-            <span class="scq-opt-text">מדדתי את הכפית בסרגל, ובכל פעם יצא אורך אחר. החלטתי שהנפח = אורך × רוחב × גובה</span>
+            <span class="scq-opt-text">מדדתי את הכפית בסרגל, ובכל פעם יצא לי אורך אחר. החלטתי לקבוע שהנפח יהיה האורך · רוחב · גובה.</span>
           </button>
         </div>
       </div>
@@ -965,7 +1000,7 @@
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
-  <div class="scq-popup hidden" id="s15-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s15')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s15-scq-popup-title"></p></div><div class="scq-popup-body" id="s15-scq-popup-body"></div></div>
+  <div class="scq-popup hidden" id="s15-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s15-scq-popup-title"></p></div><div class="scq-popup-body" id="s15-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s15-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s15')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p>איזה טיעון מבוסס על מדידה ממשית של נפח — לא על הערכה בעין ולא על מסה?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s15')">חזרה לשאלה</button></div></div>
 
   <!-- ═══ S16 — Standard practice Q4 (item 09) · crystals flooding conclusion ═══ -->
@@ -986,7 +1021,7 @@
         <img src="assets/img/s16-crystals.jpg" alt="קריסטלים גדולים ושקופים מונחים על משטח">
       </div>
       <div class="scq-side">
-      <p class="scq-qtext">אופק ואחיו קיבלו קריסטלים ענקיים. הם מילאו כלי במים עד הקצה, השקיעו קריסטל, אספו את המים שנשפכו ומדדו את נפחם. אופק טוען: "בעזרת כמות המים שנשפכו אפשר לדעת את נפח הקריסטל". האם אופק צודק?</p>
+      <p class="scq-qtext">אופק ואחיו קיבלו קריסטלים ענקיים. הם מילאו כלי במים עד הקצה, השקיעו קריסטל, אספו את המים שנשפכו ומדדו את נפחם. אופק טוען: "בעזרת כמות המים שנשפכו אפשר לדעת את נפח הקריסטל".<br><strong>האם אופק צודק?</strong></p>
       <div class="scq-answers" id="s16-answers" role="radiogroup" aria-label="האם אופק צודק?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s16','a')"><span class="scq-opt-text">לא, מים שנשפכים מכלי לא יכולים לשמש למדידת נפח</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s16','b')"><span class="scq-opt-text">לא, ניתן להשתמש בשיטה זו רק למדידת גופים הנדסיים</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -1003,7 +1038,7 @@
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
-  <div class="scq-popup hidden" id="s16-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s16')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s16-scq-popup-title"></p></div><div class="scq-popup-body" id="s16-scq-popup-body"></div></div>
+  <div class="scq-popup hidden" id="s16-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s16-scq-popup-title"></p></div><div class="scq-popup-body" id="s16-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s16-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s16')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p>הכלי היה מלא עד הקצה. מה נדחק החוצה בדיוק כשהקריסטל נכנס? שימו לב: נפח, לא מסה.</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s16')">חזרה לשאלה</button></div></div>
 
 
@@ -1039,7 +1074,7 @@
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
-  <div class="scq-popup hidden" id="s17-ddq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="ddqClosePopup('s17')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s17-ddq-popup-title"></p></div><div class="scq-popup-body" id="s17-ddq-popup-body"></div></div>
+  <div class="scq-popup hidden" id="s17-ddq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s17-ddq-popup-title"></p></div><div class="scq-popup-body" id="s17-ddq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s17-ddq-hint-overlay" onclick="if(event.target===this)ddqCloseHint('s17')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p>מה הצורה של כל גוף? האם הוא נכנס במשורה? האם יש לו צלעות ישרות?</p></div></div></div><button class="scq-hint-close" type="button" onclick="ddqCloseHint('s17')">חזרה לשאלה</button></div></div>
 
 
@@ -1053,7 +1088,7 @@
       <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
     </nav>
     <div class="dnd-question dnd-question--warmup">
-      <p class="scq-qtext">ל-5 מדענים צעירים ניתנו משימות מדידה שונות. התאימו כל משימה לכלי המתאים לה.</p>
+      <p class="scq-qtext">ל-5 מדענים צעירים ניתנו משימות מדידה שונות.<br>התאימו כל משימה לכלי המתאים לה.</p>
       <div class="dnd-board">
         <div class="dnd-targets" id="s18-ddq-targets"></div>
         <div class="dnd-source-wrap">
@@ -1070,7 +1105,7 @@
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
-  <div class="scq-popup hidden" id="s18-ddq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="ddqClosePopup('s18')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s18-ddq-popup-title"></p></div><div class="scq-popup-body" id="s18-ddq-popup-body"></div></div>
+  <div class="scq-popup hidden" id="s18-ddq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s18-ddq-popup-title"></p></div><div class="scq-popup-body" id="s18-ddq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s18-ddq-hint-overlay" onclick="if(event.target===this)ddqCloseHint('s18')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p>תחילה חשבו — מה רוצים למדוד בכל משימה? אורך, מסה, נפח של נוזל, או נפח של גוף מוצק? אחר כך בחרו כלי מדידה מתאים.</p></div></div></div><button class="scq-hint-close" type="button" onclick="ddqCloseHint('s18')">חזרה לשאלה</button></div></div>
 
   <!-- ═══ S19 — Warm-up 2 (item 04) · SingleChoiceQuestion (fill-in) ═══ -->
@@ -1115,7 +1150,7 @@
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
-  <div class="scq-popup hidden" id="s19-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><button class="scq-popup-close" type="button" onclick="scqClosePopup('s19')" aria-label="סגור">✕</button><p class="scq-popup-title" id="s19-scq-popup-title"></p></div><div class="scq-popup-body" id="s19-scq-popup-body"></div></div>
+  <div class="scq-popup hidden" id="s19-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s19-scq-popup-title"></p></div><div class="scq-popup-body" id="s19-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s19-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s19')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p>כשמכניסים גוף מוצק למים הוא תופס מקום בתוך המשורה. מה קורה למפלס המים?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s19')">חזרה לשאלה</button></div></div>
 
 
@@ -1195,7 +1230,7 @@
          which leaves 430px — enough for a 140px sprite and a 260px bubble. -->
     <div class="companion-say companion-say--left" style="left: 14px; top: 154px;">
       <video class="companion" src="assets/img/character-orange-ask.mp4?v=2" aria-hidden="true"
-           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 140px;"></video>
+           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 252px;"></video>
       <p class="companion-bubble hidden" id="s21-guess-bubble" style="--bubble-w: 260px;">בואו נלמד בדיוק איך לעשות את זה!</p>
     </div>
     <div class="nav-bar">
@@ -1356,12 +1391,12 @@
       </div>
       <div class="exp-head exp-head--question">
         <h1 class="exp-title">מדידת נפח לגוף שאינו הנדסי</h1>
-        <p class="exp-instruction">נחשו – איך נמדוד נפח של גופים שאינם הנדסיים, כמו אלה שבתמונה?</p>
+        <p class="exp-instruction">נחשו – איך נמדוד נפח של <strong>גופים שאינם הנדסיים</strong>, כמו אלה שבתמונה?</p>
       </div>
       <div class="scq-figure" style="width: 460px">
         <img src="assets/img/s29-nongeometric.jpg" alt="גולת זכוכית, אגוז, מפתח ישן וחייל צעצוע מונחים בשורה על משטח עץ">
       </div>
-      <div class="scq-answers guess-options" id="s29-guess" role="radiogroup" aria-label="נחשו – איך נמדוד נפח של גופים שאינם הנדסיים, כמו אלה שבתמונה?">
+      <div class="scq-answers guess-options" id="s29-guess" role="radiogroup" aria-label="נחשו – איך נמדוד נפח של <strong>גופים שאינם הנדסיים</strong>, כמו אלה שבתמונה?">
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s29', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s29', this)"><span class="scq-opt-text">נחתוך אותם לחלקים ונמדוד עם סרגל</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s29', this)"><span class="scq-opt-text">נכניס אותם למים</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -1375,7 +1410,7 @@
          centred figure (460px wide here, so 410px of room). -->
     <div class="companion-say companion-say--left" style="left: 14px; top: 154px;">
       <video class="companion" src="assets/img/character-orange-ask.mp4?v=2" aria-hidden="true"
-           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 140px;"></video>
+           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 252px;"></video>
       <p class="companion-bubble hidden" id="s29-guess-bubble" style="--bubble-w: 240px;">אל תדאגו, לא תישארו סקרנים! עכשיו נלמד איך עושים את זה!</p>
     </div>
     <div class="nav-bar">
@@ -1453,10 +1488,20 @@
        The 80% rule itself lives in goToNextPart(); this screen is what tells
        the learner about it.  Flow: warm-up 2 S19 → S32 → practice Q1 S13. -->
   <section class="screen" data-screen="32" id="s32">
-    <div class="transition-content">
-      <h1 class="transition-title">אפשר להתחיל!</h1>
-      <p class="transition-sub">סיימנו את שלב הלימוד, נעבור לתרגול הראשון ונענה על <strong>5 שאלות</strong>.<br>צריך לענות נכון על 4 שאלות (80%) לפחות.</p>
-      <p class="transition-note">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</p>
+    <!-- Laid out as storyboard slide 50 lays it out (QA 2026-08-25, slide 23). There is no
+         heading here: "אפשר להתחיל!" is the deck's BUTTON label, and it was being drawn twice —
+         once as an <h1> and once on the continue button. The count is the emphasis instead:
+         "5 שאלות" on its own line at 40px. The closing line is the mascot's, so it moves into a
+         bubble beside him rather than floating under the text. -->
+    <div class="transition-content transition-content--intro">
+      <p class="transition-sub">סיימנו את שלב הלימוד, נעבור לתרגול הראשון ונענה על</p>
+      <p class="transition-count">5 שאלות</p>
+      <p class="transition-sub">צריך לענות נכון על 4 שאלות (80%) לפחות.</p>
+    </div>
+    <div class="companion-say companion-say--right" style="right: 150px; bottom: 150px;">
+      <p class="companion-bubble" style="--bubble-w: 300px;">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</p>
+      <video class="companion" src="assets/img/character-orange-ask.mp4?v=2" aria-hidden="true"
+           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 220px;"></video>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s32-continue" onclick="advanceScreen()">קחו אותי לשאלות</button>
@@ -1525,7 +1570,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=37"></script>
+<script src="js/main.js?v=39"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

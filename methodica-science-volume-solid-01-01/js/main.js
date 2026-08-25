@@ -234,10 +234,15 @@ function startCompanionMedia(el) {
    about bodies that FLOAT — he holds a ping-pong ball. These two were transposed until
    2026-08-24, which put each prop on the screen arguing the other case. */
 const CHARACTER_SLOTS = {
-  s9:  { pose: 'soap',             w: 160, right: 30, bottom:  95 },  /* sb26 — dissolving */
+  /* s9 has no slot any more: slide 26 gives its mascot a LINE (the caveat about bodies that do
+     not dissolve), so he is authored in the markup inside a .companion-say group and revealed
+     with the explanation — a silent CHARACTER_SLOTS sprite cannot carry a bubble. */
   /* s11 has no slot: its slide-29 companion (the ping-pong ball) moved to s33 with the
      rest of that slide, and is authored there inside a .companion-say group. */
-  s12: { pose: 'stretch',          w: 200, right: 40, bottom:  89 }   /* sb41 */
+  /* QA 2026-08-25 (slide 20): bigger, and centred under the two lines of text rather than
+     tucked into the right corner. `center` swaps the right offset for a 50% + translate,
+     so `right` must go — leaving both would write two conflicting anchors. */
+  s12: { pose: 'stretch',          w: 260, bottom:  89, center: true }   /* sb41 */
 };
 /* S7's two path cards are the mascot in two poses. Not a CHARACTER_SLOTS entry:
    these sit inside the option cards as content, not as a floating sprite. */
@@ -677,7 +682,7 @@ const COMIC_DATA = {
            head is to its LEFT, so trailing circles downward pointed them away from the thinker
            (QA 2026-08-24). Widened too — the thought frame's new padding needs the room. */
         { type: 'thought', tail: 'left', r: 3, t: 20, w: 26,
-          text: 'יש לנו קובייה שכל צלע שלה = 10 ס"מ. 10·10·10 = 1,000. נפח הקובייה = 1,000 סמ"ק!' },
+          text: 'יש לנו קובייה שכל צלע שלה = 10 ס"מ.\n10·10·10 = 1,000.\nנפח הקובייה = 1,000 סמ"ק!' },
         { type: 'narration', r: 56, t: 6, w: 30,
           text: 'אבל מה לגבי גוף שאינו הנדסי, כמו מפתח, בלוט, או גולה?' }
       ]
@@ -1135,6 +1140,7 @@ function dispDrop() {
   if (inst) inst.textContent = 'הגולה שקעה והמים עלו — בואו נבין למה.';
   setTimeout(function () {
     const ex = document.getElementById('disp-explain'); if (ex) ex.hidden = false;
+    const say = document.getElementById('s9-say');       if (say) say.hidden = false;
     const rs = document.getElementById('disp-reset');    if (rs) rs.hidden = false;
     const cont = document.getElementById('s9-continue');  if (cont) cont.disabled = false;
   }, 900);
@@ -1149,6 +1155,7 @@ function dispReset() {
   document.getElementById('disp-badge').textContent = '50 מ"ל';
   document.getElementById('disp-instruction').textContent = 'הכניסו את הגולה אל תוך המשורה.';
   document.getElementById('disp-explain').hidden = true;
+  document.getElementById('s9-say').hidden = true;
   document.getElementById('disp-reset').hidden = true;
   document.getElementById('s9-continue').disabled = true;
 }
@@ -1162,6 +1169,7 @@ function dispEnter() {
     document.getElementById('disp-cylinder').classList.add('risen');
     document.getElementById('disp-badge').textContent = '62 מ"ל';
     document.getElementById('disp-explain').hidden = false;
+    document.getElementById('s9-say').hidden = false;
     document.getElementById('disp-reset').hidden = false;
     document.getElementById('s9-continue').disabled = false;
   } else {
@@ -1309,10 +1317,16 @@ function aqInitDnd() {
   aqDnd.attachSource(document.getElementById('aq-ruler'), 'ruler');
   aqDnd.attachTarget(document.getElementById('aq-cube'), 'aq-cube');
 }
+/* Toggling visibility, never textContent — see the .aq-ruler-hint comment in unit-css/style.css.
+   Clearing the text collapsed the hint's box and dragged the cube 51px sideways (QA 2026-08-25,
+   slide 14), which invalidated the ruler alignment the learner had just made. */
+function aqHintSpent(spent) {
+  document.getElementById('aq-ruler-hint').classList.toggle('is-spent', !!spent);
+}
 function aqMeasure() {
   if (aqMeasured) return;
   aqMeasured = true;
-  document.getElementById('aq-ruler-hint').textContent = '';
+  aqHintSpent(true);
   scqSetLocked('s10', false);   // unlock the volume question
   xapiSend('interacted', 'question', { response: '10cm' }, { category: 'aquarium-ruler' });
 }
@@ -1321,13 +1335,13 @@ function aqReset() {
   const ruler = document.getElementById('aq-ruler');
   ruler.style.transform = '';
   delete ruler.dataset.pdragOffX; delete ruler.dataset.pdragOffY;
-  document.getElementById('aq-ruler-hint').textContent = 'גררו את הסרגל לדופן הצהובה';
+  aqHintSpent(false);
 }
 function aqEnter() {
   aqInitDnd();
   syncPathToggle();
   if (aqMeasured) {
-    document.getElementById('aq-ruler-hint').textContent = '';
+    aqHintSpent(true);
     scqSetLocked('s10', false);
   } else {
     aqReset();
@@ -1694,7 +1708,20 @@ function ddqCheck(screen) {
     { questionId: q.questionId, parentId: q.parentId });
   XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!allCorrect;
   s.checked = true; s.done = true;
-  if (!allCorrect) { Object.keys(cfg.correctMap).forEach(tId => { cfg.placement[cfg.correctMap[tId]] = tId; }); }  // reveal correct
+  /* The learner's own placement used to be overwritten here and lost. QA 2026-08-25 (slide 29)
+     asks for a toggle between "התשובה שלי" and "תשובה נכונה" inside the wrong-answer feedback,
+     so both boards have to survive. ddqRender() already marks each slot correct/wrong against
+     correctMap, so switching cfg.placement between the two is the whole mechanism: the model
+     answer shows every slot green, the learner's shows which of theirs actually landed. */
+  if (!allCorrect) {
+    s.learnerPlacement = Object.assign({}, cfg.placement);
+    const model = {};
+    cfg.items.forEach(it => { model[it.id] = 'source'; });
+    Object.keys(cfg.correctMap).forEach(tId => { model[cfg.correctMap[tId]] = tId; });
+    s.correctPlacement = model;
+    s.answerView = 'correct';
+    cfg.placement = Object.assign({}, model);
+  }
   ddqRender(screen);
   ddqShowPopup(screen, allCorrect ? 'correct' : 'incorrect');
   const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'שנמשיך?'; btn.disabled = false; }
@@ -1716,8 +1743,38 @@ function ddqShowPopup(screen, type) {
   popup.style.background = (type === 'correct') ? '#edf8ed' : '#ffdbdc';
   popup.style.left = '2px'; popup.style.top = 'auto'; popup.style.bottom = '84px';
   document.getElementById(screen + '-ddq-popup-title').textContent = cfg.title;
-  document.getElementById(screen + '-ddq-popup-body').innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
+  const body = document.getElementById(screen + '-ddq-popup-body');
+  body.innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
+  /* Only a wrong answer has two boards to switch between. Same button shape as the hint
+     overlay's, which is what the note asks for. */
+  const st = DDQ_REG[screen];
+  if (type === 'incorrect' && st.learnerPlacement) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'scq-hint-close ddq-answer-toggle';
+    b.id = screen + '-ddq-answer-toggle';
+    b.onclick = function () { ddqToggleAnswer(screen); };
+    body.appendChild(b);
+    ddqSyncAnswerToggle(screen);
+  }
   popup.classList.remove('hidden');
+}
+/* Swap the board between the model answer and what the learner actually did. */
+function ddqToggleAnswer(screen) {
+  const s = DDQ_REG[screen];
+  if (!s || !s.learnerPlacement) return;
+  s.answerView = (s.answerView === 'correct') ? 'learner' : 'correct';
+  s.cfg.placement = Object.assign({},
+    s.answerView === 'correct' ? s.correctPlacement : s.learnerPlacement);
+  ddqRender(screen);
+  ddqSyncAnswerToggle(screen);
+}
+/* The label names what the button will SHOW next, not what is on screen now. */
+function ddqSyncAnswerToggle(screen) {
+  const s = DDQ_REG[screen];
+  const b = document.getElementById(screen + '-ddq-answer-toggle');
+  if (!s || !b) return;
+  b.textContent = (s.answerView === 'correct') ? 'התשובה שלי' : 'תשובה נכונה';
 }
 function ddqClosePopup(screen) { document.getElementById(screen + '-ddq-popup')?.classList.add('hidden'); }
 function ddqEnter(screen) {
@@ -1727,6 +1784,10 @@ function ddqEnter(screen) {
     s.checked = false;
     s.cfg.items.forEach(it => { s.cfg.placement[it.id] = 'source'; });
     const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'בדיקה'; btn.disabled = true; }
+  }
+  if (s.done && s.correctPlacement) {          // a revisited wrong answer opens on the model board
+    s.answerView = 'correct';
+    s.cfg.placement = Object.assign({}, s.correctPlacement);
   }
   ddqRender(screen);
   if (s.done) { const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'שנמשיך?'; btn.disabled = false; } }
@@ -1790,11 +1851,16 @@ ddqRegister({
     // Storyboard slide 42 puts a small photo inside each task card. The שדף photo
     // is the one from S17 (slide 42 illustrates this task with a בלוט, which the
     // script later renamed to צדף — reusing S17's shell keeps art and copy agreed).
-    { id: 'wu-cup',   label: 'כמה מים יש בכוס?',                    img: 'assets/img/s18-task-water-cup.jpg',  w: 72 },
-    { id: 'wu-cube',  label: 'מה אורך הצלע של הקובייה?',            img: 'assets/img/s18-task-rubik.jpg',      w: 66 },
+    /* QA 2026-08-25 (slide 21): DELIBERATELY out of order. These five used to sit in the same
+       sequence as `targets` below, so the nth pill was always the answer to the nth target and the
+       matching could be done by position without reading anything. The order asked for is melon
+       first, cube second-to-last, cup last; the other two fill the middle. Checked against
+       correctMap: no pill now sits at the index of its own target. */
     { id: 'wu-melon', label: 'מה המסה של האבטיח?',                  img: 'assets/img/s18-task-watermelon.jpg', w: 64 },
+    { id: 'wu-doll',  label: 'מהו הנפח של בובת הפלסטיק הגדולה?',    img: 'assets/img/s18-task-doll.jpg',       w: 90 },
     { id: 'wu-shell', label: 'מהו הנפח של הצדף הקטן?',              img: 'assets/img/s17-shell.png',           w: 68 },
-    { id: 'wu-doll',  label: 'מהו הנפח של בובת הפלסטיק הגדולה?',    img: 'assets/img/s18-task-doll.jpg',       w: 90 }
+    { id: 'wu-cube',  label: 'מה אורך הצלע של הקובייה?',            img: 'assets/img/s18-task-rubik.jpg',      w: 66 },
+    { id: 'wu-cup',   label: 'כמה מים יש בכוס?',                    img: 'assets/img/s18-task-water-cup.jpg',  w: 72 }
   ],
   targets: [
     { id: 'wt-pour',     label: 'מזיגה למשורה' },

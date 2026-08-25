@@ -98,6 +98,10 @@
   line-height: 1.4;
   margin: 0;
   word-break: break-word;
+  /* Bubble copy carries its own line breaks as \n in COMIC_DATA. comicBubbleHtml() runs the
+     text through esc(), so markup cannot be used for this. pre-line still collapses runs of
+     spaces, so bubbles without a \n render exactly as before. */
+  white-space: pre-line;
 }
 
 /* Bubble tail: down-pointing beak with the same white fill + blue stroke.
@@ -169,7 +173,6 @@
   border-radius: 46% 54% 48% 52% / 62% 58% 42% 38%;
   padding: 30px 38px;
 }
-.speech-bubble--thought .speech-bubble__text { font-style: italic; }
 .speech-bubble--thought .speech-bubble__tail { width: 34px; height: 34px; }
 .speech-bubble--thought .speech-bubble__tail::before,
 .speech-bubble--thought .speech-bubble__tail::after {
@@ -232,8 +235,11 @@
   border-radius: 1000px;
   padding: 8px 20px;
 }
+/* QA 2026-08-25 (slides 9, 11): the banner strips carried 800 while every other bubble sits at
+   400 — "זוהי שיטת דחיקת המים!" and "זוהי שיטת ההצפה!" read as shouted. The white-on-blue pill
+   already carries the emphasis; the weight does not need to. */
 .speech-bubble--banner .speech-bubble__text {
-  color: #fff; font-weight: 800; font-size: 22px; text-align: center;
+  color: #fff; font-weight: 400; font-size: 22px; text-align: center;
 }
 
 /* ── Variant: side note (caveats / footnotes inside a panel) ── */
@@ -374,8 +380,12 @@
   pointer-events: none;
 }
 .disp-cylinder-wrap.risen .disp-sunk-marble { top: 82%; transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+/* QA 2026-08-25 (slide 17): the water-level marker belongs to the RIGHT of the cylinder, not the
+   left, where it sat next to the marble's parking spot and read as the marble's label. It still
+   tracks the surface, so it is the level readout the deck asks for: 50 at rest, 62 once the
+   marble is in. */
 .disp-badge {
-  position: absolute; left: -8px; top: 50%; transform: translate(-100%, -50%);
+  position: absolute; right: -8px; top: 50%; transform: translate(100%, -50%);
   background: #fff; border: 2px solid var(--subject-500); color: #1e2a38;
   font-family: 'Assistant', sans-serif; font-weight: 700; font-size: 15px;
   padding: 3px 11px; border-radius: 999px; white-space: nowrap;
@@ -424,3 +434,78 @@
 }
 .meas-object-icon { display: flex; align-items: center; justify-content: center; height: 56px; }
 .meas-obj-img { height: 56px; width: auto; display: block; }
+
+/* QA 2026-08-25 (slide 20). Scoped to S12 on purpose: .transition-title is shared with
+   parts 02 and 04, whose transition screens QA has not asked to resize. */
+#s12 .transition-title { font-size: 40px; }
+#s12 .transition-sub   { font-size: 24px; }
+
+/* QA 2026-08-25 (slide 5): S6's image + narration move up 100px to close the empty band above
+   them. .hook-content is centred with `top: calc(50% - 37px)`, so the offset goes on top
+   rather than on the transform, which is already carrying the centring translate. */
+#s6 .hook-content { top: calc(50% - 137px); }
+
+/* QA 2026-08-25 (slide 20) again: the sprite grew and moved to the centre, so the two lines of
+   text have to move off its head. .transition-content is centred on the canvas, and the canvas
+   is only 710 design px tall at the reference aspect — at that height a centred text block and
+   a 260px sprite anchored 89px off the bottom overlap by ~26px. Lifting the text 90px clears it
+   there and simply adds air on the taller canvases a narrower window produces. */
+#s12 .transition-content { top: calc(50% - 127px); }
+
+/* S32 practice intro, storyboard slide 50 (QA 2026-08-25, slide 23). The count carries the
+   emphasis the deleted heading used to: its own line at 40px bold. The block also sits higher
+   than a plain .transition-content so the mascot and his bubble have the lower half. */
+#s32 .transition-content--intro { top: calc(50% - 150px); gap: 4px; }
+#s32 .transition-count {
+  font-family: 'Assistant', sans-serif; font-size: 40px; font-weight: 800;
+  color: #303030; line-height: 1.2; margin: 4px 0;
+}
+
+/* ── Two-column content screen (S33, storyboard slide 29) ──────────────────────────────
+   QA 2026-08-25 (slide 19). The deck puts the photo in the left half and stacks heading,
+   paragraph, boxed conclusion and the mascot down the right. `direction: ltr` on the row is
+   what puts the figure physically LEFT while the text inside each column stays RTL — the same
+   trick .aq-stage uses. */
+.exp--split { padding-top: 100px; }
+.split-stage {
+  flex: 1 1 auto; min-height: 0; width: 100%; max-width: 1160px;
+  display: flex; direction: ltr; align-items: center; justify-content: center; gap: 40px;
+}
+.split-figure { flex: 0 0 440px; max-width: 440px; }
+.split-side {
+  flex: 1 1 auto; min-width: 0; direction: rtl;
+  display: flex; flex-direction: column; align-items: stretch; gap: 12px;
+}
+/* The blue-bordered conclusion box of slide 29. */
+.split-conclusion {
+  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 700;
+  color: #303030; text-align: center; direction: rtl; line-height: 1.35;
+  border: 2px solid var(--subject-500); border-radius: 12px;
+  padding: 12px 18px; margin: 0;
+}
+/* The mascot sits INSIDE the right column, so the group is a flow item. That is exactly what
+   .companion-say--inline already means, so the markup uses it and this only adds the spacing
+   — the old absolutely-anchored group is what put the bubble on top of the conclusion line. */
+.split-say { margin-top: 4px; }
+
+/* S9 two-column stage, storyboard slide 26 (QA 2026-08-25, slide 17).
+   `direction: ltr` on the row is what puts the applet physically LEFT and the explanation
+   RIGHT while the text inside each column stays RTL -- the same lever .aq-stage and
+   .split-stage use. .disp-stage's own `direction: rtl` in unit-css is overridden here
+   because this sheet loads second. */
+#s9 .disp-stage { direction: ltr; align-items: center; gap: 40px; }
+#s9 .disp-applet { flex: 0 0 auto; display: flex; direction: rtl; align-items: center; gap: 46px; }
+#s9 .disp-side {
+  flex: 1 1 auto; min-width: 0; direction: rtl;
+  display: flex; flex-direction: column; align-items: stretch; gap: 10px;
+}
+/* The mascot is a flow item at the foot of the right column, so his bubble can never land
+   on the cylinder the way an absolutely-anchored group did. */
+#s9 .companion-say { align-self: flex-start; }
+
+/* QA 2026-08-25 (slides 24, 30) asked for the practice stems to carry bold ONLY on their
+   closing question, which S13 and S16 now mark up with <strong>. Scoped to this component:
+   .scq-question--textonly is shared with part 02 (s4, s6) and part 04 (s1), whose stems have
+   no <strong> and were not in this QA round — changing the shared rule would silently unbold
+   them. S14 and S16 use the same treatment via their own wrappers. */
+#s13 .scq-qtext, #s14 .scq-qtext, #s16 .scq-qtext { font-weight: 400; }
