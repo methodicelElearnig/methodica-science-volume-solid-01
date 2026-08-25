@@ -1708,7 +1708,20 @@ function ddqCheck(screen) {
     { questionId: q.questionId, parentId: q.parentId });
   XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!allCorrect;
   s.checked = true; s.done = true;
-  if (!allCorrect) { Object.keys(cfg.correctMap).forEach(tId => { cfg.placement[cfg.correctMap[tId]] = tId; }); }  // reveal correct
+  /* The learner's own placement used to be overwritten here and lost. QA 2026-08-25 (slide 29)
+     asks for a toggle between "התשובה שלי" and "תשובה נכונה" inside the wrong-answer feedback,
+     so both boards have to survive. ddqRender() already marks each slot correct/wrong against
+     correctMap, so switching cfg.placement between the two is the whole mechanism: the model
+     answer shows every slot green, the learner's shows which of theirs actually landed. */
+  if (!allCorrect) {
+    s.learnerPlacement = Object.assign({}, cfg.placement);
+    const model = {};
+    cfg.items.forEach(it => { model[it.id] = 'source'; });
+    Object.keys(cfg.correctMap).forEach(tId => { model[cfg.correctMap[tId]] = tId; });
+    s.correctPlacement = model;
+    s.answerView = 'correct';
+    cfg.placement = Object.assign({}, model);
+  }
   ddqRender(screen);
   ddqShowPopup(screen, allCorrect ? 'correct' : 'incorrect');
   const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'שנמשיך?'; btn.disabled = false; }
@@ -1730,8 +1743,38 @@ function ddqShowPopup(screen, type) {
   popup.style.background = (type === 'correct') ? '#edf8ed' : '#ffdbdc';
   popup.style.left = '2px'; popup.style.top = 'auto'; popup.style.bottom = '84px';
   document.getElementById(screen + '-ddq-popup-title').textContent = cfg.title;
-  document.getElementById(screen + '-ddq-popup-body').innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
+  const body = document.getElementById(screen + '-ddq-popup-body');
+  body.innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
+  /* Only a wrong answer has two boards to switch between. Same button shape as the hint
+     overlay's, which is what the note asks for. */
+  const st = DDQ_REG[screen];
+  if (type === 'incorrect' && st.learnerPlacement) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'scq-hint-close ddq-answer-toggle';
+    b.id = screen + '-ddq-answer-toggle';
+    b.onclick = function () { ddqToggleAnswer(screen); };
+    body.appendChild(b);
+    ddqSyncAnswerToggle(screen);
+  }
   popup.classList.remove('hidden');
+}
+/* Swap the board between the model answer and what the learner actually did. */
+function ddqToggleAnswer(screen) {
+  const s = DDQ_REG[screen];
+  if (!s || !s.learnerPlacement) return;
+  s.answerView = (s.answerView === 'correct') ? 'learner' : 'correct';
+  s.cfg.placement = Object.assign({},
+    s.answerView === 'correct' ? s.correctPlacement : s.learnerPlacement);
+  ddqRender(screen);
+  ddqSyncAnswerToggle(screen);
+}
+/* The label names what the button will SHOW next, not what is on screen now. */
+function ddqSyncAnswerToggle(screen) {
+  const s = DDQ_REG[screen];
+  const b = document.getElementById(screen + '-ddq-answer-toggle');
+  if (!s || !b) return;
+  b.textContent = (s.answerView === 'correct') ? 'התשובה שלי' : 'תשובה נכונה';
 }
 function ddqClosePopup(screen) { document.getElementById(screen + '-ddq-popup')?.classList.add('hidden'); }
 function ddqEnter(screen) {
@@ -1741,6 +1784,10 @@ function ddqEnter(screen) {
     s.checked = false;
     s.cfg.items.forEach(it => { s.cfg.placement[it.id] = 'source'; });
     const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'בדיקה'; btn.disabled = true; }
+  }
+  if (s.done && s.correctPlacement) {          // a revisited wrong answer opens on the model board
+    s.answerView = 'correct';
+    s.cfg.placement = Object.assign({}, s.correctPlacement);
   }
   ddqRender(screen);
   if (s.done) { const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'שנמשיך?'; btn.disabled = false; } }
