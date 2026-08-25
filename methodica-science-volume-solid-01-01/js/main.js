@@ -1752,6 +1752,16 @@ function ddqShowPopup(screen, type) {
      overlay's, which is what the note asks for. */
   const st = DDQ_REG[screen];
   if (type === 'incorrect' && st.learnerPlacement) {
+    /* `answerNote` describes the BOARD, not the answer, so it is rendered here rather than
+       written into the copy: ddqSyncAnswerToggle hides it the moment the learner switches to
+       their own placement. Storyboard slide 70 puts it directly under the title. */
+    if (st.cfg.answerNote) {
+      const n = document.createElement('p');
+      n.className = 'ddq-answer-note';
+      n.id = screen + '-ddq-answer-note';
+      n.textContent = st.cfg.answerNote;
+      body.insertBefore(n, body.firstChild);
+    }
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'scq-hint-close ddq-answer-toggle';
@@ -1777,7 +1787,8 @@ function ddqSyncAnswerToggle(screen) {
   const s = DDQ_REG[screen];
   const b = document.getElementById(screen + '-ddq-answer-toggle');
   if (!s || !b) return;
-  b.textContent = (s.answerView === 'correct') ? 'התשובה שלי' : 'תשובה נכונה';
+  b.textContent = (s.answerView === 'correct') ? 'התשובה שלי' : 'תשובה נכונה';  const n = document.getElementById(screen + '-ddq-answer-note');
+  if (n) n.style.display = (s.answerView === 'correct') ? '' : 'none';
 }
 function ddqClosePopup(screen) { document.getElementById(screen + '-ddq-popup')?.classList.add('hidden'); }
 function ddqEnter(screen) {
@@ -1837,9 +1848,12 @@ registerPracticeDnD(3, {
     { id: 't-flood',    label: 'שיטת ההצפה' }
   ],
   correctMap: { 't-ruler': 'metal-cube', 't-displace': 'shell', 't-flood': 'goblet' },
+  /* Copy verbatim from storyboard slides 69 (correct) and 70 (wrong). Slide 70's second line,
+     'התשובה הנכונה מוצגת.', is `answerNote` and not body copy — see ddqShowPopup. */
+  answerNote: 'התשובה הנכונה מוצגת.',
   popups: {
-    correct:   { title: 'נכון!', body: ['קוביית מתכת = גוף הנדסי → מדידה בסרגל.', 'צדפה = גוף לא-הנדסי קטן שנכנס למשורה → דחיקת מים.', 'גביע גדול = גוף שאינו נכנס למשורה → שיטת ההצפה.'] },
-    incorrect: { title: 'לא מדויק — התשובה הנכונה מוצגת.', body: ['קוביית מתכת → מדידה הנדסית בסרגל.', 'צדפה → שיטת דחיקת המים.', 'גביע גדול → שיטת ההצפה.'] }
+    correct:   { title: 'תשובה נכונה!', body: ['קוביית המתכת היא גוף הנדסי ולכן נבצע מדידה הנדסית.', 'צדפה היא גוף שאינו הנדסי וקטן מספיק להיכנס למשורה ולכן נבצע דחיקת מים.', 'גביע הוא גוף שאינו הנדסי ולא נכנס במשורה ולכן נבצע את שיטת ההצפה.'] },
+    incorrect: { title: 'התשובה אינה נכונה.', body: ['קוביית המתכת היא גוף הנדסי ולכן נבצע מדידה הנדסית.', 'צדפה היא גוף שאינו הנדסי וקטן מספיק להיכנס למשורה ולכן נבצע דחיקת מים.', 'גביע הוא גוף שאינו הנדסי ולא נכנס במשורה ולכן נבצע את שיטת ההצפה.'] }
   }
 });
 
@@ -1873,9 +1887,13 @@ ddqRegister({
     { id: 'wt-flood',    label: 'שיטת ההצפה' }
   ],
   correctMap: { 'wt-pour': 'wu-cup', 'wt-ruler': 'wu-cube', 'wt-scale': 'wu-melon', 'wt-displace': 'wu-shell', 'wt-flood': 'wu-doll' },
+  /* Copy from storyboard slides 45 (correct) and 44 (wrong) — both slides carry the same two
+     explanation lines. Slide 45 reads 'כל שיטת מדידה מתאימים'; that is a typo in the deck
+     (slide 44 has the agreeing 'מתאימה'), so both use the agreeing form here. */
+  answerNote: 'ההתאמה הנכונה מוצגת.',
   popups: {
-    correct:   { title: 'נכון! כל הכבוד.', body: ['לכל משימת מדידה מתאים כלי אחר: נוזל נמזג למשורה, אורך נמדד בסרגל, מסה במאזניים.', 'נפח של גוף קטן שנכנס למשורה — בדחיקת מים; ושל גוף גדול — בשיטת ההצפה.'] },
-    incorrect: { title: 'לא מדויק — ההתאמה הנכונה מוצגת.', body: ['כוס מים → מזיגה למשורה • צלע קובייה → סרגל • מסת אבטיח → מאזניים.', 'צדף קטן → דחיקת מים • בובה גדולה → שיטת ההצפה.'] }
+    correct:   { title: 'התאמה מושלמת!', body: ['כל שיטת מדידה מתאימה למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] },
+    incorrect: { title: 'התשובה אינה נכונה.', body: ['כל שיטת מדידה מתאימה למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] }
   },
   onFinish: function (ok) { warmupFinish(0, 's18', ok); },
   onContinue: function () { goTo(19); }

@@ -4021,6 +4021,9 @@ html, body {
 /* QA 2026-08-25 (slide 29): the התשובה-שלי / תשובה-נכונה switch inside a wrong-answer
    popup. Borrows .scq-hint-close's shape, as the note asks; only the spacing and a narrower
    box are added, since it sits in a 426px popup rather than a full-width overlay. */
+/* The line naming which board is on screen. Bold, as the storyboard has it; visible only while
+   the model answer is displayed — ddqSyncAnswerToggle hides it in the 'התשובה שלי' state. */
+.scq-popup-body p.ddq-answer-note { font-weight: 700; }   /* beats `.scq-popup-body p`, later in this sheet */
 .ddq-answer-toggle {
   width: auto; min-width: 160px; padding: 10px 26px;
   font-size: 20px; margin-top: 12px;
