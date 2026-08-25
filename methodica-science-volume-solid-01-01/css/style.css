@@ -173,6 +173,10 @@
   border-radius: 46% 54% 48% 52% / 62% 58% 42% 38%;
   padding: 30px 38px;
 }
+/* Centred, unlike every other bubble: the thought frame is an ellipse, so a right-aligned
+   paragraph leaves a widening wedge of white down the left as the curve pulls away from the
+   text. Centring balances that. Applies to all thought bubbles in this component. */
+.speech-bubble--thought .speech-bubble__text { text-align: center; }
 .speech-bubble--thought .speech-bubble__tail { width: 34px; height: 34px; }
 .speech-bubble--thought .speech-bubble__tail::before,
 .speech-bubble--thought .speech-bubble__tail::after {

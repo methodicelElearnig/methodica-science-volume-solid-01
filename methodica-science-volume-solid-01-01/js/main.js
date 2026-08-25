@@ -684,8 +684,8 @@ const COMIC_DATA = {
         /* r is NEGATIVE on purpose: the bubble overhangs the panel's right edge by 8% so it
            clears Archimedes' head. .comic-viewport does not clip it — the panel is inside a
            track that only clips horizontally between slides. */
-        { type: 'thought', tail: 'left', r: -8, t: 20, w: 28,
-          text: 'יש לנו קובייה שכל צלע שלה = 10 ס"מ.\n10·10·10 = 1,000.\nנפח הקובייה = 1,000 סמ"ק!' },
+        { type: 'thought', tail: 'left', r: -8, t: 20, w: 33,
+          text: 'יש לנו קובייה שכל צלע\nשלה = 10 ס"מ.\n10·10·10 = 1,000.\nנפח הקובייה = 1,000 סמ"ק!' },
         { type: 'narration', r: 56, t: 6, w: 30,
           text: 'אבל מה לגבי גוף שאינו הנדסי, כמו מפתח, בלוט, או גולה?' }
       ]
