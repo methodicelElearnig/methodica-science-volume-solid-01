@@ -731,7 +731,7 @@ const COMIC_DATA = {
         alt: 'ארכימדס מסתכל אל המצלמה.',
         bubbles: [
           { type: 'banner', t: 78, text: 'זוהי שיטת דחיקת המים!' },
-          { type: 'speech', tail: 'down-left', r: 3, t: 5, w: 32,
+          { type: 'speech', tail: 'down-left', r: 1, t: 1, w: 28,
             text: 'אם רוצים למדוד נפח של גוף שעלול להיפגע במים, אפשר לעטוף אותו בשכבת מגן דקה ואטומה למים.' }
         ] }
     ]
