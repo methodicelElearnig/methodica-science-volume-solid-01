@@ -1195,9 +1195,15 @@ function dispEnter() {
      startLocked?, onFinish?, onContinue?}). goTo() auto-closes popups/overlays.
    ═══════════════════════════════════════════════════════════ */
 const SCQ_REG = {};
+/* `phase` records WHAT THE LEARNER WAS LAST SHOWN — one of the three keys in cfg.popups, or null
+   for a screen that has never been checked (or whose marks were cleared by a re-pick). It is the
+   single source for both halves of the answered look: which options carry which mark, and which
+   feedback popup is open. Deriving either from `attempts` instead is what produced the defect where
+   a re-picked, never-checked option came back marked wrong. */
 function scqRegister(cfg) {
   cfg.maxAttempts = cfg.maxAttempts || 2;
-  SCQ_REG[cfg.screen] = { cfg: cfg, sel: null, attempts: 0, answered: false, done: false, locked: !!cfg.startLocked };
+  SCQ_REG[cfg.screen] = { cfg: cfg, sel: null, attempts: 0, answered: false, done: false,
+                          phase: null, locked: !!cfg.startLocked };
 }
 function scqOpts(screen) { return document.querySelectorAll('#' + screen + ' .scq-opt'); }
 function scqSetLocked(screen, locked) {
@@ -1210,7 +1216,11 @@ function scqSetLocked(screen, locked) {
 function scqSelect(screen, id) {
   const s = SCQ_REG[screen]; if (!s || s.answered || s.locked) return;
   s.sel = id;
-  if (s.attempts > 0) { scqClosePopup(screen); scqOpts(screen).forEach(o => o.classList.remove('wrong', 'correct')); }
+  /* A re-pick after a wrong attempt wipes the marks and the popup, so the screen is back to
+     "chosen but unchecked" — and `phase` has to say so, or the painter would repaint the retry
+     verdict over an answer the learner never submitted. `attempts` deliberately stays put: it is
+     the attempt LEDGER, not the display state. */
+  if (s.attempts > 0) { s.phase = null; scqClosePopup(screen); scqOpts(screen).forEach(o => o.classList.remove('wrong', 'correct')); }
   scqOpts(screen).forEach(o => {
     const sel = o.dataset.id === id;
     o.classList.toggle('selected', sel);
@@ -1236,11 +1246,17 @@ function scqCheck(screen) {
   if (correct || s.attempts >= cfg.maxAttempts) {
     XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!correct;
   }
-  if (correct) { scqMark(screen, cfg.correctId, 'correct'); scqShowPopup(screen, 'correct'); scqFinish(screen, true); }
+  if (correct) { s.phase = 'correct'; scqMark(screen, cfg.correctId, 'correct'); scqShowPopup(screen, 'correct'); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) {
+    s.phase = 'wrong2';
     scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong');
     scqShowPopup(screen, 'wrong2'); scqFinish(screen, false);
-  } else { scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); }
+  } else { s.phase = 'retry'; scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); }
+
+  /* Synchronous, at the tail so it runs after every branch and after all painting. An answer given
+     and then abandoned without navigating would otherwise rest entirely on the page-leave handlers,
+     which Chrome may drop. The three branches above return nothing, so no commitment escapes it. */
+  try { flushResumeSave(); } catch (e) {}
 }
 function scqMark(screen, id, cls) {
   // querySelectorAll, not querySelector: an image-hotspot option is two elements
@@ -1251,7 +1267,7 @@ function scqMark(screen, id, cls) {
 }
 function scqFinish(screen, isCorrect) {
   const s = SCQ_REG[screen];
-  s.answered = true; s.done = true; s.correctResolved = isCorrect;
+  s.answered = true; s.done = true;
   scqOpts(screen).forEach(o => { o.disabled = true; });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'שנמשיך?'; chk.disabled = false; }
   const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden';
@@ -1287,7 +1303,7 @@ function scqEnter(screen) {
 }
 function scqReset(screen) {
   const s = SCQ_REG[screen];
-  s.sel = null; s.attempts = 0; s.answered = false;
+  s.sel = null; s.attempts = 0; s.answered = false; s.phase = null;
   scqOpts(screen).forEach(o => {
     o.classList.remove('selected', 'correct', 'wrong');
     o.setAttribute('aria-checked', 'false');
@@ -1332,6 +1348,11 @@ function aqMeasure() {
   aqHintSpent(true);
   scqSetLocked('s10', false);   // unlock the volume question
   xapiSend('interacted', 'question', { response: '10cm' }, { category: 'aquarium-ruler' });
+  /* Flushed, unlike the other applets': measuring here is what UNLOCKS s10's graded question, so
+     losing it would leave a learner staring at a question they can no longer answer. The purely
+     revealing flags — dispPlaced, floodPlaced, measPoured, measRevealed — stay on the debounce on
+     purpose: losing one costs a drag, not an answer. */
+  try { flushResumeSave(); } catch (e) {}
 }
 function aqReset() {
   aqMeasured = false;
@@ -1740,6 +1761,9 @@ function ddqCheck(screen) {
   const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'שנמשיך?'; btn.disabled = false; }
   const hint = document.getElementById(screen + '-ddq-hint'); if (hint) hint.style.visibility = 'hidden';
   if (cfg.onFinish) cfg.onFinish(allCorrect);
+
+  /* Synchronous, at the tail and after all painting — same rule as scqCheck's. */
+  try { flushResumeSave(); } catch (e) {}
 }
 /* Hint for a matching question. The scq* hint machinery is keyed on SCQ_REG,
    which the DnD screens do not use, so they get their own thin pair. Overlay
@@ -1809,10 +1833,10 @@ function ddqEnter(screen) {
     s.cfg.items.forEach(it => { s.cfg.placement[it.id] = 'source'; });
     const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'בדיקה'; btn.disabled = true; }
   }
-  if (s.done && s.correctPlacement) {          // a revisited wrong answer opens on the model board
-    s.answerView = 'correct';
-    s.cfg.placement = Object.assign({}, s.correctPlacement);
-  }
+  /* The "revisited wrong answer opens on the model board" rule used to live here. It cannot: this
+     runs BEFORE applyResumeVars() restores the two board snapshots, so on a reload there is nothing
+     yet to open onto — and the restore that follows would overwrite whatever it decided. It is now
+     ddqRestoreUI()'s, which runs LAST. */
   ddqRender(screen);
   if (s.done) { const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'שנמשיך?'; btn.disabled = false; } }
   // An answered question keeps its hint hidden on return, as the SCQ screens do.
@@ -2146,6 +2170,8 @@ function measConfirm() {
   xapiSend('interacted', 'question', { response: mEl('input').value }, { category: 'measurement-applet' });
   if (cfg.last) measDone = true;
   measRender();
+  /* Only on completion — the applet's own step-to-step moves navigate, which arms a save anyway. */
+  if (cfg.last) { try { flushResumeSave(); } catch (e) {} }
 }
 /* Step 2 -> 3 crosses the screen boundary, so "המשך לשלב הבא" navigates rather than repainting. */
 function measNext() {
@@ -2370,7 +2396,8 @@ function applyComicState(comic) {
 function captureScqState() {
   return Object.keys(SCQ_REG).reduce(function (o, k) {
     var s = SCQ_REG[k];
-    o[k] = { sel: s.sel, attempts: s.attempts, answered: !!s.answered, done: !!s.done, locked: !!s.locked };
+    o[k] = { sel: s.sel, attempts: s.attempts, answered: !!s.answered, done: !!s.done,
+             phase: s.phase || null, locked: !!s.locked };
     return o;
   }, {});
 }
@@ -2382,15 +2409,28 @@ function applyScqState(scq) {
     if (!s) return;
     s.sel = scq[k].sel; s.attempts = scq[k].attempts;
     s.answered = !!scq[k].answered; s.done = !!scq[k].done; s.locked = !!scq[k].locked;
+    s.phase = scq[k].phase || null;
   });
 }
 
 /* DDQ: the board layout lives in cfg.placement, which registration seeds and dragging mutates — so
-   it is learner state stored on the config object, and it has to be cloned out and back. */
+   it is learner state stored on the config object, and it has to be cloned out and back.
+
+   BOTH boards of the answer toggle travel with it, not just the visible one. A wrong answer holds
+   two at once — the model answer and what the learner actually did — and carrying only `placement`
+   lost the other two on reload, leaving a learner who had switched to their own answer looking at
+   five red slots with the model answer unreachable.
+
+   `answerView` is deliberately NOT carried. Which board a learner ARRIVES on is not learner state,
+   it is a didactic rule — a revisited wrong answer opens on the model answer — and ddqRestoreUI()
+   applies it on every arrival. Persisting it would only mean restoring a value that is immediately
+   overwritten, and a field written and never read is the kind that quietly drifts out of step. */
 function captureDdqState() {
   return Object.keys(DDQ_REG).reduce(function (o, k) {
     var s = DDQ_REG[k];
-    o[k] = { checked: !!s.checked, done: !!s.done, placement: Object.assign({}, s.cfg.placement) };
+    o[k] = { checked: !!s.checked, done: !!s.done, placement: Object.assign({}, s.cfg.placement),
+             learnerPlacement: s.learnerPlacement ? Object.assign({}, s.learnerPlacement) : null,
+             correctPlacement: s.correctPlacement ? Object.assign({}, s.correctPlacement) : null };
     return o;
   }, {});
 }
@@ -2403,6 +2443,8 @@ function applyDdqState(ddq) {
     s.checked = !!ddq[k].checked;
     s.done = !!ddq[k].done;
     s.cfg.placement = Object.assign({}, ddq[k].placement);
+    s.learnerPlacement = ddq[k].learnerPlacement ? Object.assign({}, ddq[k].learnerPlacement) : null;
+    s.correctPlacement = ddq[k].correctPlacement ? Object.assign({}, ddq[k].correctPlacement) : null;
   });
 }
 
@@ -2485,15 +2527,15 @@ function applyResumeDom(st) {
   });
 }
 
-/* The four gaps where an enter() does not repaint everything.
+/* The five gaps where an enter() does not repaint everything.
 
    Everything NOT listed here is deliberately absent because its enter() already handles it:
    the three applets branch on dispPlaced / aqMeasured / floodPlaced to redraw the completed look;
    measEnter→measRender rebuilds entirely from measStep / measDone / measRevealed / measPoured; flipEnter repaints
-   from flipState; guessEnter from guessPicked; imgqEnter from imgqRevealed; ddqEnter+ddqRender paint
-   the answered board, per-slot correct/wrong included, from {checked, done, placement}. Adding
-   redundant painters here would be dead code that drifts. */
+   from flipState; guessEnter from guessPicked; imgqEnter from imgqRevealed. Adding redundant
+   painters here would be dead code that drifts. */
 var SCQ_RESTORE_SCREENS = [10, 13, 14, 15, 16, 19];
+var DDQ_RESTORE_SCREENS = [17, 18];
 
 function restoreScreenUI(n) {
   try {
@@ -2502,8 +2544,13 @@ function restoreScreenUI(n) {
     if (n === 2) hookOpenInput();
 
     /* 2. the SCQ screens — scqEnter()'s `done` branch disables options and relabels the button, but
-           never repaints the marks or a mid-attempt selection. */
+           never repaints the marks, a mid-attempt selection, or the feedback. */
     if (SCQ_RESTORE_SCREENS.indexOf(n) !== -1) scqRestoreUI('s' + n);
+
+    /* 2b. the two matching boards — ddqEnter()+ddqRender() paint the slots, but the board they paint
+           has to be derived from the restored snapshots, and the feedback popup that carries the
+           answer toggle is not theirs to reopen. */
+    if (DDQ_RESTORE_SCREENS.indexOf(n) !== -1) ddqRestoreUI('s' + n);
 
     /* 3. s22/s34 — measRender() recomputes everything from measStep/measDone/measRevealed/measPoured
            EXCEPT the confirm button, which it derives from #meas-input's live value; that value is
@@ -2524,32 +2571,80 @@ function restoreScreenUI(n) {
   } catch (e) { console.error('[resume] restoreScreenUI', e); }
 }
 
-/* Mirrors scqCheck's DOM writes and NOTHING else — no state mutation, no statements, no popup
-   (goTo() closes popups by design; re-opening one on arrival would be new UI, not a restore). */
+/* Mirrors scqCheck's DOM writes and NOTHING else — no state mutation, no statements, no progress
+   bookkeeping. All of that happened when the answer was first given; repeating it here would report
+   a second answer.
+
+   The feedback popup IS part of those DOM writes. It used to be excluded on the grounds that
+   reopening one is "new UI, not a restore" — but the popup carries the explanation and, on the
+   matching screens, the only route back to the model answer, so a returning learner was left with
+   marks and no reason for them. `phase` says which popup scqCheck last opened; painting anything
+   from `attempts` instead is what marked a re-picked, never-checked option wrong. */
 function scqRestoreUI(screen) {
   var s = SCQ_REG[screen];
   if (!s) return;
-  if (s.done) {
+  if (!s.done && !s.phase && !s.sel) return;        // pristine — do not touch it
+
+  if (s.phase === 'correct' || s.phase === 'wrong2') {
     scqMark(screen, s.cfg.correctId, 'correct');
-    if (s.sel && s.sel !== s.cfg.correctId) scqMark(screen, s.sel, 'wrong');
-    /* s19 is a dropdown: its trigger carries the verdict. */
-    var trig = document.getElementById(screen + '-dropdown-trigger');
-    if (trig) {
-      trig.classList.remove('correct', 'wrong');
-      trig.classList.add(s.sel === s.cfg.correctId ? 'correct' : 'wrong');
-    }
-    return;
-  }
-  if (s.attempts >= 1 && s.sel) scqMark(screen, s.sel, 'wrong');
-  if (s.sel && !s.attempts) {
+    if (s.phase === 'wrong2' && s.sel && s.sel !== s.cfg.correctId) scqMark(screen, s.sel, 'wrong');
+  } else if (s.phase === 'retry') {
+    if (s.sel) scqMark(screen, s.sel, 'wrong');
+  } else if (s.sel) {
     document.querySelectorAll('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]').forEach(function (o) {
       o.classList.add('selected');
       o.setAttribute('aria-checked', 'true');
     });
   }
-  /* Mirror the live enablement predicate, including s10's lock. */
-  var chk = document.getElementById(screen + '-scq-check');
-  if (chk) chk.disabled = !s.sel || !!s.locked;
+
+  /* s19 is a dropdown: its trigger carries the verdict rather than the options. */
+  if (s.done) {
+    var trig = document.getElementById(screen + '-dropdown-trigger');
+    if (trig) {
+      trig.classList.remove('correct', 'wrong');
+      trig.classList.add(s.sel === s.cfg.correctId ? 'correct' : 'wrong');
+    }
+  }
+
+  if (s.phase) scqShowPopup(screen, s.phase);
+
+  /* Mirror the live enablement predicate, including s10's lock. An answered screen's button is the
+     'שנמשיך?' one scqEnter already relabelled and enabled, so only the unsolved case is computed
+     here — a painter that leaves a full screen with a dead button strands the learner. */
+  if (!s.done) {
+    var chk = document.getElementById(screen + '-scq-check');
+    if (chk) chk.disabled = !s.sel || !!s.locked;
+  }
+}
+
+/* Mirrors ddqCheck's DOM writes, on the same terms as scqRestoreUI.
+
+   Runs LAST in goTo()'s repaint sequence, which is what lets it be the single place the displayed
+   board is decided: ddqEnter() renders, applyResumeVars() restores the two snapshots, and only then
+   is cfg.placement derived and re-rendered. `learnerPlacement` — not the board's appearance — is
+   what says the answer was wrong: a revealed model board LOOKS right while the learner's own answer
+   survives only in that snapshot. */
+function ddqRestoreUI(screen) {
+  var s = DDQ_REG[screen];
+  if (!s) return;
+  /* Repaint for an UNSUBMITTED board too, not only an answered one: ddqEnter()'s `!done` branch
+     resets every item to the source bank and renders that, and applyResumeVars() then restores the
+     learner's drags into cfg.placement with nothing left to draw them. Without this the board came
+     back empty while memory still held the pills — and the check button, computed from placement,
+     sat enabled over it. */
+  var anyPlaced = s.cfg.items.some(function (it) { return s.cfg.placement[it.id] !== 'source'; });
+  if (!s.checked && !anyPlaced) return;             // pristine — ddqEnter already drew a clean board
+
+  /* The arrival rule, applied on EVERY arrival and in one place: a revisited wrong answer opens on
+     the model board, whatever the learner had toggled to before they left. Setting answerView and
+     deriving the board from it in the same breath is what keeps state and DOM from drifting — the
+     divergence that used to persist the learner's red board under an answerView saying otherwise. */
+  if (s.done && s.correctPlacement) {
+    s.answerView = 'correct';
+    s.cfg.placement = Object.assign({}, s.correctPlacement);
+  }
+  ddqRender(screen);                                // also re-derives the check button from placement
+  if (s.checked) ddqShowPopup(screen, s.learnerPlacement ? 'incorrect' : 'correct');
 }
 
 /* ── xAPI ready hook ──

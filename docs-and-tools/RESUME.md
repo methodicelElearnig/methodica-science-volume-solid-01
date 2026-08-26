@@ -80,6 +80,19 @@ is what makes resume testable on a dev server.
 
 ### Write triggers
 
+- **answer committed** — `flushResumeSave()` at the tail of every function that closes a question:
+  `scqCheck` (parts 01/02/04), `ddqCheck` (01), `peakContinue` (05/06), plus `aqMeasure` and the
+  measurement applet's completion. Synchronous, and placed **after all painting** — the capture reads
+  live state, so a flush higher up saves a half-painted screen. All of them end in a single tail with
+  no `return` between the commitment and the end, so no branch escapes it; part 04's silent branch is
+  the one exception and carries its own, before it navigates.
+
+  Debounced-on-navigation is not enough on its own: an answer given by a learner who then closes the
+  tab rests entirely on the page-leave handlers, and Chrome may drop those. The rule is bounded to
+  flags that **close a question or gate one** — `aqMeasure` is in because it unlocks s10's question.
+  The purely revealing flags (`dispPlaced`, `floodPlaced`, `measPoured`, `measRevealed`) stay on the
+  debounce on purpose: losing one costs a drag, not an answer, and a blocking write mid-animation is
+  worse than the loss.
 - **screen change** — debounced, at the end of `goTo()`; the choke point that bounds how much a learner
   can lose
 - **cross-part jump** — `writeForwardState()` / `goBackToPrevPart()`, synchronous
@@ -115,9 +128,64 @@ one-per-page-load dedupe cannot help across a page load.
 is what keeps a revisited screen answered.
 
 **Most screens restore themselves.** `imgqEnter`, `dispEnter`, `aqEnter`, `floodEnter`, `flipEnter`,
-`guessEnter`, `measRender`, `ddqRender` and `scqEnter`'s `done` branch all rebuild from the restored
-variables — that is what makes part 01's 33 screens tractable. `restoreScreenUI()` fills only four
-genuine gaps: the s2 hint gate, the SCQ marks, s22's confirm button, and the comic slider index.
+`guessEnter`, `measRender` and `scqEnter`'s `done` branch all rebuild from the restored variables —
+that is what makes part 01's 33 screens tractable. `restoreScreenUI()` fills the five genuine gaps:
+the s2 hint gate, the SCQ marks **and feedback**, the two matching boards, s22's confirm button, and
+the comic slider index.
+
+### What a painter owes the learner
+
+A painter mirrors the DOM writes of the live `*Check()` and **nothing else** — no state mutation, no
+statements, no progress bookkeeping. All of that happened when the answer was first given; repeating
+it reports a second answer.
+
+**The feedback popup is one of those DOM writes.** Until 2026-08-26 it was excluded, on the reasoning
+that reopening one is "new UI, not a restore". That was wrong in the way that matters: the popup
+carries the *explanation*, and on the matching screens the only route back to the model answer. A
+learner returning to an answered question got marks with no reason for them — and, if they had
+toggled to their own placement before leaving, a board of red slots with the correct answer
+unreachable. Both were reported from the field.
+
+`goTo()` closing every popup before the swap is a clean slate, not a policy: it wipes first and
+`restoreScreenUI()` repaints last. The popups carry no close control, so there is no "dismissed"
+state to honour — they stand until the learner advances.
+
+### `phase` — what the learner was last shown
+
+`SCQ_REG[screen].phase` is `null | 'correct' | 'retry' | 'wrong2'`, mirroring the three branches of
+`scqCheck` and the three keys of every `cfg.popups`. It is the single source for **both** halves of
+the answered look: which options carry which mark, and which popup is open.
+
+It exists because neither can be safely derived:
+
+- **never from `attempts`.** `scqSelect` clears the marks and the popup on a re-pick but leaves
+  `attempts` spent, so a painter keyed on the counter marked an option the learner never submitted.
+  `phase` is cleared on that same re-pick, which is what makes the case impossible rather than fixed.
+- **never from the marks on screen.** They are gone after a reload; that is the whole problem.
+
+`s.correctResolved` was written by `scqFinish` and read nowhere. Removed in the same pass.
+
+### The matching boards — both, and the arrival rule
+
+A wrong matching answer holds two boards at once: the model answer and what the learner actually did.
+`captureDdqState` carries **both**, because `learnerPlacement` is the only place the learner's answer
+survives once the model board is revealed — the board on screen *looks* right and cannot be used to
+tell them apart. (The sibling unit states this as its rule 4; see §9.)
+
+`answerView` is deliberately **not** carried. Which board a learner *arrives* on is not learner state,
+it is a didactic rule — a revisited wrong answer opens on the model answer — and `ddqRestoreUI()`
+applies it on every arrival, setting `answerView` and deriving `cfg.placement` from it in the same
+breath. Persisting it would restore a value that is immediately overwritten.
+
+That single derivation point is also the fix for a divergence that used to feed the reload bug:
+`ddqEnter` wrote `cfg.placement`, `applyResumeVars` then overwrote it with the captured board, and
+nothing re-rendered — so memory held one board while the DOM showed another, and **memory is what
+gets persisted**. The rule now lives in the painter alone, which runs last.
+
+`ddqRestoreUI` also repaints an **unsubmitted** board. `ddqEnter`'s `!done` branch empties every item
+back to the source bank and renders that, and the restore that follows puts the learner's drags back
+into `cfg.placement` with nothing left to draw them: the board came back empty while the check button,
+computed from placement, sat enabled over it.
 
 ---
 
@@ -167,6 +235,44 @@ regression to whoever tests next. **Start every local run with `?resetState`.**
 
 ---
 
+## Verified headlessly — `_test/verify-resume.js`
+
+408 assertions across parts 01, 02, 04, 05 and 06, in jsdom, against the real `index.html` +
+`js/main.js` + `unit-js/*.js`. Two rules it is built around, both borrowed from the sibling unit's
+`RESUME.md` §6א/§6ג:
+
+1. **Every assertion drives through `goTo()`** — or through a genuine reload, by copying the state
+   document out of one window and seeding it into the next before its scripts run. The sibling's
+   suite called its painters directly and therefore missed a production lock-up that lived in the
+   *wiring* between `goTo` and the painter. A test that calls the painter tests the painter.
+2. **Assert on outcomes, never on "it did not throw".** `restoreScreenUI` sits under three layers of
+   `try/catch`; a swallowed throw is indistinguishable from a painter that ran and did nothing. The
+   suite also fails on any `console.error` carrying the `[resume]` prefix.
+
+Covered per question, for all 19 popup screens and both matching boards: correct, retry left
+mid-attempt, wrong-final, the re-pick case, a pristine screen, the toggle in both directions, an
+unsubmitted board, the peak lock, and four real reloads.
+
+**Each assertion was verified in the negative** — every fix reverted in turn, and the suite confirmed
+to fail:
+
+| reverted | assertions lost |
+|---|---|
+| SCQ popup restore (part 01) | 20 |
+| painter keyed on `attempts` again | 12 |
+| `learnerPlacement` dropped from the payload | 15 |
+| unsubmitted-drag repaint removed | 2 |
+| DDQ arrival rule removed | 4 |
+| SCQ popup restore (part 02) | 20 |
+| peak lock removed | 2 |
+| commit-time flush removed | 5 |
+
+⚠️ The arrival-rule revert initially passed, which exposed a **gap in the suite**, not a passing fix:
+nothing left a matching board on the learner's own answer before navigating away. That case is now
+covered, and the revert fails as it should. Two jsdom gaps are stubbed in the rig and are not defects
+in the unit: `matchMedia` (part 01 reads it at top level, and unstubbed it silently kills every
+declaration after it) and `HTMLMediaElement.load/play`.
+
 ## Verified in the browser
 
 | | |
@@ -179,6 +285,11 @@ regression to whoever tests next. **Start every local run with `?resetState`.**
 | **`doneQ` guard** | ✓ changing a pick in the completed מועד א and re-submitting emits **nothing** |
 | full path fail→retake→back→forward→pass | ✓ exactly **one** unit `completed`; `__dupes()` empty |
 | deep-clone of all five nested structures | ✓ mutating the live object after capture never leaks |
+| **2026-08-26 — the two field reports** | ✓ s18 answered wrong, toggled to the learner's own board, **real page reload**: lands on s18 showing the model board, the popup, the note and the `התשובה שלי` toggle. ✓ s19 answered, walked forward, walked back: `נכון מאוד!` reopens and the dropdown trigger keeps its verdict colour |
+| all 19 popups reopen and clear the chrome | ✓ measured at a 1280×720 canvas: every one anchors at `l:2 … b:636`, inside the canvas and 10px clear of the nav bar at 646 — the same anchor the live popup uses, so nothing new appears on screen |
+| part 04's silent screens stay silent | ✓ s6/s7/s8 come back with the learner's own pick `selected` and no verdict; they have no popup element at all |
+| commit-time flush | ✓ five practice questions answered with **no navigation afterwards**: `phase` and the matching board are already in the state document |
+| peak lock | ✓ parts 05 and 06: options unlocked at entry, still unlocked after a pick, locked after continue, and a click on another option is refused. `__dupes()` empty, one `answered.last` per sub-part |
 | statement order on a resumed load | ✓ component `initialized` before item — see below |
 
 **A defect found and fixed here:** the resumed load used to emit the **item** `initialized` before its
@@ -206,9 +317,18 @@ has never been exercised from this unit, or from the sibling.
    of an unexercised transport would turn a convenience bug into a data-loss bug.
 7. Visual confirmation of painted restored states beyond the assertions above.
 
-## Observation, not a defect
+## The peak assessment locks what it has reported
 
-Restoring `peakAnswers` re-marks the picked option but does **not** disable the options, so a learner
-returning to a completed assessment can visually change a pick. Nothing is re-reported, so the LRS
-record stands as sent — but the on-screen pick can end up differing from it. Locking them is a
-content/UX decision, not a reporting one.
+Restoring `peakAnswers` used to re-mark the picked option without disabling the options, so a learner
+returning to a completed sub-part could change their pick on screen while nothing was re-reported —
+the display drifting away from the LRS record. Logged here as an observation until 2026-08-26, then
+ruled a defect and fixed.
+
+`peakCommitted` is the new flag, and it is deliberately **separate from `peakAnswers`**:
+`peakAnswers[idx]` is written the moment an option is clicked, `peakCommitted[idx]` when
+`peakContinue()` reports it. Locking on the former would lock the options the instant a learner
+touched one. `peakEnter` disables the options of a committed sub-part; `peakSelect` refuses to move
+one. The continue button stays live, so a returning learner can still walk forward, and the `doneQ`
+ledger refuses the second graded send regardless.
+
+Both flags ride in the payload, so the lock survives a reload.

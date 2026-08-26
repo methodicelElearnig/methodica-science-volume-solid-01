@@ -10,6 +10,10 @@ const PART_06_URL = '../methodica-science-volume-solid-01-06/index.html';
 const PEAK_CORRECT = { 1: 'b', 2: 'a', 3: 'a', 4: 'b' };
 const PEAK_PARTS = 4, PEAK_PASS = 3;
 let peakAnswers = {};
+/* Which sub-parts have been COMMITTED, as distinct from merely picked. peakAnswers[idx] is written
+   the moment an option is clicked; this is written when peakContinue() reports it. The two must stay
+   separate, or a learner would find their options locked the instant they touched one. */
+let peakCommitted = {};
 
 /* ═══════════════════════════════════════════════════════════
    COMPONENT — Companion character
@@ -172,6 +176,7 @@ function peakStart() { goTo(1); }
 /* The options are template .scq-opt pills, so the picked state is `.selected` — the class
    .scq-opt.selected .scq-radio keys on to fill the radio — and aria-checked follows it. */
 function peakSelect(idx, id, btn) {
+  if (peakCommitted[idx]) return;          // locked; see peakEnter
   peakAnswers[idx] = id;
   document.querySelectorAll('#s' + idx + '-opts .peak-opt').forEach(o => {
     o.classList.remove('selected');
@@ -183,10 +188,15 @@ function peakSelect(idx, id, btn) {
 }
 function peakEnter(idx) {
   const picked = peakAnswers[idx];
+  /* A committed sub-part is locked. One attempt each, peakContinue() is the only way forward, and
+     the doneQ ledger refuses a second graded send — so an editable pick could only ever drift away
+     from what the LRS already holds. */
+  const locked = !!peakCommitted[idx];
   document.querySelectorAll('#s' + idx + '-opts .peak-opt').forEach(o => {
     const sel = o.dataset.id === picked;
     o.classList.toggle('selected', sel);
     o.setAttribute('aria-checked', sel ? 'true' : 'false');
+    o.disabled = locked;
   });
   const cont = document.getElementById('s' + idx + '-continue'); if (cont) cont.disabled = (picked === undefined);
 }
@@ -220,6 +230,12 @@ function peakContinue(idx) {
 
   /* Outside the send — see the note in part 02's scqCheck. */
   XAPI_Q_RESULTS[PEAK_ITEM + '/q' + idx] = correct;
+
+  /* Commit, lock, and save synchronously — before either exit path navigates. A debounced save alone
+     would lose an answer given by a learner who then closes the tab. */
+  peakCommitted[idx] = true;
+  peakEnter(idx);
+  try { flushResumeSave(); } catch (e) {}
 
   if (idx < PEAK_PARTS) { goTo(idx + 1); return; }
 
@@ -345,7 +361,8 @@ function capturePartPayload() {
   return {
     currentScreen: currentScreen,
     qResults: Object.assign({}, XAPI_Q_RESULTS),
-    peakAnswers: Object.assign({}, peakAnswers),   // clone, not reference
+    peakAnswers: Object.assign({}, peakAnswers),      // clone, not reference
+    peakCommitted: Object.assign({}, peakCommitted),
     vars: {}
   };
 }
@@ -354,6 +371,7 @@ function capturePartPayload() {
 function applyResumeVars(st) {
   if (st.qResults) XAPI_Q_RESULTS = Object.assign({}, st.qResults);
   if (st.peakAnswers) peakAnswers = Object.assign({}, st.peakAnswers);
+  if (st.peakCommitted) peakCommitted = Object.assign({}, st.peakCommitted);
 }
 
 function applyResumeDom(st) {}

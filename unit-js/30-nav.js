@@ -19,8 +19,13 @@ function goTo(n) {
   if (n < 0 || n >= TOTAL_SCREENS) return;
 
   /* Close every feedback popup / hint overlay before the swap, so a popup opened on the screen
-     being left cannot bleed onto the next one. Also the reason a resume must NOT reopen a popup:
-     arriving on a screen with its feedback showing would be new UI, not a restore. */
+     being left cannot bleed onto the next one.
+
+     This is a CLEAN SLATE, not a policy against restored feedback. An answered screen's popup is
+     part of its answered look and is reopened by restoreScreenUI() further down this function, from
+     the `phase` (SCQ) or the placement snapshots (DDQ) the state document carries. The order is what
+     makes both true at once: wipe here, repaint last. The popups carry no close control, so there is
+     no "dismissed" state to honour — they stand until the learner advances. */
   document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]')
     .forEach(el => el.classList.add('hidden'));
 

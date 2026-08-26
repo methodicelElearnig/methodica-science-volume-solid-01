@@ -118,12 +118,19 @@ function advanceScreen() {
 
 /* ═══ SingleChoiceQuestion (generic, reusable) — see Part 01 for the contract ═══ */
 const SCQ_REG = {};
-function scqRegister(cfg) { cfg.maxAttempts = cfg.maxAttempts || 2; SCQ_REG[cfg.screen] = { cfg: cfg, sel: null, attempts: 0, answered: false, done: false }; }
+/* `phase` records WHAT THE LEARNER WAS LAST SHOWN — one of the three keys in cfg.popups, or null
+   for a screen never checked (or whose marks a re-pick cleared). Single source for both halves of
+   the answered look: which marks, and which feedback popup. Same field as part 01's. */
+function scqRegister(cfg) { cfg.maxAttempts = cfg.maxAttempts || 2; SCQ_REG[cfg.screen] = { cfg: cfg, sel: null, attempts: 0, answered: false, done: false, phase: null }; }
 function scqOpts(screen) { return document.querySelectorAll('#' + screen + ' .scq-opt'); }
 function scqSelect(screen, id) {
   const s = SCQ_REG[screen]; if (!s || s.answered) return;
   s.sel = id;
-  if (s.attempts > 0) { scqClosePopup(screen); scqOpts(screen).forEach(o => o.classList.remove('wrong', 'correct')); }
+  /* A re-pick after a wrong attempt wipes the marks and the popup, so the screen is back to
+     "chosen but unchecked" — and `phase` has to say so, or the painter would repaint the retry
+     verdict over an answer the learner never submitted. `attempts` stays put: it is the
+     attempt LEDGER, not the display state. */
+  if (s.attempts > 0) { s.phase = null; scqClosePopup(screen); scqOpts(screen).forEach(o => o.classList.remove('wrong', 'correct')); }
   scqOpts(screen).forEach(o => { const sel = o.dataset.id === id; o.classList.toggle('selected', sel); o.setAttribute('aria-checked', sel ? 'true' : 'false'); });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) chk.disabled = false;
 }
@@ -156,9 +163,14 @@ function scqCheck(screen) {
     XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!correct;
   }
 
-  if (correct) { scqMark(screen, cfg.correctId, 'correct'); scqShowPopup(screen, 'correct'); scqFinish(screen, true); }
-  else if (s.attempts >= cfg.maxAttempts) { scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'wrong2'); scqFinish(screen, false); }
-  else { scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); }
+  if (correct) { s.phase = 'correct'; scqMark(screen, cfg.correctId, 'correct'); scqShowPopup(screen, 'correct'); scqFinish(screen, true); }
+  else if (s.attempts >= cfg.maxAttempts) { s.phase = 'wrong2'; scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'wrong2'); scqFinish(screen, false); }
+  else { s.phase = 'retry'; scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); }
+
+  /* Synchronous, at the tail so it runs after every branch and after all painting. An answer given
+     and then abandoned without navigating would otherwise rest entirely on the page-leave handlers,
+     which Chrome may drop. No branch above returns, so no commitment escapes it. */
+  try { flushResumeSave(); } catch (e) {}
 }
 // querySelectorAll, not querySelector: an image-hotspot option is two elements
 // sharing one data-id (the readable text option + the band drawn over the photo)
@@ -202,7 +214,7 @@ function scqEnter(screen) {
   } else { scqReset(screen); }
 }
 function scqReset(screen) {
-  const s = SCQ_REG[screen]; s.sel = null; s.attempts = 0; s.answered = false;
+  const s = SCQ_REG[screen]; s.sel = null; s.attempts = 0; s.answered = false; s.phase = null;
   scqOpts(screen).forEach(o => { o.classList.remove('selected', 'correct', 'wrong'); o.setAttribute('aria-checked', 'false'); o.disabled = false; });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'צדקתי?'; chk.disabled = true; }
   const hint = document.getElementById(screen + '-scq-hint'); if (hint) { hint.disabled = false; hint.style.visibility = ''; }
@@ -461,7 +473,8 @@ function applyDropdownTexts(texts) {
 function captureScqState() {
   return Object.keys(SCQ_REG).reduce(function (o, k) {
     var s = SCQ_REG[k];
-    o[k] = { sel: s.sel, attempts: s.attempts, answered: !!s.answered, done: !!s.done };
+    o[k] = { sel: s.sel, attempts: s.attempts, answered: !!s.answered, done: !!s.done,
+             phase: s.phase || null };
     return o;
   }, {});
 }
@@ -473,6 +486,7 @@ function applyScqState(scq) {
     if (!s) return;
     s.sel = scq[k].sel; s.attempts = scq[k].attempts;
     s.answered = !!scq[k].answered; s.done = !!scq[k].done;
+    s.phase = scq[k].phase || null;
   });
 }
 
@@ -520,40 +534,51 @@ function applyResumeDom(st) {
 }
 
 /* Repaints the answered look. Mirrors the DOM writes of scqCheck's branches and NOTHING else — no
-   state mutation, no statements, and no popup: goTo() closes popups by design, and re-opening one on
-   arrival would be new UI rather than a restore.
-   scqEnter()'s `done` branch already disables the options and relabels the button, but it never
-   repaints the correct/wrong MARKS or a mid-attempt selection, which is what this adds. */
+   state mutation, no statements, no progress bookkeeping: all of that happened when the answer was
+   first given, and repeating it here would report a second answer.
+
+   scqEnter()'s `done` branch disables the options and relabels the button; the marks, a mid-attempt
+   selection and the FEEDBACK POPUP are what this adds. The popup used to be excluded on the grounds
+   that reopening one is "new UI, not a restore" — but it carries the explanation, so a returning
+   learner was left with marks and no reason for them. `phase` says which popup scqCheck last opened;
+   painting from `attempts` instead is what marked a re-picked, never-checked option wrong. */
 function restoreScreenUI(n) {
   try {
     var screen = 's' + n;
     var s = SCQ_REG[screen];
     if (!s) return;
+    if (!s.done && !s.phase && !s.sel) return;      // pristine — do not touch it
 
-    if (s.done) {
+    if (s.phase === 'correct' || s.phase === 'wrong2') {
       scqMark(screen, s.cfg.correctId, 'correct');
       /* A wrong final answer leaves both marks on screen: the learner's pick and the right one. */
-      if (s.sel && s.sel !== s.cfg.correctId) scqMark(screen, s.sel, 'wrong');
-      var trig = document.getElementById(screen + '-dropdown-trigger');
-      if (trig) {
-        trig.classList.remove('correct', 'wrong');
-        trig.classList.add(s.sel === s.cfg.correctId ? 'correct' : 'wrong');
-      }
-      return;
-    }
-
-    /* Not solved: an attempt already spent shows the interim wrong mark, and the current selection
-       is repainted — those co-occur, so this is two axes rather than four branches. */
-    if (s.attempts >= 1 && s.sel) scqMark(screen, s.sel, 'wrong');
-    if (s.sel && !s.attempts) {
+      if (s.phase === 'wrong2' && s.sel && s.sel !== s.cfg.correctId) scqMark(screen, s.sel, 'wrong');
+    } else if (s.phase === 'retry') {
+      if (s.sel) scqMark(screen, s.sel, 'wrong');
+    } else if (s.sel) {
       document.querySelectorAll('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]').forEach(function (o) {
         o.classList.add('selected');
         o.setAttribute('aria-checked', 'true');
       });
     }
-    /* Mirror the live enablement predicate rather than assuming. */
-    var chk = document.getElementById(screen + '-scq-check');
-    if (chk) chk.disabled = !s.sel;
+
+    if (s.done) {
+      var trig = document.getElementById(screen + '-dropdown-trigger');
+      if (trig) {
+        trig.classList.remove('correct', 'wrong');
+        trig.classList.add(s.sel === s.cfg.correctId ? 'correct' : 'wrong');
+      }
+    }
+
+    if (s.phase) scqShowPopup(screen, s.phase);
+
+    /* Mirror the live enablement predicate rather than assuming. An answered screen already carries
+       the enabled 'שנמשיך?' button from scqEnter, so only the unsolved case is computed here — a
+       painter that leaves a full screen with a dead button strands the learner. */
+    if (!s.done) {
+      var chk = document.getElementById(screen + '-scq-check');
+      if (chk) chk.disabled = !s.sel;
+    }
   } catch (e) { console.error('[resume] restoreScreenUI', e); }
 }
 

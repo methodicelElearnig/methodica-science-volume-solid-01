@@ -149,3 +149,28 @@ procedure:
 The failure mode is the nastiest one in this codebase: `main.js` loads *after* the shared layer, so a
 cached `main.js` still carrying a part-local copy of an extracted function **wins**, and the
 extraction looks successful while shipping the old code.
+
+## `verify-resume.js` — the resume painters
+
+Loads each part's real `index.html`, `js/main.js` and `unit-js/*.js` in jsdom, answers every question,
+walks away and back through `goTo()`, and asserts that the answered look — marks, feedback popup and
+the matching screens' answer toggle — comes back. Four of the assertions are genuine reloads: the
+state document is copied out of one window and seeded into the next before its scripts run.
+
+**jsdom is not in the repo and must not be installed into it** — the project lives in a synced
+OneDrive folder and jsdom's `node_modules` is ~26MB of pointless sync traffic. Install it somewhere
+outside and point `NODE_PATH` at it:
+
+```bash
+mkdir -p /c/lomda-test && cd /c/lomda-test && npm install jsdom
+```
+
+```bash
+NODE_PATH=/c/lomda-test/node_modules node _test/verify-resume.js
+```
+
+Exit code 0 and `all resume checks passed`, or a list of failures with the observed value.
+
+Two rules to keep if you extend it, both paid for in the sibling unit: every assertion goes through
+`goTo()` rather than calling a painter directly, and every assertion checks an outcome rather than the
+absence of a throw. See `docs-and-tools/RESUME.md` §Verified headlessly.

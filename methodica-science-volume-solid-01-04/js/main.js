@@ -208,12 +208,19 @@ function scqClosePopup(screen) { document.getElementById(screen + '-scq-popup')?
 
 /* ═══ SingleChoiceQuestion ═══ */
 const SCQ_REG = {};
-function scqRegister(cfg) { cfg.maxAttempts = cfg.maxAttempts || 2; SCQ_REG[cfg.screen] = { cfg: cfg, sel: null, attempts: 0, answered: false, done: false }; }
+/* `phase` records WHAT THE LEARNER WAS LAST SHOWN — one of the three keys in cfg.popups, or null
+   for a screen never checked (or whose marks a re-pick cleared). Single source for both halves of
+   the answered look: which marks, and which feedback popup. Same field as part 01's. */
+function scqRegister(cfg) { cfg.maxAttempts = cfg.maxAttempts || 2; SCQ_REG[cfg.screen] = { cfg: cfg, sel: null, attempts: 0, answered: false, done: false, phase: null }; }
 function scqOpts(screen) { return document.querySelectorAll('#' + screen + ' .scq-opt'); }
 function scqSelect(screen, id) {
   const s = SCQ_REG[screen]; if (!s || s.answered) return;
   s.sel = id;
-  if (s.attempts > 0) { scqClosePopup(screen); scqOpts(screen).forEach(o => o.classList.remove('wrong', 'correct')); }
+  /* A re-pick after a wrong attempt wipes the marks and the popup, so the screen is back to
+     "chosen but unchecked" — and `phase` has to say so, or the painter would repaint the retry
+     verdict over an answer the learner never submitted. `attempts` stays put: it is the
+     attempt LEDGER, not the display state. */
+  if (s.attempts > 0) { s.phase = null; scqClosePopup(screen); scqOpts(screen).forEach(o => o.classList.remove('wrong', 'correct')); }
   scqOpts(screen).forEach(o => { const sel = o.dataset.id === id; o.classList.toggle('selected', sel); o.setAttribute('aria-checked', sel ? 'true' : 'false'); });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) chk.disabled = false;
 }
@@ -245,12 +252,19 @@ function scqCheck(screen) {
      surfaces once, on RESULT_SCREEN. */
   if (cfg.silent) {
     scqFinish(screen, correct);
+    /* This branch returns before the tail flush, so it carries its own — and it has to come BEFORE
+       the navigation, which only arms a debounced save. */
+    try { flushResumeSave(); } catch (e) {}
     if (cfg.onContinue) cfg.onContinue(); else advanceScreen();
     return;
   }
-  if (correct) { scqMark(screen, cfg.correctId, 'correct'); renderFeedbackPopup(screen, 'correct', cfg.popups); scqFinish(screen, true); }
-  else if (s.attempts >= cfg.maxAttempts) { scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'wrong2', cfg.popups); scqFinish(screen, false); }
-  else { scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'retry', cfg.popups); }
+  if (correct) { s.phase = 'correct'; scqMark(screen, cfg.correctId, 'correct'); renderFeedbackPopup(screen, 'correct', cfg.popups); scqFinish(screen, true); }
+  else if (s.attempts >= cfg.maxAttempts) { s.phase = 'wrong2'; scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'wrong2', cfg.popups); scqFinish(screen, false); }
+  else { s.phase = 'retry'; scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'retry', cfg.popups); }
+
+  /* Synchronous, after all painting. An answer given and then abandoned without navigating would
+     otherwise rest entirely on the page-leave handlers, which Chrome may drop. */
+  try { flushResumeSave(); } catch (e) {}
 }
 /* A silent question never shows a verdict, so "צדקתי?" ("was I right?") would promise
    one it does not deliver — those screens just continue. */
@@ -277,7 +291,7 @@ function scqEnter(screen) {
   else { scqReset(screen); }
 }
 function scqReset(screen) {
-  const s = SCQ_REG[screen]; s.sel = null; s.attempts = 0; s.answered = false;
+  const s = SCQ_REG[screen]; s.sel = null; s.attempts = 0; s.answered = false; s.phase = null;
   scqOpts(screen).forEach(o => { o.classList.remove('selected', 'correct', 'wrong'); o.setAttribute('aria-checked', 'false'); o.disabled = false; });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = scqLabel(s.cfg, false); chk.disabled = true; }
   const hint = document.getElementById(screen + '-scq-hint'); if (hint) { hint.disabled = false; hint.style.visibility = ''; }
@@ -492,7 +506,8 @@ var RESUME_TEXT_IDS   = [];
 function captureScqState() {
   return Object.keys(SCQ_REG).reduce(function (o, k) {
     var s = SCQ_REG[k];
-    o[k] = { sel: s.sel, attempts: s.attempts, answered: !!s.answered, done: !!s.done };
+    o[k] = { sel: s.sel, attempts: s.attempts, answered: !!s.answered, done: !!s.done,
+             phase: s.phase || null };
     return o;
   }, {});
 }
@@ -504,6 +519,7 @@ function applyScqState(scq) {
     if (!s) return;
     s.sel = scq[k].sel; s.attempts = scq[k].attempts;
     s.answered = !!scq[k].answered; s.done = !!scq[k].done;
+    s.phase = scq[k].phase || null;
   });
 }
 
@@ -562,12 +578,16 @@ function applyResumeVars(st) {
 function applyResumeDom(st) {}
 
 /* Repaints the answered look. Mirrors scqCheck's DOM writes and nothing else — no state mutation, no
-   statements, no popup (goTo() closes popups by design; re-opening one on arrival would be new UI).
+   statements, no progress bookkeeping: all of that happened when the answer was first given, and
+   repeating it here would report a second answer.
 
-   A SILENT question is deliberately left unmarked even when answered: its whole contract is that no
-   verdict shows until the result screen. scqEnter() has already relabelled its button to 'המשך' and
-   disabled the options from the restored `done` flag, which is the entire visible state it should
-   have. */
+   The FEEDBACK POPUP is one of those DOM writes. It used to be excluded on the grounds that
+   reopening one is "new UI, not a restore" — but it carries the explanation, so a returning learner
+   was left with marks and no reason for them. `phase` says which popup scqCheck last opened.
+
+   A SILENT question keeps its contract: no verdict, no marks, no popup until the result screen. What
+   it DOES get back is the learner's own pick, as a plain selection — withholding the verdict is the
+   contract; withholding the fact that they answered at all just made the screen look untouched. */
 function restoreScreenUI(n) {
   try {
     if (n === RESULT_SCREEN) {
@@ -580,20 +600,35 @@ function restoreScreenUI(n) {
 
     var screen = 's' + n;
     var s = SCQ_REG[screen];
-    if (!s || isSilent(n)) return;
+    if (!s) return;
+    if (!s.done && !s.phase && !s.sel) return;      // pristine — do not touch it
 
-    if (s.done) {
-      scqMark(screen, s.cfg.correctId, 'correct');
-      if (s.sel && s.sel !== s.cfg.correctId) scqMark(screen, s.sel, 'wrong');
-      return;
-    }
-    if (s.attempts >= 1 && s.sel) scqMark(screen, s.sel, 'wrong');
-    if (s.sel && !s.attempts) {
+    var markSel = function () {
+      if (!s.sel) return;
       var o = document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]');
       if (o) { o.classList.add('selected'); o.setAttribute('aria-checked', 'true'); }
+    };
+
+    if (isSilent(n)) { markSel(); return; }         // the pick, never the verdict
+
+    if (s.phase === 'correct' || s.phase === 'wrong2') {
+      scqMark(screen, s.cfg.correctId, 'correct');
+      if (s.phase === 'wrong2' && s.sel && s.sel !== s.cfg.correctId) scqMark(screen, s.sel, 'wrong');
+    } else if (s.phase === 'retry') {
+      if (s.sel) scqMark(screen, s.sel, 'wrong');
+    } else {
+      markSel();
     }
-    var chk = document.getElementById(screen + '-scq-check');
-    if (chk) chk.disabled = !s.sel;
+
+    if (s.phase) renderFeedbackPopup(screen, s.phase, s.cfg.popups);
+
+    /* An answered screen already carries the enabled button scqEnter relabelled, so only the unsolved
+       case is computed here — a painter that leaves a full screen with a dead button strands the
+       learner. */
+    if (!s.done) {
+      var chk = document.getElementById(screen + '-scq-check');
+      if (chk) chk.disabled = !s.sel;
+    }
   } catch (e) { console.error('[resume] restoreScreenUI', e); }
 }
 
