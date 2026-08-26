@@ -283,7 +283,14 @@ html, body {
    So the ring goes OUTSIDE the video (offset 0) instead, landing in .option-card-img's 16px
    padding where it cannot touch a single artwork pixel, and it is colour-matched to the card so it
    is invisible in both states. Selected cards fill with Subject/100, hence the second rule. */
-.option-card-img video { outline: 1px solid #fff; outline-offset: 0; }
+   The 0.15s matches .option-card-img's own background transition. Without it the ring snaps to the
+   new colour while the card is still fading, which shows the very ring this rule exists to hide for
+   about 150ms on every selection. (Not observable in the Browser pane, which freezes transition
+   clocks — caught by reasoning from the card's transition list, not by measurement.) */
+.option-card-img video {
+  outline: 1px solid #fff; outline-offset: 0;
+  transition: outline-color 0.15s;
+}
 .option-card.selected .option-card-img video { outline-color: var(--subject-100); }
 /* Hover + keyboard-focus — Figma ImageContainer state=hover: Subject/500 border */
 .option-card:hover .option-card-img,
