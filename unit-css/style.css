@@ -3727,12 +3727,13 @@ html, body {
 /* Above the photo, spanning its width in two. The pair cannot be centred on their children — the
    inner two are only 113px apart and the bubbles are 300px wide — so the BOX sits side by side and
    the BEAK does the aiming, via --tail. */
-.hotspot-bubble--above { left: var(--bx); top: 0; width: 300px; }
-/* Beside the photo, overlapping its edge by 20px so the bubble reads as belonging to the child
-   rather than floating in the margin. Both clear their child's face by >90px — see the markup. */
-.hotspot-bubble--side  { width: 236px; top: 197px; }
-.hotspot-bubble--left  { left: 50px; }
-.hotspot-bubble--right { left: 874px; }
+.hotspot-bubble--above { left: var(--bx); top: 80px; width: 260px; }
+/* Beside the photo and well onto it — the outer children stand near the frame edges, so a bubble
+   that stayed in the margin read as floating. Pushed in until it nearly touches its child's ring
+   and no further: the clearances are 20px (left) and 12px (right), asserted after every change. */
+.hotspot-bubble--side  { width: 256px; top: 197px; }
+.hotspot-bubble--left  { left: 100px; }
+.hotspot-bubble--right { left: 834px; }
 
 /* Each statement needs a beak aimed at the child it belongs to, otherwise the four read as a list
    that happens to sit beside a photo (QA 2026-08-25 slide 27, and again 2026-08-26). Drawn as a
