@@ -3882,6 +3882,17 @@ html, body {
   width: var(--cw, 190px); height: auto; display: block;
   aspect-ratio: var(--ca, 1 / 1); object-fit: contain;
   pointer-events: none; user-select: none; -webkit-user-drag: none;
+  /* The faint grey hairline that used to frame every mascot (QA 2026-08-26). It is neither a border
+     nor the artwork: nothing in the ancestor chain paints one, and the mp4s' outer pixels read pure
+     white through a canvas. It is Chromium compositing <video> in its own layer and antialiasing
+     that layer's edge whenever it lands on a fractional device pixel — which is the normal case
+     here, not the exception: #app is transform:scaled to the window, so the sprites' edges are
+     fractional at almost every window size, and this machine's dpr is 1.75 on top of that. Aligning
+     to whole device pixels therefore cannot be relied on; painting over the seam can.
+     Inset by -1px so it stays entirely inside the element and cannot touch the speech bubble beside
+     it, and white because every .screen behind a sprite is #fff. The 1px it covers is the sprite's
+     own white margin, so no artwork is lost. */
+  outline: 1px solid #fff; outline-offset: -1px;
 }
 .companion--center { left: 50%; transform: translateX(-50%); }
 
