@@ -3618,8 +3618,14 @@ html, body {
 .peak-intro-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-500); }
 .peak-intro-text { font-family: 'Assistant', sans-serif; font-size: 21px; font-weight: 400; color: #303030; line-height: 1.55; }
 .peak-question { position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%); width: 820px; display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
-.peak-step { align-self: center; background: var(--subject-100); color: var(--subject-700); font-family: 'Assistant', sans-serif; font-size: 15px; font-weight: 700; padding: 4px 16px; border-radius: 1000px; }
-.peak-question .scq-qtext { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: right; direction: rtl; line-height: 1.4; }
+/* flex-start, not center: in this RTL column the cross-axis start IS the physical right, so the
+   badge lands flush with the stem and the options instead of floating mid-column. Centred was
+   the original value from the CSS extraction and it read as a stray pill once the options
+   stopped being full-width. Same mechanism .peak-options uses for its own right alignment. */
+.peak-step { align-self: flex-start; background: var(--subject-100); color: var(--subject-700); font-family: 'Assistant', sans-serif; font-size: 15px; font-weight: 700; padding: 4px 16px; border-radius: 1000px; }
+/* width: 100% — the base .scq-qtext is 792px wide for the absolute layout it was written for.
+   In flow that overflows .peak-side (572px) and very nearly fills .peak-question (820px). */
+.peak-question .scq-qtext { width: 100%; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: right; direction: rtl; line-height: 1.4; }
 /* Options are the template .scq-opt pill; the container carries .scq-answers for the
    flex column + gap and .peak-opt is only the JS hook peakSelect()/peakEnter() select on.
    .scq-opt is pinned to 604px for the 760px --textonly layout, so widen it to fill the
@@ -3697,6 +3703,13 @@ html, body {
 .scq-question--withimage .scq-qtext,
 .scq-question--withimage .scq-answers,
 .guess-options,
+/* .peak-question's stem belonged in this list from the start and was missed: .peak-options was
+   reset but the stem beside it was not, so on all eight peak sub-parts it stayed absolute at
+   right:0/top:0 and escaped the flex column. The badge and the stem were drawn on the same row,
+   and the options were laid out as if the stem did not exist — measured overlap of 8px where the
+   question is one line and 39px where it is two, i.e. the second line of the question sitting on
+   top of the first answer pill. Only the right-aligned short stems hid it. */
+.peak-question .scq-qtext,
 .peak-options {
   position: relative; right: auto; top: auto; padding-top: 0;
 }
@@ -3877,7 +3890,23 @@ html, body {
   display: flex; flex-direction: column; align-items: stretch; gap: 14px;
 }
 .peak-question--withimage .scq-qtext { text-align: right; }
-.peak-question--withimage .peak-step { align-self: flex-start; }
+/* The .peak-step override that used to sit here is gone: the base rule is flex-start now, so it
+   restated the cascade rather than changing it. */
+/* 05/s1 and 06/s1 put the COMPANION in the slot .scq-figure holds on part 04's two-column
+   questions — the same shell, a talking mascot instead of a photo. .companion-say is
+   position: absolute by default (it is normally pinned to the canvas), so it has to be returned
+   to flow here. --inline already does that, but it is built for a full-width narration row
+   (align-self: stretch), which in this row would pull the bubble to the top and the sprite to
+   the bottom of the column. This slot is a fixed column beside the question, so it gets its own
+   rule rather than being bent into that one.
+   500px matches .scq-figure so the question column starts where part 04's does; justify-content
+   flex-end (the row is direction: ltr) pushes the pair against the question rather than leaving
+   it stranded at the canvas edge. Both bubbles fit: 330+14+132 = 476 and 300+14+132 = 446. */
+.peak-question--withimage > .companion-say {
+  position: relative;
+  flex: 0 0 auto; align-self: center;
+  width: 500px; justify-content: flex-end;
+}
 
 /* Speaker option — generic role icon beside the quote (storyboard slide 153).
    .scq-radio is order:-1 so it lands at the RTL reading start (physical right);
