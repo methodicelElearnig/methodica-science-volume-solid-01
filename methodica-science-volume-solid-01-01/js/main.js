@@ -1871,6 +1871,12 @@ function practiceEnterDnD(idx, screen) {
 /* Standard practice Q4 (item 08) — match each body to its measurement method */
 registerPracticeDnD(3, {
   item: '08',
+  /* ⚠️ The three PNGs were rotated against their own filenames — s17-metal-cube.png held the
+     trophy, s17-shell.png the cube, s17-trophy.png the shell — so every pill on this board, and
+     the שדף pill on S18 that borrows s17-shell.png, drew the wrong object beside a correct label.
+     Fixed by renaming the FILES to match their contents (2026-08-26), not by remapping these
+     paths: a path that points at a lying filename only moves the trap. The mapping below is the
+     obvious one and should stay obvious — check the picture, not the name, if it ever looks off. */
   items: [
     { id: 'metal-cube', label: 'קוביית מתכת', img: 'assets/img/s17-metal-cube.png', w: 96 },
     { id: 'shell',      label: 'צדפה',        img: 'assets/img/s17-shell.png',      w: 92 },

@@ -3350,21 +3350,27 @@ html, body {
    two-question progress bar instead, which is what the deck actually specifies. */
 .dnd-question--warmup { top: calc(50% - 24px); width: 1100px; gap: 12px; }
 .dnd-question--warmup .scq-qtext { font-size: 24px; }
-.dnd-question--warmup .dnd-board { gap: 16px; }
-/* QA 2026-08-24 (slide 19): the five landing places go ACROSS, not down, and all five are the same
-   size regardless of how long their label runs. `flex: 1 1 0` + `min-width: 0` is what makes them
+
+/* ── Layout modifier: landing places ACROSS, each stacking its label over its slot ──────────────
+   Split out of .dnd-question--warmup on 2026-08-26 so S17 could adopt it. The old name described
+   WHICH screen used it, not what it did, which is why a second screen needing the same shape had
+   nowhere to point. `--warmup` above keeps only the warm-up's own sizing.
+
+   QA 2026-08-24 (slide 19): the landing places go ACROSS, not down, and all are the same size
+   regardless of how long their label runs. `flex: 1 1 0` + `min-width: 0` is what makes them
    equal — with the default `flex-basis: auto` the widest label ("מדידה במאזניים דיגיטליים") would
-   set its own column wider than the rest. Each target stacks label over slot. */
-.dnd-question--warmup .dnd-targets { flex-direction: row; gap: 10px; align-items: stretch; direction: rtl; }
-.dnd-question--warmup .dnd-target { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 8px; }
-.dnd-question--warmup .dnd-target-label {
+   set its own column wider than the rest. */
+.dnd-question--columns .dnd-board { gap: 16px; }
+.dnd-question--columns .dnd-targets { flex-direction: row; gap: 10px; align-items: stretch; direction: rtl; }
+.dnd-question--columns .dnd-target { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 8px; }
+.dnd-question--columns .dnd-target-label {
   flex: 0 0 auto; min-height: 62px; justify-content: center; text-align: center;
   font-size: 15px; line-height: 1.25; padding: 8px 10px;
 }
 /* The slot is sized to the pills it receives, so a dropped pill neither rattles around nor
    stretches its column. */
-.dnd-question--warmup .dnd-slot { flex: 1 1 auto; min-height: 128px; padding: 6px; }
-.dnd-question--warmup .dnd-source { min-height: 128px; padding: 10px; justify-content: center; }
+.dnd-question--columns .dnd-slot { flex: 1 1 auto; min-height: 128px; padding: 6px; }
+.dnd-question--columns .dnd-source { min-height: 128px; padding: 10px; justify-content: center; }
 
 /* ═══════════════════════════════════════════════════════
    TEMPLATE — ImageHotspotQuestion (S15). Reuses SCQ controller.
@@ -3766,12 +3772,14 @@ html, body {
    width — so no two matched. A fixed box makes them uniform; the label wraps to two lines inside
    it, which QA said was fine, and the photo is contained rather than cropped so the differing
    source ratios still sit tidily in the same frame. */
-.dnd-question--warmup .dnd-pill {
+.dnd-question--columns .dnd-pill {
   width: 150px; height: 116px; padding: 6px 8px; gap: 4px;
   font-size: 14px; line-height: 1.2; text-align: center;
 }
-.dnd-question--warmup .dnd-pill--img { padding: 6px 8px; }
-.dnd-question--warmup .dnd-pill-img { width: 100%; height: 58px; object-fit: contain; }
+.dnd-question--columns .dnd-pill--img { padding: 6px 8px; }
+/* `object-fit: contain` over a fixed box, so the per-item `--pw` is deliberately inert here — the
+   pills stay uniform whatever aspect ratio the source photo happens to have. */
+.dnd-question--columns .dnd-pill-img { width: 100%; height: 58px; object-fit: contain; }
 
 /* ── Image beside the cloze sentence (S19) ────────────────── */
 .dq-question--withimage {
