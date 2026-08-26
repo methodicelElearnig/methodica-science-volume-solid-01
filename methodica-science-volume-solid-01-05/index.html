@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · שאלת שיא</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=45">
+  <link rel="stylesheet" href="../unit-css/style.css?v=47">
   <link rel="stylesheet" href="css/style.css?v=1">
 </head>
 <body data-subject-theme="science">
@@ -40,21 +40,27 @@
        scenario, and the scenario is s7 (slide 148), which now precedes this screen. That is also
        why this drops .peak-question--withimage and takes the same plain column as סעיפים ב–ד. -->
   <section class="screen" data-screen="1" id="s1">
-    <div class="peak-question">
-      <div class="peak-step">סעיף א · 1 מתוך 4</div>
-      <p class="scq-qtext">מה נפח הפסלון?</p>
-      <div class="scq-answers peak-options" id="s1-opts" role="radiogroup" aria-label="נפח הפסלון">
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(1,'a',this)"><span class="scq-opt-text">50 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(1,'b',this)"><span class="scq-opt-text">60 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(1,'c',this)"><span class="scq-opt-text">110 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(1,'d',this)"><span class="scq-opt-text">160 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+    <!-- Two-column, matching the practice questions in part 04 (.scq-question--withimage): media
+         column on the left, question column on the right. Here the media column is the companion
+         and his line rather than a photo — s1 is the only sub-part the deck gives a companion, and
+         it had been floating loose at the canvas corner while the question sat centred alone. -->
+    <div class="peak-question peak-question--withimage">
+      <!-- Slide 149 gives this sub-part alone a companion line, because it is where the rule about
+           deferred feedback is restated and the hint first appears. The sprite is injected into this
+           group by CHARACTER_SLOTS so it follows the learner's chosen colour. -->
+      <div class="companion-say companion-say--right" id="s1-say">
+        <p class="companion-bubble" style="--bubble-w: 330px;">גם בשאלה הזו תדעו אם צדקתם רק אחרי שתענו על כל הסעיפים, אבל הפעם יש רמז...</p>
       </div>
-    </div>
-    <!-- Slide 149 gives this sub-part alone a companion line, because it is where the rule about
-         deferred feedback is restated and the hint first appears. The sprite is injected into this
-         group by CHARACTER_SLOTS so it follows the learner's chosen colour. -->
-    <div class="companion-say companion-say--right" id="s1-say" style="left: 46px; bottom: 96px;">
-      <p class="companion-bubble" style="--bubble-w: 330px;">גם בשאלה הזו תדעו אם צדקתם רק אחרי שתענו על כל הסעיפים, אבל הפעם יש רמז...</p>
+      <div class="peak-side">
+        <div class="peak-step">סעיף א · 1 מתוך 4</div>
+        <p class="scq-qtext">מה נפח הפסלון?</p>
+        <div class="scq-answers peak-options" id="s1-opts" role="radiogroup" aria-label="נפח הפסלון">
+          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(1,'a',this)"><span class="scq-opt-text">50 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(1,'b',this)"><span class="scq-opt-text">60 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(1,'c',this)"><span class="scq-opt-text">110 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(1,'d',this)"><span class="scq-opt-text">160 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+        </div>
+      </div>
     </div>
     <div class="nav-bar"><button class="scq-hint peak-hint" id="s1-hint" type="button" onclick="peakHint(1)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s1-continue" disabled onclick="peakContinue(1)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
