@@ -3906,7 +3906,10 @@ html, body {
    ═══════════════════════════════════════════════════════ */
 .section-result {
   position: absolute;
-  top: 104px; right: 60px; left: 480px;
+  /* 120, not 104 — the card is short next to the space it sits in, and the extra 16px stops it
+     reading as pinned to the top. Only part 04's result screen takes this: the four peak cards
+     carry --peak, which sets its own top. */
+  top: 120px; right: 60px; left: 480px;
   border: 3px solid var(--subject-500);
   border-radius: 18px;
   background: #f4f9fd;
