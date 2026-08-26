@@ -5,7 +5,11 @@
    feedback) → score. ≥3/4 → success (unit done); <3 → Part 06 (peak ב).
    ═══════════════════════════════════════════════════════════ */
 
-const TOTAL_SCREENS = 7;               // S0 intro, S1–S4 sub-parts, S5 success, S6 failure
+const TOTAL_SCREENS = 8;               // S0 intro, S7 scenario, S1–S4 sub-parts, S5 success, S6 failure
+/* The scenario (storyboard 148) took the next free id rather than renumbering four sub-parts,
+   their options, hints and SCREEN_TO_SUBCONTENT rows. The reading order lives in peakStart()
+   and goBack(), not in the ids — the same approach part 04 takes with its SCENARIOS table. */
+const SCENARIO_SCREEN = 7;
 const PART_06_URL = '../methodica-science-volume-solid-01-06/index.html';
 const PEAK_CORRECT = { 1: 'b', 2: 'a', 3: 'a', 4: 'b' };
 const PEAK_PARTS = 4, PEAK_PASS = 3;
@@ -61,6 +65,7 @@ const CHARACTER_SLOTS = {
   /* sb147: the transition screen carries the sprite as its illustration, 640x360 in the middle of
      the column, not a 210px corner decoration. `into` drops it in the box the markup reserves. */
   s0: { pose: 'challenge', w: 640, into: 's0-video', ca: '16 / 9' },        /* sb147 */
+  s1: { pose: 'think', w: 132, into: 's1-say', ca: '16 / 9' },              /* sb149 */
   s5: { pose: 'cheer', w: 200, into: 's5-say', ca: '16 / 9' },              /* sb157 */
   s6: { pose: 'think', w: 200, into: 's6-say' }                              /* sb158 */
 };
@@ -154,7 +159,8 @@ document.addEventListener('keydown', e => {
 });
 function goBack() {
   if (currentScreen >= 2 && currentScreen <= PEAK_PARTS) { goTo(currentScreen - 1); return; }
-  if (currentScreen === 1) { goTo(0); return; }
+  if (currentScreen === 1) { goTo(SCENARIO_SCREEN); return; }
+  if (currentScreen === SCENARIO_SCREEN) { goTo(0); return; }
 }
 function advanceScreen() { if (currentScreen === 0) peakStart(); }
 
@@ -174,7 +180,8 @@ function peakCloseHint(idx) {
 }
 
 /* ─── Peak assessment ─────────────────────────────────────── */
-function peakStart() { goTo(1); }
+/* s0 (transition, slide 147) -> s7 (scenario, slide 148) -> s1 (סעיף א, slide 149). */
+function peakStart() { goTo(SCENARIO_SCREEN); }
 /* The options are template .scq-opt pills, so the picked state is `.selected` — the class
    .scq-opt.selected .scq-radio keys on to fill the radio — and aria-checked follows it. */
 function peakSelect(idx, id, btn) {
@@ -317,7 +324,10 @@ var SCREEN_TO_SUBCONTENT = {
   3: ['01', 3],       // sub-part 3
   4: ['01', 4],       // sub-part 4
   5: ['01', 5],       // score — passed
-  6: ['01', 5]        // score — failed (same page of the same item)
+  6: ['01', 5],       // score — failed (same page of the same item)
+  /* The scenario belongs to the same item and the same page as the intro: it asks nothing, and
+     mapping it anywhere else would open or close the item on a screen that carries no answer. */
+  7: ['01', 0]        // scenario
 };
 
 var XAPI_COMP_SLUG = 'methodica-science-volume-solid-01-05';

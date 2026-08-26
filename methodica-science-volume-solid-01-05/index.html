@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · שאלת שיא</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=42">
+  <link rel="stylesheet" href="../unit-css/style.css?v=43">
   <link rel="stylesheet" href="css/style.css?v=1">
 </head>
 <body data-subject-theme="science">
@@ -36,21 +36,25 @@
   </section>
 
   <!-- S1–S4 sub-parts injected/handled by JS (single-select, no feedback) -->
+  <!-- Storyboard slide 149. The photo and the measurements are NOT repeated here: they are the
+       scenario, and the scenario is s7 (slide 148), which now precedes this screen. That is also
+       why this drops .peak-question--withimage and takes the same plain column as סעיפים ב–ד. -->
   <section class="screen" data-screen="1" id="s1">
-    <div class="peak-question peak-question--withimage">
-      <div class="scq-figure" style="width: 340px">
-        <img src="assets/img/s0-figurine.jpg" alt="פסלון משחק קופסה מפלסטיק מונח ליד משורה עם מים">
+    <div class="peak-question">
+      <div class="peak-step">סעיף א · 1 מתוך 4</div>
+      <p class="scq-qtext">מה נפח הפסלון?</p>
+      <div class="scq-answers peak-options" id="s1-opts" role="radiogroup" aria-label="נפח הפסלון">
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(1,'a',this)"><span class="scq-opt-text">50 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(1,'b',this)"><span class="scq-opt-text">60 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(1,'c',this)"><span class="scq-opt-text">110 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(1,'d',this)"><span class="scq-opt-text">160 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
-      <div class="peak-side">
-        <div class="peak-step">סעיף א · 1 מתוך 4</div>
-        <p class="scq-qtext">לפסלון מסה 156 גרם. מדידה במשורה לפני הכנסת הפסלון: 50 מ"ל, אחרי: 110 מ"ל. מה נפח הפסלון?</p>
-        <div class="scq-answers peak-options" id="s1-opts" role="radiogroup" aria-label="נפח הפסלון">
-          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(1,'a',this)"><span class="scq-opt-text">50 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(1,'b',this)"><span class="scq-opt-text">60 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(1,'c',this)"><span class="scq-opt-text">110 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(1,'d',this)"><span class="scq-opt-text">160 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-        </div>
-      </div>
+    </div>
+    <!-- Slide 149 gives this sub-part alone a companion line, because it is where the rule about
+         deferred feedback is restated and the hint first appears. The sprite is injected into this
+         group by CHARACTER_SLOTS so it follows the learner's chosen colour. -->
+    <div class="companion-say companion-say--right" id="s1-say" style="left: 46px; bottom: 96px;">
+      <p class="companion-bubble" style="--bubble-w: 330px;">גם בשאלה הזו תדעו אם צדקתם רק אחרי שתענו על כל הסעיפים, אבל הפעם יש רמז...</p>
     </div>
     <div class="nav-bar"><button class="scq-hint peak-hint" id="s1-hint" type="button" onclick="peakHint(1)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s1-continue" disabled onclick="peakContinue(1)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
@@ -104,6 +108,35 @@
     <div class="nav-bar"><button class="scq-hint peak-hint" id="s4-hint" type="button" onclick="peakHint(4)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s4-continue" disabled onclick="peakContinue(4)">סיום</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
   <div class="scq-hint-overlay hidden" id="s4-hint-overlay" onclick="if(event.target===this)peakCloseHint(4)"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>עד כמה המדידה חריגה?</strong></p><p>מה ניתן להניח מכך שהמדידה רחוקה מאוד משאר המדידות?</p></div></div></div><button class="scq-hint-close" type="button" onclick="peakCloseHint(4)">חזרה לשאלה</button></div></div>
+
+  <!-- ═══ S7 — Scenario (storyboard slide 148) ═══
+       Sits between the transition (s0) and סעיף א (s1); the id is the next free one and the order
+       lives in peakStart()/goBack(). Scenario only — no question — so it takes the same
+       .scq-question--withimage shell the scenario screens in part 04 use (s9, s10). -->
+  <section class="screen" data-screen="7" id="s7">
+    <div class="scq-question scq-question--withimage">
+      <div class="scq-figure">
+        <img src="assets/img/s0-figurine.jpg" alt="קופסת משחק Kingdom Quest פתוחה על שולחן, ולידה פסלון אריה מפלסטיק אפור, קלפים, קוביות ואסימונים">
+      </div>
+      <div class="scq-side">
+        <h1 class="peak-scenario-title">בואו נשחק!</h1>
+        <p class="scq-qtext scq-qtext--mixed">
+          חברת משחקי קופסה יצרה אבטיפוס חדש.<br /><br />
+          המשחק מכיל <b>פסלון מפלסטיק</b>.<br />
+          כדי לדעת איך לייצר אותו בכמויות גדולות צריך לדעת מה המסה והנפח שלו.<br /><br />
+          בבדיקת הפסלון במעבדה התקבלו הנתונים הבאים:</p>
+        <ul class="peak-scenario-list">
+          <li>המסה במאזניים: 156 גרם.</li>
+          <li>מדידה במשורה לפני הכנסת הפסלון: 50 מ"ל מים.</li>
+          <li>מדידה במשורה אחרי הכנסת הפסל: 110 מ"ל.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s7-continue" onclick="goTo(1)">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
 
   <!-- S5 / S6 — storyboard 157 (all correct) / 158 (not all). One card with the model answer to every סעיף and the
        companion's reflective line to its left, exactly as the deck lays those slides out. The four
@@ -168,7 +201,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=21"></script>
+<script src="js/main.js?v=22"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>
