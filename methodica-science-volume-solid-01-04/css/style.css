@@ -14,3 +14,11 @@
    here only if it is genuinely specific to THIS component — anything reusable
    belongs in the shared sheet.
    ═══════════════════════════════════════════════════════════════════════════ */
+
+/* S0 — the intro's mascot is 600px wide and centred beneath the text (see CHARACTER_SLOTS in
+   js/main.js), which the shared centre position leaves no room for. Genuinely specific to this
+   component: it is the only .transition-content in it, and the shared rule stays right for every
+   transition screen that has no sprite under it.
+   Text block ~90px over a 337px sprite with a 20px gap = 447px; centred in the 646px above the nav
+   bar puts the text's own centre at 144. */
+#s0 .transition-content { top: 144px; }

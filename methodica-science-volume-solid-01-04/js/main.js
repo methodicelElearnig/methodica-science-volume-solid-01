@@ -93,8 +93,13 @@ function startCompanionMedia(el) {
    group, because the position only makes sense next to a bubble that also lives in the
    markup. Keeping a slot for them too would mean two sources of truth for the same
    offsets — and now the group, not a number, is what holds the pair together. */
+/* The intro sprite is the screen's only illustration, so it carries it rather than decorating a
+   corner: 600px wide (3× the old 200) and centred under the text instead of tucked bottom-right.
+   `center: true` is the shared slot flag — see part 01's s12. At 16:9 that is 337px tall, so the
+   text moves up to make room; `#s0 .transition-content` in this part's stylesheet holds the pair
+   balanced in the 646px above the nav bar. */
 const CHARACTER_SLOTS = {
-  s0: { pose: 'dumbbells', w: 200, right: 40, bottom: 95, ca: '16 / 9' }     /* sb113 */
+  s0: { pose: 'dumbbells', w: 600, center: true, bottom: 174, ca: '16 / 9' }     /* sb113 */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
