@@ -268,6 +268,23 @@ html, body {
   object-fit: cover; border-radius: 16px;
   display: block;
 }
+/* Same Chromium <video> compositing seam the .companion rule below documents: the layer's edge is
+   antialiased whenever it lands on a fractional device pixel, which #app's scale transform makes
+   the normal case. The fix there paints a 1px WHITE outline INSIDE the sprite (offset -1px), which
+   is safe only because those mp4s are pure white at every edge.
+
+   That does NOT hold here, and it was measured rather than assumed. object-fit: cover crops the
+   960x960 source to 296/278, and on character-*-experiments.mp4 the artwork reaches both the left
+   and right edges of the cropped frame (source rows 632-871, >=60px deep, darkest channel 173).
+   At 5.27 source px per CSS px, an inset 1px outline would cut a white nick through the mascot's
+   arms on that card. character-*-comic.mp4 is white all round, but a fix applied to only one of
+   two side-by-side cards is worse than none.
+
+   So the ring goes OUTSIDE the video (offset 0) instead, landing in .option-card-img's 16px
+   padding where it cannot touch a single artwork pixel, and it is colour-matched to the card so it
+   is invisible in both states. Selected cards fill with Subject/100, hence the second rule. */
+.option-card-img video { outline: 1px solid #fff; outline-offset: 0; }
+.option-card.selected .option-card-img video { outline-color: var(--subject-100); }
 /* Hover + keyboard-focus — Figma ImageContainer state=hover: Subject/500 border */
 .option-card:hover .option-card-img,
 .option-card:focus-visible .option-card-img { border-color: var(--subject-500); }
