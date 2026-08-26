@@ -3378,10 +3378,18 @@ html, body {
 }
 /* QA 2026-08-25 (slide 27): same absolute-stem defect as .dnd-question above — the stem drew over
    the first student's statement, which is why two texts rendered on top of each other. */
+/* ⚠️ `display: block` is load-bearing. The base .scq-qtext is `display: flex; flex-direction:
+   column` (inherited from the copied mass-measure sheet), which makes every child a BLOCK-LEVEL
+   flex item — so an inline <strong> inside the stem landed on a line of its own, and so did each
+   run of text between two of them. That is what put `מדעי` and `ראיה` on their own lines here.
+   .dq-question .scq-qtext already carries the same reset for the same reason.
+   Regular weight, one colour: the whole stem used to be 700 with the two emphasised words in
+   --subject-500, which read as three competing levels on a screen whose job is to compare four
+   statements. Deck slide 61 bolds those two words; dropping that is a deliberate departure. */
 .hotspot-question .scq-qtext {
-  position: static; width: 100%; padding-top: 0;
-  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
-  text-align: right; direction: rtl;
+  position: static; display: block; width: 100%; padding-top: 0;
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030;
+  text-align: right; direction: rtl; line-height: 1.4;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -3672,11 +3680,14 @@ html, body {
 /* The emoji-card variant is 820px wide; the photo variant needs room for the
    photo plus a bubble column on each side. */
 .hotspot-question--photo { width: 1160px; }
-.hotspot-stage {
-  display: flex; direction: rtl; align-items: center; justify-content: center; gap: 20px;
-  width: 100%;
+/* The stage is a fixed CANVAS, not a flex row: each statement is positioned against the photograph
+   so its beak lands on the child who said it. Two flanking columns could only ever put a bubble
+   beside the pair on that side, which is what made the four read as a list next to a photo
+   (QA 2026-08-26). Height = above-band 115 + gap 12 + photo 342. */
+.hotspot-stage { position: relative; width: 1160px; height: 469px; direction: rtl; }
+.hotspot-stage > .hotspot-photo {
+  position: absolute; left: 266px; top: 127px; width: 628px;   /* 628x342, centred in 1160 */
 }
-.hotspot-bubbles { display: flex; flex-direction: column; gap: 14px; width: 236px; flex: 0 0 236px; }
 .hotspot-photo {
   position: relative; flex: 0 0 auto; display: block;
   border-radius: 16px; overflow: hidden; box-shadow: 0 6px 20px rgba(0, 32, 96, 0.12);
@@ -3703,34 +3714,41 @@ html, body {
 .hotspot-photo--square { aspect-ratio: 1; border: 3px solid rgba(201, 206, 216, 0.4); }
 .hotspot-photo--square > img { height: 100%; object-fit: cover; }
 
-/* The readable half of an option: a bubble beside the photo. */
+/* The readable half of an option: a bubble placed against the photo. Absolutely positioned in the
+   stage's coordinate space — `--bx` is the left edge for the two above the photo, and the two at the
+   sides take fixed edges. */
 .hotspot-bubble {
-  display: block; width: 100%; text-align: right; direction: rtl;
+  position: absolute; display: block; text-align: right; direction: rtl;
   border-radius: 16px; padding: 12px 16px;
   /* 20px, not 24: slide 61 sets these four at 20 and they are the longest strings on the
      screen — at 24 the ruler statement ran to five lines in a 236px column. */
   font-size: 20px; font-weight: 500; line-height: 1.35; color: #303030;
-  position: relative;
 }
+/* Above the photo, spanning its width in two. The pair cannot be centred on their children — the
+   inner two are only 113px apart and the bubbles are 300px wide — so the BOX sits side by side and
+   the BEAK does the aiming, via --tail. */
+.hotspot-bubble--above { left: var(--bx); top: 0; width: 300px; }
+/* Beside the photo, overlapping its edge by 20px so the bubble reads as belonging to the child
+   rather than floating in the margin. Both clear their child's face by >90px — see the markup. */
+.hotspot-bubble--side  { width: 236px; top: 197px; }
+.hotspot-bubble--left  { left: 50px; }
+.hotspot-bubble--right { left: 874px; }
 
-/* QA 2026-08-25 (slide 27): each statement needs a beak aimed at the child it belongs to,
-   otherwise the four read as a list that happens to sit beside a photo. The columns flank the
-   photo — under RTL the FIRST .hotspot-bubbles is physically right — so the right column points
-   left and the left column points right. Drawn as a bordered square rotated 45° with two of its
-   sides hidden behind the bubble, which keeps the beak's outline continuous with the frame's
-   whatever background colour the option state paints. */
+/* Each statement needs a beak aimed at the child it belongs to, otherwise the four read as a list
+   that happens to sit beside a photo (QA 2026-08-25 slide 27, and again 2026-08-26). Drawn as a
+   bordered square rotated 45° with two of its sides hidden behind the bubble, which keeps the beak's
+   outline continuous with the frame's whatever background colour the option state paints.
+   Which two borders to hide follows from the rotation: the visible pair must meet at the corner the
+   beak points to. Down => hide top+left; left => hide top+right; right => hide bottom+left. */
 .hotspot-bubble::after {
-  content: ''; position: absolute; top: 22px;
+  content: ''; position: absolute;
   width: 14px; height: 14px;
   background: inherit;
-  border: inherit; border-radius: 2px;
+  border: inherit; border-radius: 2px; transform: rotate(45deg);
 }
-.hotspot-bubbles--right .hotspot-bubble::after {
-  left: -8px; border-top: none; border-right: none; transform: rotate(45deg);
-}
-.hotspot-bubbles--left .hotspot-bubble::after {
-  right: -8px; border-bottom: none; border-left: none; transform: rotate(45deg);
-}
+.hotspot-bubble--above::after { bottom: -8px; left: var(--tail); border-top: none; border-left: none; }
+.hotspot-bubble--right::after { top: 80px; left: -8px;  border-top: none; border-right: none; }
+.hotspot-bubble--left::after  { top: 80px; right: -8px; border-bottom: none; border-left: none; }
 
 /* Two labelled photos side by side (storyboard slide 99) */
 .hotspot-pair { display: flex; direction: rtl; align-items: center; justify-content: center; gap: 18px; }

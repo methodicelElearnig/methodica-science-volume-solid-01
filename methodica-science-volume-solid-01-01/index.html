@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=34">
+  <link rel="stylesheet" href="../unit-css/style.css?v=35">
   <link rel="stylesheet" href="css/style.css?v=19">
 </head>
 <body data-subject-theme="science">
@@ -960,31 +960,35 @@
          The two RIGHTMOST children's bubbles go in the first (physically right,
          under RTL) column so each bubble sits on the same side as its child. -->
     <div class="hotspot-question hotspot-question--photo">
-      <p class="scq-qtext">הילדים במעבדה מנסים למדוד נפח של כפית עשויה ממתכת כדי לייצר סדרת כפיות זהות.<br>לחצו על הילד שהטיעון שלו הוא <strong>מדעי</strong> ומבוסס על <strong>ראיה</strong>.</p>
+      <p class="scq-qtext">הילדים במעבדה מנסים למדוד נפח של כפית עשויה ממתכת כדי לייצר סדרת כפיות זהות.<br>לחצו על הילד שהטיעון שלו הוא מדעי ומבוסס על ראיה.</p>
+      <!-- Each statement is placed AROUND the photo, not in two flanking columns: the two OUTER
+           children (a leftmost, d rightmost) keep a bubble on their own side with the beak aimed
+           inward, and the two INNER ones (c, b) take a bubble above the photo with the beak aimed
+           down at their face. --bx is the bubble's left edge and --tail the beak's offset along it,
+           both in stage coordinates, so a beak lands on its child's face without the bubble having
+           to be centred there. Photo-relative face x: a 151, c 245, b 358, d 515 of 628.
+           DOM order is photo-then-bubbles so the bubbles paint over the photo edges, and the four
+           radios read right-to-left (d, b, c, a) to match the RTL visual order. -->
       <div class="hotspot-stage" id="s15-answers" role="radiogroup" aria-label="איזה טיעון מדעי ומבוסס על ראיה?">
-        <div class="hotspot-bubbles hotspot-bubbles--right">
-          <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s15','d')">
-            <span class="scq-opt-text">הכנסתי את הכפית למשורה עם מים. המים עלו מ-50 ל-70 מ"ל, ולכן נפח הכפית הוא 20 מ"ל.</span>
-          </button>
-          <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s15','b')">
-            <span class="scq-opt-text">הסתכלתי על הכפית והערכתי לפי העין שהנפח הוא בערך 20 מ"ל.</span>
-          </button>
-        </div>
-        <div class="hotspot-photo" style="width: 628px">
+        <div class="hotspot-photo">
           <img src="assets/img/s15-four-kids.jpg" alt="ארבעה ילדים בחלוקי מעבדה ומשקפי מגן עומדים ליד שולחן במעבדה">
           <button class="scq-opt hotspot-area" type="button" data-id="d" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','d')" style="--x:82%;--y:58%;--w:13%;--h:46%"></button>
           <button class="scq-opt hotspot-area" type="button" data-id="b" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','b')" style="--x:57%;--y:58%;--w:13%;--h:46%"></button>
           <button class="scq-opt hotspot-area" type="button" data-id="c" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','c')" style="--x:39%;--y:58%;--w:13%;--h:46%"></button>
           <button class="scq-opt hotspot-area" type="button" data-id="a" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','a')" style="--x:24%;--y:58%;--w:13%;--h:46%"></button>
         </div>
-        <div class="hotspot-bubbles hotspot-bubbles--left">
-          <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s15','c')">
-            <span class="scq-opt-text">הנחתי את הכפית על מאזניים וקיבלתי 25 גרם. לכן הנפח הוא 25.</span>
-          </button>
-          <button class="scq-opt hotspot-bubble" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s15','a')">
-            <span class="scq-opt-text">מדדתי את הכפית בסרגל, ובכל פעם יצא לי אורך אחר. החלטתי לקבוע שהנפח יהיה האורך · רוחב · גובה.</span>
-          </button>
-        </div>
+        <button class="scq-opt hotspot-bubble hotspot-bubble--side hotspot-bubble--right" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s15','d')">
+          <span class="scq-opt-text">הכנסתי את הכפית למשורה עם מים. המים עלו מ-50 ל-70 מ"ל, ולכן נפח הכפית הוא 20 מ"ל.</span>
+        </button>
+        <button class="scq-opt hotspot-bubble hotspot-bubble--above" style="--bx: 594px; --tail: 30px" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s15','b')">
+          <span class="scq-opt-text">הסתכלתי על הכפית והערכתי לפי העין שהנפח הוא בערך 20 מ"ל.</span>
+        </button>
+        <button class="scq-opt hotspot-bubble hotspot-bubble--above" style="--bx: 266px; --tail: 245px" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s15','c')">
+          <span class="scq-opt-text">הנחתי את הכפית על מאזניים וקיבלתי 25 גרם. לכן הנפח הוא 25.</span>
+        </button>
+        <button class="scq-opt hotspot-bubble hotspot-bubble--side hotspot-bubble--left" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s15','a')">
+          <span class="scq-opt-text">מדדתי את הכפית בסרגל, ובכל פעם יצא לי אורך אחר. החלטתי לקבוע שהנפח יהיה האורך · רוחב · גובה.</span>
+        </button>
       </div>
     </div>
     <div class="scq-bar">
