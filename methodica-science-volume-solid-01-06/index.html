@@ -17,30 +17,41 @@
 
   <!-- ═══ S0 — Peak intro (מועד ב) ═══ -->
   <section class="screen active" data-screen="0" id="s0">
-    <div class="peak-intro">
-      <span class="peak-badge">שאלת שיא · מועד ב</span>
-      <h1 class="peak-intro-title">פסל ספינה טרופה לאקווריום</h1>
-      <p class="peak-intro-text">ארז קנה פסל של ספינה טרופה לאקווריום, ורצה למדוד את נפחו. הוא השתמש בשיטת ההצפה ומדד שלוש פעמים: 1,250 · 1,240 · 1,260 מ"ל. לפניכם 4 סעיפים — ענו על כולם, ובסוף תקבלו משוב. יש לענות נכון על 3 מתוך 4 כדי לסיים בהצלחה.</p>
+    <!-- Storyboard slide 160: the transition INTO מועד ב, same shape as part 05's s0 (slide 147).
+         Deck order is kept — the bold label first, then the two lines under it — rather than
+         forced into part 05's sub-title-body sequence, which that slide happens to use.
+         The scenario that used to sit here is s7 (slide 161). -->
+    <div class="peak-transition">
+      <div class="peak-transition-text">
+        <h1 class="peak-transition-title">משימת שיא 2</h1>
+        <p class="peak-transition-sub">פחות הצלחנו בפעם הראשונה, בואו ננסה שוב.</p>
+        <p class="peak-transition-body">הפעם יש 4 סעיפים. עליכם להצליח בכולם.</p>
+      </div>
+      <div class="peak-transition-video" id="s0-video"></div>
     </div>
     <div class="nav-bar"><button class="btn-back" id="back-to-prev-part" onclick="goBackToPrevPart()" hidden>חזרה</button>
       <button class="btn-continue" id="s0-continue" onclick="peakStart()">התחילו</button></div>
   </section>
 
+  <!-- Storyboard slide 162. The photo and the method description are NOT repeated here: they are
+       the scenario, and the scenario is s7 (slide 161), which now precedes this screen. -->
   <section class="screen" data-screen="1" id="s1">
-    <div class="peak-question peak-question--withimage">
-      <div class="scq-figure" style="width: 340px">
-        <img src="assets/img/s0-aquarium-statue.jpg" alt="אקווריום ובתוכו פסל של ספינה טרופה">
+    <div class="peak-question">
+      <div class="peak-step">סעיף א · 1 מתוך 4</div>
+      <p class="scq-qtext">באיזו שיטה ארז השתמש למדידת נפח הפסל?</p>
+      <div class="scq-answers peak-options" id="s1-opts" role="radiogroup" aria-label="באיזו שיטה">
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(1,'a',this)"><span class="scq-opt-text">שיטת ההצפה</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(1,'b',this)"><span class="scq-opt-text">שיטת דחיקת המים</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(1,'c',this)"><span class="scq-opt-text">מדידת הפסל בסרגל</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(1,'d',this)"><span class="scq-opt-text">מדידת הפסל במאזניים</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
-      <div class="peak-side">
-        <div class="peak-step">סעיף א · 1 מתוך 4</div>
-        <p class="scq-qtext">ארז הניח את האקווריום על כלי איסוף, מילא אותו במים עד הסוף והכניס פנימה את הפסל. את המים שנשפכו הוא אסף ומדד. באיזו שיטה ארז השתמש למדידת נפח הפסל?</p>
-        <div class="scq-answers peak-options" id="s1-opts" role="radiogroup" aria-label="באיזו שיטה">
-          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(1,'a',this)"><span class="scq-opt-text">שיטת ההצפה</span><span class="scq-radio" aria-hidden="true"></span></button>
-          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(1,'b',this)"><span class="scq-opt-text">שיטת דחיקת המים</span><span class="scq-radio" aria-hidden="true"></span></button>
-          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(1,'c',this)"><span class="scq-opt-text">מדידת הפסל בסרגל</span><span class="scq-radio" aria-hidden="true"></span></button>
-          <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(1,'d',this)"><span class="scq-opt-text">מדידת הפסל במאזניים</span><span class="scq-radio" aria-hidden="true"></span></button>
-        </div>
-      </div>
+    </div>
+    <!-- Slide 162's companion line. The deck renders a Wingdings smiley (U+F04A) mid-sentence; it is
+         a font glyph rather than text, so it is dropped rather than substituted with an emoji.
+         --right, not --left: with `into`, renderCompanion APPENDS the sprite, so it lands after the
+         bubble — see part 05's s1 and the result screens. -->
+    <div class="companion-say companion-say--right" id="s1-say" style="left: 46px; bottom: 96px;">
+      <p class="companion-bubble" style="--bubble-w: 300px;">גם הפעם תדעו אם צדקתם רק בסוף.</p>
     </div>
     <div class="nav-bar"><button class="scq-hint peak-hint" id="s1-hint" type="button" onclick="peakHint(1)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s1-continue" disabled onclick="peakContinue(1)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
@@ -90,6 +101,33 @@
     <div class="nav-bar"><button class="scq-hint peak-hint" id="s4-hint" type="button" onclick="peakHint(4)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s4-continue" disabled onclick="peakContinue(4)">סיום</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
   <div class="scq-hint-overlay hidden" id="s4-hint-overlay" onclick="if(event.target===this)peakCloseHint(4)"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>איך אנחנו יודעים שהטענה נכונה?</strong></p><p>בטיעון מדעי נחפש ממצא שנמדד בניסוי או בתצפית.</p></div></div></div><button class="scq-hint-close" type="button" onclick="peakCloseHint(4)">חזרה לשאלה</button></div></div>
+
+  <!-- ═══ S7 — Scenario (storyboard slide 161) ═══
+       Between the transition (s0) and סעיף א (s1); next free id, order in peakStart()/goBack().
+       Same .scq-question--withimage shell the scenario screens in part 04 use. -->
+  <section class="screen" data-screen="7" id="s7">
+    <div class="scq-question scq-question--withimage">
+      <div class="scq-figure">
+        <img src="assets/img/s0-aquarium-statue.jpg" alt="אקווריום ובתוכו פסל של ספינה טרופה">
+      </div>
+      <div class="scq-side">
+        <h1 class="peak-scenario-title">האקווריום של ארז</h1>
+        <p class="scq-qtext scq-qtext--mixed">
+          ארז קנה פסל חדש של ספינה טרופה לאקווריום שלו. חשוב לו לדעת מה נפח הפסל.<br /><br />
+          <b>השיטה:</b> ארז הניח את האקווריום על כלי איסוף, מילא אותו במים עד הסוף והכניס פנימה את הפסל. את המים שנשפכו לכלי האיסוף הוא אסף ומדד את נפחם.<br /><br />
+          <b>המדידות:</b></p>
+        <ul class="peak-scenario-list">
+          <li>מדידה 1: 1,250 מ"ל</li>
+          <li>מדידה 2: 1,240 מ"ל</li>
+          <li>מדידה 3: 1,260 מ"ל</li>
+        </ul>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s7-continue" onclick="goTo(1)">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
 
   <!-- S5 / S6 — storyboard 170 (all correct) / 171 (not all). One card with the model answer to every סעיף and the
        companion's reflective line to its left, exactly as the deck lays those slides out. The four
@@ -153,7 +191,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=19"></script>
+<script src="js/main.js?v=21"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

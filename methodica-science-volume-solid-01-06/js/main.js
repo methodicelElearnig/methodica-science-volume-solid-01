@@ -6,9 +6,19 @@
    success (≥3/4) and failure end screens are TERMINAL — the unit ends.
    ═══════════════════════════════════════════════════════════ */
 
-const TOTAL_SCREENS = 7;               // S0 intro, S1–S4 sub-parts, S5 success, S6 failure
+const TOTAL_SCREENS = 8;               // S0 intro, S7 scenario, S1–S4 sub-parts, S5 success, S6 failure
+/* The scenario (storyboard 161) took the next free id rather than renumbering four sub-parts,
+   their options, hints and SCREEN_TO_SUBCONTENT rows. Reading order lives in peakStart() and
+   goBack(), not in the ids — same as part 05. */
+const SCENARIO_SCREEN = 7;
 const PEAK_CORRECT = { 1: 'a', 2: 'a', 3: 'b', 4: 'a' };
-const PEAK_PARTS = 4, PEAK_PASS = 3;
+/* PEAK_PASS is 4 here, not 3 as in מועד א: slide 160 tells the learner "עליכם להצליח בכולם", and
+   מועד ב is the terminal attempt, so the screen and the gate have to agree. Resolved 2026-08-26 by
+   the content owner (was F-12, the deck-versus-build contradiction). One consequence worth knowing:
+   pass now means all four, so renderPeakResult's variant split — which keys on all four being right
+   — and the screen split, which keys on this threshold, coincide in this part. They still diverge in
+   part 05, where 3 of 4 passes. */
+const PEAK_PARTS = 4, PEAK_PASS = 4;
 let peakAnswers = {};
 /* Which sub-parts have been COMMITTED, as distinct from merely picked. peakAnswers[idx] is written
    the moment an option is clicked; this is written when peakContinue() reports it. The two must stay
@@ -38,7 +48,7 @@ function getCharacter() {
    <img onerror> fallback: onerror would fire a real 404 on nearly every
    screen and this unit's QA gate checks the network log for zero 404s.
    Landing a produced GIF is one line here plus the file. */
-const CHARACTER_ASSETS = { selection: 'png', 'two-fingers': 'png', party: 'mp4', panting: 'mp4' };
+const CHARACTER_ASSETS = { selection: 'png', 'two-fingers': 'png', party: 'mp4', panting: 'mp4', challenge: 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
@@ -58,7 +68,10 @@ function startCompanionMedia(el) {
 }
 /* s5 is the SUCCESS end screen and s6 the RETRY one — not the other way round. */
 const CHARACTER_SLOTS = {
-  s0: { pose: 'two-fingers', w: 210, right: 40, bottom: 95 },  /* sb160 */
+  /* sb160: the transition carries the sprite as its illustration, 640x360 in the middle of the
+     column. `two-fingers` moves to s1, which is where slide 162 puts a companion line. */
+  s0: { pose: 'challenge',   w: 640, into: 's0-video', ca: '16 / 9' },  /* sb160 */
+  s1: { pose: 'two-fingers', w: 132, into: 's1-say' },         /* sb162 */
   s5: { pose: 'party',       w: 210, into: 's5-say' },         /* sb170 */
   s6: { pose: 'panting',     w: 200, into: 's6-say', ca: '16 / 9' }          /* sb171 */
 };
@@ -116,7 +129,10 @@ const PEAK_RESULT = {
     '<b>ד.</b> הטיעון המדעי הנתמך בראייה הוא: בשיטת ההצפה נאספו בממוצע 1,250 מ"ל מים, ונפח המים שנדחק שווה לנפח הגוף שהוכנס למים.'
   ]
 };
-/* The title follows the DECK's split (all four right), the screen follows the pass threshold. */
+/* The title follows the DECK's split (all four right), the screen follows the pass threshold.
+   With PEAK_PASS = 4 the two coincide here, so s5 only ever shows the all-correct variant and
+   s6 only ever the partial one. The keying is left as it is rather than simplified: it is the
+   same function part 05 uses, where the two genuinely differ. */
 function renderPeakResult(n) {
   const card = document.getElementById('s' + n + '-result');
   if (!card) return;
@@ -152,7 +168,8 @@ document.addEventListener('keydown', e => {
 });
 function goBack() {
   if (currentScreen >= 2 && currentScreen <= PEAK_PARTS) { goTo(currentScreen - 1); return; }
-  if (currentScreen === 1) { goTo(0); return; }
+  if (currentScreen === 1) { goTo(SCENARIO_SCREEN); return; }
+  if (currentScreen === SCENARIO_SCREEN) { goTo(0); return; }
 }
 function advanceScreen() { if (currentScreen === 0) peakStart(); }
 
@@ -172,7 +189,8 @@ function peakCloseHint(idx) {
 }
 
 /* ─── Peak assessment ─────────────────────────────────────── */
-function peakStart() { goTo(1); }
+/* s0 (transition, slide 160) -> s7 (scenario, slide 161) -> s1 (סעיף א, slide 162). */
+function peakStart() { goTo(SCENARIO_SCREEN); }
 /* The options are template .scq-opt pills, so the picked state is `.selected` — the class
    .scq-opt.selected .scq-radio keys on to fill the radio — and aria-checked follows it. */
 function peakSelect(idx, id, btn) {
@@ -284,7 +302,10 @@ var SCREEN_TO_SUBCONTENT = {
   3: ['01', 3],       // sub-part 3
   4: ['01', 4],       // sub-part 4
   5: ['01', 5],       // score - passed   (terminal)
-  6: ['01', 5]        // score - failed   (terminal; no third attempt)
+  6: ['01', 5],       // score - failed   (terminal; no third attempt)
+  /* Same item and page as the intro: the scenario asks nothing, so opening or closing the item
+     on it would report a screen that carries no answer. */
+  7: ['01', 0]        // scenario
 };
 
 var XAPI_COMP_SLUG = 'methodica-science-volume-solid-01-06';
