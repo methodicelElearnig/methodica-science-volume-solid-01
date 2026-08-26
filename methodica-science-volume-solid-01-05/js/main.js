@@ -65,7 +65,10 @@ const CHARACTER_SLOTS = {
   /* sb147: the transition screen carries the sprite as its illustration, 640x360 in the middle of
      the column, not a 210px corner decoration. `into` drops it in the box the markup reserves. */
   s0: { pose: 'challenge', w: 640, into: 's0-video', ca: '16 / 9' },        /* sb147 */
-  s1: { pose: 'think', w: 132, into: 's1-say', ca: '16 / 9' },              /* sb149 */
+  /* 330px, up from 132. The old value also carried `ca: '16 / 9'`, which was wrong for a
+     960x960 source: the box became 132x74 and object-fit: contain drew the mascot at 74px,
+     half the size part 06's already was. Dropping `ca` restores the square default. */
+  s1: { pose: 'think', w: 330, into: 's1-say' },                            /* sb149 */
   s5: { pose: 'cheer', w: 200, into: 's5-say', ca: '16 / 9' },              /* sb157 */
   s6: { pose: 'think', w: 200, into: 's6-say' }                              /* sb158 */
 };

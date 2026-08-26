@@ -3617,12 +3617,22 @@ html, body {
 .peak-badge { background: var(--subject-900); color: #fff; font-family: 'Assistant', sans-serif; font-size: 16px; font-weight: 800; padding: 5px 22px; border-radius: 1000px; }
 .peak-intro-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-500); }
 .peak-intro-text { font-family: 'Assistant', sans-serif; font-size: 21px; font-weight: 400; color: #303030; line-height: 1.55; }
-.peak-question { position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%); width: 820px; display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
-/* flex-start, not center: in this RTL column the cross-axis start IS the physical right, so the
-   badge lands flush with the stem and the options instead of floating mid-column. Centred was
-   the original value from the CSS extraction and it read as a stray pill once the options
-   stopped being full-width. Same mechanism .peak-options uses for its own right alignment. */
-.peak-step { align-self: flex-start; background: var(--subject-100); color: var(--subject-700); font-family: 'Assistant', sans-serif; font-size: 15px; font-weight: 700; padding: 4px 16px; border-radius: 1000px; }
+/* Top-aligned at 120px rather than vertically centred. Centring was inherited from the practice
+   shells, and on the fluid canvas (#app height = 1280 / window aspect, not a fixed 720) it made the
+   block drift down as the window got taller — the taller the browser, the bigger the empty band
+   above the question. A fixed 120px puts every sub-part in the same place at every window size.
+   translateX only: translate(-50%, -50%) would pull it 50% of its own height back up. */
+.peak-question { position: absolute; left: 50%; top: 120px; transform: translateX(-50%); width: 820px; display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
+/* A heading, not a chip. It used to be a Subject/100 pill at 15px, which read as a button the
+   learner could press. Now it matches the way part 04 writes the same thing — `<b>סעיף ב:</b>`
+   inline above the question, 24px bold in body colour — so the two families look alike.
+   flex-start, not center: in this RTL column the cross-axis start IS the physical right, so the
+   title lands flush with the stem and the options instead of floating mid-column. Same mechanism
+   .peak-options uses for its own right alignment. */
+.peak-step {
+  align-self: flex-start;
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
+}
 /* width: 100% — the base .scq-qtext is 792px wide for the absolute layout it was written for.
    In flow that overflows .peak-side (572px) and very nearly fills .peak-question (820px). */
 .peak-question .scq-qtext { width: 100%; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: right; direction: rtl; line-height: 1.4; }
@@ -3881,8 +3891,11 @@ html, body {
 /* Peak-assessment question with the scenario photo beside it (parts 05/06).
    .peak-question is a centred column; this flips it to the same ltr row +
    rtl inner column as .scq-question--withimage. */
+/* 1180px, not 1100: the companion column grew when the sprite went to 330px (see below), and the
+   question column still needs room for a 24px stem. 1180 centred leaves 50px each side of the
+   1280 canvas. align-items: flex-start so both columns hang from the same 120px top edge. */
 .peak-question--withimage {
-  width: 1100px; flex-direction: row; align-items: center; justify-content: flex-end;
+  width: 1180px; flex-direction: row; align-items: flex-start; justify-content: flex-end;
   gap: 28px; direction: ltr;
 }
 .peak-question--withimage > .peak-side {
@@ -3899,13 +3912,15 @@ html, body {
    (align-self: stretch), which in this row would pull the bubble to the top and the sprite to
    the bottom of the column. This slot is a fixed column beside the question, so it gets its own
    rule rather than being bent into that one.
-   500px matches .scq-figure so the question column starts where part 04's does; justify-content
-   flex-end (the row is direction: ltr) pushes the pair against the question rather than leaving
-   it stranded at the canvas edge. Both bubbles fit: 330+14+132 = 476 and 300+14+132 = 446. */
+   674px = the widest bubble (330) + the group gap (14) + the sprite (330). It was 500 to match
+   .scq-figure, but the sprite is 330 now and 330+14+330 no longer fits that. justify-content
+   flex-end (the row is direction: ltr) pushes the pair against the question rather than leaving it
+   stranded at the canvas edge; part 06's narrower 300px bubble therefore hangs off the same right
+   edge as part 05's. */
 .peak-question--withimage > .companion-say {
   position: relative;
-  flex: 0 0 auto; align-self: center;
-  width: 500px; justify-content: flex-end;
+  flex: 0 0 auto; align-self: flex-start;
+  width: 674px; justify-content: flex-end;
 }
 
 /* Speaker option — generic role icon beside the quote (storyboard slide 153).
