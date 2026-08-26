@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · שאלת שיא</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=41">
+  <link rel="stylesheet" href="../unit-css/style.css?v=42">
   <link rel="stylesheet" href="css/style.css?v=1">
 </head>
 <body data-subject-theme="science">
@@ -17,10 +17,19 @@
 
   <!-- ═══ S0 — Peak intro ═══ -->
   <section class="screen active" data-screen="0" id="s0">
-    <div class="peak-intro">
-      <span class="peak-badge">שאלת שיא</span>
-      <h1 class="peak-intro-title">אבטיפוס לפסלון משחק קופסה</h1>
-      <p class="peak-intro-text">חברה מייצרת פסלוני משחק מפלסטיק ורוצה לדעת את נפח הפסלון המדויק. לפניכם 4 סעיפים — ענו על כולם, ובסוף תקבלו משוב. יש לענות נכון על 3 מתוך 4 כדי לסיים בהצלחה.</p>
+    <!-- Storyboard slide 147: the transition INTO the peak question, not the scenario. Laid out as
+         the sibling unit mass-measure-01 lays out the same moment — three text levels over a large
+         centred companion. The scenario that used to sit here is not lost: slide 148's figures
+         (156 גרם, 50→110 מ"ל) are already stated on s1, סעיף א. -->
+    <div class="peak-transition">
+      <div class="peak-transition-text">
+        <p class="peak-transition-sub">כל הכבוד! הסתיים שלב התרגול.<br />אם לא הצלחת לענות נכון על חלק מהשאלות, חשוב להבין מה עדיין לא ברור ולפנות לצ'אט או למורה להסבר נוסף.</p>
+        <h1 class="peak-transition-title">עכשיו מגיעה שאלת השיא</h1>
+        <p class="peak-transition-body">יש בה 4 סעיפים. עליכם להצליח ב-3 לפחות.</p>
+      </div>
+      <!-- The sprite is injected here by CHARACTER_SLOTS so it follows the learner's chosen
+           colour; a hard-coded <video> would show orange to a learner who picked turquoise. -->
+      <div class="peak-transition-video" id="s0-video"></div>
     </div>
     <div class="nav-bar"><button class="btn-back" id="back-to-prev-part" onclick="goBackToPrevPart()" hidden>חזרה</button>
       <button class="btn-continue" id="s0-continue" onclick="peakStart()">התחילו</button></div>
@@ -159,7 +168,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=20"></script>
+<script src="js/main.js?v=21"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

@@ -38,7 +38,7 @@ function getCharacter() {
    <img onerror> fallback: onerror would fire a real 404 on nearly every
    screen and this unit's QA gate checks the network log for zero 404s.
    Landing a produced GIF is one line here plus the file. */
-const CHARACTER_ASSETS = { selection: 'png', run: 'mp4', cheer: 'mp4', think: 'mp4' };
+const CHARACTER_ASSETS = { selection: 'png', run: 'mp4', cheer: 'mp4', think: 'mp4', challenge: 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
@@ -58,7 +58,9 @@ function startCompanionMedia(el) {
 }
 /* s5 is the SUCCESS end screen and s6 the RETRY one — not the other way round. */
 const CHARACTER_SLOTS = {
-  s0: { pose: 'run',   w: 210, right: 40, bottom: 95, ca: '16 / 9' },        /* sb147 */
+  /* sb147: the transition screen carries the sprite as its illustration, 640x360 in the middle of
+     the column, not a 210px corner decoration. `into` drops it in the box the markup reserves. */
+  s0: { pose: 'challenge', w: 640, into: 's0-video', ca: '16 / 9' },        /* sb147 */
   s5: { pose: 'cheer', w: 200, into: 's5-say', ca: '16 / 9' },              /* sb157 */
   s6: { pose: 'think', w: 200, into: 's6-say' }                              /* sb158 */
 };
