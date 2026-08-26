@@ -3954,15 +3954,15 @@ html, body {
    `left` is physical and therefore bidi-immune; never use inset-inline here.
    Text weight is REGULAR, matching the deck (storyboard slide 140 sets no bold on it).
    ═══════════════════════════════════════════════════════ */
+/* A speaker's line placed ON the photograph, beside whoever says it — not stacked above the
+   scenario text in the column beside it, where it read as a caption belonging to the paragraph
+   rather than to the person (QA 2026-08-26). Absolutely positioned against .scq-figure, which is
+   already position:relative; the coordinates and the width are tuned to the individual photo and
+   live with the screen that owns it (see #s10 in part 04's stylesheet).
+   The beak points RIGHT, at the speaker, since the photos put the figure-and-bubble pair with the
+   person on the right. */
 .thought-bubble {
-  position: relative;
-  align-self: flex-end;              /* RTL column: flex-end is the physical LEFT edge,
-                                        i.e. hard against the illustration */
-  max-width: 430px;
-  margin: 0 0 22px 8px;              /* small left margin: the beak overhangs into the
-                                        28px figure/text gap so it nearly touches the
-                                        photo. --withimage is overflow:visible, so the
-                                        overhang is not clipped. */
+  position: absolute; z-index: 3;
   background: #fff;
   border: 3px solid var(--subject-500);
   border-radius: 18px;
@@ -3975,17 +3975,17 @@ html, body {
 .thought-bubble::after {
   content: '';
   position: absolute;
-  top: 26px;
+  top: 22px;
   border-top: 13px solid transparent;
   border-bottom: 13px solid transparent;
 }
 .thought-bubble::before {            /* outline triangle */
-  left: -19px;
-  border-right: 19px solid var(--subject-500);
+  right: -19px;
+  border-left: 19px solid var(--subject-500);
 }
 .thought-bubble::after {             /* white fill, inset by the 3px border */
-  left: -15px;
-  border-right: 19px solid #fff;
+  right: -15px;
+  border-left: 19px solid #fff;
 }
 
 /* ═══════════════════════════════════════════════════════
