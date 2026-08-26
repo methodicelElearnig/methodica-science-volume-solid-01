@@ -3272,7 +3272,25 @@ html, body {
   font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
   text-align: right; direction: rtl; line-height: 1.4;
 }
-.scq-question--textonly .scq-answers { width: 100%; }
+/* ── The answers column sizes to its content, not to the layout ──────────────────
+   `max-content` on a COLUMN flex container resolves to the largest of its children's max-content
+   widths, and .scq-opt's `width: 100%` then hands that width back to every pill — so all the pills
+   in one question are equal, at the width of the LONGEST option. Short options are widened up to
+   the longest rather than left ragged. Measured on s13: naturals 155/155/155/166 → all four at 166.
+
+   `max-content` is by definition the NO-WRAP width, so the column never wraps voluntarily; wrapping
+   happens only when max-width clamps it, and then the width is exactly 100% — the width these
+   screens already had. A question with a genuinely long option is therefore unchanged, and there is
+   no in-between state where a narrow pill holds wrapped text.
+
+   min-width keeps a numeric answer (`123 סמ"ק` wants 22% of 760px) reading as a pill rather than a
+   chip. align-self is load-bearing twice: the parent is `align-items: stretch`, which would stretch
+   the shrink-wrapped column straight back to full width, and the containing block is RTL, so
+   cross-axis start is the RIGHT edge — which keeps the pills flush with the question stem.
+   The stem itself keeps the parent's stretch and does not move. */
+.scq-question--textonly .scq-answers {
+  width: max-content; min-width: 40%; max-width: 100%; align-self: flex-start;
+}
 
 /* ═══════════════════════════════════════════════════════
    TEMPLATE — DragAndDropQuestion (generic matching)
@@ -3528,7 +3546,14 @@ html, body {
    flex column + gap and .peak-opt is only the JS hook peakSelect()/peakEnter() select on.
    .scq-opt is pinned to 604px for the 760px --textonly layout, so widen it to fill the
    820px .peak-question column — the same override .scq-question--withimage .scq-opt makes. */
-.peak-options { width: 100%; }
+/* Content-sized, same as the two .scq-question-- blocks — see --textonly for the reasoning. Two
+   containing blocks here: .peak-question (820px, `align-items: stretch`) for סעיפים ב–ד, and
+   .peak-question--withimage > .peak-side (flex, `align-items: stretch`, `direction: rtl`) for סעיף א.
+   Both are RTL and both stretch, so the same align-self serves both.
+   Sharpest win in the unit: 05/s1's options are `110 סמ"ק` and friends in an 820px column. */
+.peak-options {
+  width: max-content; min-width: 40%; max-width: 100%; align-self: flex-start;
+}
 .peak-options .scq-opt { width: 100%; }
 .peak-end { position: absolute; left: 50%; top: calc(50% - 37px); transform: translate(-50%, -50%); width: 760px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
 .peak-end-icon { font-size: 64px; line-height: 1; }
@@ -3575,7 +3600,14 @@ html, body {
   width: 100%; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400;
   color: #303030; text-align: right; direction: rtl; line-height: 1.4;
 }
-.scq-question--withimage .scq-answers { width: 100%; }
+/* Content-sized, same as --textonly above — see that block for the reasoning. The containing block
+   here is .scq-side (`align-items: stretch`, `direction: rtl`), so align-self is needed for the same
+   two reasons, and the percentages resolve against .scq-side's flex-resolved width. .scq-side keeps
+   its own width: it is `flex: 1 1 auto` and its basis is governed by the stem, not by the options,
+   so the framed photo does not move. */
+.scq-question--withimage .scq-answers {
+  width: max-content; min-width: 40%; max-width: 100%; align-self: flex-start;
+}
 /* The inherited mass-measure block absolutely positions .scq-qtext (right:0;
    top:0) and .scq-answers (right:0; top:100px) and pins .scq-opt to 604px.
    Both modifiers lay their children out in flow, so the children have to be

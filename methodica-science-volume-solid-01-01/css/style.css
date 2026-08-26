@@ -260,11 +260,13 @@
 }
 .speech-bubble--note .speech-bubble__text { font-size: 16px; font-weight: 400; color: #5a4600; }
 
-/* Override .scq-answers absolute positioning for S14 text-only layout */
-#s14 .scq-answers {
-  position: relative; right: auto; top: auto;
-  width: 100%; gap: 12px;
-}
+/* S14's `#s14 .scq-answers` override lived here. Every one of its four declarations is now supplied
+   by unit-css: `position/right/top` by the shared in-flow block for .scq-question--withimage (which
+   is what s14 actually is — the comment here still called it text-only), and `gap: 12px` by the base
+   .scq-answers. Only `width: 100%` still had an effect, and being an ID selector it silently
+   outranked the content-sizing rule, leaving s14 the one question in the unit whose pills stayed
+   full width. Removed rather than amended: an override that no longer overrides anything is worse
+   than none, because the next person has to work out which of its four lines still matters. */
 #s19 .scq-opt { width: 100%; }
 .hook-video { width: 100%; display: block; background: #000; }
 
