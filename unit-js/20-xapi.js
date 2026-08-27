@@ -178,7 +178,20 @@ function xapiFinishItems() {
 }
 
 /* HTML5 <video> played/paused, with the time extension the spec asks for (seconds into the media).
-   Only part 01 has a <video>; this is a no-op elsewhere.
+
+   ⚠️ DECORATIVE VIDEO MUST NEVER BE WIRED, and `querySelectorAll('video')` wired all of it. The
+   unit is full of <video> that is artwork, not media: every .companion sprite and s7's two path
+   cards. They are `autoplay loop muted` with no controls, so nothing about them is a learner
+   action — yet goTo() pauses every video when leaving a screen, and a LOOPING sprite is mid-clip
+   at that moment, so `currentTime` is not 0 and the guard below let it through. Measured on
+   2026-08-27 before this fix: walking 8 screens of part 01 emitted 8 'paused' statements, each
+   carrying a time extension and typed as 'question'. 17 videos were wired in part 01 alone —
+   14 companions, 2 path cards, and only ONE real player.
+
+   The filter is `aria-hidden`, not `controls`: an element hidden from assistive technology is
+   decorative by definition, so it cannot be something the learner operates. That also keeps a
+   future content video with a custom player (no `controls` attribute) reporting correctly, and it
+   covers sprites injected later by renderCompanion(), which sets aria-hidden when it builds them.
 
    'paused' fires only for a genuine learner pause — not for the pause at natural end, and not for
    the programmatic pause goTo() performs when leaving a screen (that lands with currentTime 0 only
@@ -186,7 +199,7 @@ function xapiFinishItems() {
    video does not report a play the learner did not initiate. */
 function xapiWireVideos() {
   if (!window.XAPI_USING_G || typeof sendStatement720 !== 'function') return;
-  document.querySelectorAll('video').forEach(function (v) {
+  document.querySelectorAll('video:not([aria-hidden="true"])').forEach(function (v) {
     if (v.__xapiWired) return;
     v.__xapiWired = true;
     var pausedOnce = false;
