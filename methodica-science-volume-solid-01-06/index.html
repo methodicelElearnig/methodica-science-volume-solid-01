@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · שאלת שיא (מועד ב)</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=50">
+  <link rel="stylesheet" href="../unit-css/style.css?v=51">
   <link rel="stylesheet" href="css/style.css?v=1">
 </head>
 <body data-subject-theme="science">
@@ -156,6 +156,7 @@
     <div class="companion-say companion-say--right" id="s5-say" style="left: 44px; bottom: 96px;">
       <p class="companion-bubble" id="s5-result-bubble" style="--bubble-w: 262px;"></p>
     </div>
+    <div class="nav-bar"><button class="btn-continue" id="s5-continue" onclick="goTo(8)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
 
   <section class="screen" data-screen="6" id="s6">
@@ -167,7 +168,41 @@
     <div class="companion-say companion-say--right" id="s6-say" style="left: 44px; bottom: 96px;">
       <p class="companion-bubble" id="s6-result-bubble" style="--bubble-w: 262px;"></p>
     </div>
+    <div class="nav-bar"><button class="btn-continue" id="s6-continue" onclick="goTo(9)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
+  <!-- ═══ S8 — Unit complete, the SUCCESS ending (storyboard slide 173) ═══
+       Reached from the all-correct review (s5). Slide 170/171 are the ANSWER review — the title
+       plus the א/ב/ג/ד breakdown, which is what s5/s6 already are; 173 is the unit signing off, and
+       it had no screen at all until now. Static copy, unlike s5/s6 whose bodies renderPeakResult()
+       fills at run time. .peak-end was defined in the shared sheet and never used by anything but
+       its -score child; this is the screen it was written for. -->
+  <section class="screen" data-screen="8" id="s8">
+    <div class="peak-end">
+      <h1 class="peak-end-title">כל הכבוד!</h1>
+      <p class="peak-end-text">השלמת את היחידה בהצלחה!</p>
+      <!-- Injected by CHARACTER_SLOTS so it follows the learner's chosen colour. -->
+      <div class="peak-end-video" id="s8-video"></div>
+    </div>
+    <div class="nav-bar"><button class="btn-continue" id="s8-finish" onclick="unitFinish()">סיימתי</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+  </section>
+
+  <!-- ═══ S9 — Unit complete, the LESS-SUCCESSFUL ending (storyboard slide 172) ═══
+       Reached from the not-all-correct review (s6). מועד ב is the final attempt, so this is still an
+       ending, not a retry prompt — hence סיימתי, same as s8. .peak-end--retry only recolours the
+       title; the shell is identical.
+       The deck names Character-2-Challenge.mp4 / orange_win.mp4 for this slide. Those are byte-for-byte
+       the intro's climb (md5 8f00601d… and 2c9693ff…), so following the slide literally would replay
+       the opening animation as the closing one. It uses the `success` pose instead — confirmed with
+       the content owner 2026-08-27. -->
+  <section class="screen" data-screen="9" id="s9">
+    <div class="peak-end peak-end--retry">
+      <h1 class="peak-end-title">פחות הצלחת בשאלות השיא.</h1>
+      <p class="peak-end-text">קורה, העיקר שניסית והתאמצת!</p>
+      <div class="peak-end-video" id="s9-video"></div>
+    </div>
+    <div class="nav-bar"><button class="btn-continue" id="s9-finish" onclick="unitFinish()">סיימתי</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+  </section>
+
 
   <!-- ═══════════════ REPORT MODAL ═══════════════ -->
   <div id="report-modal" class="report-modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
@@ -201,7 +236,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=25"></script>
+<script src="js/main.js?v=26"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

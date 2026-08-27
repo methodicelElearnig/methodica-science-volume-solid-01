@@ -3661,6 +3661,13 @@ html, body {
 .peak-end--retry .peak-end-title { color: var(--subject-700); }
 .peak-end-score { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 700; color: var(--subject-700); }
 .peak-end-text { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400; color: #303030; line-height: 1.5; }
+/* The closing screens' sprite box (storyboard 172/173). Same trick .peak-transition-video uses and
+   for the same reason: .companion is position:absolute by default, which inside this flex column
+   would take it out of the flow and collapse the gap above it. Square, because the `success` pose
+   is a 960x960 pair — width/height here override --cw and the aspect-ratio, so the slot's `w` is
+   documentation rather than the thing that sizes it. */
+.peak-end-video { position: relative; width: 320px; height: 320px; flex-shrink: 0; }
+.peak-end-video .companion { position: static; width: 100%; height: 100%; }
 
 /* ═══════════════════════════════════════════════════════
    STORYBOARD IMAGE LAYOUTS + COMPANION CHARACTER

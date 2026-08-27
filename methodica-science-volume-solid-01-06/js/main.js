@@ -6,7 +6,7 @@
    success (≥3/4) and failure end screens are TERMINAL — the unit ends.
    ═══════════════════════════════════════════════════════════ */
 
-const TOTAL_SCREENS = 8;               // S0 intro, S7 scenario, S1–S4 sub-parts, S5 success, S6 failure
+const TOTAL_SCREENS = 10;               // S0 intro, S7 scenario, S1–S4 sub-parts, S5 success, S6 failure
 /* The scenario (storyboard 161) took the next free id rather than renumbering four sub-parts,
    their options, hints and SCREEN_TO_SUBCONTENT rows. Reading order lives in peakStart() and
    goBack(), not in the ids — same as part 05. */
@@ -51,7 +51,7 @@ function getCharacter() {
 /* '2num' keeps the delivered filename (Copmpanion/Orange_2num.mp4, turquoise_2num.mp4) so the
    pose maps 1:1 to the source and nobody has to guess which clip it is. 960x960, 4.06s — square,
    unlike the 1280x720 clips around it, so its slot must NOT declare `ca`. */
-const CHARACTER_ASSETS = { selection: 'png', 'two-fingers': 'png', panting: 'mp4', challenge: 'mp4', '2num': 'mp4' };
+const CHARACTER_ASSETS = { selection: 'png', 'two-fingers': 'png', panting: 'mp4', challenge: 'mp4', '2num': 'mp4', success: 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
@@ -84,7 +84,11 @@ const CHARACTER_SLOTS = {
      screen. No `ca`: it is 960x960, and the 16:9 ratio the old slot declared would have letterboxed
      it to 210x118, drawing the mascot at 118px. 210 in both parts so the twin screens match. */
   s5: { pose: '2num', w: 210, into: 's5-say' },                             /* sb170 */
-  s6: { pose: 'panting',     w: 200, into: 's6-say', ca: '16 / 9' }          /* sb171 */
+  s6: { pose: 'panting',     w: 200, into: 's6-say', ca: '16 / 9' },         /* sb171 */
+  /* Both endings share the `success` pose. `w` is documentation only — .peak-end-video sizes
+     the sprite at 100% of its own 320px box. No `ca`: the pair is 960x960 in both colours. */
+  s8: { pose: 'success',     w: 320, into: 's8-video' },                     /* sb173 */
+  s9: { pose: 'success',     w: 320, into: 's9-video' }                      /* sb172 */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
@@ -177,7 +181,15 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft')  { if (currentScreen >= 1 && currentScreen <= PEAK_PARTS) return; }
   if (e.key === 'ArrowRight') goBack();
 });
+/* The end screens were unreachable in reverse: this only ever handled 1-4, the scenario and 0, so
+   every `חזרה` added to them would have been a dead button. Named edges, not `currentScreen - 1` —
+   ROUTING-AND-RETAKE.md forbids assuming the numeric order anywhere in this unit, and it is wrong
+   here twice over (the scenario is screen 7, the endings are 8/9). Walking back into an answered
+   sub-part is already safe: the doneQ ledger is what stops a graded answer being reported twice. */
 function goBack() {
+  if (currentScreen === 8) { goTo(5); return; }                    // success ending -> its review
+  if (currentScreen === 9) { goTo(6); return; }                    // other ending  -> its review
+  if (currentScreen === 5 || currentScreen === 6) { goTo(PEAK_PARTS); return; }   // review -> last sub-part
   if (currentScreen >= 2 && currentScreen <= PEAK_PARTS) { goTo(currentScreen - 1); return; }
   if (currentScreen === 1) { goTo(SCENARIO_SCREEN); return; }
   if (currentScreen === SCENARIO_SCREEN) { goTo(0); return; }
@@ -293,6 +305,25 @@ function peakFinish(passed) {
     sendCompletedOnce('done', 'unit', 'onlinelesson', result, { scope: 'unit' });
   } catch (e) { console.error('[xAPI] completed unit (via 06)', e); }
 }
+
+/* ─── סיימתי ───────────────────────────────────────────────
+   ⚠️ THIS MUST NOT REPORT. peakFinish() already sent the item, the component and (on the paths that
+   own it) the unit `completed`, synchronously, when the learner committed their last answer — long
+   before they could reach this screen. sendCompletedOnce() would dedupe a second call, but sending
+   one would still be wrong: this button is an exit affordance, not an outcome.
+
+   The unit has no documented host-exit contract — 60-devbridge.js's postMessage is the dev
+   wrapper's jump bar, not a production channel — so this is a seam, deliberately small. It disables
+   the button so a second press cannot double-fire, and announces the finish to a framing host that
+   may or may not be listening. Drop the real handshake in here once the platform partner confirms
+   it; nothing else in the unit needs to change. */
+function unitFinish() {
+  document.querySelectorAll('.btn-continue[id$="-finish"]').forEach(b => { b.disabled = true; });
+  if (window.parent !== window) {
+    try { window.parent.postMessage({ type: '720:unit-finished' }, '*'); } catch (e) {}
+  }
+}
+
 function peakScore() { let s = 0; for (let i = 1; i <= PEAK_PARTS; i++) if (peakAnswers[i] === PEAK_CORRECT[i]) s++; return s; }
 /* מועד ב is the final attempt — no retake; both end screens are terminal. */
 
@@ -314,6 +345,8 @@ var SCREEN_TO_SUBCONTENT = {
   4: ['01', 4],       // sub-part 4
   5: ['01', 5],       // score - passed   (terminal)
   6: ['01', 5],       // score - failed   (terminal; no third attempt)
+  8: ['01', 5],       // unit complete, success ending          (terminal)
+  9: ['01', 5],       // unit complete, less-successful ending  (terminal)
   /* Same item and page as the intro: the scenario asks nothing, so opening or closing the item
      on it would report a screen that carries no answer. */
   7: ['01', 0]        // scenario
