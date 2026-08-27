@@ -71,8 +71,9 @@ const CHARACTER_SLOTS = {
   /* sb160: the transition carries the sprite as its illustration, 640x360 in the middle of the
      column. `two-fingers` moves to s1, which is where slide 162 puts a companion line. */
   s0: { pose: 'challenge',   w: 640, into: 's0-video', ca: '16 / 9' },  /* sb160 */
-  /* 330px, up from 132 — the same size part 05's s1 uses, so the two peak intros match. */
-  s1: { pose: 'two-fingers', w: 330, into: 's1-say' },         /* sb162 */
+  /* 248px — the same size part 05's s1 uses, so the two peak intros match. See the note there:
+     the shared .companion-say width (578) is derived from it. */
+  s1: { pose: 'two-fingers', w: 248, into: 's1-say' },         /* sb162 */
   s5: { pose: 'party',       w: 210, into: 's5-say' },         /* sb170 */
   s6: { pose: 'panting',     w: 200, into: 's6-say', ca: '16 / 9' }          /* sb171 */
 };

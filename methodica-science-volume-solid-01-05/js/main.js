@@ -65,10 +65,12 @@ const CHARACTER_SLOTS = {
   /* sb147: the transition screen carries the sprite as its illustration, 640x360 in the middle of
      the column, not a 210px corner decoration. `into` drops it in the box the markup reserves. */
   s0: { pose: 'challenge', w: 640, into: 's0-video', ca: '16 / 9' },        /* sb147 */
-  /* 330px, up from 132. The old value also carried `ca: '16 / 9'`, which was wrong for a
-     960x960 source: the box became 132x74 and object-fit: contain drew the mascot at 74px,
-     half the size part 06's already was. Dropping `ca` restores the square default. */
-  s1: { pose: 'think', w: 330, into: 's1-say' },                            /* sb149 */
+  /* 248px = 75% of the 330 this was briefly set to, which read as oversized beside the question.
+     No `ca`: the old value carried `ca: '16 / 9'` on a 960x960 source, so the box came out 132x74
+     and object-fit: contain drew the mascot at 74px — the square default is correct here.
+     The 248 is load-bearing for .peak-question--withimage > .companion-say, whose 578px width is
+     330 (bubble) + 0 (gap) + 248; change one and the other has to follow. */
+  s1: { pose: 'think', w: 248, into: 's1-say' },                            /* sb149 */
   s5: { pose: 'cheer', w: 200, into: 's5-say', ca: '16 / 9' },              /* sb157 */
   s6: { pose: 'think', w: 200, into: 's6-say' }                              /* sb158 */
 };

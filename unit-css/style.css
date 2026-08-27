@@ -3623,19 +3623,23 @@ html, body {
    above the question. A fixed 120px puts every sub-part in the same place at every window size.
    translateX only: translate(-50%, -50%) would pull it 50% of its own height back up. */
 .peak-question { position: absolute; left: 50%; top: 120px; transform: translateX(-50%); width: 820px; display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
-/* A heading, not a chip. It used to be a Subject/100 pill at 15px, which read as a button the
-   learner could press. Now it matches the way part 04 writes the same thing — `<b>סעיף ב:</b>`
-   inline above the question, 24px bold in body colour — so the two families look alike.
-   flex-start, not center: in this RTL column the cross-axis start IS the physical right, so the
-   title lands flush with the stem and the options instead of floating mid-column. Same mechanism
-   .peak-options uses for its own right alignment. */
-.peak-step {
-  align-self: flex-start;
-  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
-}
+/* The sub-part title is no longer an element of its own. .peak-step — first a Subject/100 pill,
+   then a plain bold line — is gone, because the storyboard writes the title INSIDE the stem:
+   `סעיף א:` bold on its own line with the question beneath it in regular weight. That is exactly
+   what part 04 already does (`<b>סעיף ב:</b><br />` in a .scq-qtext--mixed paragraph), so parts
+   05/06 now carry the same markup and one rule serves both families. The `· 1 מתוך 4` counter went
+   with it — the deck's title format has no counter, and these screens have no progress nav. */
 /* width: 100% — the base .scq-qtext is 792px wide for the absolute layout it was written for.
-   In flow that overflows .peak-side (572px) and very nearly fills .peak-question (820px). */
-.peak-question .scq-qtext { width: 100%; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: right; direction: rtl; line-height: 1.4; }
+   In flow that overflows .peak-side (572px) and very nearly fills .peak-question (820px).
+   500 rather than 700: only the `סעיף א:` line is bold now. This declaration does not win — the
+   generic .scq-qtext--mixed rule sets 400 at equal specificity further down the sheet — so the
+   override that actually lands sits beside that rule; this one records the intended value here.
+   ⚠️ `display: block` is load-bearing, the same reset .hotspot-question and .dq-question already
+   carry: the base .scq-qtext is `display: flex; flex-direction: column`, so every child becomes a
+   block-level flex item on a row of its own. `<b>סעיף א:</b><br />question` then renders as THREE
+   rows — the title, an empty row for the <br>, and the question — a measured 100.8px where two
+   lines of 24px/1.4 text should be 67.2px. In block flow the <br> does what it says instead. */
+.peak-question .scq-qtext { display: block; width: 100%; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030; text-align: right; direction: rtl; line-height: 1.4; }
 /* Options are the template .scq-opt pill; the container carries .scq-answers for the
    flex column + gap and .peak-opt is only the JS hook peakSelect()/peakEnter() select on.
    .scq-opt is pinned to 604px for the 760px --textonly layout, so widen it to fill the
@@ -3891,9 +3895,10 @@ html, body {
 /* Peak-assessment question with the scenario photo beside it (parts 05/06).
    .peak-question is a centred column; this flips it to the same ltr row +
    rtl inner column as .scq-question--withimage. */
-/* 1180px, not 1100: the companion column grew when the sprite went to 330px (see below), and the
-   question column still needs room for a 24px stem. 1180 centred leaves 50px each side of the
-   1280 canvas. align-items: flex-start so both columns hang from the same 120px top edge. */
+/* 1180px centred leaves 50px each side of the 1280 canvas, which is where the bubble's left edge
+   sits. Held at 1180 when the companion column shrank to 578: the freed 96px goes to the question
+   column (478 → 574) rather than to the margins, so the bubble does not move and the stem gains
+   room. align-items: flex-start so both columns hang from the same 120px top edge. */
 .peak-question--withimage {
   width: 1180px; flex-direction: row; align-items: flex-start; justify-content: flex-end;
   gap: 28px; direction: ltr;
@@ -3903,8 +3908,8 @@ html, body {
   display: flex; flex-direction: column; align-items: stretch; gap: 14px;
 }
 .peak-question--withimage .scq-qtext { text-align: right; }
-/* The .peak-step override that used to sit here is gone: the base rule is flex-start now, so it
-   restated the cascade rather than changing it. */
+/* Nothing here for the sub-part title any more: it is a <b> inside .scq-qtext, so it inherits this
+   block's alignment along with the rest of the stem. */
 /* 05/s1 and 06/s1 put the COMPANION in the slot .scq-figure holds on part 04's two-column
    questions — the same shell, a talking mascot instead of a photo. .companion-say is
    position: absolute by default (it is normally pinned to the canvas), so it has to be returned
@@ -3912,15 +3917,21 @@ html, body {
    (align-self: stretch), which in this row would pull the bubble to the top and the sprite to
    the bottom of the column. This slot is a fixed column beside the question, so it gets its own
    rule rather than being bent into that one.
-   674px = the widest bubble (330) + the group gap (14) + the sprite (330). It was 500 to match
-   .scq-figure, but the sprite is 330 now and 330+14+330 no longer fits that. justify-content
+   578px = the widest bubble (330) + the group gap (0) + the sprite (248). justify-content
    flex-end (the row is direction: ltr) pushes the pair against the question rather than leaving it
    stranded at the canvas edge; part 06's narrower 300px bubble therefore hangs off the same right
-   edge as part 05's. */
+   edge as part 05's.
+   --say-gap: 0 instead of the default 14px. The distance a reader actually sees is not this
+   property: the mp4 is a 960x960 frame with the mascot floating inside it, and sampling his
+   silhouette off a canvas across eight frames puts ~41px of empty frame on the bubble side at a
+   330px box. The visible beak-to-fur distance was therefore 14 + 41 - 19 (the beak overhangs the
+   bubble by 19px) ≈ 36px. At the 248px sprite that inner margin is ~31px, which is the whole gap
+   this layout needs on its own; adding 14 more only pushed him away again. The two boxes still
+   only touch — nothing overlaps, so the beak has clear frame to point into. */
 .peak-question--withimage > .companion-say {
   position: relative;
   flex: 0 0 auto; align-self: flex-start;
-  width: 674px; justify-content: flex-end;
+  width: 578px; justify-content: flex-end; --say-gap: 0px;
 }
 
 /* Speaker option — generic role icon beside the quote (storyboard slide 153).
@@ -4065,6 +4076,12 @@ html, body {
 .scq-qtext.scq-qtext--mixed { font-weight: 400; }
 .scq-qtext.scq-qtext--mixed b,
 .scq-qtext.scq-qtext--mixed strong { font-weight: 700; }
+/* Parts 05/06 want the regular half at 500 (Assistant Medium ships as its own face, so this is a
+   real weight, not a synthesised one), not the 400 above. It has to live HERE rather than with the
+   other .peak-question rules: both selectors are (0,2,0), so only source order separates them.
+   The bold `סעיף א:` line is unaffected — the rule above matches the <b> element directly, and a
+   directly-matched declaration always beats an inherited one whatever the specificity. */
+.peak-question .scq-qtext--mixed { font-weight: 500; }
 
 /* ═══════════════════════════════════════════════════════
    COMPONENT — Character thought/speech bubble (scenario screens)
