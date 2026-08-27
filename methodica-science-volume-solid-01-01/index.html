@@ -5,10 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=51">
+  <link rel="stylesheet" href="../unit-css/style.css?v=54">
   <link rel="stylesheet" href="css/style.css?v=19">
 </head>
 <body data-subject-theme="science">
+
+<!-- ═══════════════════════════════════════════════════════════
+     ICON SPRITE — the path toggle's two tabs (18 instances of that control
+     live in this file, so the path data is defined ONCE here and referenced
+     with <use> rather than inlined 72 times).
+     Two states per icon, the convention the mass-measure reference uses:
+       -on   filled, `fill="currentColor"` so it takes the ACTIVE tab's blue
+       -off  white outline, for the tab sitting on the blue container
+     Kept out of flow with position:absolute rather than `display:none`, which
+     some engines let propagate into the <use> shadow tree.
+     ═══════════════════════════════════════════════════════════ -->
+<svg aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <!-- Erlenmeyer flask: neck, lip, flared body, liquid line across the lower third -->
+    <symbol id="pt-icon-flask-on" viewBox="0 0 30 30">
+      <path d="M12.6 4.4v6.8L6 23.5c-.8 1.5.3 3.4 2 3.4h14c1.7 0 2.8-1.9 2-3.4l-6.6-12.3V4.4z" fill="currentColor"/>
+      <path d="M11 4.4h8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M9.1 19.6h11.8" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="pt-icon-flask-off" viewBox="0 0 30 30">
+      <path d="M12.6 4.4v6.8L6 23.5c-.8 1.5.3 3.4 2 3.4h14c1.7 0 2.8-1.9 2-3.4l-6.6-12.3V4.4z" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M11 4.4h8" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M9.1 19.6h11.8" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+    <!-- Comic page: one wide panel above two below — a panel LAYOUT, so it does not
+         read as a plain window or a 2x2 app grid -->
+    <symbol id="pt-icon-comic-on" viewBox="0 0 30 30">
+      <rect x="4.5" y="4" width="21" height="22" rx="2.6" fill="currentColor"/>
+      <path d="M4.5 13.2h21M15 13.2V26" stroke="#fff" stroke-width="1.6"/>
+    </symbol>
+    <symbol id="pt-icon-comic-off" viewBox="0 0 30 30">
+      <rect x="4.5" y="4" width="21" height="22" rx="2.6" fill="none" stroke="#fff" stroke-width="1.6"/>
+      <path d="M4.5 13.2h21M15 13.2V26" stroke="#fff" stroke-width="1.6"/>
+    </symbol>
+  </defs>
+</svg>
 <div id="app">
 
   <!-- ═══════════════════════════════════════════════════════════
@@ -263,8 +299,9 @@
            unusually short/ultra-wide windows (≤~640, matching the 21:9 case already noted
            for S5). Comfortably clear at every taller ratio (720/800/960 all gain margin). -->
       <p class="companion-bubble" style="--bubble-w: 500px; align-self: flex-end;">ארכימדס לא היה גאון יוצא דופן שיודע את התשובות לכל דבר, אלא אדם שראה דברים בצורה שונה מאחרים, כמו בדוגמה של מפלס המים העולים באמבטיה.</p>
-      <img class="companion" src="assets/img/character-orange-towel.png?v=2" alt="" aria-hidden="true"
-           data-pose="towel" draggable="false" style="--cw: 178px;">
+      <video class="companion" src="assets/img/character-orange-stretch.mp4?v=3" aria-hidden="true"
+             data-pose="stretch" draggable="false" style="--cw: 178px;"
+             autoplay loop muted playsinline></video>
     </div>
     <div class="hook-content">
       <div class="hook-stage">
@@ -351,9 +388,16 @@
   <section class="screen" data-screen="8" id="s8">
     <div class="comic">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <!-- Position-locked: comic on the right, experiments on the left -->
-        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
 
       <!-- RTL row: prev (›) first in DOM = rightmost; next (‹) last = leftmost -->
@@ -389,8 +433,16 @@
   <section class="screen" data-screen="23" id="s23">
     <div class="exp exp--question">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="exp-head exp-head--question">
         <h1 class="exp-title">מדידת נפח של גוף שאינו הנדסי</h1>
@@ -427,8 +479,16 @@
   <section class="screen" data-screen="24" id="s24">
     <div class="comic">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="comic-row">
         <button class="comic-arrow" id="s24-prev" type="button" onclick="comicSliderPrev('s24')" aria-label="הפאנל הקודם"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 4L17 12L9 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -460,8 +520,16 @@
   <section class="screen" data-screen="25" id="s25">
     <div class="comic">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="comic-row">
         <button class="comic-arrow" id="s25-prev" type="button" onclick="comicSliderPrev('s25')" aria-label="הפאנל הקודם"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 4L17 12L9 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -491,8 +559,16 @@
   <section class="screen" data-screen="26" id="s26">
     <div class="exp exp--question">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="exp-head exp-head--question">
         <h1 class="exp-title">מדידת נפח לגוף שאינו נכנס במשורה</h1>
@@ -526,8 +602,16 @@
   <section class="screen" data-screen="27" id="s27">
     <div class="comic">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="comic-row">
         <button class="comic-arrow" id="s27-prev" type="button" onclick="comicSliderPrev('s27')" aria-label="הפאנל הקודם"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 4L17 12L9 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -558,8 +642,16 @@
   <section class="screen" data-screen="28" id="s28">
     <div class="comic">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="comic-row">
         <button class="comic-arrow" id="s28-prev" type="button" onclick="comicSliderPrev('s28')" aria-label="הפאנל הקודם"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 4L17 12L9 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -594,8 +686,16 @@
   <section class="screen" data-screen="9" id="s9">
     <div class="exp">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
 
       <div class="exp-head">
@@ -668,8 +768,16 @@
   <section class="screen" data-screen="10" id="s10">
     <div class="exp">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
 
       <!-- Title lives in .aq-side, not a centred .exp-head: it heads the question, and the
@@ -774,8 +882,16 @@
   <section class="screen" data-screen="11" id="s11">
     <div class="exp">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="exp-head">
         <h1 class="exp-title">שיטת ההצפה לגוף שאינו נכנס למשורה</h1>
@@ -822,8 +938,16 @@
          second sentence, and the caveat split into its two sentences. -->
     <div class="exp exp--content exp--split">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="split-stage">
         <div class="split-figure">
@@ -1160,8 +1284,16 @@
   <section class="screen" data-screen="20" id="s20">
     <div class="exp">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="exp-head">
         <h1 class="exp-title">איך מדידת נפח של מוצק נראית בעולם האמיתי?</h1>
@@ -1201,8 +1333,16 @@
   <section class="screen" data-screen="21" id="s21">
     <div class="exp exp--question">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="exp-head exp-head--question">
         <h1 class="exp-title">מדידת נפח לגוף שאינו נכנס במשורה</h1>
@@ -1248,8 +1388,16 @@
   <section class="screen" data-screen="22" id="s22">
     <div class="exp">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="exp-head">
         <h1 class="exp-title">בואו נמדוד נפח של חפצים שונים!</h1>
@@ -1314,8 +1462,16 @@
   <section class="screen" data-screen="34" id="s34">
     <div class="exp">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="exp-head">
         <h1 class="exp-title">בואו נמדוד נפח של חפצים שונים!</h1>
@@ -1385,8 +1541,16 @@
   <section class="screen" data-screen="29" id="s29">
     <div class="exp exp--question">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="exp-head exp-head--question">
         <h1 class="exp-title">מדידת נפח לגוף שאינו הנדסי</h1>
@@ -1426,8 +1590,16 @@
   <section class="screen" data-screen="30" id="s30">
     <div class="exp exp--content">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <!-- No heading here on purpose. Storyboard slide 39 puts this line in the mascot's mouth —
            its note has him holding the instrument — so it is his speech bubble, not a headline
@@ -1454,8 +1626,16 @@
   <section class="screen" data-screen="31" id="s31">
     <div class="exp exp--content">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">לקרוא קומיקס</button>
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">לערוך ניסויים</button>
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
       </div>
       <div class="exp-head">
         <h1 class="exp-title">הכלי עובד כך</h1>
@@ -1563,13 +1743,13 @@
 </div><!-- /#app -->
 <script src="../unit-js/10-identity.js?v=2"></script>
 <script src="../unit-js/15-ui.js?v=3"></script>
-<script src="../unit-js/20-xapi.js?v=3"></script>
+<script src="../unit-js/20-xapi.js?v=4"></script>
 <script src="../unit-js/25-report.js?v=1"></script>
 <script src="../unit-js/30-nav.js?v=4"></script>
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=50"></script>
+<script src="js/main.js?v=51"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

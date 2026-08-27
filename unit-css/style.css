@@ -2872,6 +2872,16 @@ html, body {
   /* QA 2026-08-25 (slide 1): 24px, matching the narration — the hook screen is one block of
      text and the title is not sized above it. Right-aligned with the rest of the column. */
   font-size: 24px; font-weight: 800; color: var(--subject-500);
+  /* ⚠️ `align-self: stretch` is what actually right-aligns this, not the `text-align` below.
+     .hook-content is `display: flex; flex-direction: column; align-items: center`, so without it
+     the h1 shrink-wraps to its own text and the parent centres that box — `text-align: right`
+     then has nothing to align against and the title sat centred over the whole 1120px column
+     while the narration beside it was flush right. Stretching the box to the column's full width
+     is what gives text-align something to work with. Fixed 2026-08-27; the comment above had
+     claimed right alignment since 08-25, which is how it went unnoticed.
+     stretch, not `align-self: flex-end`: the h1's box then spans the column, so the title's right
+     edge is .hook-content's right edge, which is exactly .hook-narration's right edge. */
+  align-self: stretch;
   text-align: right;
 }
 .hook-stage {
@@ -2899,18 +2909,22 @@ html, body {
    him. .hook-bubble was that line floating in the text column with a tail aimed at the
    floor, so it is gone rather than kept as a second way to draw a bubble. */
 
-.hook-open-prompt {
-  font-size: 24px !important; font-weight: 400 !important; color: var(--subject-500) !important;
+/* (0,2,0) so it outranks `.hook-narration p` at (0,1,1) on its own. That rule is why this block
+   used to carry `!important` on all three declarations — the class alone could never win. */
+.hook-narration .hook-open-prompt {
+  font-size: 24px; font-weight: 700; color: var(--subject-500);
 }
 .hook-open-label {
   font-family: 'Assistant', sans-serif;
-  font-size: 19px; font-weight: 600; color: #303030;
+  /* 24px, up from 19 — it reads as body copy under the prompt, so it takes the same size as
+     .hook-narration p. Weight left at 600: only the size was specified. */
+  font-size: 24px; font-weight: 600; color: #303030;
 }
 .hook-open-textarea {
   width: 100%; min-height: 96px;
   padding: 12px 14px;
   border: 2px solid #C9CED8; border-radius: 12px;
-  font-family: 'Assistant', sans-serif; font-size: 18px; color: #303030;
+  font-family: 'Assistant', sans-serif; font-size: 20px; color: #303030;
   direction: rtl; text-align: right; resize: none; outline: none;
   transition: border-color 0.12s;
 }
@@ -2920,7 +2934,9 @@ html, body {
   min-width: 160px; padding: 12px 34px;
   background: var(--cta-gradient);
   color: #fff; border: none; border-radius: 1000px;
-  font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 400;
+  /* 20px. Shared component: .meas-confirm / .meas-next on the applet screens are the same class
+     and only override min-width, so they take this size too — checked, they still fit. */
+  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400;
   cursor: pointer; transition: font-weight 0.1s;
 }
 .btn-hint-primary:not(:disabled):hover { font-weight: 600; }
@@ -3038,19 +3054,42 @@ html, body {
    translateY(50%) puts the pill's own midpoint on it, so the height of the pill
    never has to be hardcoded. z-index 16, not 15: on S10 the .scq-bar is also 15
    and comes later in the DOM, which would bury an equal-priority toggle. */
+/* Mode switch, restyled 2026-08-27 onto the house design — mass-measure-01's .vpv-toggle
+   (that unit's part-01 css/style.css:1140). The polarity INVERTED: the container used to be pale
+   #eef4f9 with a blue-filled active tab, and is now a solid Subject/500 pill whose active tab is
+   WHITE with blue text. Both units define --subject-500: #019de5, so this ports as tokens and a
+   math-themed build follows automatically.
+   `direction: rtl` is load-bearing and is the only thing deciding left/right here: the FIRST child
+   renders on the physical RIGHT. The markup puts experiments first for exactly that reason.
+   Placement is this unit's own and deliberately unchanged — bottom: 37px with a 50% Y translate, so
+   the pill straddles the bar's top edge. Only the skin moved.
+   The reference also carries a .vpv-toggle-pill span that JS sizes to the active tab so the white
+   pill can slide. Not ported: switchLearningPath() calls goTo(), so choosing a tab replaces the
+   whole screen and no in-place transition is ever visible. A plain background on .is-active is
+   identical at rest and saves 18 spans plus a positioning pass. */
 .path-toggle {
   position: absolute; bottom: 37px; left: 50%; transform: translate(-50%, 50%);
-  display: flex; direction: rtl; gap: 0;
-  background: #eef4f9; border: 1px solid var(--subject-300);
-  border-radius: 1000px; padding: 4px; z-index: 16;
+  display: flex; direction: rtl; align-items: center; gap: 0;
+  background: var(--subject-500);
+  border-radius: 1000px; padding: 6px; z-index: 16;
 }
 .path-toggle-opt {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
   border: none; background: transparent; cursor: pointer;
-  font-family: 'Assistant', sans-serif; font-size: 17px; font-weight: 600;
-  color: var(--subject-700); padding: 8px 22px; border-radius: 1000px;
+  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400; line-height: 1;
+  color: #fff; padding: 6px 24px; border-radius: 1000px; white-space: nowrap;
   transition: background 0.15s, color 0.15s;
 }
-.path-toggle-opt.is-active { background: var(--subject-500); color: #fff; }
+.path-toggle-opt.is-active { background: #fff; color: var(--subject-500); }
+/* Two-state icons, same convention as .vpv-icon-on/-off in the reference. The -on symbol paints with
+   `fill: currentColor`, so it inherits the active tab's Subject/500 rather than hard-coding it; the
+   -off symbol is a white outline for a tab sitting on the blue container. Both are <use> refs into
+   the sprite at the top of part 01's body — the control appears 18 times in that file. */
+.pt-icon { flex-shrink: 0; display: block; width: 26px; height: 26px; }
+.path-toggle-opt .pt-icon-on  { display: none; }
+.path-toggle-opt .pt-icon-off { display: block; }
+.path-toggle-opt.is-active .pt-icon-on  { display: block; }
+.path-toggle-opt.is-active .pt-icon-off { display: none; }
 /* The chevrons are inline SVG, not the ‹ › glyphs they used to be. Those are Bidi_Mirrored
    characters and nothing isolated them, so in this RTL document each rendered mirrored — the
    right-hand "previous" button pointed left and the left-hand "next" button pointed right, which

@@ -204,8 +204,12 @@ function getCharacter() {
    Landing a produced GIF is one line here plus the file. */
 const CHARACTER_ASSETS = {
   selection: 'png', examine: 'mp4', 'cylinder-pendant': 'mp4', toga: 'mp4',
-  towel: 'png', comic: 'mp4', experiments: 'mp4', pingpong: 'mp4', soap: 'mp4',
-  stretch: 'png', ask: 'mp4', 'wet-object': 'mp4'
+  comic: 'mp4', experiments: 'mp4', pingpong: 'mp4', soap: 'mp4',
+  /* `towel` is gone and its two screens now use `stretch`. They were never two poses: both PNGs
+     were the same headband artwork under different names, framed slightly differently, so keeping
+     both would have meant shipping one 960x960 clip twice. `stretch` wins the name because that is
+     what the delivery folder calls it (Orange_Stretching.mp4 / turquoise_streach.mp4). */
+  stretch: 'mp4', ask: 'mp4', 'wet-object': 'mp4'
 };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
@@ -213,9 +217,12 @@ function characterAsset(pose) {
      (their near-white matte lifted to pure #FFFFFF) under their existing names, so a
      browser holding the old copy would keep showing the grey box on the white canvas.
      Bump it whenever a character asset is re-exported. Over file:// the query is ignored
-     rather than breaking the load, so it is safe there too. */
+     rather than breaking the load, so it is safe there too.
+     ?v=3 on 2026-08-27: `stretch` changed extension, .png -> .mp4, and `towel` was retired onto it.
+     The extension change alone would defeat a stale cache, but s12's slot and s6's markup both
+     resolve through here and the tag differs now, so the bump keeps the pair unambiguous. */
   return 'assets/img/character-' + getCharacter() + '-' +
-         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=2';
+         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=3';
 }
 /* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
 function startCompanionMedia(el) {
