@@ -58,9 +58,12 @@ function characterAsset(pose) {
      (their near-white matte lifted to pure #FFFFFF) under their existing names, so a
      browser holding the old copy would keep showing the grey box on the white canvas.
      Bump it whenever a character asset is re-exported. Over file:// the query is ignored
-     rather than breaking the load, so it is safe there too. */
+     rather than breaking the load, so it is safe there too.
+     ?v=3 here, still ?v=2 in parts 01-04: character-turquoise-success.mp4 was replaced IN PLACE on
+     2026-08-27 with the confetti version, and only 05/06 ship that pose. A browser holding the old
+     copy would keep playing the confetti-less one under the same filename. */
   return 'assets/img/character-' + getCharacter() + '-' +
-         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=2';
+         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=3';
 }
 /* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
 function startCompanionMedia(el) {
