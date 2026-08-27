@@ -42,7 +42,10 @@ function getCharacter() {
    <img onerror> fallback: onerror would fire a real 404 on nearly every
    screen and this unit's QA gate checks the network log for zero 404s.
    Landing a produced GIF is one line here plus the file. */
-const CHARACTER_ASSETS = { selection: 'png', run: 'mp4', cheer: 'mp4', think: 'mp4', challenge: 'mp4' };
+/* '2num' keeps the delivered filename (Copmpanion/Orange_2num.mp4, turquoise_2num.mp4) so the
+   pose maps 1:1 to the source and nobody has to guess which clip it is. 960x960, 4.06s — square,
+   unlike the 1280x720 clips around it, so its slot must NOT declare `ca`. */
+const CHARACTER_ASSETS = { selection: 'png', run: 'mp4', cheer: 'mp4', think: 'mp4', challenge: 'mp4', '2num': 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
@@ -71,7 +74,13 @@ const CHARACTER_SLOTS = {
      The 248 is load-bearing for .peak-question--withimage > .companion-say, whose 578px width is
      330 (bubble) + 0 (gap) + 248; change one and the other has to follow. */
   s1: { pose: 'think', w: 248, into: 's1-say' },                            /* sb149 */
-  s5: { pose: 'cheer', w: 200, into: 's5-say', ca: '16 / 9' },              /* sb157 */
+  /* The SUCCESS screen's own clip. It used to be `cheer`, and in TURQUOISE that resolved to the
+     very same file as `challenge` — the mountain-and-flag climb that opens the part (md5
+     8f00601d… for challenge, party AND cheer). So a learner who finished every sub-part correctly
+     was shown the intro animation again. `2num` is a distinct clip, delivered for exactly this
+     screen. No `ca`: it is 960x960, and the 16:9 ratio the old slot declared would have letterboxed
+     it to 210x118, drawing the mascot at 118px. 210 in both parts so the twin screens match. */
+  s5: { pose: '2num', w: 210, into: 's5-say' },                             /* sb157 */
   s6: { pose: 'think', w: 200, into: 's6-say' }                              /* sb158 */
 };
 function renderCompanion(n) {
