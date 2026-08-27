@@ -2872,6 +2872,16 @@ html, body {
   /* QA 2026-08-25 (slide 1): 24px, matching the narration — the hook screen is one block of
      text and the title is not sized above it. Right-aligned with the rest of the column. */
   font-size: 24px; font-weight: 800; color: var(--subject-500);
+  /* ⚠️ `align-self: stretch` is what actually right-aligns this, not the `text-align` below.
+     .hook-content is `display: flex; flex-direction: column; align-items: center`, so without it
+     the h1 shrink-wraps to its own text and the parent centres that box — `text-align: right`
+     then has nothing to align against and the title sat centred over the whole 1120px column
+     while the narration beside it was flush right. Stretching the box to the column's full width
+     is what gives text-align something to work with. Fixed 2026-08-27; the comment above had
+     claimed right alignment since 08-25, which is how it went unnoticed.
+     stretch, not `align-self: flex-end`: the h1's box then spans the column, so the title's right
+     edge is .hook-content's right edge, which is exactly .hook-narration's right edge. */
+  align-self: stretch;
   text-align: right;
 }
 .hook-stage {
