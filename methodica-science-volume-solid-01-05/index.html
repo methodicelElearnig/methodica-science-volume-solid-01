@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · שאלת שיא</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=49">
+  <link rel="stylesheet" href="../unit-css/style.css?v=51">
   <link rel="stylesheet" href="css/style.css?v=1">
 </head>
 <body data-subject-theme="science">
@@ -72,7 +72,7 @@
     <div class="peak-question">
       <p class="scq-qtext scq-qtext--mixed">
         <b>סעיף ב:</b><br />
-        חזרו על מדידת נפח הפסלון 3 פעמים וקיבלו 60, 59, 61 סמ"ק. למה נדרשו 3 מדידות, ועל איזה ערך כדאי לדווח?</p>
+        חזרו על מדידת נפח הפסלון 3 פעמים וקיבלו 60, 59, 61 סמ"ק.<br />למה נדרשו 3 מדידות, ועל איזה ערך כדאי לדווח?</p>
       <div class="scq-answers peak-options" id="s2-opts" role="radiogroup" aria-label="דיווח על נפח">
         <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(2,'a',this)"><span class="scq-opt-text">כדי לצמצם טעויות מקריות ולקבל קריאה מהימנה. כדאי לדווח על הממוצע = 60 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(2,'b',this)"><span class="scq-opt-text">אסור למדוד רק פעם אחת. כדאי לדווח על התוצאה הגבוהה ביותר = 61 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -88,7 +88,8 @@
     <div class="peak-question">
       <p class="scq-qtext scq-qtext--mixed">
         <b>סעיף ג:</b><br />
-        מנהל המעבדה טוען "המדידות מהימנות!". מי מסביר את הטענה בצורה מדעית המבוססת על נתונים?</p>
+        מנהל המעבדה טוען "המדידות מהימנות!"<br />
+        מי מסביר את הטענה בצורה מדעית המבוססת על נתונים?</p>
       <!-- Storyboard slide 153 gives each speaker an avatar. The deck ships two
            generic role icons (ScientistMale / ScientistFemale), not portraits,
            so the same icon serving two speakers of one gender is intended,
@@ -108,7 +109,7 @@
     <div class="peak-question">
       <p class="scq-qtext scq-qtext--mixed">
         <b>סעיף ד:</b><br />
-        מדידה רביעית נתנה 80 סמ"ק — רחוקה משאר המדידות (60, 59, 61). מה על עובדי המעבדה לעשות?</p>
+        מדידה רביעית נתנה 80 סמ"ק — רחוקה משאר המדידות (60, 59, 61).<br />מה על עובדי המעבדה לעשות?</p>
       <div class="scq-answers peak-options" id="s4-opts" role="radiogroup" aria-label="טיפול בערך חריג">
         <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(4,'a',this)"><span class="scq-opt-text">לחשב ממוצע של כל ארבע הקריאות ולדווח אותו כנפח הפסלון</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(4,'b',this)"><span class="scq-opt-text">לבצע את המדידה מחדש ולא להכליל את הערך 80 בחישוב הסופי</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -166,6 +167,7 @@
     <div class="companion-say companion-say--right" id="s5-say" style="left: 44px; bottom: 96px;">
       <p class="companion-bubble" id="s5-result-bubble" style="--bubble-w: 262px;"></p>
     </div>
+    <div class="nav-bar"><button class="btn-continue" id="s5-continue" onclick="goTo(8)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
 
   <section class="screen" data-screen="6" id="s6">
@@ -177,7 +179,24 @@
     <div class="companion-say companion-say--right" id="s6-say" style="left: 44px; bottom: 96px;">
       <p class="companion-bubble" id="s6-result-bubble" style="--bubble-w: 262px;"></p>
     </div>
-    <div class="nav-bar"><button class="btn-continue" id="s6-continue" onclick="peakGoRetake()">לשאלת השיא הבאה</button></div>
+    <div class="nav-bar"><button class="btn-continue" id="s6-continue" onclick="peakGoRetake()">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+  </section>
+
+  <!-- ═══ S8 — Unit complete, the SUCCESS ending (storyboard slide 173) ═══
+       Shared with part 06's s8: a learner who passes מועד א ends the lomda here, and one who passes
+       מועד ב ends on part 06's copy of the same screen. Slide 157 is the ANSWER review (s5); 173 is
+       the unit signing off, and it had no screen at all until now. .peak-end was defined in the
+       shared sheet and never used by anything but its -score child; this is the screen it was
+       written for. Only the success ending exists in this part — the fail path leaves for מועד ב
+       from s6 rather than ending here. -->
+  <section class="screen" data-screen="8" id="s8">
+    <div class="peak-end">
+      <h1 class="peak-end-title">כל הכבוד!</h1>
+      <p class="peak-end-text">השלמת את היחידה בהצלחה!</p>
+      <!-- Injected by CHARACTER_SLOTS so it follows the learner's chosen colour. -->
+      <div class="peak-end-video" id="s8-video"></div>
+    </div>
+    <div class="nav-bar"><button class="btn-continue" id="s8-finish" onclick="unitFinish()">סיימתי</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
 
   <!-- ═══════════════ REPORT MODAL ═══════════════ -->
@@ -212,7 +231,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=24"></script>
+<script src="js/main.js?v=29"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

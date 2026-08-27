@@ -5,7 +5,7 @@
    feedback) → score. ≥3/4 → success (unit done); <3 → Part 06 (peak ב).
    ═══════════════════════════════════════════════════════════ */
 
-const TOTAL_SCREENS = 8;               // S0 intro, S7 scenario, S1–S4 sub-parts, S5 success, S6 failure
+const TOTAL_SCREENS = 9;               // S0 intro, S7 scenario, S1–S4 sub-parts, S5 success, S6 failure
 /* The scenario (storyboard 148) took the next free id rather than renumbering four sub-parts,
    their options, hints and SCREEN_TO_SUBCONTENT rows. The reading order lives in peakStart()
    and goBack(), not in the ids — the same approach part 04 takes with its SCENARIOS table. */
@@ -42,16 +42,23 @@ function getCharacter() {
    <img onerror> fallback: onerror would fire a real 404 on nearly every
    screen and this unit's QA gate checks the network log for zero 404s.
    Landing a produced GIF is one line here plus the file. */
-const CHARACTER_ASSETS = { selection: 'png', run: 'mp4', cheer: 'mp4', think: 'mp4', challenge: 'mp4' };
+/* '2num' keeps the delivered filename (Copmpanion/Orange_2num.mp4, turquoise_2num.mp4) so the
+   pose maps 1:1 to the source and nobody has to guess which clip it is. 960x960, 4.06s — square,
+   unlike the 1280x720 clips around it, so its slot must NOT declare `ca`. */
+const CHARACTER_ASSETS = { selection: 'png', run: 'mp4', think: 'mp4', challenge: 'mp4', '2num': 'mp4', success: 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
      (their near-white matte lifted to pure #FFFFFF) under their existing names, so a
      browser holding the old copy would keep showing the grey box on the white canvas.
      Bump it whenever a character asset is re-exported. Over file:// the query is ignored
-     rather than breaking the load, so it is safe there too. */
+     rather than breaking the load, so it is safe there too.
+     ?v=4 here, still ?v=2 in parts 01-04, because THIS part's sprites were replaced IN PLACE twice
+     on 2026-08-27 — the confetti re-export of turquoise-success, then the matte lift below — and a
+     browser holding an old copy would keep playing it under the same filename. Parts 01-04 need no
+     bump: all 44 of their sprites were already on pure #FFFFFF and none of them changed. */
   return 'assets/img/character-' + getCharacter() + '-' +
-         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=2';
+         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=4';
 }
 /* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
 function startCompanionMedia(el) {
@@ -71,8 +78,18 @@ const CHARACTER_SLOTS = {
      The 248 is load-bearing for .peak-question--withimage > .companion-say, whose 578px width is
      330 (bubble) + 0 (gap) + 248; change one and the other has to follow. */
   s1: { pose: 'think', w: 248, into: 's1-say' },                            /* sb149 */
-  s5: { pose: 'cheer', w: 200, into: 's5-say', ca: '16 / 9' },              /* sb157 */
-  s6: { pose: 'think', w: 200, into: 's6-say' }                              /* sb158 */
+  /* The SUCCESS screen's own clip. It used to be `cheer`, and in TURQUOISE that resolved to the
+     very same file as `challenge` — the mountain-and-flag climb that opens the part (md5
+     8f00601d… for challenge, party AND cheer). So a learner who finished every sub-part correctly
+     was shown the intro animation again. `2num` is a distinct clip, delivered for exactly this
+     screen. No `ca`: it is 960x960, and the 16:9 ratio the old slot declared would have letterboxed
+     it to 210x118, drawing the mascot at 118px. 210 in both parts so the twin screens match. */
+  s5: { pose: '2num', w: 210, into: 's5-say' },                             /* sb157 */
+  s6: { pose: 'think', w: 200, into: 's6-say' },                             /* sb158 */
+  /* The closing screen. `w` is documentation only — .peak-end-video sizes the sprite at 100%
+     of its own 320px box. No `ca`: the success pair is 960x960 in both colours (the turquoise
+     source was 1936x1080 and was re-framed to match; see DEPLOY.md). */
+  s8: { pose: 'success', w: 320, into: 's8-video' }                          /* sb173 */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
@@ -162,7 +179,14 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft')  { if (currentScreen >= 1 && currentScreen <= PEAK_PARTS) return; }
   if (e.key === 'ArrowRight') goBack();
 });
+/* The end screens were unreachable in reverse: this only ever handled 1-4, the scenario and 0, so
+   every `חזרה` added to them would have been a dead button. Named edges, not `currentScreen - 1` —
+   ROUTING-AND-RETAKE.md forbids assuming the numeric order anywhere in this unit, and it is wrong
+   here twice over (the scenario is screen 7, the endings are 8/9). Walking back into an answered
+   sub-part is already safe: the doneQ ledger is what stops a graded answer being reported twice. */
 function goBack() {
+  if (currentScreen === 8) { goTo(5); return; }                    // ending -> the review it came from
+  if (currentScreen === 5 || currentScreen === 6) { goTo(PEAK_PARTS); return; }   // review -> last sub-part
   if (currentScreen >= 2 && currentScreen <= PEAK_PARTS) { goTo(currentScreen - 1); return; }
   if (currentScreen === 1) { goTo(SCENARIO_SCREEN); return; }
   if (currentScreen === SCENARIO_SCREEN) { goTo(0); return; }
@@ -299,6 +323,25 @@ function peakFinish(passed) {
   }
 }
 
+
+/* ─── סיימתי ───────────────────────────────────────────────
+   ⚠️ THIS MUST NOT REPORT. peakFinish() already sent the item, the component and (on the paths that
+   own it) the unit `completed`, synchronously, when the learner committed their last answer — long
+   before they could reach this screen. sendCompletedOnce() would dedupe a second call, but sending
+   one would still be wrong: this button is an exit affordance, not an outcome.
+
+   The unit has no documented host-exit contract — 60-devbridge.js's postMessage is the dev
+   wrapper's jump bar, not a production channel — so this is a seam, deliberately small. It disables
+   the button so a second press cannot double-fire, and announces the finish to a framing host that
+   may or may not be listening. Drop the real handshake in here once the platform partner confirms
+   it; nothing else in the unit needs to change. */
+function unitFinish() {
+  document.querySelectorAll('.btn-continue[id$="-finish"]').forEach(b => { b.disabled = true; });
+  if (window.parent !== window) {
+    try { window.parent.postMessage({ type: '720:unit-finished' }, '*'); } catch (e) {}
+  }
+}
+
 function peakGoRetake() {
   /* The retake edge. Unlike a normal forward hop this leads to a component the learner reaches by
      FAILING, and writeForwardState records prev['…-06'] = '…-05' — so מועד ב offers "חזרה" back into
@@ -330,6 +373,7 @@ var SCREEN_TO_SUBCONTENT = {
   4: ['01', 4],       // sub-part 4
   5: ['01', 5],       // score — passed
   6: ['01', 5],       // score — failed (same page of the same item)
+  8: ['01', 5],       // unit complete, success ending (terminal)
   /* The scenario belongs to the same item and the same page as the intro: it asks nothing, and
      mapping it anywhere else would open or close the item on a screen that carries no answer. */
   7: ['01', 0]        // scenario
