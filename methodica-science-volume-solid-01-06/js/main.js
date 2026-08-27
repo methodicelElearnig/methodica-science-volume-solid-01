@@ -51,7 +51,7 @@ function getCharacter() {
 /* '2num' keeps the delivered filename (Copmpanion/Orange_2num.mp4, turquoise_2num.mp4) so the
    pose maps 1:1 to the source and nobody has to guess which clip it is. 960x960, 4.06s — square,
    unlike the 1280x720 clips around it, so its slot must NOT declare `ca`. */
-const CHARACTER_ASSETS = { selection: 'png', 'two-fingers': 'png', party: 'mp4', panting: 'mp4', challenge: 'mp4', '2num': 'mp4' };
+const CHARACTER_ASSETS = { selection: 'png', 'two-fingers': 'png', panting: 'mp4', challenge: 'mp4', '2num': 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place

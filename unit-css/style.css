@@ -3293,7 +3293,9 @@ html, body {
   position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%);
   width: 760px; display: flex; flex-direction: column; align-items: stretch; gap: 20px;
 }
+/* `display: block` for the same reason as the --withimage block below — see the note there. */
 .scq-question--textonly .scq-qtext {
+  display: block;
   font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030;
   text-align: right; direction: rtl; line-height: 1.4;
 }
@@ -3694,7 +3696,15 @@ html, body {
   flex: 1 1 auto; min-width: 0; direction: rtl;
   display: flex; flex-direction: column; align-items: stretch; gap: 18px;
 }
+/* ⚠️ `display: block`, the same reset .hotspot-question, .dq-question and .peak-question carry.
+   The base .scq-qtext is `display: flex; flex-direction: column`, which makes every child a
+   BLOCK-LEVEL flex item on a row of its own — so a <br> gets a blank row to itself and each run of
+   text between two inline elements gets its own row too. Measured on the shipped build before this
+   line existed: 33.6px of dead space under the `סעיף X:` title on 04/s4, s5, s6, s7 and s8, 167.4px
+   across the part. It also made every line break cost DOUBLE, which is why this had to land
+   alongside the storyboard breaks rather than after them. */
 .scq-question--withimage .scq-qtext {
+  display: block;
   width: 100%; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400;
   color: #303030; text-align: right; direction: rtl; line-height: 1.4;
 }
