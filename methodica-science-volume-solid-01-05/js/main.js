@@ -53,11 +53,12 @@ function characterAsset(pose) {
      browser holding the old copy would keep showing the grey box on the white canvas.
      Bump it whenever a character asset is re-exported. Over file:// the query is ignored
      rather than breaking the load, so it is safe there too.
-     ?v=3 here, still ?v=2 in parts 01-04: character-turquoise-success.mp4 was replaced IN PLACE on
-     2026-08-27 with the confetti version, and only 05/06 ship that pose. A browser holding the old
-     copy would keep playing the confetti-less one under the same filename. */
+     ?v=4 here, still ?v=2 in parts 01-04, because THIS part's sprites were replaced IN PLACE twice
+     on 2026-08-27 — the confetti re-export of turquoise-success, then the matte lift below — and a
+     browser holding an old copy would keep playing it under the same filename. Parts 01-04 need no
+     bump: all 44 of their sprites were already on pure #FFFFFF and none of them changed. */
   return 'assets/img/character-' + getCharacter() + '-' +
-         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=3';
+         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=4';
 }
 /* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
 function startCompanionMedia(el) {
