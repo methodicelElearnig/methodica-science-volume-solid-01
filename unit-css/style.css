@@ -2909,18 +2909,22 @@ html, body {
    him. .hook-bubble was that line floating in the text column with a tail aimed at the
    floor, so it is gone rather than kept as a second way to draw a bubble. */
 
-.hook-open-prompt {
-  font-size: 24px !important; font-weight: 400 !important; color: var(--subject-500) !important;
+/* (0,2,0) so it outranks `.hook-narration p` at (0,1,1) on its own. That rule is why this block
+   used to carry `!important` on all three declarations — the class alone could never win. */
+.hook-narration .hook-open-prompt {
+  font-size: 24px; font-weight: 700; color: var(--subject-500);
 }
 .hook-open-label {
   font-family: 'Assistant', sans-serif;
-  font-size: 19px; font-weight: 600; color: #303030;
+  /* 24px, up from 19 — it reads as body copy under the prompt, so it takes the same size as
+     .hook-narration p. Weight left at 600: only the size was specified. */
+  font-size: 24px; font-weight: 600; color: #303030;
 }
 .hook-open-textarea {
   width: 100%; min-height: 96px;
   padding: 12px 14px;
   border: 2px solid #C9CED8; border-radius: 12px;
-  font-family: 'Assistant', sans-serif; font-size: 18px; color: #303030;
+  font-family: 'Assistant', sans-serif; font-size: 20px; color: #303030;
   direction: rtl; text-align: right; resize: none; outline: none;
   transition: border-color 0.12s;
 }
@@ -2930,7 +2934,9 @@ html, body {
   min-width: 160px; padding: 12px 34px;
   background: var(--cta-gradient);
   color: #fff; border: none; border-radius: 1000px;
-  font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 400;
+  /* 20px. Shared component: .meas-confirm / .meas-next on the applet screens are the same class
+     and only override min-width, so they take this size too — checked, they still fit. */
+  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400;
   cursor: pointer; transition: font-weight 0.1s;
 }
 .btn-hint-primary:not(:disabled):hover { font-weight: 600; }
