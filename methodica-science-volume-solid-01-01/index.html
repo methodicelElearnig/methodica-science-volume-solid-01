@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=54">
-  <link rel="stylesheet" href="css/style.css?v=19">
+  <link rel="stylesheet" href="../unit-css/style.css?v=56">
+  <link rel="stylesheet" href="css/style.css?v=20">
 </head>
 <body data-subject-theme="science">
 
@@ -979,7 +979,9 @@
        Both learning paths (comic / experiments) continue here.
        ═══════════════════════════════════════════════════════════ -->
   <section class="screen" data-screen="12" id="s12">
-    <div class="transition-content">
+    <!-- id, because CHARACTER_SLOTS.s12 hands the mascot to this container with `into` and he is
+         laid out as the third row of the column, not floated over it. -->
+    <div class="transition-content" id="s12-content">
       <h1 class="transition-title">מה נשאר לנו בראש?</h1>
       <p class="transition-sub">שתי שאלות חימום קלילות לפני שנתקדם</p>
     </div>
@@ -1749,7 +1751,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=51"></script>
+<script src="js/main.js?v=52"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>
