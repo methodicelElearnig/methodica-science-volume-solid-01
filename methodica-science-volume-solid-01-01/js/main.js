@@ -1156,7 +1156,10 @@ function dispDrop() {
   if (dispPlaced) return;
   dispPlaced = true;
   document.getElementById('disp-marble').classList.add('placed');
-  document.getElementById('disp-drag-hint').textContent = '';
+  /* `is-hidden`, not textContent = '': emptying the paragraph narrowed .disp-marble-zone by 19px,
+     and the stage is a centred row, so the CYLINDER slid 10px sideways as the learner dropped into
+     it. The hint keeps its box and only stops being drawn. */
+  document.getElementById('disp-drag-hint').classList.add('is-hidden');
   document.getElementById('disp-cylinder').classList.add('risen');
   document.getElementById('disp-badge').textContent = '62 מ"ל';
   const inst = document.getElementById('disp-instruction');
@@ -1165,7 +1168,7 @@ function dispDrop() {
      continue while the level is still climbing invites a click mid-transition. What it used to
      reveal as well — slide 26's explanation and the mascot's caveat — is s35 now. */
   setTimeout(function () {
-    const rs = document.getElementById('disp-reset');    if (rs) rs.hidden = false;
+    const rs = document.getElementById('disp-reset');    if (rs) rs.classList.remove('is-hidden');
     const cont = document.getElementById('s9-continue');  if (cont) cont.disabled = false;
   }, 900);
   xapiSend('interacted', 'question', { response: '62' }, { category: 'displacement-applet' });
@@ -1174,11 +1177,11 @@ function dispReset() {
   dispPlaced = false;
   const marble = document.getElementById('disp-marble');
   marble.classList.remove('placed'); marble.style.transform = '';
-  document.getElementById('disp-drag-hint').textContent = 'גררו אותי למשורה';
+  document.getElementById('disp-drag-hint').classList.remove('is-hidden');
   document.getElementById('disp-cylinder').classList.remove('risen');
   document.getElementById('disp-badge').textContent = '50 מ"ל';
   document.getElementById('disp-instruction').textContent = 'הכניסו את הגולה אל תוך המשורה.';
-  document.getElementById('disp-reset').hidden = true;
+  document.getElementById('disp-reset').classList.add('is-hidden');
   document.getElementById('s9-continue').disabled = true;
 }
 function dispEnter() {
@@ -1187,10 +1190,10 @@ function dispEnter() {
   // Restore or reset the visual to match dispPlaced (keeps a completed applet completed on return).
   if (dispPlaced) {
     document.getElementById('disp-marble').classList.add('placed');
-    document.getElementById('disp-drag-hint').textContent = '';
+    document.getElementById('disp-drag-hint').classList.add('is-hidden');
     document.getElementById('disp-cylinder').classList.add('risen');
     document.getElementById('disp-badge').textContent = '62 מ"ל';
-    document.getElementById('disp-reset').hidden = false;
+    document.getElementById('disp-reset').classList.remove('is-hidden');
     document.getElementById('s9-continue').disabled = false;
   } else {
     dispReset();

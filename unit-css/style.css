@@ -3166,6 +3166,13 @@ html, body {
 #disp-marble.dragging { cursor: grabbing; }
 #disp-marble.placed { opacity: 0; pointer-events: none; }
 .disp-drag-hint { font-family: 'Assistant', sans-serif; font-size: 15px; color: #8a97a3; margin: 0; }
+/* Both of the applet's transient bits hide by VISIBILITY, never by leaving the flow. The stage is a
+   centred row inside a centred column, so anything that changes size mid-interaction re-centres the
+   cylinder under the learner's hand: emptying the hint narrowed .disp-marble-zone by 19px and slid
+   the cylinder 10px sideways, and revealing the reset button lifted it 29px (QA 2026-08-29). The
+   cylinder is the thing being measured — it must not move while the marble is dropped into it.
+   `visibility: hidden` also removes them from the a11y tree, so nothing is lost against `hidden`. */
+.disp-drag-hint.is-hidden, .disp-reset.is-hidden { visibility: hidden; }
 
 /* .disp-explain / -title / .disp-calc / .disp-note lived here — the green panel slide 26's
    explanation was revealed into, in place, on the applet screen. Deleted 2026-08-29 when slide 26

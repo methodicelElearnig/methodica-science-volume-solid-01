@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=58">
+  <link rel="stylesheet" href="../unit-css/style.css?v=59">
   <link rel="stylesheet" href="css/style.css?v=23">
 </head>
 <body data-subject-theme="science">
@@ -720,7 +720,10 @@
           </div>
         </div>
       </div>
-      <button class="disp-reset" id="disp-reset" type="button" onclick="dispReset()" hidden>מדידה מחדש</button>
+      <!-- `is-hidden` (visibility), not the `hidden` ATTRIBUTE: this button sits below .disp-stage
+           inside a centred column, so taking it out of flow and putting it back on the drop shifted
+           the whole applet up by 29px. It reserves its space from the first paint now. -->
+      <button class="disp-reset is-hidden" id="disp-reset" type="button" onclick="dispReset()">מדידה מחדש</button>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s9-continue" disabled onclick="advanceScreen()">המשך</button>
@@ -1783,7 +1786,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=53"></script>
+<script src="js/main.js?v=54"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>
