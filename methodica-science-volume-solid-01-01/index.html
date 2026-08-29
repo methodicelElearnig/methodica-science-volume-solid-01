@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=58">
-  <link rel="stylesheet" href="css/style.css?v=23">
+  <link rel="stylesheet" href="../unit-css/style.css?v=63">
+  <link rel="stylesheet" href="css/style.css?v=25">
 </head>
 <body data-subject-theme="science">
 
@@ -720,7 +720,10 @@
           </div>
         </div>
       </div>
-      <button class="disp-reset" id="disp-reset" type="button" onclick="dispReset()" hidden>מדידה מחדש</button>
+      <!-- `is-hidden` (visibility), not the `hidden` ATTRIBUTE: this button sits below .disp-stage
+           inside a centred column, so taking it out of flow and putting it back on the drop shifted
+           the whole applet up by 29px. It reserves its space from the first paint now. -->
+      <button class="disp-reset is-hidden" id="disp-reset" type="button" onclick="dispReset()">מדידה מחדש</button>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s9-continue" disabled onclick="advanceScreen()">המשך</button>
@@ -988,7 +991,7 @@
           <p class="exp-instruction">המים בקערה גלשו ברגע שהסלע נכנס אליה.<br>המים העודפים התנקזו בכלי האיסוף התחתון.</p>
           <p class="split-conclusion"><strong>כמות המים שגלשו מהקערה<br>=<br>נפח הסלע!</strong></p>
           <div class="companion-say companion-say--inline companion-say--right split-say">
-            <p class="companion-bubble" style="--bubble-w: 330px;">עבור גופים קלים שצפים במים ניתן לחבר משקולת כדי שישקעו לתחתית הכלי.<br><br>לא לשכוח להוריד את נפח המשקולת מהתוצאה הסופית!</p>
+            <p class="companion-bubble" style="--bubble-w: 280px;">עבור גופים קלים שצפים במים ניתן לחבר משקולת כדי שישקעו לתחתית הכלי.<br><br>לא לשכוח להוריד את נפח המשקולת מהתוצאה הסופית!</p>
             <video class="companion" src="assets/img/character-orange-pingpong.mp4?v=2" alt="" aria-hidden="true"
                  data-pose="pingpong" draggable="false" autoplay loop muted playsinline style="--cw: 230px;"></video>
           </div>
@@ -1393,14 +1396,19 @@
          the beak points at him. guessPick()/guessEnter() only toggle .hidden on the id, so
          living outside .exp is transparent to them — and .hidden collapses the bubble alone,
          leaving him exactly where he was. -->
-    <!-- Top-anchored, like everything else on this screen (.exp packs toggle → head → figure →
-         options from the top), so the pair cannot drift into them when the canvas height follows
-         the window's aspect ratio. It stands in the free band left of the 420px centred figure,
-         which leaves 430px — enough for a 140px sprite and a 260px bubble. -->
-    <div class="companion-say companion-say--left" style="left: 14px; top: 154px;">
+    <!-- QA 2026-08-29: bottom-anchored in the free band left of the centred figure, with the bubble
+         pulled up and in over the sprite's shoulder. `bottom`, not the `top: 154px` this used to
+         carry: the canvas is 1280/aspect tall (15-ui.js), so a top offset drifts DOWN towards the
+         nav bar as the window widens, which is the direction that actually hurts here. The bubble's
+         negative margin-left is what tucks it in — .companion-say--left lays sprite then bubble
+         left-to-right, and 260px of bubble beside a 252px sprite would otherwise reach the options.
+         ⚠️ bottom is 88, not the 20 the QA set live: `bottom` measures from the CANVAS floor, not
+         from the bar, so 20 put the sprite's lower 54px behind the nav-bar divider and cut his legs
+         off. 88 = the bar's 74 plus 14 of air, which is what s29's twin group already uses. -->
+    <div class="companion-say companion-say--left" style="left: 14px; bottom: 88px;">
       <video class="companion" src="assets/img/character-orange-ask.mp4?v=2" aria-hidden="true"
            data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 252px;"></video>
-      <p class="companion-bubble hidden" id="s21-guess-bubble" style="--bubble-w: 260px;">בואו נלמד בדיוק איך לעשות את זה!</p>
+      <p class="companion-bubble hidden" id="s21-guess-bubble" style="--bubble-w: 260px; margin-left: -60px; margin-top: 20px;">בואו נלמד בדיוק איך לעשות את זה!</p>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s21-continue" disabled onclick="advanceScreen()">המשך</button>
@@ -1437,7 +1445,15 @@
       <div class="meas-stage">
         <div class="meas-vessels">
           <div class="meas-vessel" id="meas-cyl" data-vessel="cyl">
-            <img class="meas-cyl-img" src="assets/img/s9-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
+            <!-- The משורה's water and the sunk king are overlays on the SVG, the same way s34's
+                 measuring vessel does it (.meas-mv-wrap). measRender() toggles `has-king` on the
+                 VESSEL — it always did; there was simply nothing here for it to act on, so the
+                 cylinder drew empty through both steps (QA 2026-08-29). -->
+            <div class="meas-cyl-wrap">
+              <img class="meas-cyl-img" src="assets/img/s9-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
+              <div class="meas-cyl-water"></div>
+              <img class="meas-cyl-king" src="assets/img/s22-chess-king.svg" alt="" aria-hidden="true" draggable="false">
+            </div>
             <div class="meas-badge" id="meas-cyl-badge">50 מ"ל</div>
             <span class="meas-vessel-label">משורה</span>
           </div>
@@ -1514,7 +1530,15 @@
                ends up reading 250. It is still a drop target so dragging the hammer here can be
                refused, which is the judgement step 3 tests. -->
           <div class="meas-vessel" id="meas2-cyl" data-vessel="cyl">
-            <img class="meas-cyl-img" src="assets/img/s9-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
+            <!-- The משורה's water and the sunk king are overlays on the SVG, the same way s34's
+                 measuring vessel does it (.meas-mv-wrap). measRender() toggles `has-king` on the
+                 VESSEL — it always did; there was simply nothing here for it to act on, so the
+                 cylinder drew empty through both steps (QA 2026-08-29). -->
+            <div class="meas-cyl-wrap">
+              <img class="meas-cyl-img" src="assets/img/s9-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
+              <div class="meas-cyl-water"></div>
+              <img class="meas-cyl-king" src="assets/img/s22-chess-king.svg" alt="" aria-hidden="true" draggable="false">
+            </div>
             <div class="meas-badge" id="meas2-cyl-badge">65 מ"ל</div>
             <span class="meas-vessel-label">משורה</span>
           </div>
@@ -1783,7 +1807,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=53"></script>
+<script src="js/main.js?v=54"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

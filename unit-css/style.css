@@ -3166,6 +3166,13 @@ html, body {
 #disp-marble.dragging { cursor: grabbing; }
 #disp-marble.placed { opacity: 0; pointer-events: none; }
 .disp-drag-hint { font-family: 'Assistant', sans-serif; font-size: 15px; color: #8a97a3; margin: 0; }
+/* Both of the applet's transient bits hide by VISIBILITY, never by leaving the flow. The stage is a
+   centred row inside a centred column, so anything that changes size mid-interaction re-centres the
+   cylinder under the learner's hand: emptying the hint narrowed .disp-marble-zone by 19px and slid
+   the cylinder 10px sideways, and revealing the reset button lifted it 29px (QA 2026-08-29). The
+   cylinder is the thing being measured — it must not move while the marble is dropped into it.
+   `visibility: hidden` also removes them from the a11y tree, so nothing is lost against `hidden`. */
+.disp-drag-hint.is-hidden, .disp-reset.is-hidden { visibility: hidden; }
 
 /* .disp-explain / -title / .disp-calc / .disp-note lived here — the green panel slide 26's
    explanation was revealed into, in place, on the applet screen. Deleted 2026-08-29 when slide 26
@@ -3281,14 +3288,25 @@ html, body {
   transition: opacity 0.4s ease, transform 0.6s cubic-bezier(.4,0,.2,1);
 }
 .flood-bowl.flooded .flood-sunk-rock { opacity: 1; transform: translateX(-50%) scale(0.92); }
+/* QA 2026-08-29: the spill starts at the RIM and ends at the water it is filling. It used to be a
+   44px stub hanging under the bowl (`top: 100%`, inset 4%), which read as two short bars floating
+   in the gap rather than as water leaving the vessel. Now each stream begins at the rim line and
+   runs down the OUTSIDE of the bowl — which is where water spilling over a lip actually goes, and
+   it clears the bowl's curved lower wall — to the tray's finished water line.
+   `z-index` puts it in front of the tray, so it reads as pouring INTO it: the tray is a later
+   sibling of the bowl and would otherwise paint over the stream's lower half. */
 .flood-stream {
-  position: absolute; top: 100%; width: 8px; height: 0; background: rgba(120,190,225,0.75);
-  transition: height 0.5s ease; border-radius: 3px;
+  position: absolute; top: 0; width: 8px; height: 0; background: rgba(120,190,225,0.75);
+  transition: height 0.5s ease; border-radius: 3px; z-index: 3;
 }
-/* Out at the bowl's sides, where water actually spills over a rim — they used to run down its
-   middle, from under the bowl rather than off its edges (QA 2026-08-24, slide 13). */
-.flood-stream--l { left: 4%; } .flood-stream--r { right: 4%; }
-.flood-bowl.flooded .flood-stream { height: 44px; }
+/* -11 puts each stream's outer edge on the bowl's own edge (8px wide, and the rim overhangs the
+   bowl by 3 — see .flood-bowl::before), so the water runs down the outside of the vessel. */
+.flood-stream--l { left: -11px; } .flood-stream--r { right: -11px; }
+/* DERIVED, not eyeballed — measured on the served pack and re-checked here. It spans the bowl's
+   own 167px, the 44px gap (.flood-tray's margin-top) and the empty band left above the tray's
+   final water line. Move the bowl height, the gap, the tray height or its 62% fill and this has
+   to move with them; the numbers all live in …-01/css/style.css. */
+.flood-bowl.flooded .flood-stream { height: 241px; }
 /* And they stop once the tray below has filled: the spill is over, so the streams retract instead
    of pouring forever. .drained is set from floodDrop() after the tray's own fill finishes.
    Retracting by HEIGHT alone is deliberate: the stream grows from the bowl's rim downward, so
@@ -3564,6 +3582,33 @@ html, body {
    0-250 SVG, calibrated to that drawing: the tube runs y=46..434 in a 480 viewBox with 0 mL at
    y=420, so the fill sits (480-434)/480 = 9.58% off the bottom and 250 mL is (434-60)/480 = 77.9%
    tall. Inner walls are x=58..142 of 200, i.e. 29% in from each side. */
+/* The משורה on s22/s34: water and the sunk king, overlaid on s9-cylinder.svg the same way
+   .meas-mv-wrap overlays the 250 vessel. `has-king` has been toggled on the vessel by
+   measRender() since the applet was built, but nothing responded to it and the cylinder drew
+   EMPTY through both steps while its badge already read 65 (QA 2026-08-29).
+   Calibrated to s9-cylinder.svg's contract — viewBox 200×480, 0 mL at y=420, y = 420 − 3.6·V:
+     0 mL  = 12.5% off the bottom      50 mL = top 50%      65 mL = top 38.75%
+   and the bore (x 61→139) less 2 units of glass each side = left 31.5%, width 37%.
+   The wrap shrink-wraps to the 180px image because it is a flex item of the centred
+   .meas-vessel column; the percentages are meaningless if that ever stops being true. */
+.meas-cyl-wrap { position: relative; display: block; }
+.meas-cyl-water {
+  position: absolute; left: 31.5%; width: 37%; top: 50%; bottom: 12.5%;
+  background: linear-gradient(180deg, rgba(120,190,225,0.42) 0, rgba(120,190,225,0.34) 4px, rgba(150,205,232,0.24) 100%);
+  border-top: 2px solid rgba(255,255,255,0.9);
+  box-shadow: inset 0 4px 7px rgba(255,255,255,0.4), inset 0 -8px 14px rgba(120,170,190,0.16);
+  transition: top 0.6s cubic-bezier(.4,0,.2,1); pointer-events: none;
+}
+.meas-vessel.has-king .meas-cyl-water { top: 38.75%; }
+/* 30% of the 180px image = 54px inside a 70px bore, and its 80×130 art then stands 88px tall —
+   comfortably under the 65 mL line, so he reads as submerged rather than poking through it. */
+.meas-cyl-king {
+  position: absolute; left: 50%; bottom: 12.5%; width: 30%;
+  transform: translateX(-50%) scale(0.6); transform-origin: 50% 100%;
+  opacity: 0; filter: saturate(0.92) brightness(1.03);
+  transition: opacity 0.4s ease, transform 0.6s cubic-bezier(.4,0,.2,1); pointer-events: none;
+}
+.meas-vessel.has-king .meas-cyl-king { opacity: 0.92; transform: translateX(-50%) scale(1); }
 .meas-mv-wrap { position: relative; display: block; }
 .meas-mv-water {
   position: absolute; left: 30%; right: 30%; bottom: 9.58%;
