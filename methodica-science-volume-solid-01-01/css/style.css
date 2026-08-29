@@ -452,8 +452,17 @@
   background: linear-gradient(180deg, rgba(234,245,252,0.5), rgba(220,240,250,0.2));
   box-shadow: inset 6px 0 10px rgba(255,255,255,0.35);
 }
-.meas-object-icon { display: flex; align-items: center; justify-content: center; height: 56px; }
-.meas-obj-img { height: 56px; width: auto; display: block; }
+/* The icon box grows to whatever the object needs; the king keeps its 56px height and the hammer
+   sets its own width below. */
+.meas-object-icon { display: flex; align-items: center; justify-content: center; min-height: 96px; }
+/* 96, up from 56: with the frame gone the king was a 34px sliver with a caption under it, too
+   small to read as the thing you pick up. It stays well short of the hammer's 165 — that gap is
+   the lesson, since one object goes into the משורה and the other cannot. */
+.meas-obj-img { height: 96px; width: auto; display: block; }
+/* 165 is deliberate: the overflow bowl is 195 wide, so the hammer reads as ALMOST too big for it —
+   which is the point of step 3, where the learner has to see it will not go in the משורה. Sized by
+   width because the asset is landscape now (viewBox 104x68). */
+.meas-obj-img--hammer { width: 165px; height: auto; }
 
 /* QA 2026-08-25 (slide 20). Scoped to S12 on purpose: .transition-title is shared with
    parts 02 and 04, whose transition screens QA has not asked to resize. */

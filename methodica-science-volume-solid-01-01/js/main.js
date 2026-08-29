@@ -2133,7 +2133,9 @@ const MEAS = {
        reveal: 'נפח כלי השח-מט הוא 15 מ"ל. מפלס המים המקורי במשורה היה 50 מ"ל והוא עלה ל-65 מ"ל, ולכן: 65 − 50 = 15.' },
   /* Deck slide 36 states the instruction without explaining WHY the cylinder is wrong — naming
      "too big for the cylinder" here would hand over the judgement this step exists to test. */
-  3: { screen: 34, obj: true, objImg: 's22-hammer.svg', objLabel: 'פטיש', correct: 'bowl',
+  3: { screen: 34, obj: true, /* ?v=2 — the file was re-exported under the same name (upright -> lying down), and this
+        path is written from JS, so it needs the buster the markup copies carry. */
+       objImg: 's22-hammer.svg?v=2', objClass: 'meas-obj-img--hammer', objLabel: 'פטיש', correct: 'bowl',
        instruction: 'שלב 3: גררו את הפטיש אל כלי המדידה המתאים.' },
   /* `pour` gates the input behind a real action: slide 37 says the level reaches 250 מ"ל "לאחר
      שהלומד שופך את המים לתוך כלי המדידה" — after the LEARNER pours. The target is the graduated
@@ -2235,7 +2237,7 @@ function measRender() {
   const inputReady = isInput && (!cfg.pour || measPoured);
   el('object-zone').classList.toggle('hidden', !isDrag);
   if (isDrag) {
-    el('object-icon').innerHTML = '<img class="meas-obj-img" src="assets/img/' + cfg.objImg + '" alt="" draggable="false">';
+    el('object-icon').innerHTML = '<img class="meas-obj-img ' + (cfg.objClass || '') + '" src="assets/img/' + cfg.objImg + '" alt="" draggable="false">';
     el('object-label').textContent = cfg.objLabel;
     const obj = el('object'); obj.classList.remove('dragging'); obj.style.transform = '';
   }
@@ -2259,6 +2261,10 @@ function measRender() {
   }
   /* The tray holds the water the hammer displaced until the learner pours it across. */
   if (el('bowl')) el('bowl').classList.toggle('overflowed', step >= 4 && !measPoured);
+  /* The hammer STAYS in the bowl after the pour — only the water moved across. Without this the
+     bowl sat empty while the משורה still showed the king, so the only object on screen belonged to
+     the previous step (QA 2026-08-29). */
+  if (el('bowl')) el('bowl').classList.toggle('has-object', step >= 4);
   const cont = document.getElementById(measScreenId() + '-continue');
   if (cont) cont.disabled = (cfg.screen === 34) ? !measDone : !(step > 2 || measRevealed);
 }
