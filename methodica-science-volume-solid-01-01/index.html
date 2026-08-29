@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=57">
-  <link rel="stylesheet" href="css/style.css?v=20">
+  <link rel="stylesheet" href="../unit-css/style.css?v=58">
+  <link rel="stylesheet" href="css/style.css?v=21">
 </head>
 <body data-subject-theme="science">
 
@@ -684,6 +684,11 @@
        Uses the engine's scale-safe createPointerDnd for the drag.
        ═══════════════════════════════════════════════════════════ -->
   <section class="screen" data-screen="9" id="s9">
+    <!-- Storyboard slide 25 — the INTERACTION only: title, instruction, the applet. Everything the
+         deck puts on slide 26 (the "what happened here?" explanation, the rule, the mascot's
+         caveat) lives on s35 now. They were one screen until 2026-08-29, with slide 26's content
+         revealed in place 900ms after the drop; the deck draws two screens and the reveal made the
+         second one easy to miss. `המשך` still unlocks on the drop — dispDrop() enables it. -->
     <div class="exp">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
@@ -697,16 +702,10 @@
         <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
           <span>לקרוא קומיקס</span></button>
       </div>
-
       <div class="exp-head">
         <h1 class="exp-title">שיטת ארכימדס – דחיקת מים</h1>
         <p class="exp-instruction" id="disp-instruction">הכניסו את הגולה אל תוך המשורה.</p>
       </div>
-
-      <!-- Two columns, as storyboard slide 26 lays it out (QA 2026-08-25, slide 17): the vessel on
-           the left, and on the right the explanation with the mascot under it. The stage used to be
-           one RTL row with the explanation at the far left, which left nowhere for a speaking
-           mascot -- his bubble landed on top of the cylinder. -->
       <div class="disp-stage">
         <div class="disp-applet">
           <div class="disp-cylinder-wrap" id="disp-cylinder">
@@ -715,40 +714,69 @@
             <img class="disp-sunk-marble" id="disp-sunk-marble" src="assets/img/s9-marble.svg" alt="" draggable="false">
             <div class="disp-badge" id="disp-badge">50 מ"ל</div>
           </div>
-
           <div class="disp-marble-zone">
             <img id="disp-marble" src="assets/img/s9-marble.svg" alt="גולת זכוכית ירוקה — נִתנת לגרירה" draggable="false">
             <p class="disp-drag-hint" id="disp-drag-hint">גררו אותי למשורה</p>
           </div>
         </div>
+      </div>
+      <button class="disp-reset" id="disp-reset" type="button" onclick="dispReset()" hidden>מדידה מחדש</button>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s9-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
 
-        <div class="disp-side">
-          <!-- Copy is storyboard slide 26 verbatim: the principle is one sentence with the bold on
-               its closing clause rather than on a "עיקרון ארכימדס:" label the deck does not
-               have, and the conclusion is spelled out in words. -->
-          <div class="disp-explain" id="disp-explain" hidden>
-            <h2 class="disp-explain-title">מה קרה כאן?</h2>
-            <p>מפלס המים עלה ברגע שהגולה נכנסה למשורה.</p>
-            <p>עיקרון ארכימדס אומר שכשמכניסים גוף למים, מפלס המים עולה <strong>בכמות שווה לנפח הגוף בדיוק.</strong></p>
-            <p class="disp-calc"><strong>נפח המים הסופי פחות נפח המים המקורי<br>=<br>נפח הגולה!</strong></p>
+
+  <!-- ═══ S35 — Storyboard slide 26 · what the displacement showed ═══
+       The second half of the old s9. Same two-column shape as s33 (slide 29's result screen), so
+       the two applet conclusions read alike: the vessel on the left, and heading, paragraph, boxed
+       rule and the mascot down the right. The vessel is the applet's OWN markup frozen in its
+       finished state — `.risen` baked into the class list instead of added by dispDrop() — so the
+       learner sees exactly the picture they just made rather than a separate illustration of it.
+       It carries NO ids: every id in that block belongs to the live applet on s9. -->
+  <section class="screen" data-screen="35" id="s35">
+    <div class="exp exp--content exp--split">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
+      </div>
+      <div class="split-stage">
+        <div class="split-figure split-figure--vessel">
+          <div class="disp-cylinder-wrap risen" role="img" aria-label="משורה מדורגת ובתוכה הגולה; מפלס המים עלה מ-50 ל-62 מ&quot;ל">
+            <img class="disp-cylinder-img" src="assets/img/s9-cylinder.svg" alt="" draggable="false">
+            <div class="disp-water"></div>
+            <img class="disp-sunk-marble" src="assets/img/s9-marble.svg" alt="" draggable="false">
+            <div class="disp-badge">62 מ"ל</div>
           </div>
-          <!-- Slide 26 gives this caveat to the mascot rather than to the panel. Hidden until the
-               marble is in, so it arrives WITH the explanation instead of pre-empting it -- the
-               deck's "גיף מופיע אחרי 5 שניות". He replaces the silent CHARACTER_SLOTS sprite
-               that used to stand in the corner saying nothing. -->
-          <div class="companion-say companion-say--inline companion-say--right" id="s9-say" hidden>
+        </div>
+        <div class="split-side">
+          <!-- Copy is storyboard slide 26 verbatim: the principle is one sentence with the bold on
+               its closing clause rather than on a "עיקרון ארכימדס:" label the deck does not have,
+               and the conclusion is spelled out in words. -->
+          <h1 class="exp-title">מה קרה כאן?</h1>
+          <p class="exp-instruction">מפלס המים עלה ברגע שהגולה נכנסה למשורה.</p>
+          <p class="exp-instruction">עיקרון ארכימדס אומר שכשמכניסים גוף למים, מפלס המים עולה <strong>בכמות שווה לנפח הגוף בדיוק.</strong></p>
+          <p class="split-conclusion"><strong>נפח המים הסופי פחות נפח המים המקורי<br>=<br>נפח הגולה!</strong></p>
+          <div class="companion-say companion-say--inline companion-say--right split-say">
             <p class="companion-bubble" style="--bubble-w: 300px;">עיקרון זה תקף לגופים שלא מתמוססים במים.<br><br>אפשר לעטוף גופים שרגישים למים בשכבת מגן דקה לפני שמכניסים למשורה.</p>
             <video class="companion" src="assets/img/character-orange-soap.mp4?v=2" alt="" aria-hidden="true"
                  data-pose="soap" draggable="false" autoplay loop muted playsinline style="--cw: 170px;"></video>
           </div>
         </div>
       </div>
-
-      <button class="disp-reset" id="disp-reset" type="button" onclick="dispReset()" hidden>מדידה מחדש</button>
     </div>
-
     <div class="nav-bar">
-      <button class="btn-continue" id="s9-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s35-continue" onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
@@ -1573,7 +1601,11 @@
          keeps the right side for the figure). -->
     <!-- Same arrangement as S21, its comic-path twin: top-anchored in the band left of the
          centred figure (460px wide here, so 410px of room). -->
-    <div class="companion-say companion-say--left" style="left: 14px; top: 154px;">
+    <!-- QA 2026-08-29: down to the bottom band, above the nav bar, rather than top-anchored beside
+         the figure. `bottom`, not `top`: the canvas is 1280/aspect tall (15-ui.js), so a top offset
+         drifts away from the bar as the window widens. s21, the comic-path twin, carries a
+         byte-identical style attribute and is deliberately NOT changed — it was not in this QA. -->
+    <div class="companion-say companion-say--left" style="left: 14px; bottom: 88px;">
       <video class="companion" src="assets/img/character-orange-ask.mp4?v=2" aria-hidden="true"
            data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 252px;"></video>
       <p class="companion-bubble hidden" id="s29-guess-bubble" style="--bubble-w: 240px;">אל תדאגו, לא תישארו סקרנים! עכשיו נלמד איך עושים את זה!</p>
@@ -1751,7 +1783,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=52"></script>
+<script src="js/main.js?v=53"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>
