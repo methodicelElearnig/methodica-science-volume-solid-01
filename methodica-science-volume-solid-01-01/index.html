@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=62">
-  <link rel="stylesheet" href="css/style.css?v=24">
+  <link rel="stylesheet" href="../unit-css/style.css?v=63">
+  <link rel="stylesheet" href="css/style.css?v=25">
 </head>
 <body data-subject-theme="science">
 
@@ -1445,7 +1445,15 @@
       <div class="meas-stage">
         <div class="meas-vessels">
           <div class="meas-vessel" id="meas-cyl" data-vessel="cyl">
-            <img class="meas-cyl-img" src="assets/img/s9-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
+            <!-- The משורה's water and the sunk king are overlays on the SVG, the same way s34's
+                 measuring vessel does it (.meas-mv-wrap). measRender() toggles `has-king` on the
+                 VESSEL — it always did; there was simply nothing here for it to act on, so the
+                 cylinder drew empty through both steps (QA 2026-08-29). -->
+            <div class="meas-cyl-wrap">
+              <img class="meas-cyl-img" src="assets/img/s9-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
+              <div class="meas-cyl-water"></div>
+              <img class="meas-cyl-king" src="assets/img/s22-chess-king.svg" alt="" aria-hidden="true" draggable="false">
+            </div>
             <div class="meas-badge" id="meas-cyl-badge">50 מ"ל</div>
             <span class="meas-vessel-label">משורה</span>
           </div>
@@ -1522,7 +1530,15 @@
                ends up reading 250. It is still a drop target so dragging the hammer here can be
                refused, which is the judgement step 3 tests. -->
           <div class="meas-vessel" id="meas2-cyl" data-vessel="cyl">
-            <img class="meas-cyl-img" src="assets/img/s9-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
+            <!-- The משורה's water and the sunk king are overlays on the SVG, the same way s34's
+                 measuring vessel does it (.meas-mv-wrap). measRender() toggles `has-king` on the
+                 VESSEL — it always did; there was simply nothing here for it to act on, so the
+                 cylinder drew empty through both steps (QA 2026-08-29). -->
+            <div class="meas-cyl-wrap">
+              <img class="meas-cyl-img" src="assets/img/s9-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
+              <div class="meas-cyl-water"></div>
+              <img class="meas-cyl-king" src="assets/img/s22-chess-king.svg" alt="" aria-hidden="true" draggable="false">
+            </div>
             <div class="meas-badge" id="meas2-cyl-badge">65 מ"ל</div>
             <span class="meas-vessel-label">משורה</span>
           </div>

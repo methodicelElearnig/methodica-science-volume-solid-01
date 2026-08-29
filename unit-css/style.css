@@ -3582,6 +3582,33 @@ html, body {
    0-250 SVG, calibrated to that drawing: the tube runs y=46..434 in a 480 viewBox with 0 mL at
    y=420, so the fill sits (480-434)/480 = 9.58% off the bottom and 250 mL is (434-60)/480 = 77.9%
    tall. Inner walls are x=58..142 of 200, i.e. 29% in from each side. */
+/* The משורה on s22/s34: water and the sunk king, overlaid on s9-cylinder.svg the same way
+   .meas-mv-wrap overlays the 250 vessel. `has-king` has been toggled on the vessel by
+   measRender() since the applet was built, but nothing responded to it and the cylinder drew
+   EMPTY through both steps while its badge already read 65 (QA 2026-08-29).
+   Calibrated to s9-cylinder.svg's contract — viewBox 200×480, 0 mL at y=420, y = 420 − 3.6·V:
+     0 mL  = 12.5% off the bottom      50 mL = top 50%      65 mL = top 38.75%
+   and the bore (x 61→139) less 2 units of glass each side = left 31.5%, width 37%.
+   The wrap shrink-wraps to the 180px image because it is a flex item of the centred
+   .meas-vessel column; the percentages are meaningless if that ever stops being true. */
+.meas-cyl-wrap { position: relative; display: block; }
+.meas-cyl-water {
+  position: absolute; left: 31.5%; width: 37%; top: 50%; bottom: 12.5%;
+  background: linear-gradient(180deg, rgba(120,190,225,0.42) 0, rgba(120,190,225,0.34) 4px, rgba(150,205,232,0.24) 100%);
+  border-top: 2px solid rgba(255,255,255,0.9);
+  box-shadow: inset 0 4px 7px rgba(255,255,255,0.4), inset 0 -8px 14px rgba(120,170,190,0.16);
+  transition: top 0.6s cubic-bezier(.4,0,.2,1); pointer-events: none;
+}
+.meas-vessel.has-king .meas-cyl-water { top: 38.75%; }
+/* 30% of the 180px image = 54px inside a 70px bore, and its 80×130 art then stands 88px tall —
+   comfortably under the 65 mL line, so he reads as submerged rather than poking through it. */
+.meas-cyl-king {
+  position: absolute; left: 50%; bottom: 12.5%; width: 30%;
+  transform: translateX(-50%) scale(0.6); transform-origin: 50% 100%;
+  opacity: 0; filter: saturate(0.92) brightness(1.03);
+  transition: opacity 0.4s ease, transform 0.6s cubic-bezier(.4,0,.2,1); pointer-events: none;
+}
+.meas-vessel.has-king .meas-cyl-king { opacity: 0.92; transform: translateX(-50%) scale(1); }
 .meas-mv-wrap { position: relative; display: block; }
 .meas-mv-water {
   position: absolute; left: 30%; right: 30%; bottom: 9.58%;

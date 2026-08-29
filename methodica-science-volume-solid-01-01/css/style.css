@@ -517,6 +517,13 @@
    Shared by the two screens that use .split-say — s33 and s35. Each keeps its own --bubble-w. */
 .split-say .companion-bubble { margin-top: 30px; margin-right: -30px; }
 
+/* QA 2026-08-29: the measurement applet's heading sits 40px lower. Its .exp carries no --question
+   or --content modifier, so it keeps .exp's own 24px top padding and the title was hard against
+   the canvas edge while the stage below had room to spare. BOTH halves, s22 and s34: they are the
+   same applet across two screens and the head would otherwise jump 40px between step 2 and step 3.
+   `margin-top` on the head rather than padding on .exp, so it is obvious which element moved. */
+#s22 .exp-head, #s34 .exp-head { margin-top: 40px; }
+
 /* S9 two-column stage, storyboard slide 26 (QA 2026-08-25, slide 17).
    `direction: ltr` on the row is what puts the applet physically LEFT and the explanation
    RIGHT while the text inside each column stays RTL -- the same lever .aq-stage and
