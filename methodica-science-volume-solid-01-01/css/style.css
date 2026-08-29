@@ -457,12 +457,14 @@
    rather than on the transform, which is already carrying the centring translate. */
 #s6 .hook-content { top: calc(50% - 137px); }
 
-/* QA 2026-08-25 (slide 20) again: the sprite grew and moved to the centre, so the two lines of
-   text have to move off its head. .transition-content is centred on the canvas, and the canvas
-   is only 710 design px tall at the reference aspect — at that height a centred text block and
-   a 260px sprite anchored 89px off the bottom overlap by ~26px. Lifting the text 90px clears it
-   there and simply adds air on the taller canvases a narrower window produces. */
-#s12 .transition-content { top: calc(50% - 127px); }
+/* QA 2026-08-29 (slide 20): the sprite is now IN the column (CHARACTER_SLOTS.s12 `into`), so
+   there is nothing left to keep apart and the 90px lift this rule used to carry is gone —
+   .transition-content's own centring is correct again. The lift existed because a bottom-anchored
+   260px sprite overlapped the centred text on the ~710px canvas; at 390px no bottom anchor fits
+   at all on the shorter canvases a wide window produces, which is what moved him into the flow.
+   `position: static` is the whole mechanism: .companion is absolute by default, and as a static
+   flex item it takes its width from --cw and lets the column measure it. */
+#s12 .companion { position: static; }
 
 /* S32 practice intro, storyboard slide 50 (QA 2026-08-25, slide 23). The count carries the
    emphasis the deleted heading used to: its own line at 40px bold. The block also sits higher

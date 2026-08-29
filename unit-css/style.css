@@ -3601,11 +3601,16 @@ html, body {
   position: absolute; left: 50%; top: calc(50% - 37px); transform: translate(-50%, -50%);
   width: 860px; display: flex; flex-direction: column; gap: 16px; direction: rtl; text-align: right;
 }
-.task-title { font-family: 'Assistant', sans-serif; font-size: 32px; font-weight: 800; color: var(--subject-500); text-align: center; }
-.task-intro { font-family: 'Assistant', sans-serif; font-size: 21px; font-weight: 500; color: #303030; line-height: 1.5; text-align: center; }
+/* QA 2026-08-29: one body size for the whole screen — intro, list and note all sit at 24/500,
+   and the title and the line under it are flush right instead of centred. .task-content is a
+   flex column with no align-items, so its children already stretch the full 860px and
+   `text-align` has something to align against; do NOT switch these to align-self, which would
+   shrink-wrap each line and re-centre the short ones. */
+.task-title { font-family: 'Assistant', sans-serif; font-size: 32px; font-weight: 800; color: var(--subject-500); text-align: right; }
+.task-intro { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030; line-height: 1.5; text-align: right; }
 .task-list { list-style: decimal; padding-inline-start: 26px; display: flex; flex-direction: column; gap: 12px; }
-.task-list li { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400; color: #303030; line-height: 1.5; }
-.task-note { font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 600; color: var(--subject-700); background: var(--subject-100); border-radius: 12px; padding: 12px 18px; text-align: center; }
+.task-list li { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030; line-height: 1.5; }
+.task-note { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: var(--subject-700); background: var(--subject-100); border-radius: 12px; padding: 12px 18px; text-align: center; }
 
 /* ═══ Multi-part question tag ═══
    The ValueInputQuestion rules (.viq-input-row / .viq-input / .viq-unit) lived here.
@@ -4091,7 +4096,10 @@ html, body {
   padding: 22px 28px;
   direction: rtl; text-align: right;
   font-family: 'Assistant', sans-serif;
-  font-size: 20px; font-weight: 400; color: #303030; line-height: 1.5;
+  /* QA 2026-08-29: 24px, matching the title above it — one size for the whole verdict card.
+     Part 04's card only. The peak cards are 24px too now, but they get there through --peak
+     below, which has to buy the height back from its width and leading — see the note there. */
+  font-size: 24px; font-weight: 400; color: #303030; line-height: 1.5;
 }
 .section-result--retry { background: #fff6f6; border-color: #d98b8f; }
 .section-result-title {
@@ -4108,16 +4116,23 @@ html, body {
 
 /* The peak components reuse the card on their end screens (storyboard 157/158, 170/171). No
    progress nav above it there, and four סעיפים of answer instead of three, so it starts higher
-   and sets its own type scale: part 06's answer is the longest text in the unit and has to clear
-   the 74px bar on a 720px canvas. */
+   and sets its own geometry: part 06's answer is the longest text in the unit and has to clear
+   the 74px bar on a 720px canvas.
+   QA 2026-08-29: the body goes to 24px with the rest of the unit's feedback, which is 200px more
+   card than the old 18px drew — part 06's ran 43px THROUGH the bar at the old width. Three levers
+   bought it back, and all three are needed: the card widens left to 550 (20px clear of the
+   companion group, whose right edge is 530 on the widest of the four screens), starts 12px
+   higher, and takes 1.35 leading instead of 1.45. Part 06 now ends at 607 against a bar at 646.
+   Re-measure PART 06, not part 05, if any of these move: part 05's card is 70px shorter and will
+   fit long after part 06 has stopped fitting. */
 .section-result--peak {
-  top: 104px; left: 620px; right: 44px;
-  padding: 18px 24px;
-  font-size: 18px; line-height: 1.45;
+  top: 92px; left: 550px; right: 44px;
+  padding: 16px 22px;
+  font-size: 24px; line-height: 1.35;
 }
-.section-result--peak .section-result-title { font-size: 22px; margin-bottom: 12px; }
+.section-result--peak .section-result-title { font-size: 24px; margin-bottom: 12px; }
 .section-result--peak .section-result-body > p { margin: 0 0 10px; }
-.section-result--peak .peak-end-score { margin: 14px 0 0; font-size: 18px; }
+.section-result--peak .peak-end-score { margin: 14px 0 0; font-size: 24px; }
 
 /* ═══════════════════════════════════════════════════════
    Storyboard stems that MIX weights

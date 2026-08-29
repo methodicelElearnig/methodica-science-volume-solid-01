@@ -246,10 +246,16 @@ const CHARACTER_SLOTS = {
      with the explanation — a silent CHARACTER_SLOTS sprite cannot carry a bubble. */
   /* s11 has no slot: its slide-29 companion (the ping-pong ball) moved to s33 with the
      rest of that slide, and is authored there inside a .companion-say group. */
-  /* QA 2026-08-25 (slide 20): bigger, and centred under the two lines of text rather than
-     tucked into the right corner. `center` swaps the right offset for a 50% + translate,
-     so `right` must go — leaving both would write two conflicting anchors. */
-  s12: { pose: 'stretch',          w: 260, bottom:  89, center: true }   /* sb41 */
+  /* QA 2026-08-25 (slide 20): bigger, and centred under the two lines of text rather than tucked
+     into the right corner — done then with `center`, which is gone now that he is in the flow. */
+  /* QA 2026-08-29: +50% (260 -> 390) — the sprite is the only art on this screen and was reading
+     as an afterthought under two lines of text. At 390 it no longer FITS between a centred text
+     block and the bar: the canvas is 1280/aspect tall, so a wide window leaves under 400px there
+     and a bottom-anchored sprite would climb into the copy. So it stops being a floating offset
+     and becomes the third row of the centred column via `into` — title, line, sprite, balanced
+     together at any canvas height. That is also why `bottom`, `center` and the -127px text lift
+     in css/style.css are all gone: there is nothing left to keep apart. */
+  s12: { pose: 'stretch',          w: 390, into: 's12-content' }         /* sb41 */
 };
 /* S7's two path cards are the mascot in two poses. Not a CHARACTER_SLOTS entry:
    these sit inside the option cards as content, not as a floating sprite. */
@@ -276,6 +282,7 @@ function renderCompanion(n) {
     screen.classList.toggle('has-companion', !!el);
     return;
   }
+  const host = slot.into ? (document.getElementById(slot.into) || screen) : screen;
   const tag = CHARACTER_ASSETS[slot.pose] === 'mp4' ? 'video' : 'img';
   if (el && el.dataset.injected === '1' && el.tagName.toLowerCase() !== tag) { el.remove(); el = null; }
   if (!el) {
@@ -286,8 +293,12 @@ function renderCompanion(n) {
     el.draggable = false;
     el.dataset.injected = '1';
     if (tag === 'video') { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
-    screen.appendChild(el);
   }
+  /* `into` hands the sprite to a container in the markup instead of floating it over the screen,
+     so it can be laid out WITH the copy rather than positioned against it (same seam as parts
+     05/06). Falls back to the screen if the id is missing, so a typo degrades to the old
+     behaviour instead of dropping the mascot. */
+  if (el.parentElement !== host) host.appendChild(el);
   // Lets a template reserve room for the sprite instead of being drawn over —
   // the storyboard's narration column is narrower on exactly these screens.
   screen.classList.add('has-companion');
@@ -301,7 +312,7 @@ function renderCompanion(n) {
   el.classList.toggle('companion--center', slot.center === true);
   /* A grouped sprite is positioned BY the group, so writing slot offsets onto it would be
      a second, conflicting source of truth. (Reachable only if a screen ever has both.) */
-  if (!el.closest('.companion-say')) {
+  if (!slot.into && !el.closest('.companion-say')) {
     ['left', 'right', 'top', 'bottom'].forEach(function (k) {
       el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
     });
@@ -1884,10 +1895,15 @@ registerPracticeDnD(3, {
      Fixed by renaming the FILES to match their contents (2026-08-26), not by remapping these
      paths: a path that points at a lying filename only moves the trap. The mapping below is the
      obvious one and should stay obvious — check the picture, not the name, if it ever looks off. */
+  /* QA 2026-08-29: DELIBERATELY out of order, for the same reason S18's bank is (see its note).
+     These three used to sit in `targets` order, so the nth pill was always the answer to the nth
+     target and the board could be solved by position without reading a word. Rotated one step —
+     shell, goblet, cube — which is the order asked for and, checked against correctMap, leaves no
+     pill at the index of its own target. */
   items: [
-    { id: 'metal-cube', label: 'קוביית מתכת', img: 'assets/img/s17-metal-cube.png', w: 96 },
     { id: 'shell',      label: 'צדפה',        img: 'assets/img/s17-shell.png',      w: 92 },
-    { id: 'goblet',     label: 'גביע גדול',   img: 'assets/img/s17-trophy.png',     w: 86 }
+    { id: 'goblet',     label: 'גביע גדול',   img: 'assets/img/s17-trophy.png',     w: 86 },
+    { id: 'metal-cube', label: 'קוביית מתכת', img: 'assets/img/s17-metal-cube.png', w: 96 }
   ],
   targets: [
     { id: 't-ruler',    label: 'מדידה הנדסית בעזרת סרגל' },
