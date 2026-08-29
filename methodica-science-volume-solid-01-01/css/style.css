@@ -374,9 +374,14 @@
 .disp-cylinder-wrap { position: relative; width: 190px; flex: none; }
 .disp-cylinder-img { width: 100%; height: auto; display: block; user-select: none; -webkit-user-drag: none; }
 /* Calibrated to s9-cylinder.svg (viewBox 200×480): 50 mL surface = 50%, 62 mL = 41%,
-   water base (0 mL) = 12.5% from the bottom. */
+   water base (0 mL) = 12.5% from the bottom.
+   Horizontally it now fills the BORE (x 61→139 in the SVG) less 2 units of glass on each side,
+   i.e. 63→137 = 31.5% + 37%. It used to be 70→130, which left 9 units of dry glass inside each
+   wall and read as a narrow blue bar floating in a wide tube (QA 2026-08-29). The white highlight
+   streak at x 67–73 is under the water now, which is correct — it is a reflection on the front
+   wall, and the fill is translucent enough to show it through. */
 .disp-water {
-  position: absolute; left: 35%; width: 30%;
+  position: absolute; left: 31.5%; width: 37%;
   top: 50%; bottom: 12.5%;
   background: linear-gradient(180deg, rgba(120,190,225,0.42) 0, rgba(120,190,225,0.34) 4px, rgba(150,205,232,0.24) 100%);
   border-top: 2px solid rgba(255,255,255,0.9);
