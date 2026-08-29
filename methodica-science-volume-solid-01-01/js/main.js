@@ -468,8 +468,15 @@ function advanceScreen() {
   if (currentScreen === 11) { if (!floodPlaced) return; goTo(33); return; }             // flooding → its result (sb29)
   if (currentScreen === 33) { goTo(20); return; }                                       // flooding result → flip-cards
   if (currentScreen === 20) { const c = document.getElementById('s20-continue'); if (c && c.disabled) return; goTo(22); return; } // flip-cards → measurement applet
+  /* The measurement applet used to carry its own "המשך לשלב הבא" for the one step that crosses a
+     screen (2 → 3). It was redundant next to the bar's המשך — worse, the bar's button was ENABLED
+     on a revealed step and did nothing, because the guards below returned early. measNext() is the
+     bar's job now, and the guards stay for the states where there is no reveal to advance past. */
+  if (currentScreen === 22 || currentScreen === 34) {
+    if (measRevealed && !MEAS[measStep].last) { measNext(); return; }
+  }
   if (currentScreen === 22) { if (measStep <= 2) return; goTo(34); return; }   // steps 1-2 done → steps 3-4
-  if (currentScreen === 34) { if (!measDone) return; goTo(30); return; }       // applet complete → overflow can                 // measurement applet → overflow can
+  if (currentScreen === 34) { if (!measDone) return; goTo(30); return; }       // applet complete → overflow can
   if (currentScreen === 30) { goTo(31); return; }                                        // overflow can: question → how it works
   if (currentScreen === 31) { goTo(MERGE_SCREEN); return; }                              // overflow can → merge
   if (currentScreen === 12) { goTo(18); return; }                                       // transition → warm-up 1
@@ -2208,7 +2215,8 @@ function measConfirm() {
   /* Only on completion — the applet's own step-to-step moves navigate, which arms a save anyway. */
   if (cfg.last) { try { flushResumeSave(); } catch (e) {} }
 }
-/* Step 2 -> 3 crosses the screen boundary, so "המשך לשלב הבא" navigates rather than repainting. */
+/* Step 2 -> 3 crosses the screen boundary, so this navigates rather than repainting. Reached from
+   advanceScreen() — the bar's המשך — since the applet's own next-step button was removed. */
 function measNext() {
   const wasScreen = MEAS[measStep].screen;
   const inp = mEl('input');
@@ -2237,7 +2245,6 @@ function measRender() {
   const reveal = el('reveal');
   reveal.classList.toggle('hidden', !measRevealed);
   if (measRevealed) reveal.textContent = cfg.reveal;
-  el('next').classList.toggle('hidden', !(measRevealed && !cfg.last));
   el('error').classList.add('hidden');
   /* The tray is only grabbable while its pour is still pending. */
   if (el('tray')) el('tray').classList.toggle('is-pourable', awaitingPourFlag(cfg));

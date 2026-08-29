@@ -2934,7 +2934,7 @@ html, body {
   min-width: 160px; padding: 12px 34px;
   background: var(--cta-gradient);
   color: #fff; border: none; border-radius: 1000px;
-  /* 20px. Shared component: .meas-confirm / .meas-next on the applet screens are the same class
+  /* 20px. Shared component: .meas-confirm on the applet screens is the same class
      and only override min-width, so they take this size too — checked, they still fit. */
   font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400;
   cursor: pointer; transition: font-weight 0.1s;
@@ -3633,7 +3633,9 @@ html, body {
 .meas-input-wrap { display: inline-flex; align-items: center; gap: 8px; }
 .meas-input { width: 110px; padding: 8px 12px; border: 2px solid var(--subject-500); border-radius: 10px; font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 700; text-align: center; color: #303030; outline: none; }
 .meas-input-unit { font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 600; color: #303030; }
-.meas-confirm, .meas-next { min-width: 120px; }
+/* .meas-next went with the applet's own "המשך לשלב הבא" (QA 2026-08-29) — the bar's המשך carries
+   the step-to-step move now, through advanceScreen(). */
+.meas-confirm { min-width: 120px; }
 /* #meas-reveal is a .companion-bubble in a .companion-say group, not a member of .meas-side. */
 
 /* ═══ Class task (Part 03) ═══ */
