@@ -91,8 +91,8 @@ const CHARACTER_SLOTS = {
   s6: { pose: 'panting',     w: 200, into: 's6-say', ca: '16 / 9' },         /* sb171 */
   /* Both endings share the `success` pose. `w` is documentation only — .peak-end-video sizes
      the sprite at 100% of its own 320px box. No `ca`: the pair is 960x960 in both colours. */
-  s8: { pose: 'success',     w: 320, into: 's8-video' },                     /* sb173 */
-  s9: { pose: 'success',     w: 320, into: 's9-video' }                      /* sb172 */
+  s8: { pose: 'success',     w: 480, into: 's8-video' },                     /* sb173 */
+  s9: { pose: 'success',     w: 480, into: 's9-video' }                      /* sb172 */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);

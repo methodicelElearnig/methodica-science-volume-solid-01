@@ -3701,16 +3701,24 @@ html, body {
 .peak-options .scq-opt { width: 100%; }
 .peak-end { position: absolute; left: 50%; top: calc(50% - 37px); transform: translate(-50%, -50%); width: 760px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
 .peak-end-icon { font-size: 64px; line-height: 1; }
-.peak-end-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-500); }
-.peak-end--retry .peak-end-title { color: var(--subject-700); }
+/* QA 2026-08-29: the closing screen speaks in ONE voice — both lines at 48px in the unit's
+   near-black, the title no longer in subject blue. That is 42px of title and 28px of body more
+   than before, against a sprite that also grew 50%, so the column is measured, not assumed: see
+   the note on .peak-end-video. `line-height: 1.2` on the title is load-bearing — Assistant's
+   `normal` leading at 48px costs ~13px more per line and the column has no room for it. */
+.peak-end-title { font-family: 'Assistant', sans-serif; font-size: 48px; font-weight: 800; color: #303030; line-height: 1.2; }
 .peak-end-score { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 700; color: var(--subject-700); }
-.peak-end-text { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400; color: #303030; line-height: 1.5; }
+.peak-end-text { font-family: 'Assistant', sans-serif; font-size: 48px; font-weight: 400; color: #303030; line-height: 1.2; }
 /* The closing screens' sprite box (storyboard 172/173). Same trick .peak-transition-video uses and
    for the same reason: .companion is position:absolute by default, which inside this flex column
    would take it out of the flow and collapse the gap above it. Square, because the `success` pose
    is a 960x960 pair — width/height here override --cw and the aspect-ratio, so the slot's `w` is
    documentation rather than the thing that sizes it. */
-.peak-end-video { position: relative; width: 320px; height: 320px; flex-shrink: 0; }
+/* QA 2026-08-29: +50% (320 -> 480). Keep this in step with `w` in the s8/s9 CHARACTER_SLOTS of
+   parts 05 and 06 — the sprite inside is `width: 100%`, so this box is what actually sizes him and
+   a stale `w` would read as the truth without being it. The column now measures 630 of the 646
+   above the bar at H=720; anything that grows here has to come out of the gap or the leading. */
+.peak-end-video { position: relative; width: 480px; height: 480px; flex-shrink: 0; }
 .peak-end-video .companion { position: static; width: 100%; height: 100%; }
 
 /* ═══════════════════════════════════════════════════════
