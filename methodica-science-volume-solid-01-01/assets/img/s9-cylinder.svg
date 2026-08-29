@@ -7,7 +7,7 @@
        .disp-badge on this by PERCENTAGE of the wrap:
          viewBox stays 200 x 480;
          0 mL sits at y = 420 (= bottom 12.5%), 100 mL at y = 60, so y = 420 - 3.6 * V;
-         50 mL = 50%, 62 mL = 41%, the sunk marble rests at 82%;
+         50 mL = 50%, 62 mL = 41%, the sunk marble rests at 81% (36% wide);
          the bore runs x 61 -> 139, and .disp-water is inset 2 units inside that for wall thickness.
        Change any of those and the water reads against the wrong graduation. -->
   <defs>
