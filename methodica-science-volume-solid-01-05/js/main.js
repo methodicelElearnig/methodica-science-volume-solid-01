@@ -89,7 +89,7 @@ const CHARACTER_SLOTS = {
   /* The closing screen. `w` is documentation only — .peak-end-video sizes the sprite at 100%
      of its own 320px box. No `ca`: the success pair is 960x960 in both colours (the turquoise
      source was 1936x1080 and was re-framed to match; see DEPLOY.md). */
-  s8: { pose: 'success', w: 320, into: 's8-video' }                          /* sb173 */
+  s8: { pose: 'success', w: 480, into: 's8-video' }                          /* sb173 */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
