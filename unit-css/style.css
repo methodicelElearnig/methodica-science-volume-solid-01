@@ -3199,9 +3199,15 @@ html, body {
 .scq-bar-main { position: absolute; bottom: 17.5px; left: 24px; z-index: 12; display: flex; gap: 12px; align-items: center; }
 
 /* Feedback popup (draggable; resets to default on open) */
+/* QA 2026-08-29: 360 → 480px, so the longer feedback bodies (the DDQ ones especially) stop
+   stacking into six or seven lines. The cap was `46vw`, which was the wrong unit: #app is a
+   1280px design canvas under a transform, and vw resolves against the untransformed viewport,
+   so on a ~1024px-wide window a 46vw cap would clamp this to 471px and the width would silently
+   stop being 480. `46%` is canvas-relative (= 588px of the 1280 screen), so it expresses the same
+   "never more than about half the canvas" intent without ever binding at the shipped width. */
 .scq-popup {
   position: absolute; left: 2px; bottom: 84px; z-index: 40;
-  width: 360px; max-width: 46vw;
+  width: 480px; max-width: 46%;
   background: #edf8ed; border-radius: 16px; box-shadow: 0 8px 26px rgba(0,32,96,0.22);
   direction: rtl; text-align: right; overflow: hidden;
 }
@@ -4369,7 +4375,7 @@ html, body {
 
 /* QA 2026-08-25 (slide 29): the התשובה-שלי / תשובה-נכונה switch inside a wrong-answer
    popup. Borrows .scq-hint-close's shape, as the note asks; only the spacing and a narrower
-   box are added, since it sits in a 426px popup rather than a full-width overlay. */
+   box are added, since it sits in a 480px popup rather than a full-width overlay. */
 /* The line naming which board is on screen. Bold, as the storyboard has it; visible only while
    the model answer is displayed — ddqSyncAnswerToggle hides it in the 'התשובה שלי' state. */
 .scq-popup-body p.ddq-answer-note { font-weight: 700; }   /* beats `.scq-popup-body p`, later in this sheet */
