@@ -3288,14 +3288,25 @@ html, body {
   transition: opacity 0.4s ease, transform 0.6s cubic-bezier(.4,0,.2,1);
 }
 .flood-bowl.flooded .flood-sunk-rock { opacity: 1; transform: translateX(-50%) scale(0.92); }
+/* QA 2026-08-29: the spill starts at the RIM and ends at the water it is filling. It used to be a
+   44px stub hanging under the bowl (`top: 100%`, inset 4%), which read as two short bars floating
+   in the gap rather than as water leaving the vessel. Now each stream begins at the rim line and
+   runs down the OUTSIDE of the bowl — which is where water spilling over a lip actually goes, and
+   it clears the bowl's curved lower wall — to the tray's finished water line.
+   `z-index` puts it in front of the tray, so it reads as pouring INTO it: the tray is a later
+   sibling of the bowl and would otherwise paint over the stream's lower half. */
 .flood-stream {
-  position: absolute; top: 100%; width: 8px; height: 0; background: rgba(120,190,225,0.75);
-  transition: height 0.5s ease; border-radius: 3px;
+  position: absolute; top: 0; width: 8px; height: 0; background: rgba(120,190,225,0.75);
+  transition: height 0.5s ease; border-radius: 3px; z-index: 3;
 }
-/* Out at the bowl's sides, where water actually spills over a rim — they used to run down its
-   middle, from under the bowl rather than off its edges (QA 2026-08-24, slide 13). */
-.flood-stream--l { left: 4%; } .flood-stream--r { right: 4%; }
-.flood-bowl.flooded .flood-stream { height: 44px; }
+/* -11 puts each stream's outer edge on the bowl's own edge (8px wide, and the rim overhangs the
+   bowl by 3 — see .flood-bowl::before), so the water runs down the outside of the vessel. */
+.flood-stream--l { left: -11px; } .flood-stream--r { right: -11px; }
+/* DERIVED, not eyeballed — measured on the served pack and re-checked here. It spans the bowl's
+   own 167px, the 44px gap (.flood-tray's margin-top) and the empty band left above the tray's
+   final water line. Move the bowl height, the gap, the tray height or its 62% fill and this has
+   to move with them; the numbers all live in …-01/css/style.css. */
+.flood-bowl.flooded .flood-stream { height: 241px; }
 /* And they stop once the tray below has filled: the spill is over, so the streams retract instead
    of pouring forever. .drained is set from floodDrop() after the tray's own fill finishes.
    Retracting by HEIGHT alone is deliberate: the stream grows from the bowl's rim downward, so
