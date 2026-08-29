@@ -220,9 +220,13 @@ function characterAsset(pose) {
      rather than breaking the load, so it is safe there too.
      ?v=3 on 2026-08-27: `stretch` changed extension, .png -> .mp4, and `towel` was retired onto it.
      The extension change alone would defeat a stale cache, but s12's slot and s6's markup both
-     resolve through here and the tag differs now, so the bump keeps the pair unambiguous. */
+     resolve through here and the tag differs now, so the bump keeps the pair unambiguous.
+     ?v=4 on 2026-08-29: `ask` was cropped to its content (960 -> 514).
+     ⚠️ THIS is the token that matters, not the ones in index.html: renderCompanion() rewrites an
+     authored sprite's src through characterAsset() on every entry, so the markup's ?v= is only
+     ever seen on the first paint. Bump BOTH, but if only one, bump this one. */
   return 'assets/img/character-' + getCharacter() + '-' +
-         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=3';
+         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=4';
 }
 /* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
 function startCompanionMedia(el) {

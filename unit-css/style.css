@@ -4065,8 +4065,12 @@ html, body {
 .peak-speaker-ico  { flex: 0 0 auto; order: 0; width: 40px; height: 40px; opacity: 0.7; }
 
 /* ── Numbered steps beside a photo (S31 overflow can) ───── */
+/* `width: 100%` + `flex-start`, not `center` (QA 2026-08-29): in this RTL row flex-start IS the
+   right edge, so the list lines up under .exp-head's right edge instead of floating 230px inside
+   it with the pair centred as a block. The slack falls to the left, where the photo already is. */
 .steps-row {
-  display: flex; direction: rtl; align-items: center; justify-content: center; gap: 32px;
+  display: flex; direction: rtl; align-items: center; justify-content: flex-start; gap: 32px;
+  width: 100%;
 }
 .steps-list {
   margin: 0; padding-inline-start: 26px; max-width: 520px;
