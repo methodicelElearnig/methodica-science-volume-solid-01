@@ -507,15 +507,20 @@
    RIGHT while the text inside each column stays RTL -- the same lever .aq-stage and
    .split-stage use. .disp-stage's own `direction: rtl` in unit-css is overridden here
    because this sheet loads second. */
-#s9 .disp-stage { direction: ltr; align-items: center; gap: 40px; }
 #s9 .disp-applet { flex: 0 0 auto; display: flex; direction: rtl; align-items: center; gap: 46px; }
-#s9 .disp-side {
-  flex: 1 1 auto; min-width: 0; direction: rtl;
-  display: flex; flex-direction: column; align-items: stretch; gap: 10px;
-}
-/* The mascot is a flow item at the foot of the right column, so his bubble can never land
-   on the cylinder the way an absolutely-anchored group did. */
-#s9 .companion-say { align-self: flex-start; }
+/* `#s9 .disp-side` and `#s9 .companion-say` went with the 2026-08-29 split: the right-hand column
+   they described — slide 26's explanation and the mascot's caveat — is s35 now. What is left on s9
+   is the applet alone, so the stage just centres it. */
+
+/* S35 (slide 26) borrows s33's two-column shape, but its left column holds the APPLET'S OWN
+   vessel frozen at `.risen` rather than a photo, and .disp-cylinder-wrap is a fixed 190px. So the
+   column shrinks to the art instead of reserving s33's 440px of photo width, which would leave a
+   250px hole beside a 190px cylinder. */
+#s35 .split-figure--vessel { flex: 0 0 auto; max-width: none; display: flex; justify-content: center; }
+/* And the text column is capped, because .split-side is `flex: 1 1 auto`: with the figure column
+   down from s33's 440px to the cylinder's 190px, the copy would otherwise take the 930px left over
+   and the framed rule would stretch across almost the whole canvas. 660 keeps the pair centred. */
+#s35 .split-side { flex: 0 1 660px; }
 
 /* QA 2026-08-25 (slides 24, 30) asked for the practice stems to carry bold ONLY on their
    closing question, which S13 and S16 now mark up with <strong>. Scoped to this component:

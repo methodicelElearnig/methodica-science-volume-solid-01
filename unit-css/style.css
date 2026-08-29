@@ -3167,16 +3167,11 @@ html, body {
 #disp-marble.placed { opacity: 0; pointer-events: none; }
 .disp-drag-hint { font-family: 'Assistant', sans-serif; font-size: 15px; color: #8a97a3; margin: 0; }
 
-.disp-explain {
-  align-self: center; max-width: 400px;
-  background: #edf8ed; border: 2px solid #bfe0bf; border-radius: 16px;
-  padding: 16px 20px; direction: rtl; text-align: right;
-  display: flex; flex-direction: column; gap: 8px;
-}
-.disp-explain-title { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 800; color: #1c5b32; }
-.disp-explain p { font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 400; color: #234a2c; line-height: 1.45; }
-.disp-calc { background: #fff; border-radius: 10px; padding: 10px 14px; text-align: center; font-size: 19px !important; }
-.disp-note { font-size: 15px !important; color: #4a6b50 !important; border-top: 1px solid #bfe0bf; padding-top: 8px; }
+/* .disp-explain / -title / .disp-calc / .disp-note lived here — the green panel slide 26's
+   explanation was revealed into, in place, on the applet screen. Deleted 2026-08-29 when slide 26
+   became its own screen (s35): it is drawn as a .split-figure + .split-side pair now, the same
+   shape s33 gives slide 29, so the rule sits in .split-conclusion's framed box and the caveat in a
+   normal .companion-say instead of inside a green card. Nothing referenced these afterwards. */
 .disp-reset {
   margin-top: 4px; padding: 8px 22px; background: #fff; color: var(--subject-700);
   border: 1px solid var(--subject-700); border-radius: 1000px;

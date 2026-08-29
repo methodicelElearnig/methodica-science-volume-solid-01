@@ -7,7 +7,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 /* ─── Constants ─────────────────────────────────────────── */
-const TOTAL_SCREENS = 35;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice, S23–S28 comic slides 13–18, S29 guess-Q (sb24), S30/S31 overflow can (sb39/40), S32 practice rules (sb50), S33 flooding result (sb29), S34 measurement steps 3-4 (sb36-38). Bump as screens are added.
+const TOTAL_SCREENS = 36;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice, S23–S28 comic slides 13–18, S29 guess-Q (sb24), S30/S31 overflow can (sb39/40), S32 practice rules (sb50), S33 flooding result (sb29), S34 measurement steps 3-4 (sb36-38), S35 displacement result (sb26). Bump as screens are added.
                            // Must equal the live `.screen` count — index_dev.html derives its jump range from that,
                            // while goTo() rejects n >= TOTAL_SCREENS. The two silently disagree if only one is edited.
 
@@ -428,7 +428,8 @@ function goBack() {
   if (currentScreen === 29) { goTo(10); return; }       // guess-Q (sb24) → back to aquarium
   if (currentScreen === 9)  { goTo(29); return; }       // displacement → back to guess-Q (sb24)
   if (currentScreen === 10) { goTo(7); return; }        // aquarium (experiments entry) → back to path choice
-  if (currentScreen === 21) { goTo(9); return; }        // guess-Q → back to displacement
+  if (currentScreen === 35) { goTo(9); return; }        // displacement result → back to the applet
+  if (currentScreen === 21) { goTo(35); return; }       // guess-Q → back to the displacement result
   if (currentScreen === 11) { goTo(21); return; }       // flooding → back to guess-Q
   if (currentScreen === 33) { goTo(11); return; }       // flooding result → back to the applet
   if (currentScreen === 20) { goTo(33); return; }       // flip-cards → back to the flooding result
@@ -461,7 +462,8 @@ function advanceScreen() {
   }
   if (currentScreen === 10) return;                                        // aquarium advances via its check button
   if (currentScreen === 29) { if (!guessPicked['s29']) return; goTo(9); return; }        // guess-Q (sb24) → displacement
-  if (currentScreen === 9)  { if (!dispPlaced) return; goTo(21); return; } // displacement → guess-Q
+  if (currentScreen === 9)  { if (!dispPlaced) return; goTo(35); return; } // displacement applet (sb25) → its result (sb26)
+  if (currentScreen === 35) { goTo(21); return; }                         // displacement result → guess-Q
   if (currentScreen === 21) { if (!guessPicked['s21']) return; goTo(11); return; }       // guess-Q → flooding
   if (currentScreen === 11) { if (!floodPlaced) return; goTo(33); return; }             // flooding → its result (sb29)
   if (currentScreen === 33) { goTo(20); return; }                                       // flooding result → flip-cards
@@ -584,7 +586,7 @@ const COMIC_SCREENS = [8, 23, 24, 25, 26, 27, 28];
 // Experiments path (pedagogical order ≠ screen-number order, wired explicitly):
 //   entry = S10 aquarium (geometric) → S9 displacement → (flooding, tbd)
 const EXPERIMENTS_ENTRY = 10;
-const EXPERIMENTS_SCREENS = [9, 10, 11, 20, 21, 22, 29, 30, 31, 33, 34];   // membership list for the path toggle, NOT the order
+const EXPERIMENTS_SCREENS = [9, 10, 11, 20, 21, 22, 29, 30, 31, 33, 34, 35];   // membership list for the path toggle, NOT the order
                                                                     // (runtime order is 10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31)
 const MERGE_SCREEN = 12;                       // both paths (comic end / flip-cards end) continue here
 function selectPathOption(cardEl) {
@@ -1137,7 +1139,7 @@ function comicAttachDrag(screenId) {
    APPLET — Water displacement (S9, experiments path)
    Ported/extended from the App/ marble-in-cylinder prototype.
    Drag the marble into the cylinder (scale-safe via createPointerDnd)
-   → water rises 50→62 mL, the marble sinks, explanation is revealed.
+   → water rises 50→62 mL and the marble sinks. The explanation is s35 (slide 26).
    ═══════════════════════════════════════════════════════════ */
 let dispPlaced = false;
 let dispDnd = null;
@@ -1159,9 +1161,10 @@ function dispDrop() {
   document.getElementById('disp-badge').textContent = '62 מ"ל';
   const inst = document.getElementById('disp-instruction');
   if (inst) inst.textContent = 'הגולה שקעה והמים עלו — בואו נבין למה.';
+  /* The 900ms wait is the water animation, not a dramatic pause: revealing the reset and the
+     continue while the level is still climbing invites a click mid-transition. What it used to
+     reveal as well — slide 26's explanation and the mascot's caveat — is s35 now. */
   setTimeout(function () {
-    const ex = document.getElementById('disp-explain'); if (ex) ex.hidden = false;
-    const say = document.getElementById('s9-say');       if (say) say.hidden = false;
     const rs = document.getElementById('disp-reset');    if (rs) rs.hidden = false;
     const cont = document.getElementById('s9-continue');  if (cont) cont.disabled = false;
   }, 900);
@@ -1175,8 +1178,6 @@ function dispReset() {
   document.getElementById('disp-cylinder').classList.remove('risen');
   document.getElementById('disp-badge').textContent = '50 מ"ל';
   document.getElementById('disp-instruction').textContent = 'הכניסו את הגולה אל תוך המשורה.';
-  document.getElementById('disp-explain').hidden = true;
-  document.getElementById('s9-say').hidden = true;
   document.getElementById('disp-reset').hidden = true;
   document.getElementById('s9-continue').disabled = true;
 }
@@ -1189,8 +1190,6 @@ function dispEnter() {
     document.getElementById('disp-drag-hint').textContent = '';
     document.getElementById('disp-cylinder').classList.add('risen');
     document.getElementById('disp-badge').textContent = '62 מ"ל';
-    document.getElementById('disp-explain').hidden = false;
-    document.getElementById('s9-say').hidden = false;
     document.getElementById('disp-reset').hidden = false;
     document.getElementById('s9-continue').disabled = false;
   } else {
@@ -1422,7 +1421,11 @@ scqRegister({
     'למדידת נפח של תיבה משתמשים בסרגל: מודדים את אחת מצלעות הקובייה ומכפילים אותו בעצמו שלוש פעמים — פעם אחת לאורך, פעם אחת לרוחב ופעם אחת לגובה.',
     'אורך הצלע במקרה זה הוא 10 ס"מ וכיוון שכל הצלעות בקובייה זהות:',
     '<span class="section-result-expr">10·10·10=1,000</span>']),
-  onContinue: function () { goTo(9); }   // aquarium → displacement applet
+  /* ⚠️ goTo(29), NOT goTo(9). This screen advances through its own check button rather than
+     advanceScreen(), so the flow edge lives here — and it read `goTo(9)` while goBack() and
+     SCREEN_TO_SUBCONTENT both said 10 → 29 → 9. The disagreement made s29 (sb24, the guess before
+     the displacement applet) unreachable going FORWARD: only the back button ever landed on it. */
+  onContinue: function () { goTo(29); }   // aquarium → guess-Q (sb24)
 });
 attachPopupDrag(document.getElementById('s10-scq-popup'));
 
@@ -2313,21 +2316,26 @@ var SCREEN_TO_SUBCONTENT = {
   27: ['02', 9],
   28: ['02', 10],
 
-  /* item 02 — experiments branch, in flow order (10 → 29 → 9 → 21 → 11 → 33 → 20 → 22 → 30 → 31) */
+  /* item 02 — experiments branch, in flow order
+     (10 → 29 → 9 → 35 → 21 → 11 → 33 → 20 → 22 → 34 → 30 → 31) */
   10: ['02', 11],     // aquarium ruler + the item's ONLY catalog question (q1)
   29: ['02', 12],     // guess (sb24)
-  9:  ['02', 13],     // displacement applet
-  21: ['02', 14],     // guess
-  11: ['02', 15],     // flooding applet (sb28)
-  33: ['02', 16],     // flooding result (sb29) — split out of the applet
-  20: ['02', 17],     // flip cards — real-world uses
-  22: ['02', 18],     // measurement applet — steps 1-2 (sb33-35)
-  34: ['02', 19],     // measurement applet — steps 3-4 (sb36-38)
-  30: ['02', 20],     // overflow can — the question
-  31: ['02', 21],     // overflow can — how it works
+  9:  ['02', 13],     // displacement applet (sb25)
+  35: ['02', 14],     // displacement result (sb26) — split out of the applet 2026-08-29
+  21: ['02', 15],     // guess
+  11: ['02', 16],     // flooding applet (sb28)
+  33: ['02', 17],     // flooding result (sb29) — split out of the applet
+  20: ['02', 18],     // flip cards — real-world uses
+  22: ['02', 19],     // measurement applet — steps 1-2 (sb33-35)
+  34: ['02', 20],     // measurement applet — steps 3-4 (sb36-38)
+  30: ['02', 21],     // overflow can — the question
+  31: ['02', 22],     // overflow can — how it works
 
   /* item 02 — where both branches merge and the item ends */
-  12: ['02', 20],     // כל הכבוד! סיימתם את שלב הלימוד
+  /* 23, not 20. Inserting s35 renumbered the tail of the branch anyway, and this line read
+     ['02', 20] — the same page as s30 — so a problem report filed from the merge screen and one
+     filed from the overflow-can question went out indistinguishable. */
+  12: ['02', 23],     // כל הכבוד! סיימתם את שלב הלימוד
 
   /* items 03, 04 — the warm-ups */
   18: ['03', 1],      // חימום 1 — matching (DnD)
