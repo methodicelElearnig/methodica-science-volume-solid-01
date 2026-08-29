@@ -390,19 +390,22 @@
 }
 .disp-cylinder-wrap.risen .disp-water { top: 41%; }
 .disp-sunk-marble {
-  position: absolute; left: 50%; width: 26%; top: 45%;
+  position: absolute; left: 50%; width: 36%; top: 45%;
   transform: translate(-50%, -50%) scale(0.55); opacity: 0;
   filter: saturate(0.92) brightness(1.03);
   transition: top 1s cubic-bezier(.4,0,.2,1), transform 1s cubic-bezier(.4,0,.2,1), opacity 0.4s ease;
   pointer-events: none;
 }
-.disp-cylinder-wrap.risen .disp-sunk-marble { top: 82%; transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+/* 81%, not 82%, now that the sprite is 36% wide: the ARTWORK's sphere ends at 92% of the image
+   height (the rest is its contact shadow), so a centre at 81% of 480 puts the glass down at
+   y≈419 — resting on the 420 bore floor rather than through it. Both numbers move together. */
+.disp-cylinder-wrap.risen .disp-sunk-marble { top: 81%; transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
 /* QA 2026-08-25 (slide 17): the water-level marker belongs to the RIGHT of the cylinder, not the
    left, where it sat next to the marble's parking spot and read as the marble's label. It still
    tracks the surface, so it is the level readout the deck asks for: 50 at rest, 62 once the
    marble is in. */
 .disp-badge {
-  position: absolute; right: -8px; top: 50%; transform: translate(100%, -50%);
+  position: absolute; right: 28px; top: 50%; transform: translate(100%, -50%);
   background: #fff; border: 2px solid var(--subject-500); color: #1e2a38;
   font-family: 'Assistant', sans-serif; font-weight: 700; font-size: 15px;
   padding: 3px 11px; border-radius: 999px; white-space: nowrap;
@@ -526,6 +529,10 @@
    down from s33's 440px to the cylinder's 190px, the copy would otherwise take the 930px left over
    and the framed rule would stretch across almost the whole canvas. 660 keeps the pair centred. */
 #s35 .split-side { flex: 0 1 660px; }
+/* The framed rule stops short of the column's edge. Scoped to s35 deliberately: .split-conclusion
+   is shared with s33, whose column sits beside a 440px photo instead of a 190px cylinder and was
+   not in this QA round. */
+#s35 .split-conclusion { width: 90%; }
 
 /* QA 2026-08-25 (slides 24, 30) asked for the practice stems to carry bold ONLY on their
    closing question, which S13 and S16 now mark up with <strong>. Scoped to this component:
