@@ -99,7 +99,7 @@ function startCompanionMedia(el) {
    text moves up to make room; `#s0 .transition-content` in this part's stylesheet holds the pair
    balanced in the 646px above the nav bar. */
 const CHARACTER_SLOTS = {
-  s0: { pose: 'dumbbells', w: 600, center: true, bottom: 174, ca: '16 / 9' }     /* sb113 */
+  s0: { pose: 'dumbbells', w: 750, center: true, bottom: 121, ca: '16 / 9' }     /* sb113 */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
