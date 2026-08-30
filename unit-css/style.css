@@ -3030,8 +3030,15 @@ html, body {
 .imgq-card-feedback {
   display: none;
   background: #edf8ed; border-radius: 12px; padding: 10px 14px;
-  font-size: 17px; font-weight: 400; color: #1c5b32;
+  font-size: 20px; font-weight: 400; color: #1c5b32;
   text-align: right; direction: rtl; line-height: 1.4;
+  /* QA 2026-08-30: the three boxes read as one row, so they end level. `flex-grow` rather than a
+     measured `min-height`, and the difference matters: .imgq-cards stretches every card to the
+     tallest, so the shorter feedbacks simply take the leftover height of their own card and the
+     row equalises ITSELF. A hard min-height would be a magic number that silently goes stale the
+     next time this copy changes -- and it would also pad a box out when the learner has revealed
+     only one card, where there is nothing to line up with. */
+  flex-grow: 1;
 }
 .imgq-card-feedback--wrong { background: #ffe3e5; color: #8a2b32; }
 .imgq-card.revealed .imgq-card-feedback { display: block; }
