@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · תרגול בסיסי</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=67">
-  <link rel="stylesheet" href="css/style.css?v=2">
+  <link rel="stylesheet" href="../unit-css/style.css?v=69">
+  <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -18,11 +18,22 @@
   <!-- ═══ S0 — TransitionScreen (remediation intro) ═══ -->
   <section class="screen active" data-screen="0" id="s0">
     <!-- Storyboard slide 77 — states the count and the pass bar. The deck draws
-         no failure branch for רכיב 2, so the 75% is stated, not enforced. -->
+         no failure branch for רכיב 2, so the 75% is stated, not enforced.
+         QA 2026-08-30 rebuilt this screen to the slide: no title (the deck puts
+         "אפשר להתחיל!" on the BUTTON, not over the copy), the count as its own 48px
+         line, and the closing remark moved off the canvas into the mascot's bubble.
+         The line breaks are the deck's, not the browser's — see the note in css/style.css
+         on why they are authored rather than left to wrapping. -->
     <div class="transition-content">
-      <h1 class="transition-title">אפשר להתחיל!</h1>
-      <p class="transition-sub">כל הכבוד שניסיתם, זה חשוב מאוד! כדי לחזק את ההבנה נמשיך לתרגל — <strong>4 שאלות פשוטות יותר</strong>, וכבר בהתחלה יש רמז.<br>ענו נכון על 3 שאלות ומעלה (75%) כדי להתקדם.</p>
-      <p class="transition-note">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</p>
+      <p class="transition-sub">כל הכבוד שניסיתם, זה חשוב מאוד!<br>כדי לחזק את ההבנה נמשיך לתרגל —<br><strong class="transition-lead">4 שאלות פשוטות יותר</strong><br>וכבר בהתחלה יש רמז! ענו נכון על 3 שאלות ומעלה (75%) כדי להתקדם.</p>
+      <!-- Bubble FIRST, sprite second: .companion-say sets direction:ltr, so DOM order is
+           physical order and --right puts the beak on the edge facing him. The pair is
+           shrink-to-fit inside .transition-content's centred column, which is what centres it. -->
+      <div class="companion-say companion-say--right">
+        <p class="companion-bubble" style="--bubble-w: 260px;">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</p>
+        <video class="companion" src="assets/img/character-orange-think.mp4?v=3" aria-hidden="true"
+             data-pose="think" draggable="false" autoplay loop muted playsinline style="--cw: 400px;"></video>
+      </div>
     </div>
     <div class="nav-bar">
       <button class="btn-back" id="back-to-prev-part" onclick="goBackToPrevPart()" hidden>חזרה</button>
@@ -162,13 +173,28 @@
       <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
     </nav>
     <div class="scq-question scq-question--textonly">
-      <p class="scq-qtext">במפעל מתכות הכניסו גליל מתכת לכלי מלא במים למדידת נפחו בשיטת ההצפה.<br />נפח המים שגלשו מהכלי היה 760 מ"ל.<br />מה נפח הגליל?</p>
+      <!-- QA 2026-08-30: only the QUESTION is bold; the two scenario lines are regular.
+           `scq-qtext--mixed` is the existing seam for that (it beats --textonly's blanket 700
+           on source order at equal specificity) and `<b>`, not `<strong>` — `.scq-qtext strong`
+           would also repaint the line blue. -->
+      <p class="scq-qtext scq-qtext--mixed">במפעל מתכות הכניסו גליל מתכת לכלי מלא במים למדידת נפחו בשיטת ההצפה.<br />נפח המים שגלשו מהכלי היה 760 מ"ל.<br /><b>מה נפח הגליל?</b></p>
       <div class="scq-answers" id="s4-answers" role="radiogroup" aria-label="מה נפח הגליל?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s4','a')"><span class="scq-opt-text">כמות המים המקורית בכלי פחות 760 מ"ל</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s4','b')"><span class="scq-opt-text">נפח הגליל הוא 760 מ"ל</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s4','c')"><span class="scq-opt-text">אי אפשר לדעת לפי הנתונים הקיימים</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s4','d')"><span class="scq-opt-text">יש לשקול את הגליל במאזניים כדי לדעת את נפחו</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
+    </div>
+    <!-- Storyboard slide 97: the mascot asks his reflection question BESIDE the feedback, so he
+         appears with the popup and goes with it. `-say` is the id the SCQ controller looks for —
+         scqShowPopup reveals it and scqClosePopup hides it, which also covers a re-pick after a
+         wrong attempt and every re-entry, since both already route through scqClosePopup.
+         The question block above is lifted to top:112px to open the band he stands in; see the
+         note in css/style.css for what that band costs in canvas height. -->
+    <div class="companion-say companion-say--right hidden" id="s4-say" style="left: 520px; bottom: 84px;">
+      <p class="companion-bubble" style="--bubble-w: 300px;">האם בעקבות השאלה תוכלו לנסות לזכור כלל או עיקרון שאפשר להשתמש בו כשמודדים נפח?</p>
+      <video class="companion" src="assets/img/character-orange-think.mp4?v=3" aria-hidden="true"
+           data-pose="think" draggable="false" autoplay loop muted playsinline style="--cw: 180px;"></video>
     </div>
     <div class="scq-bar">
       <div class="scq-bar-main">
@@ -188,35 +214,38 @@
       <div class="progress-question__connector" data-connector="5"></div>
       <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
     </nav>
-    <!-- Storyboard slide 99 — two labelled cylinder photos, three clickable bands
-         stacked down תמונה ב'. Each option is TWO controls sharing one data-id:
-         the readable text option and the band over the photo (aria-hidden +
-         tabindex -1, a mouse affordance that must not double-announce). Both
-         carry .scq-opt so scqSelect()/scqMark() light them up together.
-         Band --y values are measured against the delivered art: the water
-         surface sits at ~44%, the original 30 mL level at ~66%, the base at ~85%.
-         The stem used to reference two images that were never rendered. -->
-    <div class="scq-question scq-question--withimage">
-      <div class="hotspot-pair">
-        <div class="scq-figure scq-figure--square" style="width: 296px">
+    <!-- Storyboard slides 99–103 — rebuilt 2026-08-30 to what the deck actually draws: the
+         stem across the top, the two labelled photos under it, and the answer given by MARKING
+         AN AREA on תמונה ב' — no text options at all. The three rings are therefore the real
+         controls now, not the mouse half of a pair: they carry role="radio" + aria-checked and
+         are focusable, where before they were aria-hidden/tabindex -1 because the text options
+         held the semantics. Dropping `--band` restores .hotspot-area's own circle.
+         ⚠️ The --y values are NEW, re-measured off the delivered photographs, because the old
+         ones (34/55/75, documented as "surface ~44%, original 30 mL level ~66%") did not match
+         the art: in תמונה ב' the surface is at 38.3% and the original level at 45.4%, so the old
+         middle band sat on the DOLL rather than on the risen water. Read off the printed scale:
+         א' is ~67 mL, ב' is ~80 mL, and the rise is a 7%-tall sliver — which is why the middle
+         ring is a WIDE, FLAT ellipse (--w 19% / --h 8%) rather than a circle: it is the only
+         shape that fits the band it names. --x 50% and --w ~16% track the cylinder, which
+         occupies 43.7%–55.8% of the square crop.
+         The correct answer stays `b`: slide 102 marks none of its three rings (all noFill on
+         99/100/102/103), so its TEXT is the only signal — "האזור שבו רואים את כמות
+         המים שעלתה", i.e. the risen band. The photos keep their magnifiers: with the wording
+         gone, reading the two water levels is the whole task. -->
+    <div class="scq-question scq-question--textonly">
+      <p class="scq-qtext scq-qtext--mixed">בתמונה א' ניתן לראות את נפח המים במשורה <b>לפני</b> שהכניסו אליה את בובת המפלצת.<br />בתמונה ב' ניתן לראות את נפח המים במשורה <b>אחרי</b> שהכניסו אליה את בובת המפלצת.<br />סמנו בתמונה ב' את האזור בו ניתן לראות שגובה המים במשורה עלה.</p>
+      <div class="hotspot-pair" role="radiogroup" aria-label="סמנו בתמונה ב' את האזור שבו גובה המים עלה">
+        <div class="scq-figure scq-figure--square" data-no-zoom style="width: 380px">
           <img src="assets/img/s5-cylinder-before.jpg" alt="משורה עם מים על שולחן, ולידה בובת מפלצת ירוקה קטנה">
           <span class="scq-figure__label">תמונה א'</span>
         </div>
-        <div class="hotspot-photo hotspot-photo--square" style="width: 296px">
+        <div class="hotspot-photo hotspot-photo--square" data-no-zoom style="width: 380px">
           <img src="assets/img/s5-cylinder-after.jpg" alt="אותה משורה לאחר שבובת המפלצת הוכנסה למים">
           <span class="scq-figure__label">תמונה ב'</span>
-          <button class="scq-opt hotspot-area hotspot-area--band" type="button" data-id="c" aria-hidden="true" tabindex="-1" onclick="scqSelect('s5','c')" style="--x:50%;--y:34%;--w:20%;--h:19%"></button>
-          <button class="scq-opt hotspot-area hotspot-area--band" type="button" data-id="b" aria-hidden="true" tabindex="-1" onclick="scqSelect('s5','b')" style="--x:50%;--y:55%;--w:20%;--h:22%"></button>
-          <button class="scq-opt hotspot-area hotspot-area--band" type="button" data-id="a" aria-hidden="true" tabindex="-1" onclick="scqSelect('s5','a')" style="--x:50%;--y:75%;--w:20%;--h:19%"></button>
+          <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s5','c')" aria-label="האזור הריק שמעל מפלס המים" style="--x:50%;--y:31%;--w:16%;--h:11%"></button>
+          <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s5','b')" aria-label="אזור העלייה — התוספת שמעל המפלס המקורי" style="--x:50%;--y:42%;--w:19%;--h:8%"></button>
+          <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s5','a')" aria-label="אזור המים ההתחלתי" style="--x:50%;--y:73%;--w:16%;--h:11%"></button>
         </div>
-      </div>
-      <div class="scq-side">
-      <p class="scq-qtext">בתמונה א' רואים את מפלס המים לפני שהכניסו בובת מפלצת, ובתמונה ב' אחרי.<br />איזה אזור בתמונה ב' מראה שגובה המים עלה?</p>
-      <div class="scq-answers" id="s5-answers" role="radiogroup" aria-label="איזה אזור מראה את העלייה?">
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s5','c')"><span class="scq-opt-text">האזור הריק שמעל מפלס המים בתמונה ב'</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s5','b')"><span class="scq-opt-text">אזור העלייה — התוספת שמעל המפלס המקורי בתמונה ב'</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s5','a')"><span class="scq-opt-text">אזור המים ההתחלתי בתמונה ב'</span><span class="scq-radio" aria-hidden="true"></span></button>
-      </div>
       </div>
     </div>
     <div class="scq-bar">
@@ -262,10 +291,19 @@
        shift with its own screen. Sits between Q4 (S4) and Q5 (S5), which is why
        it is the last section in the file but not the last in the flow. -->
   <section class="screen" data-screen="7" id="s7">
+    <!-- QA 2026-08-30, to the slide: the greeting drops to body size and body colour, the
+         sentence that carries the news takes the emphasis, and the closing line moves into the
+         mascot's bubble. The clip is the one the deck names on this slide
+         (מרים כתום משקולות.mp4 / Character-2-Sporty.mp4 = the `start-line` pair). -->
     <div class="transition-content">
       <h1 class="transition-title">יופי של עבודה!</h1>
       <p class="transition-sub">נחזור ל-2 תרגילים ברמת קושי גבוהה יותר.</p>
-      <p class="transition-note">ברור לי שתצליחו!</p>
+      <div class="companion-say companion-say--right">
+        <p class="companion-bubble" style="--bubble-w: 240px;">ברור לי שתצליחו!</p>
+        <video class="companion" src="assets/img/character-orange-start-line.mp4?v=3" aria-hidden="true"
+             data-pose="start-line" draggable="false" autoplay loop muted playsinline
+             style="--ca: 700 / 640;"></video>
+      </div>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s7-continue" onclick="advanceScreen()">קדימה</button>
@@ -317,14 +355,14 @@
 
 </div><!-- /#app -->
 <script src="../unit-js/10-identity.js?v=2"></script>
-<script src="../unit-js/15-ui.js?v=3"></script>
+<script src="../unit-js/15-ui.js?v=4"></script>
 <script src="../unit-js/20-xapi.js?v=4"></script>
 <script src="../unit-js/25-report.js?v=1"></script>
 <script src="../unit-js/30-nav.js?v=4"></script>
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=17"></script>
+<script src="js/main.js?v=22"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

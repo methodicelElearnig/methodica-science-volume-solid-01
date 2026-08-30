@@ -102,3 +102,62 @@
 }
 .speech-bubble--tail-right .speech-bubble__tail { right: -38px; transform: rotate(-90deg); }
 .speech-bubble--tail-left  .speech-bubble__tail { left:  -38px; transform: rotate(90deg); }
+
+/* ── S0 · the remediation intro, rebuilt to storyboard slide 77 (QA 2026-08-30) ──
+   The deck's three text lines are AUTHORED breaks, not wrapping: the count line has its
+   own size, so where the lines fall cannot be left to the 760px column — a font or copy
+   change would silently re-flow the deck's shape. */
+
+/* The count, "4 שאלות פשוטות יותר". `inline-block`, not `inline`: at 48px inside a 22px
+   paragraph an inline box would inflate the surrounding line box and push the neighbouring
+   lines apart. inline-block gives it its own line box (it already sits between two <br>),
+   so 1.2 here is the whole line's leading and the 22px lines keep theirs. */
+.transition-lead {
+  display: inline-block;
+  font-size: 48px; font-weight: 800; line-height: 1.2;
+  margin: 6px 0;
+}
+
+/* The mascot + his line. NOT .companion-say--inline: that variant stretches to the column
+   and packs the pair against one edge, which is what the s1/s3 narration columns want.
+   Here the pair must be CENTRED, so it stays shrink-to-fit and .transition-content's
+   `align-items: center` does the centring — no transform, so the wrapper does not become a
+   stacking context (see the long note on .companion-say in the shared sheet). */
+#s0 .companion-say,
+#s7 .companion-say { position: relative; }
+
+/* ── S4 · the mascot's reflection line beside the feedback (slide 97, QA 2026-08-30) ──
+   The question block is lifted so he has a band of his own and covers no answer text: the
+   deck draws him OVER the options, which is fine on paper but not while a learner is reading
+   the feedback against the answer they picked.
+   `top` + a translate on X only, replacing --textonly's centre-anchoring: the block must stay
+   put when the band below it changes, not re-centre and eat into it.
+   ⚠️ Costs canvas height. The block runs 112→453 and he is bottom-anchored at 84px, so the
+   band is `H − 537`; below about **H = 700** he starts to reach the last option. #app's height
+   is 1280/aspect, so that is a window wider than roughly 1.83:1. */
+#s4 .scq-question--textonly {
+  top: 112px;
+  transform: translateX(-50%);
+}
+
+/* ── S7 · the mid-section transition, to storyboard slide 98 (QA 2026-08-30) ──
+   The greeting is not the message on this screen — the sentence under it is — so the two swap
+   emphasis: the greeting drops to body size and body colour, and the news line takes the weight.
+   Scoped to #s7: .transition-title / -sub are shared with parts 01 and 04, which still want the
+   34px blue heading. */
+#s7 .transition-title {
+  font-size: 24px; font-weight: 400; color: #303030;
+}
+/* 48px, and it has to hold ONE line — a wrap here would split the sentence mid-clause. The
+   default 760px column cannot do that at this size, so the column widens for this screen only;
+   `nowrap` then makes a future copy change fail loudly (overflow) instead of silently
+   re-wrapping into the shape the deck does not have. */
+#s7 .transition-content { width: 860px; }
+#s7 .transition-sub {
+  font-size: 48px; font-weight: 800; line-height: 1.25; white-space: nowrap;
+}
+
+/* His two colour variants have DIFFERENT aspects here (see CHARACTER_ASPECT in js/main.js), so
+   the box is driven by HEIGHT: at a shared width the barbell variant would come out a third
+   shorter than the dumbbell one. 400px of box = ~342px of character in both. */
+#s7 .companion { width: auto; height: 400px; }
