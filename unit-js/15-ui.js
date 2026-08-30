@@ -105,6 +105,10 @@ function provisionImgZoom() {
     document.body.appendChild(modal);
   }
   document.querySelectorAll(IMG_ZOOM_FRAMES).forEach(function (frame) {
+    /* Opt-out for a frame the magnifier does not belong on. Added for 02/s5, where the deck
+       (slides 99–103) draws the two photos bare and the answer is given by marking an area on
+       one of them — a control in the corner of a photo that IS the answer surface is noise. */
+    if (frame.hasAttribute('data-no-zoom')) return;
     if (frame.querySelector('.img-zoom-btn')) return;      // authored one already there
     const img = frame.querySelector('img');
     if (!img) return;                                      // applet frames draw their own SVG

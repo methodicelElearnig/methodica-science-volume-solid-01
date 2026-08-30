@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · תרגול בסיסי</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=67">
+  <link rel="stylesheet" href="../unit-css/style.css?v=69">
   <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body data-subject-theme="science">
@@ -214,35 +214,38 @@
       <div class="progress-question__connector" data-connector="5"></div>
       <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
     </nav>
-    <!-- Storyboard slide 99 — two labelled cylinder photos, three clickable bands
-         stacked down תמונה ב'. Each option is TWO controls sharing one data-id:
-         the readable text option and the band over the photo (aria-hidden +
-         tabindex -1, a mouse affordance that must not double-announce). Both
-         carry .scq-opt so scqSelect()/scqMark() light them up together.
-         Band --y values are measured against the delivered art: the water
-         surface sits at ~44%, the original 30 mL level at ~66%, the base at ~85%.
-         The stem used to reference two images that were never rendered. -->
-    <div class="scq-question scq-question--withimage">
-      <div class="hotspot-pair">
-        <div class="scq-figure scq-figure--square" style="width: 296px">
+    <!-- Storyboard slides 99–103 — rebuilt 2026-08-30 to what the deck actually draws: the
+         stem across the top, the two labelled photos under it, and the answer given by MARKING
+         AN AREA on תמונה ב' — no text options at all. The three rings are therefore the real
+         controls now, not the mouse half of a pair: they carry role="radio" + aria-checked and
+         are focusable, where before they were aria-hidden/tabindex -1 because the text options
+         held the semantics. Dropping `--band` restores .hotspot-area's own circle.
+         ⚠️ The --y values are NEW, re-measured off the delivered photographs, because the old
+         ones (34/55/75, documented as "surface ~44%, original 30 mL level ~66%") did not match
+         the art: in תמונה ב' the surface is at 38.3% and the original level at 45.4%, so the old
+         middle band sat on the DOLL rather than on the risen water. Read off the printed scale:
+         א' is ~67 mL, ב' is ~80 mL, and the rise is a 7%-tall sliver — which is why the middle
+         ring is a WIDE, FLAT ellipse (--w 19% / --h 8%) rather than a circle: it is the only
+         shape that fits the band it names. --x 50% and --w ~16% track the cylinder, which
+         occupies 43.7%–55.8% of the square crop.
+         The correct answer stays `b`: slide 102 marks none of its three rings (all noFill on
+         99/100/102/103), so its TEXT is the only signal — "האזור שבו רואים את כמות
+         המים שעלתה", i.e. the risen band. The photos keep their magnifiers: with the wording
+         gone, reading the two water levels is the whole task. -->
+    <div class="scq-question scq-question--textonly">
+      <p class="scq-qtext scq-qtext--mixed">בתמונה א' ניתן לראות את נפח המים במשורה <b>לפני</b> שהכניסו אליה את בובת המפלצת.<br />בתמונה ב' ניתן לראות את נפח המים במשורה <b>אחרי</b> שהכניסו אליה את בובת המפלצת.<br />סמנו בתמונה ב' את האזור בו ניתן לראות שגובה המים במשורה עלה.</p>
+      <div class="hotspot-pair" role="radiogroup" aria-label="סמנו בתמונה ב' את האזור שבו גובה המים עלה">
+        <div class="scq-figure scq-figure--square" data-no-zoom style="width: 380px">
           <img src="assets/img/s5-cylinder-before.jpg" alt="משורה עם מים על שולחן, ולידה בובת מפלצת ירוקה קטנה">
           <span class="scq-figure__label">תמונה א'</span>
         </div>
-        <div class="hotspot-photo hotspot-photo--square" style="width: 296px">
+        <div class="hotspot-photo hotspot-photo--square" data-no-zoom style="width: 380px">
           <img src="assets/img/s5-cylinder-after.jpg" alt="אותה משורה לאחר שבובת המפלצת הוכנסה למים">
           <span class="scq-figure__label">תמונה ב'</span>
-          <button class="scq-opt hotspot-area hotspot-area--band" type="button" data-id="c" aria-hidden="true" tabindex="-1" onclick="scqSelect('s5','c')" style="--x:50%;--y:34%;--w:20%;--h:19%"></button>
-          <button class="scq-opt hotspot-area hotspot-area--band" type="button" data-id="b" aria-hidden="true" tabindex="-1" onclick="scqSelect('s5','b')" style="--x:50%;--y:55%;--w:20%;--h:22%"></button>
-          <button class="scq-opt hotspot-area hotspot-area--band" type="button" data-id="a" aria-hidden="true" tabindex="-1" onclick="scqSelect('s5','a')" style="--x:50%;--y:75%;--w:20%;--h:19%"></button>
+          <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s5','c')" aria-label="האזור הריק שמעל מפלס המים" style="--x:50%;--y:31%;--w:16%;--h:11%"></button>
+          <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s5','b')" aria-label="אזור העלייה — התוספת שמעל המפלס המקורי" style="--x:50%;--y:42%;--w:19%;--h:8%"></button>
+          <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s5','a')" aria-label="אזור המים ההתחלתי" style="--x:50%;--y:73%;--w:16%;--h:11%"></button>
         </div>
-      </div>
-      <div class="scq-side">
-      <p class="scq-qtext">בתמונה א' רואים את מפלס המים לפני שהכניסו בובת מפלצת, ובתמונה ב' אחרי.<br />איזה אזור בתמונה ב' מראה שגובה המים עלה?</p>
-      <div class="scq-answers" id="s5-answers" role="radiogroup" aria-label="איזה אזור מראה את העלייה?">
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s5','c')"><span class="scq-opt-text">האזור הריק שמעל מפלס המים בתמונה ב'</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s5','b')"><span class="scq-opt-text">אזור העלייה — התוספת שמעל המפלס המקורי בתמונה ב'</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s5','a')"><span class="scq-opt-text">אזור המים ההתחלתי בתמונה ב'</span><span class="scq-radio" aria-hidden="true"></span></button>
-      </div>
       </div>
     </div>
     <div class="scq-bar">
@@ -352,7 +355,7 @@
 
 </div><!-- /#app -->
 <script src="../unit-js/10-identity.js?v=2"></script>
-<script src="../unit-js/15-ui.js?v=3"></script>
+<script src="../unit-js/15-ui.js?v=4"></script>
 <script src="../unit-js/20-xapi.js?v=4"></script>
 <script src="../unit-js/25-report.js?v=1"></script>
 <script src="../unit-js/30-nav.js?v=4"></script>

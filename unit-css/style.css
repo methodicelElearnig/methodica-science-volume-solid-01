@@ -3935,6 +3935,13 @@ html, body {
 .hotspot-area.correct  { border-color: #2e9b57; background: rgba(46, 155, 87, 0.32); }
 .hotspot-area.wrong    { border-color: #d64550; background: rgba(214, 69, 80, 0.32); }
 .hotspot-area--band    { border-radius: 10px; }
+/* ⚠️ The ring's OWN width/height lose to `.scq-question--textonly .scq-opt { width: 100% }`
+   (0,2,0 beats 0,1,0), because a hotspot is also an .scq-opt and now sits inside a question
+   column. Left alone the rings render as full-width slabs — which is what the s5 bands had
+   silently been doing since they were built. Restated here at equal specificity, after it. */
+.hotspot-photo .hotspot-area { width: var(--w); height: var(--h); min-height: 0; }
+/* `min-height: 46px` comes from .scq-opt too, and it silently floored every ring at 46px —
+   which is why s5's flat middle ellipse (8% of a 380px photo = 30px) came out round. */
 
 /* Square-cropped hotspot photo (storyboard slide 99 frames a landscape shot
    as a square). Must come AFTER .hotspot-photo > img to win the cascade. */
