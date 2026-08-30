@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · תרגול בסיסי</title>
   <link rel="stylesheet" href="../unit-css/style.css?v=67">
-  <link rel="stylesheet" href="css/style.css?v=2">
+  <link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -18,11 +18,22 @@
   <!-- ═══ S0 — TransitionScreen (remediation intro) ═══ -->
   <section class="screen active" data-screen="0" id="s0">
     <!-- Storyboard slide 77 — states the count and the pass bar. The deck draws
-         no failure branch for רכיב 2, so the 75% is stated, not enforced. -->
+         no failure branch for רכיב 2, so the 75% is stated, not enforced.
+         QA 2026-08-30 rebuilt this screen to the slide: no title (the deck puts
+         "אפשר להתחיל!" on the BUTTON, not over the copy), the count as its own 48px
+         line, and the closing remark moved off the canvas into the mascot's bubble.
+         The line breaks are the deck's, not the browser's — see the note in css/style.css
+         on why they are authored rather than left to wrapping. -->
     <div class="transition-content">
-      <h1 class="transition-title">אפשר להתחיל!</h1>
-      <p class="transition-sub">כל הכבוד שניסיתם, זה חשוב מאוד! כדי לחזק את ההבנה נמשיך לתרגל — <strong>4 שאלות פשוטות יותר</strong>, וכבר בהתחלה יש רמז.<br>ענו נכון על 3 שאלות ומעלה (75%) כדי להתקדם.</p>
-      <p class="transition-note">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</p>
+      <p class="transition-sub">כל הכבוד שניסיתם, זה חשוב מאוד!<br>כדי לחזק את ההבנה נמשיך לתרגל —<br><strong class="transition-lead">4 שאלות פשוטות יותר</strong><br>וכבר בהתחלה יש רמז! ענו נכון על 3 שאלות ומעלה (75%) כדי להתקדם.</p>
+      <!-- Bubble FIRST, sprite second: .companion-say sets direction:ltr, so DOM order is
+           physical order and --right puts the beak on the edge facing him. The pair is
+           shrink-to-fit inside .transition-content's centred column, which is what centres it. -->
+      <div class="companion-say companion-say--right">
+        <p class="companion-bubble" style="--bubble-w: 260px;">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</p>
+        <video class="companion" src="assets/img/character-orange-think.mp4?v=3" aria-hidden="true"
+             data-pose="think" draggable="false" autoplay loop muted playsinline style="--cw: 400px;"></video>
+      </div>
     </div>
     <div class="nav-bar">
       <button class="btn-back" id="back-to-prev-part" onclick="goBackToPrevPart()" hidden>חזרה</button>
@@ -162,7 +173,11 @@
       <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
     </nav>
     <div class="scq-question scq-question--textonly">
-      <p class="scq-qtext">במפעל מתכות הכניסו גליל מתכת לכלי מלא במים למדידת נפחו בשיטת ההצפה.<br />נפח המים שגלשו מהכלי היה 760 מ"ל.<br />מה נפח הגליל?</p>
+      <!-- QA 2026-08-30: only the QUESTION is bold; the two scenario lines are regular.
+           `scq-qtext--mixed` is the existing seam for that (it beats --textonly's blanket 700
+           on source order at equal specificity) and `<b>`, not `<strong>` — `.scq-qtext strong`
+           would also repaint the line blue. -->
+      <p class="scq-qtext scq-qtext--mixed">במפעל מתכות הכניסו גליל מתכת לכלי מלא במים למדידת נפחו בשיטת ההצפה.<br />נפח המים שגלשו מהכלי היה 760 מ"ל.<br /><b>מה נפח הגליל?</b></p>
       <div class="scq-answers" id="s4-answers" role="radiogroup" aria-label="מה נפח הגליל?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s4','a')"><span class="scq-opt-text">כמות המים המקורית בכלי פחות 760 מ"ל</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s4','b')"><span class="scq-opt-text">נפח הגליל הוא 760 מ"ל</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -324,7 +339,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=17"></script>
+<script src="js/main.js?v=18"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

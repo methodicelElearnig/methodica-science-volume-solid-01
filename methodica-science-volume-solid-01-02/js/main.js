@@ -36,7 +36,10 @@ function getCharacter() {
    <img onerror> fallback: onerror would fire a real 404 on nearly every
    screen and this unit's QA gate checks the network log for zero 404s.
    Landing a produced GIF is one line here plus the file. */
-const CHARACTER_ASSETS = { selection: 'png', 'start-line': 'mp4' };
+/* `start-line` (the 1280×720 weights clip) was retired on 2026-08-30 with the s0 rebuild —
+   slide 77 names think.mp4, and the weights pair could not be made 1:1 anyway: the turquoise
+   variant is a barbell 971px wide inside a 720-tall frame, so no square crop clears the plates. */
+const CHARACTER_ASSETS = { selection: 'png', think: 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
@@ -45,7 +48,7 @@ function characterAsset(pose) {
      Bump it whenever a character asset is re-exported. Over file:// the query is ignored
      rather than breaking the load, so it is safe there too. */
   return 'assets/img/character-' + getCharacter() + '-' +
-         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=2';
+         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=3';
 }
 /* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
 function startCompanionMedia(el) {
@@ -54,28 +57,45 @@ function startCompanionMedia(el) {
   const p = el.play();
   if (p && p.catch) p.catch(function () {});
 }
-const CHARACTER_SLOTS = {
-  s0: { pose: 'start-line', w: 200, right: 40, bottom: 100, ca: '16 / 9' }   /* sb77 */
-};
+/* Empty since 2026-08-30: s0's mascot is AUTHORED in the markup, inside a .companion-say
+   group, so the copy and the pair can be laid out together in one centred column instead of
+   the sprite being floated over the screen. The table stays because the injection path below
+   is still live — add an entry here for any screen that wants a free-standing sprite. */
+const CHARACTER_SLOTS = {};
+/* Ported verbatim from part 01 (2026-08-30) so both components handle authored sprites the
+   same way. The two behaviours that matter, and the reason each exists:
+     · the lookup is `.companion`, NOT `:scope > .companion` — a sprite inside a
+       .companion-say group is NESTED, and missing it would leave the ORANGE src baked into
+       the markup in front of a learner who chose turquoise;
+     · `data-injected` separates the two kinds — an authored sprite must survive a screen
+       with no slot (only its character is refreshed), while an injected one is still cleaned
+       up when its slot goes away. */
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
   if (!screen) return;
   const slot = CHARACTER_SLOTS['s' + n];
-  // Lets a template reserve room for the sprite instead of being drawn over.
-  screen.classList.toggle('has-companion', !!slot);
-  let el = screen.querySelector(':scope > .companion');
-  if (!slot) { if (el) el.remove(); return; }
+  let el = screen.querySelector('.companion');
+  if (!slot) {
+    if (el && el.dataset.injected === '1') { el.remove(); el = null; }
+    else if (el) { el.src = characterAsset(el.dataset.pose || 'selection'); startCompanionMedia(el); }
+    screen.classList.toggle('has-companion', !!el);
+    return;
+  }
+  const host = slot.into ? (document.getElementById(slot.into) || screen) : screen;
   const tag = CHARACTER_ASSETS[slot.pose] === 'mp4' ? 'video' : 'img';
-  if (el && el.tagName.toLowerCase() !== tag) { el.remove(); el = null; }
+  if (el && el.dataset.injected === '1' && el.tagName.toLowerCase() !== tag) { el.remove(); el = null; }
   if (!el) {
     el = document.createElement(tag);
     el.className = 'companion';
     el.alt = '';                                   // decorative, carries no information
     el.setAttribute('aria-hidden', 'true');
     el.draggable = false;
+    el.dataset.injected = '1';
     if (tag === 'video') { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
-    screen.appendChild(el);
   }
+  if (el.parentElement !== host) host.appendChild(el);
+  // Lets a template reserve room for the sprite instead of being drawn over.
+  screen.classList.add('has-companion');
   el.src = characterAsset(slot.pose);
   startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
@@ -83,9 +103,13 @@ function renderCompanion(n) {
      first paint instead of after the mp4 header lands. */
   el.style.setProperty('--ca', slot.ca || '');
   el.classList.toggle('companion--center', slot.center === true);
-  ['left', 'right', 'top', 'bottom'].forEach(function (k) {
-    el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
-  });
+  /* A grouped sprite is positioned BY the group, so writing slot offsets onto it would be
+     a second, conflicting source of truth. */
+  if (!slot.into && !el.closest('.companion-say')) {
+    ['left', 'right', 'top', 'bottom'].forEach(function (k) {
+      el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
+    });
+  }
 }
 
 function resetScreenState(n) {
