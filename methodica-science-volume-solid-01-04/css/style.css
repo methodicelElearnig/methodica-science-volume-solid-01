@@ -21,7 +21,15 @@
    transition screen that has no sprite under it.
    Text block ~90px over a 337px sprite with a 20px gap = 447px; centred in the 646px above the nav
    bar puts the text's own centre at 144. */
-#s0 .transition-content { top: 144px; }
+#s0 .transition-content { top: 102px; }
+/* QA 2026-08-30: the heading drops the blue for the unit's near-black and goes to 48px, the line
+   under it to 24px. Scoped to #s0 because .transition-title / -sub are shared with parts 01 and 02.
+   The 144px above became 102: the sprite grew 600 -> 750 (+25%), so its 16:9 box is 422px rather
+   than 337, and text-block 110 + gap 20 + sprite 422 = 552 centred in the 646px above the bar puts
+   the text's own centre at 102 and the sprite's foot at 599 -- i.e. `bottom: 121` in the slot. Move
+   either number and the other has to follow, or they overlap. */
+#s0 .transition-title { font-size: 48px; color: #303030; }
+#s0 .transition-sub { font-size: 24px; }
 
 /* S10 — Gili speaks from inside the photograph. His head starts about 275px into the 494px frame,
    so the bubble ends just short of that and the beak lands beside his face. The width is what
