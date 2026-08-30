@@ -473,6 +473,21 @@
    them. .hook-content is centred with `top: calc(50% - 37px)`, so the offset goes on top
    rather than on the transform, which is already carrying the centring translate. */
 #s6 .hook-content { top: calc(50% - 137px); }
+/* QA 2026-08-30 — this screen opts OUT of the .has-companion 920px narrowing and takes the full
+   1120. Two things follow, and they are the whole reason:
+     - the narration's right edge moves 1000 -> 1200, i.e. flush with the canvas's own 80px
+       margin and level with the image frame's left edge. (The text was already `text-align:
+       right`; what was inset was the COLUMN, not the type.)
+     - the image can grow at all. At 920 it cannot: measured, a +10% frame leaves the narration
+       268px wide, which pushes it to 418px tall and straight into the mascot's speech bubble at
+       y=405, and +15% also runs it off the top of the canvas.
+   The 920 narrowing exists to keep a narration column off a mascot standing at the right edge.
+   It is safe to drop HERE because this screen's group is anchored low (`bottom: 196`, y 346-524)
+   and the wider column makes the narration SHORTER (238px, ending at 342) rather than taller —
+   verified against the bubble and the sprite at frame widths up to 644. */
+#s6.screen.has-companion .hook-content { width: 1120px; left: 50%; }
+/* 560 -> 630 (+12.5%). Frame 80-710 / 47-398, narration 746-1200 / 104-342. */
+#s6 .hook-img-frame { flex: 0 0 630px; width: 630px; }
 
 /* QA 2026-08-29 (slide 20): the sprite is now IN the column (CHARACTER_SLOTS.s12 `into`), so
    there is nothing left to keep apart and the 90px lift this rule used to carry is gone —

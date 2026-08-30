@@ -2960,13 +2960,18 @@ html, body {
   box-shadow: 0 3px 10px rgba(0,0,0,0.18);
   z-index: 4;
 }
+/* The beak points RIGHT, at Archimedes: the bubble sits at left 33% and he is just past its
+   right edge, so the tail this replaced -- centred underneath and pointing straight DOWN --
+   aimed at the bath rather than at the man saying the line. Same two-triangle construction as
+   .companion-say--right's, and `top: 50%` keeps it inside the straight run of the edge
+   (16..60 of a 76px bubble) rather than in a rounded corner. */
 .hook-eureka::before,
 .hook-eureka::after {
-  content: ''; position: absolute; left: 50%; transform: translateX(-50%);
-  border-left: 13px solid transparent; border-right: 13px solid transparent;
+  content: ''; position: absolute; top: 50%; transform: translateY(-50%);
+  border-top: 13px solid transparent; border-bottom: 13px solid transparent;
 }
-.hook-eureka::before { bottom: -19px; border-top: 19px solid var(--subject-500); }
-.hook-eureka::after  { bottom: -15px; border-top: 19px solid var(--pure-white); }
+.hook-eureka::before { right: -19px; border-left: 19px solid var(--subject-500); }
+.hook-eureka::after  { right: -15px; border-left: 19px solid var(--pure-white); }
 
 /* ═══════════════════════════════════════════════════════
    TEMPLATE — SingleChoiceQuestionImage (S4, mark-for-feedback)
