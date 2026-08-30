@@ -524,10 +524,14 @@
 }
 /* The blue-bordered conclusion box of slide 29. */
 .split-conclusion {
-  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 700;
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700;
   color: #303030; text-align: center; direction: rtl; line-height: 1.35;
   border: 2px solid var(--subject-500); border-radius: 12px;
   padding: 12px 18px; margin: 0;
+  /* QA 2026-08-30, live values off s33: 20 -> 24px and the frame stops at 80% of its column.
+     s35 keeps its own 90% (set from a live value in an earlier round, so it is a decision, not
+     a default) and takes the 24px from here. */
+  width: 80%;
 }
 /* The mascot sits INSIDE the right column, so the group is a flow item. That is exactly what
    .companion-say--inline already means, so the markup uses it and this only adds the spacing
@@ -547,6 +551,10 @@
    same applet across two screens and the head would otherwise jump 40px between step 2 and step 3.
    `margin-top` on the head rather than padding on .exp, so it is obvious which element moved. */
 #s22 .exp-head, #s34 .exp-head { margin-top: 40px; }
+/* s20 drops further, 80px: its flip-card row is the shortest content on any experiments screen,
+   so the block sat high with a band of empty canvas under it. Scoped, like the 40px above --
+   `.exp-head` is on every exp screen and most of them have no room to give. */
+#s20 .exp-head { margin-top: 80px; }
 
 /* S9 two-column stage, storyboard slide 26 (QA 2026-08-25, slide 17).
    `direction: ltr` on the row is what puts the applet physically LEFT and the explanation
@@ -571,6 +579,15 @@
    is shared with s33, whose column sits beside a 440px photo instead of a 190px cylinder and was
    not in this QA round. */
 #s35 .split-conclusion { width: 90%; }
+/* ...and it stays at 20px, where s33 went to 24. NOT an oversight: s35's column already fills
+   its stage exactly (top 96, bottom 641 against a bar top of 646 at H=720), so the 4px of extra
+   line height x2 lines plus padding that 24px costs eats the last 5px of clearance and the
+   mascot's BUBBLE starts crossing the bar below H~710 -- a window wider than about 1.80:1. It is
+   the bubble, not the sprite, that crosses, and at z-index 10 it paints OVER the bar rather than
+   being clipped by it the way a sprite's feet are. Lifting this to 24 needs 15px reclaimed first:
+   `.split-side`'s 12px gap down to 7 (3 gaps in this column), or the bubble's own 30px margin-top
+   halved. One line either way -- but it is a decision, not a default. */
+#s35 .split-conclusion { font-size: 20px; }
 
 /* QA 2026-08-25 (slides 24, 30) asked for the practice stems to carry bold ONLY on their
    closing question, which S13 and S16 now mark up with <strong>. Scoped to this component:
