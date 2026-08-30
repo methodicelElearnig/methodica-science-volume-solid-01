@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · תרגול בסיסי</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=69">
-  <link rel="stylesheet" href="css/style.css?v=7">
+  <link rel="stylesheet" href="../unit-css/style.css?v=70">
+  <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -271,7 +271,9 @@
       <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
     </nav>
     <div class="scq-question scq-question--textonly">
-      <p class="scq-qtext">מעצבת תכשיטים הכניסה למשורה 3 חרוזים זהים.<br />מפלס המים לפני: 100 מ"ל, אחרי: 130 מ"ל.<br />מהו נפחו של חרוז אחד?</p>
+      <!-- Same shape as s4 (QA 2026-08-30): only the QUESTION is bold, the two data lines are
+           regular. `scq-qtext--mixed` + `<b>`, not `<strong>` — see the note on s4. -->
+      <p class="scq-qtext scq-qtext--mixed">מעצבת תכשיטים הכניסה למשורה 3 חרוזים זהים.<br />מפלס המים לפני: 100 מ"ל, אחרי: 130 מ"ל.<br /><b>מהו נפחו של חרוז אחד?</b></p>
       <div class="scq-answers" id="s6-answers" role="radiogroup" aria-label="מהו נפח חרוז אחד?">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s6','a')"><span class="scq-opt-text">10 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s6','b')"><span class="scq-opt-text">30 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>

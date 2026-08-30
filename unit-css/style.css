@@ -4344,6 +4344,13 @@ html, body {
                                         line itself stays selectable, as every bubble it
                                         replaced was */
   max-width: var(--bubble-w, 340px);
+  /* The beak runs `--tail-y` .. `--tail-y + 26` down the bubble's edge, but that edge is only
+     STRAIGHT between `border-radius` and `height - border-radius`. Any bubble shorter than
+     tailY + 26 + radius -- 72px at the defaults -- has its white inner triangle cut into the
+     rounded corner, and the outline reads as BROKEN. That is what part 02's one-line s7 bubble
+     did at 62px. 76 leaves 4px of margin. Every other bubble in the unit is already >= 90px, so
+     this floors exactly the ones that would break. */
+  min-height: 76px;
   background: var(--pure-white);
   border: 3px solid var(--subject-500);
   border-radius: 18px;

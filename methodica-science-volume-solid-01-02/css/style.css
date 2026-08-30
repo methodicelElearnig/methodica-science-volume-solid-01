@@ -152,7 +152,7 @@
    default 760px column cannot do that at this size, so the column widens for this screen only;
    `nowrap` then makes a future copy change fail loudly (overflow) instead of silently
    re-wrapping into the shape the deck does not have. */
-#s7 .transition-content { width: 860px; }
+#s7 .transition-content { width: 1120px; }  /* 860 held the text; the mirrored row below is up to 1093 */
 #s7 .transition-sub {
   font-size: 48px; font-weight: 800; line-height: 1.25; white-space: nowrap;
 }
@@ -161,3 +161,13 @@
    the box is driven by HEIGHT: at a shared width the barbell variant would come out a third
    shorter than the dumbbell one. 400px of box = ~342px of character in both. */
 #s7 .companion { width: auto; height: 400px; }
+
+/* Centre the SPRITE on the canvas, not the pair. The row is [bubble][gap][sprite], so mirroring
+   the bubble's width as margin on the sprite's FAR side makes the row symmetric about him, and
+   .transition-content's `align-items: center` then lands him on x=640. This needs a FIXED bubble
+   width: a content-sized one would move the mirror every time the copy changed.
+   The vertical padding is 21px rather than the shared 14 so this one-line bubble reaches 76px on
+   its own and its text sits centred, instead of being floored by the shared min-height and left
+   sitting 7px high in the box. */
+#s7 .companion-bubble { width: 200px; padding-top: 21px; padding-bottom: 21px; }
+#s7 .companion-say > .companion { margin-right: 214px; }   /* 200 bubble + the 14px --say-gap */
