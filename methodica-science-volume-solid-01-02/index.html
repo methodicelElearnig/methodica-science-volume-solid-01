@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · תרגול בסיסי</title>
   <link rel="stylesheet" href="../unit-css/style.css?v=67">
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -185,6 +185,17 @@
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s4','d')"><span class="scq-opt-text">יש לשקול את הגליל במאזניים כדי לדעת את נפחו</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
+    <!-- Storyboard slide 97: the mascot asks his reflection question BESIDE the feedback, so he
+         appears with the popup and goes with it. `-say` is the id the SCQ controller looks for —
+         scqShowPopup reveals it and scqClosePopup hides it, which also covers a re-pick after a
+         wrong attempt and every re-entry, since both already route through scqClosePopup.
+         The question block above is lifted to top:112px to open the band he stands in; see the
+         note in css/style.css for what that band costs in canvas height. -->
+    <div class="companion-say companion-say--right hidden" id="s4-say" style="left: 520px; bottom: 84px;">
+      <p class="companion-bubble" style="--bubble-w: 300px;">האם בעקבות השאלה תוכלו לנסות לזכור כלל או עיקרון שאפשר להשתמש בו כשמודדים נפח?</p>
+      <video class="companion" src="assets/img/character-orange-think.mp4?v=3" aria-hidden="true"
+           data-pose="think" draggable="false" autoplay loop muted playsinline style="--cw: 180px;"></video>
+    </div>
     <div class="scq-bar">
       <div class="scq-bar-main">
         <button class="scq-check" id="s4-scq-check" type="button" disabled onclick="scqCheck('s4')">צדקתי?</button>
@@ -339,7 +350,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=18"></script>
+<script src="js/main.js?v=20"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

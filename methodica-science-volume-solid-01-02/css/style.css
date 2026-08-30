@@ -124,3 +124,17 @@
    `align-items: center` does the centring — no transform, so the wrapper does not become a
    stacking context (see the long note on .companion-say in the shared sheet). */
 #s0 .companion-say { position: relative; }
+
+/* ── S4 · the mascot's reflection line beside the feedback (slide 97, QA 2026-08-30) ──
+   The question block is lifted so he has a band of his own and covers no answer text: the
+   deck draws him OVER the options, which is fine on paper but not while a learner is reading
+   the feedback against the answer they picked.
+   `top` + a translate on X only, replacing --textonly's centre-anchoring: the block must stay
+   put when the band below it changes, not re-centre and eat into it.
+   ⚠️ Costs canvas height. The block runs 112→453 and he is bottom-anchored at 84px, so the
+   band is `H − 537`; below about **H = 700** he starts to reach the last option. #app's height
+   is 1280/aspect, so that is a window wider than roughly 1.83:1. */
+#s4 .scq-question--textonly {
+  top: 112px;
+  transform: translateX(-50%);
+}

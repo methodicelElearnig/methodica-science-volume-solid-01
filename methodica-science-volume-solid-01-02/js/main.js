@@ -215,8 +215,19 @@ function scqShowPopup(screen, type) {
   document.getElementById(screen + '-scq-popup-title').innerHTML = cfg.title;
   document.getElementById(screen + '-scq-popup-body').innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
   popup.classList.remove('hidden');
+  /* A screen may pair the feedback with the mascot's reflection line (s4, slide 97). Optional by
+     construction: no `-say` element means these two lines do nothing, so no screen needs a flag.
+     NOT on `retry`: his line asks the learner to name the rule they just used, which is a CLOSING
+     thought. On the first wrong attempt the question is still open ("שננסה שוב?") and he would be
+     asking them to sum up an answer they have not given yet. */
+  if (type !== 'retry') document.getElementById(screen + '-say')?.classList.remove('hidden');
 }
-function scqClosePopup(screen) { document.getElementById(screen + '-scq-popup')?.classList.add('hidden'); }
+/* Hides the mascot with the popup — which also covers the re-pick after a wrong attempt and every
+   re-entry, since scqSelect and scqEnter both come through here. */
+function scqClosePopup(screen) {
+  document.getElementById(screen + '-scq-popup')?.classList.add('hidden');
+  document.getElementById(screen + '-say')?.classList.add('hidden');
+}
 function scqHint(screen) {
   const s = SCQ_REG[screen]; if (!s || s.answered) return;
   /* Reported on OPEN only. This overlay has no toggle — closing goes through scqCloseHint — so a
