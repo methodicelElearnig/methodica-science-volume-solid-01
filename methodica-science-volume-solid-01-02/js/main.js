@@ -36,10 +36,21 @@ function getCharacter() {
    <img onerror> fallback: onerror would fire a real 404 on nearly every
    screen and this unit's QA gate checks the network log for zero 404s.
    Landing a produced GIF is one line here plus the file. */
-/* `start-line` (the 1280×720 weights clip) was retired on 2026-08-30 with the s0 rebuild —
-   slide 77 names think.mp4, and the weights pair could not be made 1:1 anyway: the turquoise
-   variant is a barbell 971px wide inside a 720-tall frame, so no square crop clears the plates. */
-const CHARACTER_ASSETS = { selection: 'png', think: 'mp4' };
+/* `start-line` is the 1280×720 sporty pair (מרים כתום משקולות.mp4 / Character-2-Sporty.mp4).
+   It belongs to slide 98 — s7 — and was on s0 by mistake until 2026-08-30; slide 77 names
+   think.mp4, and the sporty pair could not have served s0 anyway, since s0 wanted 1:1 and the
+   turquoise variant is a barbell 971px wide inside a 720-tall frame: no square crop clears the
+   plates. It stays 16:9 here, which is its native frame, so the instance declares `--ca`. */
+const CHARACTER_ASSETS = { selection: 'png', think: 'mp4', 'start-line': 'mp4' };
+/* Poses whose two colour variants are framed DIFFERENTLY enough to need their own box.
+   `start-line` is the case that forced this: orange is a compact dumbbell pose and turquoise a
+   barbell whose plates reach almost frame-wide, so one shared aspect means one of them swims in
+   white — and a bubble beside it points at nothing. Cropped to their own content instead
+   (700×640 and 1070×644), which puts BOTH characters at ~85.5% of box height and ~34px of white
+   inside the near edge, so the pair reads the same size and the beak lands the same distance
+   from each. Sized by HEIGHT in the CSS, not width — that is what equalises them once the two
+   aspects differ. Square poses are absent here and take the CSS default. */
+const CHARACTER_ASPECT = { 'start-line': { orange: '700 / 640', turquoise: '1070 / 644' } };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
@@ -77,7 +88,16 @@ function renderCompanion(n) {
   let el = screen.querySelector('.companion');
   if (!slot) {
     if (el && el.dataset.injected === '1') { el.remove(); el = null; }
-    else if (el) { el.src = characterAsset(el.dataset.pose || 'selection'); startCompanionMedia(el); }
+    else if (el) {
+      const pose = el.dataset.pose || 'selection';
+      el.src = characterAsset(pose);
+      /* The authored markup carries the ORANGE variant's ratio; a turquoise learner needs the
+         other one, and it has to land before the mp4 header does or the box is wrong on first
+         paint. Poses with no entry keep whatever the markup declared. */
+      const ca = (CHARACTER_ASPECT[pose] || {})[getCharacter()];
+      if (ca) el.style.setProperty('--ca', ca);
+      startCompanionMedia(el);
+    }
     screen.classList.toggle('has-companion', !!el);
     return;
   }

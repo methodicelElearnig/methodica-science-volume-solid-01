@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · תרגול בסיסי</title>
   <link rel="stylesheet" href="../unit-css/style.css?v=67">
-  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -288,10 +288,19 @@
        shift with its own screen. Sits between Q4 (S4) and Q5 (S5), which is why
        it is the last section in the file but not the last in the flow. -->
   <section class="screen" data-screen="7" id="s7">
+    <!-- QA 2026-08-30, to the slide: the greeting drops to body size and body colour, the
+         sentence that carries the news takes the emphasis, and the closing line moves into the
+         mascot's bubble. The clip is the one the deck names on this slide
+         (מרים כתום משקולות.mp4 / Character-2-Sporty.mp4 = the `start-line` pair). -->
     <div class="transition-content">
       <h1 class="transition-title">יופי של עבודה!</h1>
       <p class="transition-sub">נחזור ל-2 תרגילים ברמת קושי גבוהה יותר.</p>
-      <p class="transition-note">ברור לי שתצליחו!</p>
+      <div class="companion-say companion-say--right">
+        <p class="companion-bubble" style="--bubble-w: 240px;">ברור לי שתצליחו!</p>
+        <video class="companion" src="assets/img/character-orange-start-line.mp4?v=3" aria-hidden="true"
+             data-pose="start-line" draggable="false" autoplay loop muted playsinline
+             style="--ca: 700 / 640;"></video>
+      </div>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s7-continue" onclick="advanceScreen()">קדימה</button>
@@ -350,7 +359,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=20"></script>
+<script src="js/main.js?v=22"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>

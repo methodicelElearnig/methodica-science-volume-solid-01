@@ -123,7 +123,8 @@
    Here the pair must be CENTRED, so it stays shrink-to-fit and .transition-content's
    `align-items: center` does the centring — no transform, so the wrapper does not become a
    stacking context (see the long note on .companion-say in the shared sheet). */
-#s0 .companion-say { position: relative; }
+#s0 .companion-say,
+#s7 .companion-say { position: relative; }
 
 /* ── S4 · the mascot's reflection line beside the feedback (slide 97, QA 2026-08-30) ──
    The question block is lifted so he has a band of his own and covers no answer text: the
@@ -138,3 +139,25 @@
   top: 112px;
   transform: translateX(-50%);
 }
+
+/* ── S7 · the mid-section transition, to storyboard slide 98 (QA 2026-08-30) ──
+   The greeting is not the message on this screen — the sentence under it is — so the two swap
+   emphasis: the greeting drops to body size and body colour, and the news line takes the weight.
+   Scoped to #s7: .transition-title / -sub are shared with parts 01 and 04, which still want the
+   34px blue heading. */
+#s7 .transition-title {
+  font-size: 24px; font-weight: 400; color: #303030;
+}
+/* 48px, and it has to hold ONE line — a wrap here would split the sentence mid-clause. The
+   default 760px column cannot do that at this size, so the column widens for this screen only;
+   `nowrap` then makes a future copy change fail loudly (overflow) instead of silently
+   re-wrapping into the shape the deck does not have. */
+#s7 .transition-content { width: 860px; }
+#s7 .transition-sub {
+  font-size: 48px; font-weight: 800; line-height: 1.25; white-space: nowrap;
+}
+
+/* His two colour variants have DIFFERENT aspects here (see CHARACTER_ASPECT in js/main.js), so
+   the box is driven by HEIGHT: at a shared width the barbell variant would come out a third
+   shorter than the dumbbell one. 400px of box = ~342px of character in both. */
+#s7 .companion { width: auto; height: 400px; }
