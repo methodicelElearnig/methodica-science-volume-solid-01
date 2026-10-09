@@ -111,6 +111,8 @@
   /* No single word left alone on a bubble's last line, anywhere in the comic (QA 2026-10-08). */
   text-wrap: pretty;
 }
+/* The deck's emphasis inside a bubble (**…** in COMIC_DATA, slide 15). */
+.speech-bubble__text strong { font-weight: 700; }
 
 /* Bubble tail: down-pointing beak with the same white fill + blue stroke.
    Two stacked CSS border-triangles: a blue one whose top edge sits flush on

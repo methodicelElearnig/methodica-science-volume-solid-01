@@ -740,6 +740,9 @@ const COMIC_DATA = {
            trail upward, away from him. ty places the lead circle on the bubble's left edge. */
         { type: 'thought', tail: 'left', r: -22, t: -19, w: 35, ty: 120,
           text: 'יש לנו קובייה שכל צלע\nשלה = 10 ס"מ.\n\u206610 · 10 · 10 = 1,000\u2069\nנפח הקובייה\u00A0=\n1,000 סמ"ק!' },
+        /* Restored per slide 14 (QA 2026-10-09): the right scene's own narration, top of that half
+           and left of his head, clear of the thought bubble above the frame and its trail. */
+        { type: 'narration', r: 29, t: 4, w: 19, text: 'ככה מודדים נפח של גוף הנדסי' },
         { type: 'narration', r: 56, t: 6, w: 30,
           text: 'אבל מה לגבי גוף שאינו הנדסי, כמו מפתח, בלוט, או גולה?' }
       ]
@@ -779,15 +782,15 @@ const COMIC_DATA = {
           /* Explicit break: left to wrap, "הגולה!" fell alone onto a third line (QA 2026-10-08). */
           /* Left of him (clear of the raised finger), beak on its right edge at mid-height (QA 2026-10-08). */
           { type: 'speech', tail: 'right', r: 48, t: 4, w: 35, ty: '50%',
-            text: 'אה! כמות המים החדשה פחות\nכמות המים המקורית = נפח הגולה!' }
+            text: 'אה! כמות המים **החדשה** פחות\nכמות המים **המקורית** = נפח הגולה!' }   // emphasis per slide 15
         ] },
       { src: 'assets/img/comic/15d.jpg',
         alt: 'זום על המשורה: הגולה בתוך המים ומפלס המים מגיע ל-62 מ"ל.',
         bubbles: [
           { type: 'caption', text: 'מה קרה כאן?' },
           /* Explicit break: "בדיוק." sat alone on a third line; moved up to close line 2 (QA 2026-10-08). */
-          { type: 'speech', tail: 'left', r: 2, t: 15, w: 35, ty: '50%',   // side beak at the 62 ml water line (QA 2026-10-08)
-            text: 'כשמכניסים גוף מוצק למים, מפלס\nהמים שעולה שווה לנפח הגוף בדיוק.' }
+          { type: 'speech', tail: 'left', r: 2, t: 15, w: 37, ty: '50%',   // side beak at the 62 ml water line (QA 2026-10-08); 35 -> 37 so bold "בדיוק" keeps line 2 whole (QA 2026-10-09)
+            text: 'כשמכניסים גוף מוצק למים, מפלס\nהמים שעולה שווה לנפח הגוף **בדיוק**.' }   // emphasis per slide 15
         ] },
       { src: 'assets/img/comic/15e.jpg',
         alt: 'ארכימדס מסתכל אל המצלמה.',
@@ -892,7 +895,7 @@ const COMIC_DATA = {
           { type: 'caption', text: 'ארכימדס שופך אורז לתוך כלי מדידה' },
           /* Off his hair, side beak toward his head; explicit breaks so "נוזלים." no longer sits
              alone (QA 2026-10-08). */
-          { type: 'speech', tail: 'left', r: -8, t: 4, w: 34, ty: 60,
+          { type: 'speech', tail: 'left', r: -8, t: 4, w: 37, ty: 60,   // 34 -> 37: line 1 wrapped into 4 ragged lines (QA 2026-10-09)
             text: 'מוצק בצורת גרגרים או אבקה מתנהג\nכמו נוזל! לכן ניתן למדוד את הנפח\nשלו בכלי למדידת נוזלים.' }
         ] },
       { src: 'assets/img/s6-archimedes-bath.jpg?v=2',   // same bath art as S6 (QA 2026-10-08)
@@ -941,6 +944,11 @@ function comicCanAdvance(screenId) {
    tx aims an up/down beak along the horizontal edge (default 28px), ty aims a
    left/right beak along the vertical one (default 38px, measured to its centre);
    both sit outside the `docked` branch so a banner may carry a beak too. */
+/* Bubble text is escaped first, so authored markup can never reach the DOM. The one exception is
+   the deck's emphasis: **word** becomes <strong>word</strong> AFTER escaping (slide 15, QA 2026-10-09). */
+function comicBubbleText(s) {
+  return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+}
 function comicBubbleHtml(b, k) {
   const type  = b.type || 'speech';
   const docked = (type === 'caption');   // banner is width-docked but honours --t
@@ -956,7 +964,7 @@ function comicBubbleHtml(b, k) {
   if (b.tx != null) style += '--tail-x:' + b.tx + 'px;';
   if (b.ty != null) style += '--tail-y:' + (typeof b.ty === 'number' ? b.ty + 'px' : b.ty) + ';';   // '50%' = beak at mid-height
   return '<div class="' + cls + '" style="' + style + '">'
-       +   '<div class="speech-bubble__frame"><p class="speech-bubble__text">' + esc(b.text) + '</p></div>'
+       +   '<div class="speech-bubble__frame"><p class="speech-bubble__text">' + comicBubbleText(b.text) + '</p></div>'
        +   (b.tail ? '<span class="speech-bubble__tail" aria-hidden="true"></span>' : '')
        + '</div>';
 }
