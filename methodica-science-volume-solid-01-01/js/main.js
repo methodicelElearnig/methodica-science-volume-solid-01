@@ -739,7 +739,7 @@ const COMIC_DATA = {
            rise FROM his head to its lower-left edge — they used to leave the bubble's top and
            trail upward, away from him. ty places the lead circle on the bubble's left edge. */
         { type: 'thought', tail: 'left', r: -22, t: -19, w: 35, ty: 120,
-          text: 'יש לנו קובייה שכל צלע\nשלה = 10 ס"מ.\n\u206610 · 10 · 10 = 1,000\u2069\nנפח הקובייה\u00A0=\n1,000 סמ"ק!' },
+          text: 'יש לנו קובייה שכל צלע\nשלה = 10\u00A0ס"מ.\n\u206610 · 10 · 10 = 1,000\u2069\nנפח הקובייה\u00A0=\n1,000\u00A0סמ"ק!' },
         /* Restored per slide 14 (QA 2026-10-09): the right scene's own narration, top of that half
            and left of his head, clear of the thought bubble above the frame and its trail. */
         { type: 'narration', r: 29, t: 4, w: 19, text: 'ככה מודדים נפח של גוף הנדסי' },
@@ -756,7 +756,7 @@ const COMIC_DATA = {
       { src: 'assets/img/comic/15a.jpg',
         alt: 'ארכימדס מחזיק משורה מלאה במים וגולה; עיגול הגדלה מראה שמפלס המים עומד על 50 מ"ל.',
         bubbles: [
-          { type: 'caption', text: 'ארכימדס ממלא את המשורה במים ומתעד עד לאן המים מגיעים: 50 מ"ל.' },
+          { type: 'caption', text: 'ארכימדס ממלא את המשורה במים ומתעד עד לאן המים מגיעים: 50\u00A0מ"ל.' },
           /* Left of him, beak on its right edge at mid-height pointing back at him; break after
              the dash; kept above the magnifier (QA 2026-10-08). */
           { type: 'speech', tail: 'right', r: 47, t: 6, w: 30, ty: '50%',
@@ -765,7 +765,7 @@ const COMIC_DATA = {
       { src: 'assets/img/comic/15b.jpg',
         alt: 'ארכימדס מסתכל אל המשורה וחושב.',
         bubbles: [
-          { type: 'caption', text: 'אחרי שארכימדס הכניס את הגולה למשורה עם המים, מפלס המים עלה ל-62 מ"ל.' },
+          { type: 'caption', text: 'אחרי שארכימדס הכניס את הגולה למשורה עם המים, מפלס המים עלה ל-62\u00A0מ"ל.' },
           /* Bubble sits below his head with the circles on its top edge, rising up-left to
              his head — the thought comes down from him into the bubble (QA 2026-10-08). */
           /* Explicit breaks: "מה" moved down to open the last line (QA 2026-10-08). */
@@ -850,7 +850,7 @@ const COMIC_DATA = {
           { type: 'caption', text: 'ארכימדס שופך את המים מהכלי העמוק לתוך כלי המדידה.' },
           /* Left of him, beak toward him; kept left of the raised tray so it never covers the pour (QA 2026-10-08). */
           { type: 'speech', tail: 'right', r: 56, t: 6, w: 30, ty: 45,
-            text: 'רואים? המים שנשפכו החוצה\nמגיעים בדיוק ל 6.4 ליטר' }
+            text: 'רואים? המים שנשפכו החוצה\nמגיעים בדיוק ל 6.4\u00A0ליטר' }
         ] },
       { src: 'assets/img/comic/17f.jpg',
         alt: 'זום על כלי המדידה: המים מגיעים ל-6.4 ליטר.',
@@ -1608,7 +1608,7 @@ scqRegister({
   item: '02',
   popups: fbPopups('נכון מאוד!', [   /* sb20/22/23 */
     'למדידת נפח של תיבה משתמשים בסרגל: מודדים את אחת מצלעות הקובייה ומכפילים אותו בעצמו שלוש פעמים — פעם אחת לאורך, פעם אחת לרוחב ופעם אחת לגובה.',
-    'אורך הצלע במקרה זה הוא 10 ס"מ וכיוון שכל הצלעות בקובייה זהות:',
+    'אורך הצלע במקרה זה הוא 10\u00A0ס"מ וכיוון שכל הצלעות בקובייה זהות:',
     '<span class="section-result-expr">10·10·10=1,000</span>']),
   /* ⚠️ goTo(29), NOT goTo(9). This screen advances through its own check button rather than
      advanceScreen(), so the flow edge lives here — and it read `goTo(9)` while goBack() and
@@ -1827,7 +1827,7 @@ registerPractice(0, {
   popups: fbPopups('נכון מאוד!', [   /* sb52/54/55 */
     'נפח הגוף שווה לכמות המים שדחק — כלומר ההפרש בין הנפח הסופי לנפח ההתחלתי.',
     '<span class="section-result-expr">73 – 50 = 23</span>',
-    'נפח האבן = 23 סמ"ק'])
+    'נפח האבן = 23\u00A0סמ"ק'])
 });
 registerPractice(1, {
   correctId: 'a',
@@ -2311,7 +2311,7 @@ const MEAS = {
        instruction: 'שלב 1: גררו את כלי השח-מט אל כלי המדידה המתאים.' },
   2: { screen: 22, input: true, instruction: 'שלב 2: מדדו את מפלס המים במשורה כעת והקלידו את נפחו של כלי השח-מט.',
        inputLabel: 'נפח כלי השח-מט (מ"ל):',
-       reveal: 'נפח כלי השח-מט הוא 15 מ"ל. מפלס המים המקורי במשורה היה 50 מ"ל והוא עלה ל-65 מ"ל, ולכן: 65 − 50 = 15.' },
+       reveal: 'נפח כלי השח-מט הוא 15\u00A0מ"ל. מפלס המים המקורי במשורה היה 50\u00A0מ"ל והוא עלה ל-65\u00A0מ"ל, ולכן: 65 − 50 = 15.' },
   /* Deck slide 36 states the instruction without explaining WHY the cylinder is wrong — naming
      "too big for the cylinder" here would hand over the judgement this step exists to test. */
   3: { screen: 34, obj: true, /* ?v=2 — the file was re-exported under the same name (upright -> lying down), and this
@@ -2325,7 +2325,7 @@ const MEAS = {
   4: { screen: 34, input: true, last: true, pour: true, correct: 'mv',
        instruction: 'שלב 4: שפכו את המים מכלי האיסוף אל תוך כלי המדידה והקלידו את נפח הפטיש.',
        inputLabel: 'נפח הפטיש (מ"ל):',
-       reveal: 'המים שנשפכו היו בנפח 250 מ"ל — כלומר נפח הפטיש הוא 250 מ"ל, כי הוא הציף החוצה כמות מים השווה לנפחו!' }
+       reveal: 'המים שנשפכו היו בנפח 250\u00A0מ"ל — כלומר נפח הפטיש הוא 250\u00A0מ"ל, כי הוא הציף החוצה כמות מים השווה לנפחו!' }
 };
 let measStep = 1, measDone = false, measRevealed = false, measPoured = false;
 const measDnd = {};

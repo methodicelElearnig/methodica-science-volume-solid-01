@@ -170,7 +170,10 @@ html, body {
    Icon = exact Figma PNG; label = live HTML (never baked in).
    ═══════════════════════════════════════════════════════ */
 .flag-btn {
-  position: absolute; top: 16px; left: 16px;
+  /* Figma places the visible 38×38 icon at x 32 / y 32 (720-templates, producer decision 2026-10-06).
+     The box is 88px wide only so the hover label can centre under the icon, so the icon sits
+     (88 − 38) / 2 = 25px into it: left 32 − 25 = 7px puts the ICON on 32/32. Size unchanged. */
+  position: absolute; top: 32px; left: 7px;
   width: 88px;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   background: none; border: none; padding: 0; cursor: pointer;
@@ -406,11 +409,15 @@ html, body {
   font-family: 'Assistant', sans-serif;
   overflow: visible;
 }
+/* A number and its unit never split across lines (720 _question-template-defaults). Used inside
+   answer options, where the reported text must stay byte-identical, instead of an NBSP. */
+.nobr { white-space: nowrap; }
 .scq-opt-text {
   flex: 1; text-align: right;
-  /* 24px — the one question type size, shared with the title and the stem. This rule
-     governs almost every answer option in the unit (pills, guess, peak, hotspot). */
-  font-size: 24px; font-weight: 400; color: #222; line-height: 1.1;
+  /* 22px Regular in every state — 720 typography "text size by surface": answer capsule 22,
+     canvas/stem 24 (QA 2026-10-09, was 24). This rule governs almost every answer option in
+     the unit (pills, guess, peak, hotspot). */
+  font-size: 22px; font-weight: 400; color: #222; line-height: 1.1;
 }
 .scq-opt:focus-visible { outline: 2px solid var(--subject-700); outline-offset: 2px; }
 .scq-opt:disabled { cursor: default; }
@@ -3234,7 +3241,7 @@ html, body {
 /* The ✕ that used to sit here is gone from the markup in all 19 places (QA 2026-08-25, slide 26:
    feedback popups close on advance, not by dismissal), so its rule went with it. The popup is still
    draggable by its header. */
-.scq-popup-title { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 800; color: #1c3a2a; }
+.scq-popup-title { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 700; color: #1c3a2a; }   /* Bold 20 (720 feedback typography; was 800) */
 .scq-popup-body { padding: 0 16px 14px; }
 /* 17px here was shadowing the 20px rule earlier in this sheet; QA 2026-08-25 (slide 26) sets ALL
    feedback text at 20px, so the two now agree. */
