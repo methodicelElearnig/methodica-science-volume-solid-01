@@ -980,6 +980,10 @@ function comicBuild(screenId) {
       i: 0, seen: new Array(cfg.panels.length).fill(false),
       done: false, built: false, timer: null, token: 0, reported: false
     };
+    if (typeof comicPendingRestore !== 'undefined' && comicPendingRestore[screenId]) {
+      comicCopyRecord(st, comicPendingRestore[screenId]);   // progress saved before a reload
+      delete comicPendingRestore[screenId];
+    }
   }
   if (st.built) return;
 
@@ -2601,23 +2605,36 @@ function captureResumeInputs() {
    `seen` is an array, so it is sliced rather than referenced.
    `reported` is what stops a resumed panel re-emitting its 'experienced'. */
 function captureComicState() {
+  /* Saved records of comic screens not rebuilt since the reload are carried over as they are —
+     without them the next save would overwrite that progress with nothing. */
+  var o = {};
+  Object.keys(comicPendingRestore).forEach(function (k) { o[k] = comicPendingRestore[k]; });
   return Object.keys(comicState).reduce(function (o, k) {
     var s = comicState[k];
     o[k] = { i: s.i, seen: (s.seen || []).slice(), done: !!s.done, reported: !!s.reported };
     return o;
-  }, {});
+  }, o);
+}
+
+/* A reload builds only the screen it resumes onto. The saved records of every OTHER comic screen
+   wait here until comicBuild() first seeds that screen, which adopts them (QA 2026-10-09: walking
+   back from a resumed s25/s26 found s24/s8/s25 fresh — panels unseen, and 'experienced' re-sent). */
+var comicPendingRestore = {};
+
+function comicCopyRecord(cur, src) {
+  cur.i = src.i;
+  cur.seen = (src.seen || []).slice();
+  cur.done = !!src.done;
+  cur.reported = !!src.reported;
 }
 
 function applyComicState(comic) {
   if (!comic) return;
   Object.keys(comic).forEach(function (k) {
     var cur = comicState[k];
-    if (!cur) return;   // not built yet — comicBuild() seeds it, then the second pass re-applies
-    var src = comic[k];
-    cur.i = src.i;
-    cur.seen = (src.seen || []).slice();
-    cur.done = !!src.done;
-    cur.reported = !!src.reported;
+    if (!cur) { comicPendingRestore[k] = comic[k]; return; }   // adopted by comicBuild()
+    comicCopyRecord(cur, comic[k]);
+    delete comicPendingRestore[k];
   });
 }
 

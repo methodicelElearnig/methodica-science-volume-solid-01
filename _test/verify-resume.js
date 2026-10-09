@@ -524,6 +524,167 @@ function reloadTests() {
   }
 }
 
+/* ═══════════════════ comic (part 01) ═══════════════════
+   The comic is one carousel over seven screens (COMIC_SCREENS). What must survive a reload: the
+   screen, the panel, which panels were seen (the forward gate), the guess picks (the guess gate),
+   and the `reported` flags (one 'experienced' per comic screen, never re-sent). What must NOT come
+   back: an open zoom, or more than one bubble reveal. All walking goes through the carousel's own
+   functions (comicArrowNext/Prev, guessPick), the same ones the arrows and the keyboard call. */
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function comicProbe(p, sid) {
+  return p.val('(function () {' +
+    ' var st = comicState["' + sid + '"] || {};' +
+    ' var tr = [].map.call(document.querySelectorAll("#' + sid + ' .comic-track"), function (t) { return t.style.transform; });' +
+    ' var dots = [].map.call(document.querySelectorAll("#' + sid + '-dots .comic-dot"), function (d) { return d.className; });' +
+    ' var rev = [].map.call(document.querySelectorAll("#' + sid + '-bleed-track .comic-panel"), function (x, k) { return x.classList.contains("is-revealed") ? k : -1; }).filter(function (k) { return k >= 0; });' +
+    ' var g = function (id) { var e = document.getElementById(id); return e ? e.disabled : null; };' +
+    ' return { i: st.i, seen: st.seen, done: !!st.done, reported: !!st.reported, tracks: tr, dots: dots, revealed: rev,' +
+    '   prev: g("' + sid + '-prev"), next: g("' + sid + '-next"), cont: g("' + sid + '-continue"),' +
+    '   zoom: comicZoomedId, zoomCls: !!document.querySelector("#' + sid + ' .comic-frame.is-zoomed") };' +
+    '})()');
+}
+function experiencedCount(p) {
+  return p.val('__stmts().filter(function (s) { return /experienced/.test(JSON.stringify(s.verb || s)); }).length');
+}
+
+/* Walk part 01 from s0 into the comic: character, comic path, then the carousel to s25 panel 3,
+   picking option c on the s23 guess on the way. */
+function walkIntoComic(a) {
+  a.exec('selectOption(document.querySelector("#s0 .option-card[data-value=orange]"));');
+  a.exec('goTo(7); selectPathOption(document.querySelector("#s7 .option-card[data-value=comic]")); advanceFromPathChoice();');
+  a.exec('comicArrowNext("s8");');                                   // s8 (single panel) -> s24
+  a.exec('comicArrowNext("s24");');                                  // s24 (single panel) -> s23
+  a.exec('guessPick("s23", document.querySelector("#s23-guess .guess-opt[data-id=c]"));');
+  a.exec('comicArrowNext("s23");');                                  // s23 -> s25 panel 1
+  a.exec('comicArrowNext("s25"); comicArrowNext("s25");');          // panel 3
+}
+
+async function comicTests() {
+  /* C1 — reload in the middle of s25, with the zoom left open. */
+  let state;
+  {
+    const a = boot('01');
+    walkIntoComic(a);
+    const ctx = 'comic/walk';
+    ok(ctx, 'the walk reached s25 panel 3', a.val('currentScreen') === 25 && a.val('comicState.s25.i') === 2,
+       a.val('currentScreen') + '/' + a.val('comicState.s25 && comicState.s25.i'));
+    a.exec('comicZoomOpen("s25");');
+    await sleep(50);
+    ok(ctx, 'one experienced each for s8 and s24, none yet for s25', experiencedCount(a) === 2, experiencedCount(a));
+    a.exec('flushResumeSave();');
+    state = a.dump();
+    collectErrors(ctx, a);
+    a.close();
+  }
+  {
+    const b = boot('01', { state });
+    const ctx = 'comic/reload-s25';
+    ok(ctx, 'resumes onto s25', b.val('currentScreen') === 25, b.val('currentScreen'));
+    ok(ctx, 'on the comic path', b.val('window.lomdaState.learningPath') === 'comic', b.val('window.lomdaState.learningPath'));
+    let c = comicProbe(b, 's25');
+    ok(ctx, 'on panel 3', c.i === 2, c.i);
+    ok(ctx, 'both tracks painted at panel 3 at once (no slide from panel 1)',
+       c.tracks.length === 2 && c.tracks.every(t => t === 'translateX(200%)'), c.tracks.join(' | '));
+    ok(ctx, 'seen = panels 1–3 only', JSON.stringify(c.seen) === '[true,true,true,false,false]', JSON.stringify(c.seen));
+    ok(ctx, 'the active dot is the third', /is-active/.test(c.dots[2]) && c.dots.filter(d => /is-active/.test(d)).length === 1, c.dots.join(' | '));
+    ok(ctx, 'the slider is not done, so Continue stays locked', c.done === false && c.cont === true, c.done + '/' + c.cont);
+    ok(ctx, 'both carousel arrows are live mid-slider', c.prev === false && c.next === false, c.prev + '/' + c.next);
+    ok(ctx, 'the zoom did not survive the reload', c.zoom === null && c.zoomCls === false, c.zoom + '/' + c.zoomCls);
+    ok(ctx, 'no bubbles revealed before the reveal delay', c.revealed.length === 0, c.revealed.join(','));
+    await sleep(1200);
+    c = comicProbe(b, 's25');
+    ok(ctx, 'exactly one panel revealed, and it is panel 3', c.revealed.length === 1 && c.revealed[0] === 2, c.revealed.join(','));
+    ok(ctx, 'no experienced re-sent on resume', experiencedCount(b) === 0, experiencedCount(b));
+
+    /* Back across the carousel to the guess: the pick, the bubble and the forward gate are intact. */
+    b.exec('comicArrowPrev("s25"); comicArrowPrev("s25"); comicArrowPrev("s25");');
+    ok(ctx, 'the back arrow crosses to s23', b.val('currentScreen') === 23, b.val('currentScreen'));
+    ok(ctx, 's23: the pick is restored',
+       b.val('document.querySelector("#s23-guess .guess-opt[data-id=c]").classList.contains("selected")') === true);
+    ok(ctx, 's23: the mascot + bubble are shown',
+       b.val('!document.getElementById("s23-guess-bubble").classList.contains("hidden")') === true);
+    ok(ctx, 's23: forward arrow live, Continue still locked (not the comic end)',
+       b.val('document.getElementById("s23-next").disabled') === false && b.val('document.getElementById("s23-continue").disabled') === true);
+
+    /* Forward again: s25 comes back on its remembered panel, the seen gate intact, then finishes once. */
+    b.exec('comicArrowNext("s23");');
+    c = comicProbe(b, 's25');
+    ok(ctx, 'forward lands on s25 at its remembered panel', b.val('currentScreen') === 25 && c.i === 0, b.val('currentScreen') + '/' + c.i);
+    ok(ctx, 'seen survived the round trip', c.dots.filter(d => /is-seen|is-active/.test(d)).length === 3, c.dots.join(' | '));
+    b.exec('for (var k = 0; k < 4; k++) comicArrowNext("s25");');
+    await sleep(50);
+    c = comicProbe(b, 's25');
+    ok(ctx, 'finishing s25 marks it done and unlocks the forward arrow', c.done === true && c.next === false, c.done + '/' + c.next);
+    ok(ctx, 'exactly one experienced for s25', experiencedCount(b) === 1, experiencedCount(b));
+    b.exec('comicArrowNext("s25"); comicArrowPrev("s26"); comicArrowNext("s25");');
+    await sleep(50);
+    ok(ctx, 'leaving and re-finishing s25 does not re-send it', experiencedCount(b) === 1, experiencedCount(b));
+    /* s24 and s8 were finished BEFORE the reload and never rebuilt since: walking back onto them
+       must find their saved records (done + reported), not seed fresh ones. */
+    b.exec('goTo(23); comicArrowPrev("s23"); comicArrowPrev("s24");');
+    await sleep(50);
+    ok(ctx, 'walking back reaches s8', b.val('currentScreen') === 8, b.val('currentScreen'));
+    ok(ctx, 's24/s8 keep their pre-reload progress',
+       b.val('!!(comicState.s24 && comicState.s24.done && comicState.s24.reported && comicState.s8 && comicState.s8.reported)') === true,
+       JSON.stringify(b.val('[comicState.s24, comicState.s8].map(function (s) { return s && { done: s.done, reported: s.reported }; })')));
+    ok(ctx, 'and do not re-send their experienced', experiencedCount(b) === 1, experiencedCount(b));
+    ok(ctx, 'no duplicate completed/answered', b.val('__dupes().length') === 0, JSON.stringify(b.val('__dupes()')));
+    collectErrors(ctx, b);
+    b.close();
+  }
+
+  /* C2 — reload on the s26 guess after a pick: gate and pick restored. */
+  {
+    const a = boot('01');
+    walkIntoComic(a);
+    a.exec('for (var k = 0; k < 3; k++) comicArrowNext("s25"); comicArrowNext("s25");');   // finish s25 -> s26
+    a.exec('guessPick("s26", document.querySelector("#s26-guess .guess-opt[data-id=b]"));');
+    a.exec('flushResumeSave();');
+    const st2 = a.dump();
+    a.close();
+    const b = boot('01', { state: st2 });
+    const ctx = 'comic/reload-s26';
+    ok(ctx, 'resumes onto s26', b.val('currentScreen') === 26, b.val('currentScreen'));
+    ok(ctx, 'the pick is restored',
+       b.val('document.querySelector("#s26-guess .guess-opt[data-id=b]").classList.contains("selected")') === true);
+    ok(ctx, 'the forward arrow is live (gate satisfied)', b.val('document.getElementById("s26-next").disabled') === false);
+    ok(ctx, 'Continue stays locked mid-comic', b.val('document.getElementById("s26-continue").disabled') === true);
+    b.exec('comicArrowPrev("s26");');
+    ok(ctx, 'back lands on s25, finished', b.val('currentScreen') === 25 && b.val('comicState.s25.done') === true,
+       b.val('currentScreen') + ' / ' + JSON.stringify(b.val('comicState.s25 ? {i: comicState.s25.i, seen: comicState.s25.seen, done: comicState.s25.done} : null')));
+    collectErrors(ctx, b);
+    b.close();
+  }
+
+  /* C3 — reload at the comic end: s28 finished -> Continue open, next arrow grey, merge works. */
+  {
+    const a = boot('01');
+    walkIntoComic(a);
+    a.exec('for (var k = 0; k < 3; k++) comicArrowNext("s25"); comicArrowNext("s25");');
+    a.exec('guessPick("s26", document.querySelector("#s26-guess .guess-opt[data-id=c]")); comicArrowNext("s26");');
+    a.exec('for (var k = 0; k < 7; k++) comicArrowNext("s27");');
+    a.exec('for (var k = 0; k < 2; k++) comicArrowNext("s28");');
+    ok('comic/walk-end', 'the walk reached the last panel of s28',
+       a.val('currentScreen') === 28 && a.val('comicState.s28.done') === true, a.val('currentScreen'));
+    a.exec('flushResumeSave();');
+    const st3 = a.dump();
+    a.close();
+    const b = boot('01', { state: st3 });
+    const ctx = 'comic/reload-s28';
+    const c = comicProbe(b, 's28');
+    ok(ctx, 'resumes onto s28 last panel', b.val('currentScreen') === 28 && c.i === 2, b.val('currentScreen') + '/' + c.i);
+    ok(ctx, 'Continue is open, the next arrow grey', c.cont === false && c.next === true, c.cont + '/' + c.next);
+    await sleep(50);
+    ok(ctx, 'no experienced re-sent on resume', experiencedCount(b) === 0, experiencedCount(b));
+    b.exec('advanceScreen();');
+    ok(ctx, 'Continue merges into s12', b.val('currentScreen') === 12, b.val('currentScreen'));
+    collectErrors(ctx, b);
+    b.close();
+  }
+}
+
 /* A swallowed throw and a painter that did nothing look identical from the outside, so any
    [resume] error is itself a failure. */
 function collectErrors(ctx, p) {
@@ -535,7 +696,7 @@ function collectErrors(ctx, p) {
 
 /* ═══════════════════ run ═══════════════════ */
 
-function main() {
+async function main() {
   for (const part of ['01', '02', '04']) {
     for (const [name, fn] of [['correct', scenarioCorrect], ['wrong', scenarioWrong],
                               ['repick', scenarioRepick], ['pristine', scenarioPristine]]) {
@@ -559,6 +720,7 @@ function main() {
   }
 
   reloadTests();
+  await comicTests();
 
   console.log('\n' + pass + ' passed, ' + failures.length + ' failed');
   if (failures.length) {
