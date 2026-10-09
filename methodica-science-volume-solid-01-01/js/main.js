@@ -235,7 +235,7 @@ function startCompanionMedia(el) {
   const p = el.play();
   if (p && p.catch) p.catch(function () {});
 }
-/* Screens where the mascot SPEAKS are not here: s1, s3, s5, s6, s21, s22, s23, s26 and s29
+/* Screens where the mascot SPEAKS are not here: s1, s3, s6, s21, s22, s23, s26 and s29
    author their sprite in index.html inside a .companion-say group, because its position
    only makes sense next to a bubble that also lives in the markup — a slot as well would
    be two sources of truth for one offset. renderCompanion() adopts those sprites and
@@ -365,6 +365,7 @@ function resetScreenState(n) {
     const cont = document.getElementById('s7-continue');
     if (cont) cont.disabled = !p;
   }
+  comicZoomClose();   // a zoom left open on a comic screen must not survive the screen change
   if (COMIC_SCREENS.indexOf(n) !== -1) {
     // Comic path (storyboard slides 12–18) — one screen per slide.
     const cid = 's' + n;
@@ -399,17 +400,18 @@ function resetScreenState(n) {
 }
 
 /* ─── Keyboard Navigation ──────────────────────────────────
-   Inside a comic slider the arrows page PANELS; at the edges they fall through
-   to screen navigation (RTL: ArrowLeft = forward). Panel paging deliberately
-   lives here and not in advanceScreen(), because #sN-continue's
-   onclick="advanceScreen()" must always mean "leave this screen" — otherwise a
-   learner who has seen every panel and paged back would get a page-turn. */
+   On a comic screen the arrow keys ARE the carousel arrows (comicArrowNext/Prev):
+   panels first, then across comic screens, with the same gates (RTL: ArrowLeft =
+   forward). Elsewhere they fall through to screen navigation. Panel paging
+   deliberately lives outside advanceScreen(), because #sN-continue's
+   onclick="advanceScreen()" must always mean "leave this screen". */
 document.addEventListener('keydown', e => {
   /* Escape closes any open hint overlay as well as the zoom, matching parts 02/04. The
      close must happen BEFORE the return, or the overlays would never see the key. */
   if (e.key === 'Escape') {
     document.querySelectorAll('[id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
     closeImageZoom();
+    comicZoomClose();
     return;
   }
   if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
@@ -417,10 +419,15 @@ document.addEventListener('keydown', e => {
   if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
 
   const cid = 's' + currentScreen;
-  if (comicHasSlider(cid)) {
-    const st = comicState[cid], last = COMIC_DATA[cid].panels.length - 1;
-    if (e.key === 'ArrowLeft'  && st && st.i < last) { comicSliderNext(cid); return; }
-    if (e.key === 'ArrowRight' && st && st.i > 0)    { comicSliderPrev(cid); return; }
+  if (COMIC_SCREENS.indexOf(currentScreen) !== -1) {
+    // The keys do exactly what the carousel arrows do, gates included (RTL: ArrowLeft = forward).
+    // While zoomed they only page panels — crossing to another screen would close the zoom.
+    if (comicZoomedId === cid) {
+      if (e.key === 'ArrowLeft') comicSliderNext(cid); else comicSliderPrev(cid);
+      return;
+    }
+    if (e.key === 'ArrowLeft') comicArrowNext(cid); else comicArrowPrev(cid);
+    return;
   }
   if (e.key === 'ArrowLeft') advanceScreen(); else goBack();
 });
@@ -516,6 +523,16 @@ function advanceFromS0() {
   if (!window.lomdaState.selectedCharacter) return;
   goTo(1);
 }
+/* Each S0 card's mascot animates only while the pointer is over that card; on leave it
+   rewinds to its first frame so both cards rest on a still pose. */
+(function wireS0HoverVideos() {
+  document.querySelectorAll('#s0 .option-card').forEach(card => {
+    const v = card.querySelector('video');
+    if (!v) return;
+    card.addEventListener('mouseenter', () => { const p = v.play(); if (p && p.catch) p.catch(() => {}); });
+    card.addEventListener('mouseleave', () => { v.pause(); try { v.currentTime = 0; } catch (e) {} });
+  });
+})();
 /* Keyboard activation for the radio cards (Enter / Space) */
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -593,7 +610,7 @@ function imgqEnter() {
 // index.html / style.css / every routing branch already reference.
 const COMIC_ENTRY   = 8;
 const COMIC_SCREEN  = COMIC_ENTRY;                     // alias kept for advanceFromPathChoice()
-const COMIC_SCREENS = [8, 23, 24, 25, 26, 27, 28];
+const COMIC_SCREENS = [8, 24, 23, 25, 26, 27, 28];   // s24 (the cube) before the s23 guess-Q — QA 2026-10-08
 // Experiments path (pedagogical order ≠ screen-number order, wired explicitly):
 //   entry = S10 aquarium (geometric) → S9 displacement → (flooding, tbd)
 const EXPERIMENTS_ENTRY = 10;
@@ -680,17 +697,18 @@ const COMIC_DATA = {
   /* ── S8 · slide 12 · composite: (right) Archimedes addresses the learners,
         rectangular box on the bench · (left) he measures it with a ruler ── */
   s8: {
-    slide: 12, kind: 'panels', ratio: 2,
+    slide: 12, kind: 'panels',
     panels: [{
       src: 'assets/img/comic/12.jpg',
       alt: 'ארכימדס במעבדה עתיקה. מימין הוא עומד ליד תיבת מתכת על השולחן ופונה אל הלומדים, משמאל הוא מודד את התיבה בעזרת סרגל.',
       bubbles: [
-        /* Slide 12's band belongs to the RIGHT scene (Archimedes addressing the learner), not to
-           the whole composite — it ran under both halves until QA 2026-08-24. */
-        { type: 'caption', half: 'right', text: 'ארכימדס הגיע עד לימינו כדי ללמד אותנו על השיטות לחישוב נפח שהוא המציא.' },
-        { type: 'speech', tail: 'left', r: -3, t: 5, w: 21,
+        { type: 'caption', text: 'ארכימדס הגיע עד לימינו כדי ללמד אותנו על השיטות לחישוב נפח שהוא המציא.' },
+        /* 12.jpg is 2:1 but every comic frame is now the same 16:9 box (QA 2026-10-08), so its
+           art is cropped ~53px each side: these r/w were rescaled to keep each bubble on the
+           same spot of the art at the same pixel width. */
+        { type: 'speech', tail: 'left', r: -9.6, t: 5, w: 23.6,
           text: 'בואו נתחיל בתזכורת! איך מודדים גוף בעל צורה הנדסית מוגדרת כמו גליל או תיבה?' },
-        { type: 'speech', tail: 'left', r: 51, t: 38, w: 25,
+        { type: 'speech', tail: 'left', r: 51.2, t: 38, w: 28.1,
           text: 'למדידת נפח של תיבה משתמשים בסרגל: מודדים את צלעות התיבה (אורך, רוחב, גובה) ומכפילים.' }
       ]
     }]
@@ -708,15 +726,20 @@ const COMIC_DATA = {
       src: 'assets/img/comic/14.jpg',
       alt: 'מימין ארכימדס מודד תיבה בעזרת סרגל ומחשב את נפחה, משמאל מונחים על השולחן מפתח, בלוט וגולה.',
       bubbles: [
-        { type: 'narration', r: 27, t: 4, w: 22, text: 'ככה מודדים נפח של גוף הנדסי' },
         /* Side beak, not down-left: the bubble sits at the panel's right edge and Archimedes'
            head is to its LEFT, so trailing circles downward pointed them away from the thinker
            (QA 2026-08-24). Widened too — the thought frame's new padding needs the room. */
         /* r is NEGATIVE on purpose: the bubble overhangs the panel's right edge by 8% so it
            clears Archimedes' head. .comic-viewport does not clip it — the panel is inside a
            track that only clips horizontally between slides. */
-        { type: 'thought', tail: 'left', r: -8, t: 20, w: 33,
-          text: 'יש לנו קובייה שכל צלע\nשלה = 10 ס"מ.\n10·10·10 = 1,000.\nנפח הקובייה = 1,000 סמ"ק!' },
+        /* Lifted above the frame's top edge (t: -8, r: -14) once the "ככה מודדים…" narration was
+           dropped — at t: 20 it covered his face. The product line is wrapped in LRI…PDI so it reads left-to-right
+           with spaces around the operators, as math is written (QA 2026-10-08). */
+        /* Re-aimed (QA 2026-10-08): the bubble floats up-right of his head and the circles
+           rise FROM his head to its lower-left edge — they used to leave the bubble's top and
+           trail upward, away from him. ty places the lead circle on the bubble's left edge. */
+        { type: 'thought', tail: 'left', r: -22, t: -19, w: 35, ty: 120,
+          text: 'יש לנו קובייה שכל צלע\nשלה = 10 ס"מ.\n\u206610 · 10 · 10 = 1,000\u2069\nנפח הקובייה\u00A0=\n1,000 סמ"ק!' },
         { type: 'narration', r: 56, t: 6, w: 30,
           text: 'אבל מה לגבי גוף שאינו הנדסי, כמו מפתח, בלוט, או גולה?' }
       ]
@@ -730,16 +753,21 @@ const COMIC_DATA = {
       { src: 'assets/img/comic/15a.jpg',
         alt: 'ארכימדס מחזיק משורה מלאה במים וגולה; עיגול הגדלה מראה שמפלס המים עומד על 50 מ"ל.',
         bubbles: [
-          { type: 'caption', text: 'ארכימדס ממלא את המשורה ומתעד עד לאן המים מגיעים: 50 מ"ל.' },
-          { type: 'speech', tail: 'down-left', r: 3, t: 5, w: 30,
-            text: 'אם נכניס את הגולה למשורה – מפלס המים יעלה!' }
+          { type: 'caption', text: 'ארכימדס ממלא את המשורה במים ומתעד עד לאן המים מגיעים: 50 מ"ל.' },
+          /* Left of him, beak on its right edge at mid-height pointing back at him; break after
+             the dash; kept above the magnifier (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 47, t: 6, w: 30, ty: '50%',
+            text: 'אם נכניס את הגולה למשורה\n– מפלס המים יעלה!' }
         ] },
       { src: 'assets/img/comic/15b.jpg',
         alt: 'ארכימדס מסתכל אל המשורה וחושב.',
         bubbles: [
-          { type: 'caption', text: 'מפלס המים עלה ל-62 מ"ל.' },
-          { type: 'thought', tail: 'down-left', r: 3, t: 5, w: 30,
-            text: 'רגע... אז הנפח של הגולה הוא 62? אולי 50? מה צריך לחשב פה?' }
+          { type: 'caption', text: 'אחרי שארכימדס הכניס את הגולה למשורה עם המים, מפלס המים עלה ל-62 מ"ל.' },
+          /* Bubble sits below his head with the circles on its top edge, rising up-left to
+             his head — the thought comes down from him into the bubble (QA 2026-10-08). */
+          /* Explicit breaks: "מה" moved down to open the last line (QA 2026-10-08). */
+          { type: 'thought', tail: 'up-right', r: 8, t: 32, w: 33, tx: 150,
+            text: 'רגע... אז הנפח של הגולה\nהוא 62? אולי 50?\nמה צריך לחשב פה?' }
         ] },
       { src: 'assets/img/comic/15c.jpg',
         alt: 'ארכימדס מרים אצבע למעלה בסימן "הבנתי!".',
@@ -748,22 +776,27 @@ const COMIC_DATA = {
              across his face, and a down-beak pointed away from him. Sitting lower with the beak
              on the upper edge, it clears the face and still leads back to his head (QA
              2026-08-24, which suggested exactly this). */
-          { type: 'speech', tail: 'up-left', r: 3, t: 30, w: 32,
-            text: 'אה! כמות המים החדשה פחות כמות המים המקורית = נפח הגולה!' }
+          /* Explicit break: left to wrap, "הגולה!" fell alone onto a third line (QA 2026-10-08). */
+          /* Left of him (clear of the raised finger), beak on its right edge at mid-height (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 48, t: 4, w: 35, ty: '50%',
+            text: 'אה! כמות המים החדשה פחות\nכמות המים המקורית = נפח הגולה!' }
         ] },
       { src: 'assets/img/comic/15d.jpg',
         alt: 'זום על המשורה: הגולה בתוך המים ומפלס המים מגיע ל-62 מ"ל.',
         bubbles: [
           { type: 'caption', text: 'מה קרה כאן?' },
-          { type: 'speech', tail: 'down-left', r: 5, t: 6, w: 32,
-            text: 'כשמכניסים גוף מוצק למים, מפלס המים שעולה שווה לנפח הגוף בדיוק.' }
+          /* Explicit break: "בדיוק." sat alone on a third line; moved up to close line 2 (QA 2026-10-08). */
+          { type: 'speech', tail: 'left', r: 2, t: 15, w: 35, ty: '50%',   // side beak at the 62 ml water line (QA 2026-10-08)
+            text: 'כשמכניסים גוף מוצק למים, מפלס\nהמים שעולה שווה לנפח הגוף בדיוק.' }
         ] },
       { src: 'assets/img/comic/15e.jpg',
         alt: 'ארכימדס מסתכל אל המצלמה.',
         bubbles: [
-          { type: 'banner', t: 78, text: 'זוהי שיטת דחיקת המים!' },
-          { type: 'speech', tail: 'down-left', r: 1, t: 1, w: 28,
-            text: 'אם רוצים למדוד נפח של גוף שעלול להיפגע במים, אפשר לעטוף אותו בשכבת מגן דקה ואטומה למים.' }
+          { type: 'banner', t: 78, fit: true, text: 'זוהי שיטת דחיקת המים!' },   // pill hugs the text (QA 2026-10-08)
+          /* Raised and moved to his left, beak on its right edge at mid-height pointing at him;
+             explicit breaks after "במים," and before "דקה" (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 49, t: 2, w: 33, ty: '50%',
+            text: 'אם רוצים למדוד נפח של גוף\nשעלול להיפגע במים,\nאפשר לעטוף אותו בשכבת מגן\nדקה ואטומה למים.' }
         ] }
     ]
   },
@@ -778,51 +811,62 @@ const COMIC_DATA = {
       { src: 'assets/img/comic/17a.jpg',
         alt: 'ארכימדס מחזיק אבטיח.',
         bubbles: [
-          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 28,
-            text: 'או! אני שמח ששאלתם מה לגבי גופים שלא נכנסים במשורה.' }
+          /* s27 rule: every bubble sits to the character's LEFT, beak on its right edge pointing
+             back at him (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 44, t: 10, w: 31, ty: 50,
+            text: 'או! אני שמח ששאלתם מה לגבי\nגופים שלא נכנסים במשורה.' }
         ] },
       { src: 'assets/img/comic/17b.jpg',
         alt: 'ארכימדס מכניס את האבטיח לקערה מלאה במים; מתחת לקערה מגש עמוק שאליו נשפכים המים.',
         bubbles: [
           { type: 'caption', text: 'ארכימדס מכין קערה גדולה עם מים מלאים ממש עד לקצה. מתחתיה יש כלי עמוק נוסף.' },
-          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 29,
-            text: 'אם אני אניח את האבטיח בתוך קערת המים, המים ישפכו, נכון?' }
+          /* Left of him, beak toward his mouth; explicit break so "נכון?" no longer sits alone (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 46, t: 14, w: 32, ty: 45,
+            text: 'אם אני אניח את האבטיח בתוך\nקערת המים, המים ישפכו, נכון?' }
         ] },
       { src: 'assets/img/comic/17c.jpg',
         alt: 'ארכימדס מסתכל על הקערה וחושב.',
         bubbles: [
-          { type: 'thought', tail: 'down-left', r: 2, t: 5, w: 26,
-            text: 'אוקי... המים נשפכו. מה עכשיו?' }
+          /* Left of him and above the trail: the circles leave the bubble's bottom edge near its
+             right end and step down-right to his head, so the cloud sits over the small circles
+             (QA 2026-10-08). tail-down-left is the mirrored trail (small circle down-RIGHT);
+             tx slides it along to the right end of the bottom edge. */
+          { type: 'thought', tail: 'down-left', r: 46, t: -4, w: 29, tx: 190,
+            text: 'אוקי... המים נשפכו.\nמה עכשיו?' }
         ] },
       { src: 'assets/img/comic/17d.jpg',
         alt: 'ארכימדס מחזיק כלי מדידה גדול ומראה אותו לצופים.',
         bubbles: [
-          { type: 'speech', tail: 'down-left', r: 5, t: 6, w: 28,
-            text: 'רגע! יש לנו פה גם כלי מדידה!' }
+          /* Left of him, beak toward his head; "גם" up a line (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 59, t: 6, w: 21, ty: 40,   // clear of the measuring cylinder's top
+            text: 'רגע! יש לנו פה גם\nכלי מדידה!' }
         ] },
       { src: 'assets/img/comic/17e.jpg',
         alt: 'ארכימדס שופך את המים מהכלי העמוק לתוך כלי המדידה.',
         bubbles: [
           { type: 'caption', text: 'ארכימדס שופך את המים מהכלי העמוק לתוך כלי המדידה.' },
-          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 28,
-            text: 'רואים? המים שנשפכו החוצה מגיעים בדיוק ל 6.4 ליטר' }
+          /* Left of him, beak toward him; kept left of the raised tray so it never covers the pour (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 56, t: 6, w: 30, ty: 45,
+            text: 'רואים? המים שנשפכו החוצה\nמגיעים בדיוק ל 6.4 ליטר' }
         ] },
       { src: 'assets/img/comic/17f.jpg',
         alt: 'זום על כלי המדידה: המים מגיעים ל-6.4 ליטר.',
         bubbles: [
           { type: 'caption', text: 'מה קרה כאן?' },
-          { type: 'speech', tail: 'down-left', r: 4, t: 5, w: 30,
-            text: 'שכשמכניסים גוף מוצק לקערת מים, המים שנשפכים החוצה שווים לנפח הגוף במדויק!' },
-          { type: 'note', r: 4, t: 42, w: 30,
-            text: 'זה נכון רק אם הכלי מלא במים ממש עד הסוף.' }
+          { type: 'speech', tail: 'left', r: 4, t: 5, w: 33,   // side beak, toward the vessel (QA 2026-10-08, as s25 15d); wider for 20px text
+            text: 'כשמכניסים גוף מוצק לקערת מים, המים שנשפכים החוצה שווים לנפח הגוף במדויק!' },
+          { type: 'note', r: 64, t: 42, w: 32,   // moved to the left of the frame (QA 2026-10-08)
+            text: 'זה נכון רק אם הכלי מלא במים\nממש עד הסוף.' }
         ] },
       { src: 'assets/img/comic/17g.jpg',
         alt: 'ארכימדס מחזיק משקולת קטנה.',
         bubbles: [
-          { type: 'banner', t: 80, text: 'זוהי שיטת ההצפה!' },
-          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 30,
-            text: 'אם הגוף שמודדים צף במים, אפשר לחבר לו משקולת שישקע.' },
-          { type: 'note', r: 2, t: 42, w: 30,
+          { type: 'banner', t: 80, fit: true, text: 'זוהי שיטת ההצפה!' },   // pill hugs the text (QA 2026-10-08)
+          /* Explicit break so "שישקע." no longer sits alone (QA 2026-10-08). Moved to his left (the
+             frame's left side), beak on the right edge pointing back to his mouth (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 53, t: 14, w: 34, ty: 55,
+            text: 'אם הגוף שמודדים צף במים,\nאפשר לחבר לו משקולת שישקע.' },   // break after the comma (QA 2026-10-08)
+          { type: 'note', r: 66, t: 42, w: 30,   // moved to the left of the frame (QA 2026-10-08)
             text: 'כמובן שצריך להחסיר את נפח המשקולת מהתוצאה הסופית' }
         ] }
     ]
@@ -835,26 +879,29 @@ const COMIC_DATA = {
       { src: 'assets/img/comic/18a.jpg',
         alt: 'ארכימדס עומד ליד שולחן המעבדה ומפנה את ראשו הצידה כדי להקשיב לשאלה.',
         bubbles: [
-          // The first line is an off-panel voice (storyboard: "הדיבור הזה מגיע
-          // כאילו מחוץ לקומיקס") — the tail points off the right edge, the side
-          // Archimedes is turned toward.
-          { type: 'speech', tail: 'down-right', r: 2, t: 5, w: 29,
-            text: 'ארכימדס! מה לגבי מוצק שמתנהג כמו נוזל?' },
-          { type: 'thought', tail: 'down-right', r: 48, t: 6, w: 26,
-            text: 'או! חיכיתי לשאלה הזאת!' }
+          // Off-panel voice (storyboard: "הדיבור הזה מגיע כאילו מחוץ לקומיקס") —
+          // shown as the blue narration strip with white text (QA 2026-10-08).
+          { type: 'caption', text: 'ארכימדס! מה לגבי מוצק שמתנהג כמו נוזל?' },
+          /* Speech bubble left of him, beak on its right edge pointing to his mouth (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 50, t: 6, w: 22, ty: 60,
+            text: 'או! חיכיתי\nלשאלה הזאת!' }
         ] },
       { src: 'assets/img/comic/18b.jpg',
         alt: 'ארכימדס שופך אורז לתוך כלי מדידה ריק.',
         bubbles: [
           { type: 'caption', text: 'ארכימדס שופך אורז לתוך כלי מדידה' },
-          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 30,
-            text: 'מוצק בצורת גרגרים או אבקה מתנהג כמו נוזל! לכן ניתן למדוד את הנפח שלו בכלי למדידת נוזלים.' }
+          /* Off his hair, side beak toward his head; explicit breaks so "נוזלים." no longer sits
+             alone (QA 2026-10-08). */
+          { type: 'speech', tail: 'left', r: -8, t: 4, w: 34, ty: 60,
+            text: 'מוצק בצורת גרגרים או אבקה מתנהג\nכמו נוזל! לכן ניתן למדוד את הנפח\nשלו בכלי למדידת נוזלים.' }
         ] },
-      { src: 'assets/img/comic/18c.jpg',
-        alt: 'ארכימדס באמבטיה מרים כתר וקורא "אאוריקה".',
+      { src: 'assets/img/s6-archimedes-bath.jpg?v=2',   // same bath art as S6 (QA 2026-10-08)
+        alt: 'ארכימדס באמבטיה מרים כתר וקורא "אאוריקה", המים גולשים מהאמבט החוצה.',
         bubbles: [
-          { type: 'thought', tail: 'down-left', r: 4, t: 6, w: 32,
-            text: 'וכל זה בזכות האמבטיה שעשיתי לפני אלפי שנים... לא רע!' }
+          /* Trail leaves the bubble's bottom edge, big circle against the cloud and the small ones
+             stepping down-left to his head (QA 2026-10-08); tx slides it toward the left end. */
+          { type: 'thought', tail: 'down-right', r: 6, t: 10, w: 36, tx: 185,
+            text: 'וכל זה בזכות האמבטיה\nשעשיתי לפני אלפי שנים...\nלא רע!' }
         ] }
     ]
   }
@@ -899,10 +946,7 @@ function comicBubbleHtml(b, k) {
   const docked = (type === 'caption');   // banner is width-docked but honours --t
   let cls = 'speech-bubble speech-bubble--' + type;
   if (b.tail) cls += ' speech-bubble--tail-' + b.tail;
-  /* A caption normally docks across the whole frame. On a COMPOSITE panel (two scenes side by
-     side, e.g. s8 / storyboard slide 12) the deck gives each scene its own band, so `half` scopes
-     one to the scene it belongs to instead of letting it run under both. */
-  if (docked && b.half) cls += ' speech-bubble--caption-' + b.half;
+  if (b.fit) cls += ' speech-bubble--fit';   // banner shrinks to its text, centred
   let style = '--k:' + k + ';';
   if (!docked) {
     style += '--r:' + (b.r != null ? b.r : 5) + '%;'
@@ -910,7 +954,7 @@ function comicBubbleHtml(b, k) {
            + '--w:' + (b.w != null ? b.w : 30) + '%;';
   }
   if (b.tx != null) style += '--tail-x:' + b.tx + 'px;';
-  if (b.ty != null) style += '--tail-y:' + b.ty + 'px;';
+  if (b.ty != null) style += '--tail-y:' + (typeof b.ty === 'number' ? b.ty + 'px' : b.ty) + ';';   // '50%' = beak at mid-height
   return '<div class="' + cls + '" style="' + style + '">'
        +   '<div class="speech-bubble__frame"><p class="speech-bubble__text">' + esc(b.text) + '</p></div>'
        +   (b.tail ? '<span class="speech-bubble__tail" aria-hidden="true"></span>' : '')
@@ -968,15 +1012,26 @@ function comicBuild(screenId) {
     }).join('');
   }
 
-  // Single-panel screens are static: no arrows, no dots, no drag.
+  // Single-panel screens are static: no dots, no drag. The carousel arrows stay — on a
+  // single panel they simply page across to the neighbouring comic screen.
   const nav = document.getElementById(screenId + '-nav');
   if (nav) nav.hidden = n < 2;
-  ['-prev', '-next'].forEach(function (sfx) {
-    const b = document.getElementById(screenId + sfx);
-    if (b) b.hidden = n < 2;
-  });
   const vp = document.getElementById(screenId + '-viewport');
   if (vp && n < 2) vp.classList.add('is-static');
+  // Zoom: enlarges the WHOLE frame — art and the live-HTML bubbles together — so the dialogue
+  // can be read. The shared image zoom (15-ui.js) clones the <img> only and would drop the text.
+  const frame = vp && vp.parentElement;
+  if (frame && !frame.querySelector('.comic-zoom-btn')) {
+    const zb = document.createElement('button');
+    zb.type = 'button';
+    zb.className = 'img-zoom-btn comic-zoom-btn';
+    zb.id = screenId + '-zoom';
+    zb.setAttribute('aria-label', 'הגדלת הקומיקס');
+    zb.setAttribute('aria-pressed', 'false');
+    zb.innerHTML = COMIC_ZOOM_ICON_OPEN;
+    zb.addEventListener('click', function () { comicZoomToggle(screenId); });
+    frame.appendChild(zb);
+  }
   if (n > 1) comicAttachDrag(screenId);
 
   st.built = true;
@@ -1067,23 +1122,130 @@ function comicRevealBubbles(screenId, i) {
 function comicUpdateNav(screenId) {
   const cfg = COMIC_DATA[screenId], st = comicState[screenId];
   if (!cfg || !st) return;
-  const last = cfg.panels.length - 1;
-  const prev = document.getElementById(screenId + '-prev');
-  const next = document.getElementById(screenId + '-next');
-  /* HIDDEN at the ends, not greyed: a disabled arrow still occupies its slot and reads as an
-     affordance the learner has failed to use. Requested by QA 2026-08-24 for the first and last
-     panel. `disabled` is kept in step so a hidden button can never be reached by keyboard.
-     comicBuild() separately hides both for a single-panel screen (n < 2). */
-  if (prev) { prev.disabled = st.i === 0;    prev.hidden = st.i === 0; }
-  if (next) { next.disabled = st.i === last; next.hidden = st.i === last; }
   document.querySelectorAll('#' + screenId + '-dots .comic-dot').forEach(function (d, k) {
     d.classList.toggle('is-active', k === st.i);
     d.classList.toggle('is-seen', !!st.seen[k]);
     d.setAttribute('aria-selected', k === st.i ? 'true' : 'false');
   });
-  const cont = document.getElementById(screenId + '-continue');
-  if (cont) cont.disabled = !st.done;
+  comicSyncNav(screenId);
+  if (comicZoomedId === screenId) comicZoomApply(screenId);
 }
+
+/* ─── Carousel navigation across the whole comic ───────────────────────
+   Figma 720-UI-Templates "Carousel": the side arrows are the ONLY way through the comic.
+   They page panels first, then cross to the next / previous comic screen (guess-questions
+   included), so the comic reads as one carousel even though it is seven screens.
+   The bar's המשך stays disabled on every comic screen and opens only on the LAST one, once
+   its panels have all been seen — i.e. when the comic is finished. Forward is gated exactly
+   as before: a slider until every panel is seen, a guess-question until an option is picked.
+   Arrows at the comic's two ends are greyed (Figma State 01), not hidden. */
+function comicArrowNext(screenId) {
+  const cfg = COMIC_DATA[screenId], st = comicState[screenId];
+  if (!cfg) return;
+  if (cfg.kind !== 'guess' && st && st.i < cfg.panels.length - 1) { comicSliderNext(screenId); return; }
+  const ci = COMIC_SCREENS.indexOf(+screenId.slice(1));
+  if (ci === -1 || ci === COMIC_SCREENS.length - 1) return;      // comic end — המשך takes over
+  if (!comicCanAdvance(screenId)) return;
+  goTo(COMIC_SCREENS[ci + 1]);
+}
+function comicArrowPrev(screenId) {
+  const cfg = COMIC_DATA[screenId], st = comicState[screenId];
+  if (!cfg) return;
+  if (cfg.kind !== 'guess' && st && st.i > 0) { comicSliderPrev(screenId); return; }
+  const ci = COMIC_SCREENS.indexOf(+screenId.slice(1));
+  if (ci <= 0) return;                                            // comic start
+  goTo(COMIC_SCREENS[ci - 1]);   // lands on that screen's own remembered panel (its last, coming back)
+}
+function comicSyncNav(screenId) {
+  const cfg = COMIC_DATA[screenId];
+  if (!cfg) return;
+  const st = comicState[screenId];
+  const ci = COMIC_SCREENS.indexOf(+screenId.slice(1));
+  const isLastScreen = ci === COMIC_SCREENS.length - 1;
+  const atFirstPanel = cfg.kind === 'guess' || !st || st.i === 0;
+  const atLastPanel  = cfg.kind === 'guess' || !st || st.i === cfg.panels.length - 1;
+  const prev = document.getElementById(screenId + '-prev');
+  const next = document.getElementById(screenId + '-next');
+  if (prev) prev.disabled = ci === 0 && atFirstPanel;
+  if (next) next.disabled = atLastPanel && (isLastScreen || !comicCanAdvance(screenId));
+  const cont = document.getElementById(screenId + '-continue');
+  if (cont) cont.disabled = !(isLastScreen && comicCanAdvance(screenId));
+}
+
+/* ─── Comic zoom ─────────────────────────────────────────────────────
+   Scales the frame in place to fill the canvas (minus a small margin), bubbles included —
+   they live in .comic-bleed inside the frame, so one transform carries art and text together.
+   The fitted box is the frame PLUS every bubble that overhangs it on any panel of the screen,
+   so an overhanging bubble never leaves the canvas and the zoom does not jump while paging.
+   Arrow keys and swipe still page panels while zoomed; Escape / the button / the backdrop close. */
+const COMIC_ZOOM_ICON_OPEN =
+  '<svg class="img-zoom-btn__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">'
+  + '<circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="2"/>'
+  + '<path d="M13.2 13.2L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const COMIC_ZOOM_ICON_CLOSE =
+  '<svg class="img-zoom-btn__icon" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">'
+  + '<path d="M1.5 1.5L13.5 13.5M13.5 1.5L1.5 13.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+const COMIC_ZOOM_MARGIN = 16;   // design px kept clear around the zoomed comic
+let comicZoomedId = null;
+
+function comicZoomToggle(screenId) {
+  if (comicZoomedId === screenId) comicZoomClose(); else comicZoomOpen(screenId);
+}
+function comicZoomOpen(screenId) {
+  comicZoomClose();
+  const vp = document.getElementById(screenId + '-viewport');
+  const frame = vp && vp.parentElement;
+  const screen = frame && frame.closest('.screen');
+  if (!screen) return;
+  let bd = screen.querySelector('.comic-zoom-backdrop');
+  if (!bd) {
+    bd = document.createElement('div');
+    bd.className = 'comic-zoom-backdrop';
+    bd.addEventListener('click', comicZoomClose);
+    screen.appendChild(bd);
+  }
+  comicZoomedId = screenId;
+  frame.classList.add('is-zoomed');
+  screen.classList.add('comic-zoom-open');
+  const zb = document.getElementById(screenId + '-zoom');
+  if (zb) { zb.innerHTML = COMIC_ZOOM_ICON_CLOSE; zb.setAttribute('aria-label', 'סגירת ההגדלה'); zb.setAttribute('aria-pressed', 'true'); }
+  comicZoomApply(screenId);
+}
+function comicZoomApply(screenId) {
+  const vp = document.getElementById(screenId + '-viewport');
+  const frame = vp && vp.parentElement;
+  const screen = frame && frame.closest('.screen');
+  if (!screen) return;
+  // Frame box in the screen's own (unscaled) design px — offsets ignore the zoom transform.
+  let fx = 0, fy = 0, el = frame;
+  while (el && el !== screen) { fx += el.offsetLeft; fy += el.offsetTop; el = el.offsetParent; }
+  const fw = frame.offsetWidth, fh = frame.offsetHeight;
+  // Union with every bubble, measured inside its own panel (each panel is exactly the frame box).
+  let x0 = 0, y0 = 0, x1 = fw, y1 = fh;
+  frame.querySelectorAll('.comic-bleed .speech-bubble').forEach(function (b) {
+    x0 = Math.min(x0, b.offsetLeft);            y0 = Math.min(y0, b.offsetTop);
+    x1 = Math.max(x1, b.offsetLeft + b.offsetWidth); y1 = Math.max(y1, b.offsetTop + b.offsetHeight);
+  });
+  const uw = x1 - x0, uh = y1 - y0;
+  const SW = screen.clientWidth, SH = screen.clientHeight, m = COMIC_ZOOM_MARGIN;
+  const z = Math.min((SW - 2 * m) / uw, (SH - 2 * m) / uh);
+  const tx = (SW - uw * z) / 2 - fx - x0 * z;
+  const ty = (SH - uh * z) / 2 - fy - y0 * z;
+  frame.style.transform = 'translate(' + tx + 'px, ' + ty + 'px) scale(' + z + ')';
+}
+function comicZoomClose() {
+  if (!comicZoomedId) return;
+  const screenId = comicZoomedId;
+  comicZoomedId = null;
+  const vp = document.getElementById(screenId + '-viewport');
+  const frame = vp && vp.parentElement;
+  if (frame) { frame.classList.remove('is-zoomed'); frame.style.transform = ''; }
+  const screen = frame && frame.closest('.screen');
+  if (screen) screen.classList.remove('comic-zoom-open');
+  const zb = document.getElementById(screenId + '-zoom');
+  if (zb) { zb.innerHTML = COMIC_ZOOM_ICON_OPEN; zb.setAttribute('aria-label', 'הגדלת הקומיקס'); zb.setAttribute('aria-pressed', 'false'); }
+}
+window.addEventListener('resize', function () { if (comicZoomedId) comicZoomApply(comicZoomedId); });
 
 /* Pointer drag / swipe. clientX is in SCREEN px while the track's transform is
    in DESIGN px, so every delta is divided by getAppScale(). */
@@ -1093,13 +1255,14 @@ function comicAttachDrag(screenId) {
   if (!vp || !tracks.length || vp.dataset.dragAttached === '1') return;
   vp.dataset.dragAttached = '1';
 
-  let on = false, pid = null, startX = 0, startT = 0, lastX = 0, vpW = 1, moved = false;
+  let on = false, pid = null, startX = 0, startT = 0, lastX = 0, vpW = 1, dragScale = 1, moved = false;
 
   vp.addEventListener('pointerdown', function (e) {
     if (!comicHasSlider(screenId)) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault();
-    vpW = vp.getBoundingClientRect().width / getAppScale();   // screen px → design px
+    vpW = vp.offsetWidth;                                       // the track's own px
+    dragScale = vp.getBoundingClientRect().width / vpW || 1;    // app scale × comic zoom
     on = true; moved = false; pid = e.pointerId;
     startX = lastX = e.clientX; startT = performance.now();
     try { vp.setPointerCapture(pid); } catch (err) {}
@@ -1112,7 +1275,7 @@ function comicAttachDrag(screenId) {
     const st = comicState[screenId];
     if (!st) return;
     const last = COMIC_DATA[screenId].panels.length - 1;
-    let dx = (e.clientX - startX) / getAppScale();
+    let dx = (e.clientX - startX) / dragScale;
     if ((st.i === 0 && dx < 0) || (st.i === last && dx > 0)) dx *= 0.32;   // rubber band
     if (Math.abs(dx) > 4) moved = true;
     tracks.forEach(function (t) { t.style.transform = 'translateX(' + (st.i * vpW + dx) + 'px)'; });
@@ -1126,7 +1289,7 @@ function comicAttachDrag(screenId) {
     vp.classList.remove('is-dragging');
     const st = comicState[screenId];
     if (!st) return;
-    const dx = ((e ? e.clientX : lastX) - startX) / getAppScale();
+    const dx = ((e ? e.clientX : lastX) - startX) / dragScale;
     const v  = dx / Math.max(1, performance.now() - startT);   // design px per ms
     // A flick counts only once it has actually travelled: without the distance
     // floor, a tap with a few px of jitter divides by a ~1ms elapsed time and
@@ -2109,6 +2272,7 @@ function guessPick(screen, btn) {
   guessPicked[screen] = btn.dataset.id;
   guessSayToggle(screen, true);
   const cont = document.getElementById(screen + '-continue'); if (cont) cont.disabled = false;
+  if (COMIC_DATA[screen]) comicSyncNav(screen);   // inside the comic: unlocks the forward arrow instead
   xapiSend('interacted', 'question', { response: btn.dataset.id }, { category: 'guess' });
 }
 function guessEnter(screen) {
@@ -2121,6 +2285,7 @@ function guessEnter(screen) {
   });
   guessSayToggle(screen, !!picked);
   const cont = document.getElementById(screen + '-continue'); if (cont) cont.disabled = !picked;
+  if (COMIC_DATA[screen]) comicSyncNav(screen);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -2305,7 +2470,7 @@ function measEnter() {
 
    Flow order is neither screen order nor DOM order:
      hook          0 → 1 → 2 → 3 → 4
-     acquisition   5 → 6 → 7 ─┬─ comic:       8 → 23 → 24 → 25 → 26 → 27 → 28 ─┐
+     acquisition   5 → 6 → 7 ─┬─ comic:       8 → 24 → 23 → 25 → 26 → 27 → 28 ─┐
                               └─ experiments: 10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31 ─┤
                                                                           merge 12 ←──────┘
      practice      12 → 18 → 19 → 32 → 13 → 14 → 15 → 17 → 16 → (Part 02 or 03)
@@ -2329,8 +2494,8 @@ var SCREEN_TO_SUBCONTENT = {
 
   /* item 02 — comic branch */
   8:  ['02', 4],
-  23: ['02', 5],
-  24: ['02', 6],
+  24: ['02', 5],      // the cube — moved before the guess-Q (QA 2026-10-08); pages follow flow order
+  23: ['02', 6],
   25: ['02', 7],
   26: ['02', 8],
   27: ['02', 9],

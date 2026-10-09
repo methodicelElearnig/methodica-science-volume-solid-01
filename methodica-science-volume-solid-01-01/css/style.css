@@ -28,6 +28,7 @@
   padding: 4px;
 }
 #s0 .option-card-img img,
+#s0 .option-card-img video,
 #s4 .option-card-img img {
   object-fit: contain;
 }
@@ -70,6 +71,11 @@
   transform: none;
   transition-delay: calc(var(--k, 0) * 180ms);
 }
+/* A panel that opens with a blue strip (caption / banner, always bubble 0) shows the strip
+   alone first; the rest of its bubbles follow half a second later (QA 2026-10-08). */
+.comic-panel.is-revealed:has(> .speech-bubble--caption, > .speech-bubble--banner) .speech-bubble:not(.speech-bubble--caption):not(.speech-bubble--banner) {
+  transition-delay: calc(500ms + (var(--k, 1) - 1) * 180ms);
+}
 
 /* Bubble frame: white bg + Subject/500 stroke. The drop shadow separates it
    from the dark photorealistic panel art underneath. */
@@ -85,12 +91,12 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
-/* Bubble text: RTL, 19px. #303030 on #fff = 12.6:1. */
+/* Bubble text: RTL, 20px across every comic bubble (QA 2026-10-08). #303030 on #fff = 12.6:1. */
 /* Regular weight, not 500: QA 2026-08-24 asked for the comic text unbolded, and 400 is the
    approved body weight (the ramp is 400/600/700 — 500 was never in it). */
 .speech-bubble__text {
   font-family: 'Assistant', sans-serif;
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 400;
   color: #303030;
   text-align: right;
@@ -102,6 +108,8 @@
      text through esc(), so markup cannot be used for this. pre-line still collapses runs of
      spaces, so bubbles without a \n render exactly as before. */
   white-space: pre-line;
+  /* No single word left alone on a bubble's last line, anywhere in the comic (QA 2026-10-08). */
+  text-wrap: pretty;
 }
 
 /* Bubble tail: down-pointing beak with the same white fill + blue stroke.
@@ -190,45 +198,44 @@
 .speech-bubble--thought .speech-bubble__tail::after  { width: 10px; height: 10px; top: 22px; right: 20px; }
 .speech-bubble--thought.speech-bubble--tail-down-right .speech-bubble__tail,
 .speech-bubble--thought.speech-bubble--tail-down-left  .speech-bubble__tail { bottom: -30px; }
+/* Top-edge trail: scaleY(-1) (from the base up rule) puts the lead circle against the frame and
+   the small one above it; -30px mirrors the down variants' clearance. */
+.speech-bubble--thought.speech-bubble--tail-up-right .speech-bubble__tail,
+.speech-bubble--thought.speech-bubble--tail-up-left  .speech-bubble__tail { top: -38px; }
 /* Side beak, thought variant: the circles are round, so the 34×34 box is placed
    rather than rotated. The -9px is half the 18px lead circle, so --tail-y means the same thing
    here as on a speech beak: the centre of what touches the bubble. That is what --tail-right
    still does.
-   --tail-LEFT is the exception, and deliberately so. Its one user is S24, where the thinker
-   stands ABOVE-left of the bubble rather than level with it, so a trail leaving the left edge
-   sideways pointed at his shoulder. It leaves over the top-left shoulder of the ellipse instead:
-   `left` positive tucks the box inside the bubble's left edge (the ellipse curves away there, so
-   the circles still read as outside it), the larger --tail-y subtraction lifts it clear of the
-   top, and the rotation turns the trail to run up-left toward his head. Values set by hand
-   against the artwork — they are aimed at THIS panel, so re-aim them if the art changes. */
-.speech-bubble--thought.speech-bubble--tail-left  .speech-bubble__tail { left:   34px; right: auto; top: calc(var(--tail-y, 38px) - 69px); bottom: auto; transform: rotate(90deg); }
+   --tail-LEFT (one user, S24): the bubble floats ABOVE-right of the thinker, so the trail leaves
+   the bubble's left edge and runs DOWN-left to his head — the big circle against the bubble, the
+   small one by the head, i.e. the thought rises from him (QA 2026-10-08). transform: none (cancels the speech beak's rotate) — the base
+   circle layout (lead top-right, small one below-left) already points that way. */
+.speech-bubble--thought.speech-bubble--tail-left  .speech-bubble__tail { left: -30px; right: auto; top: calc(var(--tail-y, 38px) - 9px); bottom: auto; transform: none; }
 .speech-bubble--thought.speech-bubble--tail-right .speech-bubble__tail { right: -34px; left:  auto; top: calc(var(--tail-y, 38px) - 9px); bottom: auto; transform: scaleX(-1); }
 
 /* ── Variant: narration caption bar ──
-   Docked across the bottom of the panel; ignores --r/--t/--w.
-   White on the flattened worst case (≈#0a2049) ≈ 13:1. */
+   Hung ABOVE the frame, flush with its right edge, read before the panel (QA 2026-10-08 — it used
+   to dock across the bottom of the art). One semibold line, the band shrink-wrapped to the text
+   with a little extra length; a caption longer than the frame wraps inside it. Ignores
+   --r/--t/--w. .comic-bleed does not clip, and comicZoomApply() measures it, so it stays in view
+   when zoomed. White on ≈#0b2452 ≈ 13:1. */
 .speech-bubble--caption {
-  right: 3%;
-  left: 3%;
   top: auto;
-  bottom: 4%;
-  width: auto;
+  bottom: calc(100% + 18px);
+  right: 0;
+  left: auto;
+  width: max-content;
+  max-width: 100%;
+  z-index: 5;
 }
 .speech-bubble--caption .speech-bubble__frame {
   background: rgba(11, 36, 82, 0.9);
   border: none;
   border-radius: 12px;
-  padding: 10px 18px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+  padding: 10px 32px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
 }
-/* Only the colour differs from the ordinary bubble now — QA asked for the dark-blue caption band
-   to read as the same design as the bubbles, unbolded. Weight comes from .speech-bubble__text. */
-.speech-bubble--caption .speech-bubble__text { color: #fff; }
-/* Half-width captions for composite panels: the frame holds two scenes, and slide 12 gives each
-   its own band rather than one running under both. 50% minus the 3% edge inset and half the 2%
-   centre gap, so the two bands sit inside their own scene and clear the seam. */
-.speech-bubble--caption-right { left: 51%; right: 3%; }
-.speech-bubble--caption-left  { left: 3%;  right: 51%; }
+.speech-bubble--caption .speech-bubble__text { color: #fff; font-weight: 600; }
 
 /* ── Variant: banner ("זוהי שיטת …") — docked across the panel width; --t
    picks the band (default near the top, ~78% to sit low instead).
@@ -239,6 +246,12 @@
   top: var(--t, 5%);
   width: auto;
 }
+.speech-bubble--banner.speech-bubble--fit {
+  left: 0; right: 0;
+  width: fit-content;
+  margin-inline: auto;
+}
+.speech-bubble--banner.speech-bubble--fit .speech-bubble__frame { padding: 8px 40px; }
 .speech-bubble--banner .speech-bubble__frame {
   background: var(--subject-800);
   border-color: #fff;
@@ -249,16 +262,18 @@
    400 — "זוהי שיטת דחיקת המים!" and "זוהי שיטת ההצפה!" read as shouted. The white-on-blue pill
    already carries the emphasis; the weight does not need to. */
 .speech-bubble--banner .speech-bubble__text {
-  color: #fff; font-weight: 400; font-size: 22px; text-align: center;
+  color: #fff; font-weight: 400; font-size: 20px; text-align: center;
 }
 
-/* ── Variant: side note (caveats / footnotes inside a panel) ── */
+/* ── Variant: side note (caveats / footnotes inside a panel) ──
+   White with a light-blue (Subject/400) border, replacing the yellow; the border is an even 3px
+   all round like the speech bubbles, no thick side stripe (QA 2026-10-08). */
 .speech-bubble--note .speech-bubble__frame {
-  background: #fff8e6;
-  border: 2px solid #f0b400;
-  border-right-width: 6px;
+  background: #fff;
+  border: 3px solid var(--subject-400);
 }
-.speech-bubble--note .speech-bubble__text { font-size: 16px; font-weight: 400; color: #5a4600; }
+/* Black text, 20px like the rest of the comic (QA 2026-10-08). */
+.speech-bubble--note .speech-bubble__text { font-size: 20px; font-weight: 400; color: #000; }
 
 /* S14's `#s14 .scq-answers` override lived here. Every one of its four declarations is now supplied
    by unit-css: `position/right/top` by the shared in-flow block for .scq-question--withimage (which
@@ -294,15 +309,16 @@
    ═══════════════════════════════════════════════════════ */
 .comic {
   position: absolute; inset: 0;
-  /* 24px top: the toggle now sits inside the bottom bar, so the band it used to
-     occupy above the frame is content space again. */
-  padding: 24px 40px 90px;
+  /* 84px top: the band above the frame is where the caption hangs. Every comic screen keeps the
+     same padding AND the same content height (the dots row keeps its slot even when hidden), so
+     the frame sits at exactly the same place and size on every screen (QA 2026-10-08). */
+  padding: 84px 40px 90px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
 }
 /* prev (›) first in DOM = rightmost; next (‹) last = leftmost */
 .comic-row { display: flex; direction: rtl; align-items: center; gap: 18px; }
 .comic-frame {
-  --ratio: 1.7778;           /* per-screen inline override (2 for the slide-12 composite) */
+  --ratio: 1.7778;           /* one size for the whole comic — 12.jpg (2:1) is cropped to it */
   height: 480px; aspect-ratio: var(--ratio);
   max-width: 1040px; flex: none;
   position: relative;        /* anchors .comic-bleed. Still NO z-index — a stacking
@@ -355,19 +371,58 @@
 }
 
 /* Comic slider nav (arrows sit in .comic-row, dots below the frame) */
-.comic-nav { display: flex; align-items: center; justify-content: center; gap: 22px; }
-.comic-nav[hidden] { display: none; }
-.comic-arrow[hidden] { display: none; }
+.comic-nav { display: flex; align-items: center; justify-content: center; gap: 22px; min-height: 10px; }
+.comic-nav[hidden] { display: flex; visibility: hidden; }   /* keeps its slot: no frame shift */
 .comic-dot {
   width: 10px; height: 10px; padding: 0; border: none; border-radius: 50%;
   background: var(--subject-200); cursor: pointer;
 }
 .comic-dot.is-seen:not(.is-active) { background: var(--subject-400); }
 
+/* Carousel arrows (Figma 720-UI-Templates "Carousel", node 1118:13364): bare 22×40 chevrons in a
+   60×60 hit box, 40px in from the screen edges, Subject/800 when live and Natural/600 (#AEAEAE)
+   when there is nowhere to go. They page the whole comic — see comicArrowNext() in main.js.
+   Vertically centred on the frame: .comic is 84px top / 90px bottom padding around a 502px
+   block (480 frame + 12 gap + 10 dots), so the frame centre is 50% − 14px at any canvas height.
+   The guess-question screens use the same rule, so the arrows never move.
+   Physical left/right on purpose: next is ALWAYS on the left in this RTL unit. */
+.comic-side-arrow {
+  position: absolute;
+  top: calc(50% - 44px);
+  width: 60px; height: 60px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; border-radius: 50%;
+  color: var(--subject-800);
+  cursor: pointer;
+  z-index: 12;
+}
+.comic-side-arrow--next { left: 40px; }
+.comic-side-arrow--prev { right: 40px; }
+.comic-side-arrow--prev .comic-side-arrow__icon { transform: scaleX(-1); }
+.comic-side-arrow__icon { display: block; }
+.comic-side-arrow:disabled { color: #AEAEAE; cursor: default; }
+.comic-side-arrow:focus-visible { outline: 3px solid var(--subject-500); outline-offset: 2px; }
+/* The two guess-questions inside the comic carry the carousel arrows too: their content is pulled
+   in from the 40px edge to 120px (40 + the 60px arrow + 20 clear) so the option pills and the
+   mascot (inline right:120px on s23/s26) never sit under an arrow, at any canvas height. */
+#s23 .exp, #s26 .exp { padding-right: 120px; padding-left: 120px; }
+
+/* Comic zoom. The magnifier sits top-LEFT of the frame: top-right is where the captions hang
+   and the slide-12 bubble overhangs. z 5 keeps it above .comic-bleed (4). comicZoomApply() sets the transform — the
+   frame keeps its layout box and is scaled in place from its top-left corner, so the bubbles
+   (inside .comic-bleed, inside the frame) grow with the art. */
+.comic-zoom-btn { top: 12px; left: 12px; right: auto; z-index: 5; }
+.comic-frame { transform-origin: 0 0; transition: transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1); }
+.comic-frame.is-zoomed { z-index: 30; }   /* the one time the frame may stack — the toggle is covered anyway */
+.comic-zoom-backdrop { display: none; position: absolute; inset: 0; z-index: 29; background: rgba(255, 255, 255, 0.85); }
+.comic-zoom-open .comic-zoom-backdrop { display: block; }
+.comic-zoom-open .comic-side-arrow { visibility: hidden; }
+
 /* Repo's only reduced-motion block: kill the slide and the bubble lift, keep
    every state change instant but fully functional. */
 @media (prefers-reduced-motion: reduce) {
   .comic-track { transition: none; }
+  .comic-frame { transition: none; }
   .speech-bubble { transition: opacity 0.01s linear; transform: none; }
   .comic-panel.is-revealed .speech-bubble { transform: none; transition-delay: 0s; }
 }
@@ -468,6 +523,18 @@
    parts 02 and 04, whose transition screens QA has not asked to resize. */
 #s12 .transition-title { font-size: 40px; }
 #s12 .transition-sub   { font-size: 24px; }
+
+/* QA 2026-10-08 (slide 6): S3's bubble needs more width so no word sits alone on a line, and
+   the mascot was enlarged. The narration column is 1120 - frame - 36 gap and holds bubble +
+   14 gap + sprite, so the room comes out of the image: 560 -> 500 gives a 584px column,
+   i.e. 330px for the bubble beside a 240px sprite. */
+#s3 .hook-img-frame { flex: 0 0 500px; width: 500px; }
+
+/* QA 2026-10-08 (S5): the title sits in the narration column. The column is top-aligned so the
+   title starts level with the image's top edge, and one blank line (30px = 24px x 1.25)
+   separates the title from the text. */
+#s5 .hook-narration { align-self: flex-start; }
+#s5 .hook-title { margin-bottom: 30px; }
 
 /* QA 2026-08-25 (slide 5): S6's image + narration move up 100px to close the empty band above
    them. .hook-content is centred with `top: calc(50% - 37px)`, so the offset goes on top
@@ -595,3 +662,18 @@
    no <strong> and were not in this QA round — changing the shared rule would silently unbold
    them. S14 and S16 use the same treatment via their own wrappers. */
 #s13 .scq-qtext, #s14 .scq-qtext, #s16 .scq-qtext { font-weight: 400; }
+
+/* S26 — the stem + options block is centred vertically (justify-content) and the 100px question
+   top-padding drops back to .exp's 24px, since centring already clears the top edge. */
+#s26 .exp { justify-content: center; padding-top: 24px; }
+/* S23 (QA 2026-10-08) — back to the top: .exp--question's 100px inset, no centring. Under the title,
+   a row: stem + options (narrowed 604 → 520) on the right and the crown on their physical left,
+   stretched to the stem-plus-options height; its width follows the art's 240:190 ratio. */
+#s23 .s23-qblock { align-self: flex-start; display: flex; flex-direction: column; gap: 6px; }
+#s23 .s23-row { display: flex; align-items: stretch; gap: 64px; }
+#s23 .s23-main { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+#s23 .s23-main .exp-instruction { white-space: nowrap; }
+#s23 .s23-row .guess-options { width: 520px; align-self: auto; }
+#s23 .s23-row .guess-opt { width: 100%; }
+#s23 .s23-crown { align-self: stretch; width: auto; aspect-ratio: 240 / 190; margin: 0; }
+#s23 .s23-crown > img { width: 100%; height: 100%; object-fit: contain; }

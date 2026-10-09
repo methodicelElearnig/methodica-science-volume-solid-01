@@ -290,9 +290,12 @@ html, body {
    clocks — caught by reasoning from the card's transition list, not by measurement.) */
 .option-card-img video {
   outline: 1px solid #fff; outline-offset: 0;
-  transition: outline-color 0.15s;
+  /* The character mp4s have a baked-in white background, which shows as a white box on the
+     Subject/100 selected fill. multiply makes white transparent against the card, so the mascot
+     sits directly on the card colour. The white outline above multiplies to nothing as well, so
+     it keeps hiding the compositing seam in both states without a per-state colour. */
+  mix-blend-mode: multiply;
 }
-.option-card.selected .option-card-img video { outline-color: var(--subject-100); }
 /* Hover + keyboard-focus — Figma ImageContainer state=hover: Subject/500 border */
 .option-card:hover .option-card-img,
 .option-card:focus-visible .option-card-img { border-color: var(--subject-500); }
@@ -2950,8 +2953,11 @@ html, body {
    a % offset scales with the frame at any size. Same white/subject-500/beak language as
    .companion-bubble, but the beak points straight down (position does the aiming) since
    this tag isn't paired with a sprite to lean toward sideways. */
+/* 2026-10-08: photo replaced — Archimedes now sits right of centre with his arm (and the crown)
+   raised over the left half, so the bubble moved to the bare wall RIGHT of his face and the beak
+   flipped to point LEFT at him. top 28% centres the 76px bubble on his face (~40% down). */
 .hook-eureka {
-  position: absolute; top: 6%; left: 33%;
+  position: absolute; top: 28%; left: 68%;
   background: var(--pure-white); color: var(--subject-900);
   border: 3px solid var(--subject-500);
   font-family: 'Assistant', sans-serif; font-size: 22px;
@@ -2960,8 +2966,8 @@ html, body {
   box-shadow: 0 3px 10px rgba(0,0,0,0.18);
   z-index: 4;
 }
-/* The beak points RIGHT, at Archimedes: the bubble sits at left 33% and he is just past its
-   right edge, so the tail this replaced -- centred underneath and pointing straight DOWN --
+/* (Superseded 2026-10-08: the beak now points LEFT — see above.) The beak points RIGHT, at
+   Archimedes: the bubble sits at left 33% and he is just past its right edge, so the tail this replaced -- centred underneath and pointing straight DOWN --
    aimed at the bath rather than at the man saying the line. Same two-triangle construction as
    .companion-say--right's, and `top: 50%` keeps it inside the straight run of the edge
    (16..60 of a 76px bubble) rather than in a rounded corner. */
@@ -2970,8 +2976,8 @@ html, body {
   content: ''; position: absolute; top: 50%; transform: translateY(-50%);
   border-top: 13px solid transparent; border-bottom: 13px solid transparent;
 }
-.hook-eureka::before { right: -19px; border-left: 19px solid var(--subject-500); }
-.hook-eureka::after  { right: -15px; border-left: 19px solid var(--pure-white); }
+.hook-eureka::before { left: -19px; border-right: 19px solid var(--subject-500); }
+.hook-eureka::after  { left: -15px; border-right: 19px solid var(--pure-white); }
 
 /* ═══════════════════════════════════════════════════════
    TEMPLATE — SingleChoiceQuestionImage (S4, mark-for-feedback)
@@ -3052,10 +3058,10 @@ html, body {
 .path-card { width: 300px; }
 .path-card-label {
   font-family: 'Assistant', sans-serif;
-  font-size: 24px; font-weight: 700; color: var(--subject-900);
+  font-size: 24px; font-weight: 400; color: var(--subject-900);
   text-align: center;
 }
-.path-card.selected .path-card-label { color: var(--subject-700); }
+.path-card.selected .path-card-label { color: var(--subject-700); font-weight: 700; }
 
 /* ═══════════════════════════════════════════════════════
    COMPONENT — Learning-path toggle (position-locked).

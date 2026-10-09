@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=72">
-  <link rel="stylesheet" href="css/style.css?v=30">
+  <link rel="stylesheet" href="../unit-css/style.css?v=74">
+  <link rel="stylesheet" href="css/style.css?v=49">
 </head>
 <body data-subject-theme="science">
 
@@ -61,9 +61,9 @@
        S0 — Screen 03 · TwoOptionSelection · "מי תלווה אותנו בלמידה?"
        Companion-character choice. Two producer-named characters:
        orange (holds an empty graduated cylinder / משורה) and
-       turquoise (holds a water jug / קנקן). Both ship as static PNGs;
-       the storyboard asks for animated GIFs, which are still to be
-       PRODUCED. The choice made here drives every mascot in the unit
+       turquoise (holds a water jug / קנקן). Each card is a muted mp4
+       held on its first frame; it animates only while the pointer is
+       over that card (wireS0HoverVideos in js/main.js). The choice made here drives every mascot in the unit
        via CHARACTER_SLOTS / characterAsset() in js/main.js — every pose
        currently resolves back to these two files until the real
        per-pose art lands (add the key to CHARACTER_ASSETS then).
@@ -80,14 +80,16 @@
         <div class="option-card" role="radio" aria-checked="false" tabindex="0"
              data-value="orange" aria-label="דמות כתומה מחזיקה משורה ריקה" onclick="selectOption(this)">
           <div class="option-card-img">
-            <img src="assets/img/character-orange-selection.png?v=2" alt="דמות כתומה מחזיקה משורה ריקה">
+            <video src="assets/img/character-orange-select.mp4?v=1" muted loop playsinline preload="auto"
+                   aria-hidden="true"></video>
           </div>
         </div>
 
         <div class="option-card" role="radio" aria-checked="false" tabindex="0"
              data-value="turquoise" aria-label="דמות טורקיז מחזיקה קנקן מים" onclick="selectOption(this)">
           <div class="option-card-img">
-            <img src="assets/img/character-turquoise-selection.png?v=2" alt="דמות טורקיז מחזיקה קנקן מים">
+            <video src="assets/img/character-turquoise-select.mp4?v=1" muted loop playsinline preload="auto"
+                   aria-hidden="true"></video>
           </div>
         </div>
       </div>
@@ -114,9 +116,8 @@
                  aria-label="סרטון: רוני מוצאת תליון זהב על חוף הים"></video>
         </div>
         <div class="hook-narration">
-          <p>רוני קיבלה גלאי מתכות חדש והיא מנסה למצוא דברי ערך על חוף הים.</p>
-          <p>היא מצאה תליון בצורת כוכב ורוצה לגלות מאיזו מתכת הוא עשוי.</p>
-          <p>לשם כך עליה למדוד בין השאר את <strong>נפח</strong> התליון.</p>
+          <p>רוני קיבלה גלאי מתכות חדש והיא מנסה למצוא דברי ערך<br>על חוף הים.</p>
+          <p>היא מצאה תליון בצורת כוכב ורוצה לגלות מאיזו מתכת<br>הוא עשוי.<br>לשם כך עליה למדוד בין השאר את <strong>נפח</strong> התליון.</p>
           <div class="companion-say companion-say--inline companion-say--right">
             <p class="companion-bubble" style="--bubble-w: 300px;">
               איך רוני יכולה לדעת מה נפח התליון?</p>
@@ -171,12 +172,12 @@
         </div>
         <div class="hook-narration">
           <div class="companion-say companion-say--inline companion-say--right">
-            <div class="companion-bubble" style="--bubble-w: 290px;">
+            <div class="companion-bubble" style="--bubble-w: 340px;">
               <p>אם נכניס את התליון לתוך כלי עם מים, מפלס המים יעלה.</p>
-              <p>ההפרש בין מפלס המים החדש למפלס המים המקורי שווה לנפח התליון!</p>
+              <p>ההפרש בין מפלס המים החדש למפלס המים המקורי <strong style="white-space: nowrap;">הוא נפח התליון!</strong></p>
             </div>
             <video class="companion" src="assets/img/character-orange-cylinder-pendant.mp4?v=2" aria-hidden="true"
-                 data-pose="cylinder-pendant" draggable="false" autoplay loop muted playsinline style="--cw: 200px;"></video>
+                 data-pose="cylinder-pendant" draggable="false" autoplay loop muted playsinline style="--cw: 240px;"></video>
           </div>
         </div>
       </div>
@@ -240,17 +241,9 @@
        Narrative screen (reuses the hook layout).
        ═══════════════════════════════════════════════════════════ -->
   <section class="screen" data-screen="5" id="s5">
-    <!-- The "did you know" line is his, so it leaves .hook-content and joins him in a
-         .companion-say group in the free top band (the storyboard also stands him top-right
-         here, in a toga). Absolute rather than --inline: a 170px sprite in the flow would
-         push the stage down by its full height. -->
-    <!-- top: 100px, not 22 — QA 2026-08-25 (slide 4) applies the unit-wide 100px top clearance
-         to this group as well. -->
-    <div class="companion-say companion-say--right" style="right: 30px; top: 100px;">
-      <p class="companion-bubble" style="--bubble-w: 380px;">ידעתם שהשיטה למדידת נפח הומצאה לפני אלפי שנים ביוון העתיקה?</p>
-      <video class="companion" src="assets/img/character-orange-toga.mp4?v=2" aria-hidden="true"
-           data-pose="toga" draggable="false" autoplay loop muted playsinline style="--cw: 170px;"></video>
-    </div>
+    <!-- 2026-10-08: the mascot was removed from this screen per review; his "did you know"
+         line is now the screen's bold title. With no .companion the screen no longer gets
+         .has-companion, so the column takes the full 1120px width (like S1). -->
     <div class="hook-content">
       <div class="hook-stage">
         <div class="hook-img-frame">
@@ -260,10 +253,12 @@
           </button>
           <img src="assets/img/s5-archimedes-crown.jpg" alt="המלך הירון וארכימדס בוחנים כתר זהב מעוטר">
         </div>
+        <!-- QA 2026-10-08: the title lives IN the narration column here (not above the stage), so
+             title + text are one block that .hook-stage's align-items:center centres on the image. -->
         <div class="hook-narration">
-          <p>המלך הירון השני קיבל כתר חדש, אבל הוא חשד שהכתר אינו עשוי מזהב טהור.</p>
-          <p>הוא ביקש מארכימדס לבדוק זאת בלי לגרום לכתר כל נזק.</p>
-          <p>ארכימדס הבין שעליו למדוד תחילה את נפח הכתר, אך צורתו המורכבת והמעוטרת הקשתה עליו למצוא דרך לעשות זאת.</p>
+          <h1 class="hook-title">ידעתם שהשיטה למדידת נפח הומצאה<br>לפני אלפי שנים ביוון העתיקה?</h1>
+          <p>המלך הירון השני קיבל כתר חדש,<br>אבל הוא חשד שהכתר אינו עשוי מזהב טהור.<br>הוא ביקש מארכימדס לבדוק זאת בלי לגרום לכתר כל נזק.</p>
+          <p>ארכימדס הבין שעליו למדוד תחילה את נפח הכתר,<br>אך צורתו המורכבת והמעוטרת הקשתה עליו<br>למצוא דרך לעשות זאת.</p>
         </div>
       </div>
     </div>
@@ -282,9 +277,9 @@
     <!-- His remark leaves .hook-narration and joins him in a .companion-say group, same
          pattern as S5/S21/S22/S23/S26/S29 — absolute (not --inline), anchored where his
          silent CHARACTER_SLOTS sprite used to sit (right:49/bottom:96), now authored. -->
-    <!-- bottom: 196px, not 96 — QA 2026-08-25 (slide 5) raises this screen's content by 100px;
-         see the matching #s6 .hook-content rule in css/style.css. -->
-    <div class="companion-say companion-say--right" style="right: 49px; bottom: 196px;">
+    <!-- bottom: 96px — QA 2026-10-08 lowered the group back from 196px (the 2026-08-25 lift)
+         so it sits near the nav bar, clear of the image/narration above. -->
+    <div class="companion-say companion-say--right" style="right: 49px; bottom: 96px;">
       <!-- .hook-content is vertically CENTERED (unlike S1/S3/S5's top band), so the
            narration's last line has almost no cushion above the nav bar — a narrower/
            taller bubble collides with it. --bubble-w: 500px keeps this to 3 lines instead
@@ -307,15 +302,15 @@
       <div class="hook-stage">
         <div class="hook-img-frame">
           <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
-                  data-zoom-src="assets/img/s6-archimedes-bath.jpg" data-zoom-alt="ארכימדס באמבטיה מחזיק כתר, המים גולשים מהאמבט">
+                  data-zoom-src="assets/img/s6-archimedes-bath.jpg?v=2" data-zoom-alt="ארכימדס באמבטיה מחזיק כתר, המים גולשים מהאמבט">
             <svg class="img-zoom-btn__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="2"/><path d="M13.2 13.2L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
-          <img src="assets/img/s6-archimedes-bath.jpg" alt="ארכימדס באמבטיה מחזיק כתר, המים גולשים מהאמבט החוצה">
+          <img src="assets/img/s6-archimedes-bath.jpg?v=2" alt="ארכימדס באמבטיה מחזיק כתר, המים גולשים מהאמבט החוצה">
           <div class="hook-eureka">אאוריקה!<br>מצאתי!</div>
         </div>
         <div class="hook-narration">
           <p>יום אחד, בזמן שרחץ באמבטיה, ארכימדס הבחין שמפלס המים עולה כשהוא נכנס למים.</p>
-          <p>הוא הבין שאפשר למדוד נפח של גוף לפי כמות המים שהוא דוחק החוצה מהכלי בו הוא נמצא, וקרא בהתלהבות: "אאוריקה!" "מצאתי!".</p>
+          <p>הוא הבין שאפשר <strong>למדוד נפח של גוף לפי כמות המים שהוא דוחק החוצה מהכלי בו הוא נמצא</strong>, וקרא בהתלהבות: "אאוריקה!" "מצאתי!".</p>
           <p>כך נולדה שיטת דחיקת המים, המשמשת למדידת נפח של גופים בעלי צורה מורכבת עד היום.</p>
         </div>
       </div>
@@ -384,7 +379,7 @@
   <!-- ═══ S8 — Storyboard slide 12 · single composite frame (no slider):
        (right) Archimedes addresses the learners, (left) he measures the box.
        Delivered as one 2:1 file, hence --ratio:2 and a hidden panel nav.
-       Flow: S7 path choice → S8 → S23. ═══ -->
+       Flow: S7 path choice → S8 → S24. ═══ -->
   <section class="screen" data-screen="8" id="s8">
     <div class="comic">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
@@ -400,10 +395,8 @@
           <span>לקרוא קומיקס</span></button>
       </div>
 
-      <!-- RTL row: prev (›) first in DOM = rightmost; next (‹) last = leftmost -->
       <div class="comic-row">
-        <button class="comic-arrow" id="s8-prev" type="button" onclick="comicSliderPrev('s8')" aria-label="הפאנל הקודם"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 4L17 12L9 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <div class="comic-frame" style="--ratio:2">
+        <div class="comic-frame">
           <div class="comic-viewport" id="s8-viewport" role="group" aria-roledescription="לוח קומיקס" aria-label="פאנלים של הסיפור">
             <div class="comic-track" id="s8-track"><!-- built by comicBuild('s8') --></div>
           </div>
@@ -413,13 +406,16 @@
             <div class="comic-track" id="s8-bleed-track"><!-- built by comicBuild('s8') --></div>
           </div>
         </div>
-        <button class="comic-arrow comic-arrow--next" id="s8-next" type="button" onclick="comicSliderNext('s8')" aria-label="הפאנל הבא"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M15 4L7 12L15 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
 
       <div class="comic-nav" id="s8-nav">
         <div class="comic-dots" id="s8-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
       </div>
     </div>
+    <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
+         first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
+    <button class="comic-side-arrow comic-side-arrow--prev" id="s8-prev" type="button" onclick="comicArrowPrev('s8')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--next" id="s8-next" type="button" onclick="comicArrowNext('s8')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
     <div class="nav-bar">
       <button class="btn-continue" id="s8-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
@@ -429,7 +425,7 @@
 
   <!-- ═══ S23 — Storyboard slide 13 · Guess-question inside the comic.
        Per the storyboard there is NO correct/incorrect feedback — picking any
-       option is simply what lets the comic continue. Flow: S8 → S23 → S24. ═══ -->
+       option is simply what lets the comic continue. Flow: S24 → S23 → S25. ═══ -->
   <section class="screen" data-screen="23" id="s23">
     <div class="exp exp--question">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
@@ -444,28 +440,41 @@
         <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
           <span>לקרוא קומיקס</span></button>
       </div>
+      <!-- Title at the top (back to the 100px question inset, QA 2026-10-08); under it a row:
+           stem + options on the right, the crown on their physical left, as tall as stem + options.
+           The stem breaks before "צורות שונות" on purpose (QA 2026-10-08). -->
+      <div class="s23-qblock">
       <div class="exp-head exp-head--question">
         <h1 class="exp-title">מדידת נפח של גוף שאינו הנדסי</h1>
-        <p class="exp-instruction">נחשו: איך נמדוד נפח של גופים שאינם הנדסיים בעלי צורות שונות?</p>
       </div>
-      <div class="scq-answers guess-options" id="s23-guess" role="radiogroup" aria-label="נחשו: איך נמדוד נפח של גופים שאינם הנדסיים בעלי צורות שונות?">
+      <div class="s23-row">
+      <div class="s23-main">
+      <p class="exp-instruction">נחשו: איך נמדוד נפח של גופים שאינם הנדסיים בעלי<br>צורות שונות (למשל, כתר)?</p>
+      <div class="scq-answers guess-options" id="s23-guess" role="radiogroup" aria-label="נחשו: איך נמדוד נפח של גופים שאינם הנדסיים בעלי צורות שונות (למשל, כתר)?">
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s23', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s23', this)"><span class="scq-opt-text">נחתוך אותם לחלקים ונמדוד עם סרגל</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s23', this)"><span class="scq-opt-text">נכניס אותם למים</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s23', this)"><span class="scq-opt-text">נעריך אותם לפי העין</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
+      </div>
+      <div class="scq-figure s23-crown">
+        <img src="assets/img/s23-crown.svg" alt="כתר זהב מעוטר באבני חן">
+      </div>
+      </div>
+      </div>
     </div>
-    <!-- Companion line → one .companion-say group; he keeps the right band the storyboard
-         gives him (slide 13) and the bubble hangs off his physical left. -->
-    <!-- Below the options, not on the storyboard's higher perch: the 560px option column
-         reaches y=416. Anchored by TOP because everything else on this screen is
-         (.exp is padding-top + head + options), so the two cannot converge when the canvas
-         height changes with the window's aspect ratio — `bottom` here collided at 640. -->
-    <div class="companion-say companion-say--right" style="right: 38px; top: 430px;">
-      <p class="companion-bubble hidden" id="s23-guess-bubble" style="--bubble-w: 300px;">בהמשך נלמד בדיוק איך עושים את זה!</p>
+    <!-- Companion line → one .companion-say group, bottom-left above the nav bar (120px clears the
+         carousel arrow). QA 2026-10-08: the bubble sits on his physical RIGHT and the beak points
+         left at him (--left: sprite first, then bubble). -->
+    <div class="companion-say companion-say--left" style="left: 120px; bottom: 88px;">
       <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
            data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 179px;"></video>
+      <p class="companion-bubble hidden" id="s23-guess-bubble" style="--bubble-w: 240px;">בהמשך נלמד בדיוק איך עושים את זה!</p>
     </div>
+    <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
+         first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
+    <button class="comic-side-arrow comic-side-arrow--prev" id="s23-prev" type="button" onclick="comicArrowPrev('s23')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--next" id="s23-next" type="button" onclick="comicArrowNext('s23')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
     <div class="nav-bar">
       <button class="btn-continue" id="s23-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
@@ -475,7 +484,7 @@
 
   <!-- ═══ S24 — Storyboard slide 14 · single composite frame (no slider):
        (right) he measures the box and works out its volume, (left) key, acorn
-       and marble. Flow: S23 → S24 → S25. ═══ -->
+       and marble. Flow: S8 → S24 → S23 (moved before the guess-Q, QA 2026-10-08). ═══ -->
   <section class="screen" data-screen="24" id="s24">
     <div class="comic">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
@@ -491,7 +500,6 @@
           <span>לקרוא קומיקס</span></button>
       </div>
       <div class="comic-row">
-        <button class="comic-arrow" id="s24-prev" type="button" onclick="comicSliderPrev('s24')" aria-label="הפאנל הקודם"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 4L17 12L9 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="comic-frame">
           <div class="comic-viewport" id="s24-viewport" role="group" aria-roledescription="לוח קומיקס" aria-label="פאנלים של הסיפור">
             <div class="comic-track" id="s24-track"><!-- built by comicBuild('s24') --></div>
@@ -500,12 +508,15 @@
             <div class="comic-track" id="s24-bleed-track"><!-- built by comicBuild('s24') --></div>
           </div>
         </div>
-        <button class="comic-arrow comic-arrow--next" id="s24-next" type="button" onclick="comicSliderNext('s24')" aria-label="הפאנל הבא"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M15 4L7 12L15 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
       <div class="comic-nav" id="s24-nav">
         <div class="comic-dots" id="s24-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
       </div>
     </div>
+    <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
+         first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
+    <button class="comic-side-arrow comic-side-arrow--prev" id="s24-prev" type="button" onclick="comicArrowPrev('s24')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--next" id="s24-next" type="button" onclick="comicArrowNext('s24')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
     <div class="nav-bar">
       <button class="btn-continue" id="s24-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
@@ -516,7 +527,7 @@
   <!-- ═══ S25 — Storyboard slide 15 · שיטת דחיקת המים · slider, 5 panels
        (15a–15e). Panels slide right-to-left: panel 1 is rightmost and the next
        panel enters from the left. "המשך" stays disabled until every panel has
-       been seen at least once (sticky on return). Flow: S24 → S25 → S26. ═══ -->
+       been seen at least once (sticky on return). Flow: S23 → S25 → S26. ═══ -->
   <section class="screen" data-screen="25" id="s25">
     <div class="comic">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
@@ -532,7 +543,6 @@
           <span>לקרוא קומיקס</span></button>
       </div>
       <div class="comic-row">
-        <button class="comic-arrow" id="s25-prev" type="button" onclick="comicSliderPrev('s25')" aria-label="הפאנל הקודם"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 4L17 12L9 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="comic-frame">
           <div class="comic-viewport" id="s25-viewport" role="group" aria-roledescription="קרוסלת קומיקס" aria-label="פאנלים של הסיפור">
             <div class="comic-track" id="s25-track"><!-- built by comicBuild('s25') --></div>
@@ -541,12 +551,15 @@
             <div class="comic-track" id="s25-bleed-track"><!-- built by comicBuild('s25') --></div>
           </div>
         </div>
-        <button class="comic-arrow comic-arrow--next" id="s25-next" type="button" onclick="comicSliderNext('s25')" aria-label="הפאנל הבא"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M15 4L7 12L15 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
       <div class="comic-nav" id="s25-nav">
         <div class="comic-dots" id="s25-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
       </div>
     </div>
+    <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
+         first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
+    <button class="comic-side-arrow comic-side-arrow--prev" id="s25-prev" type="button" onclick="comicArrowPrev('s25')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--next" id="s25-next" type="button" onclick="comicArrowNext('s25')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
     <div class="nav-bar">
       <button class="btn-continue" id="s25-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
@@ -572,24 +585,33 @@
       </div>
       <div class="exp-head exp-head--question">
         <h1 class="exp-title">מדידת נפח לגוף שאינו נכנס במשורה</h1>
-        <p class="exp-instruction">נחשו: מה לגבי גופים גדולים שלא נכנסים במשורה?</p>
+        <p class="exp-instruction"><strong>נחשו: מה לגבי גופים גדולים שלא נכנסים במשורה?</strong></p>
       </div>
       <div class="scq-answers guess-options" id="s26-guess" role="radiogroup" aria-label="נחשו: מה לגבי גופים גדולים שלא נכנסים במשורה?">
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s26', this)"><span class="scq-opt-text">נשקול אותם.</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s26', this)"><span class="scq-opt-text">נמדוד את האורך שלהם.</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s26', this)"><span class="scq-opt-text">נכניס אותם לכלי מים גדול אחר.</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s26', this)"><span class="scq-opt-text">לא ניתן למדוד נפח של גופים כאלה.</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s26', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s26', this)"><span class="scq-opt-text">נמדוד את האורך שלהם</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s26', this)"><span class="scq-opt-text">נכניס אותם לכלי מים גדול אחר</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s26', this)"><span class="scq-opt-text">לא ניתן למדוד נפח של גופים כאלה</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
     <!-- Below the options, not on the storyboard's higher perch: the 560px option column
          reaches y=416. Anchored by TOP because everything else on this screen is
          (.exp is padding-top + head + options), so the two cannot converge when the canvas
-         height changes with the window's aspect ratio — `bottom` here collided at 640. -->
-    <div class="companion-say companion-say--right" style="right: 38px; top: 430px;">
-      <p class="companion-bubble hidden" id="s26-guess-bubble" style="--bubble-w: 300px;">בהמשך נלמד בדיוק איך מודדים את הנפח שלהם.</p>
+         height changes with the window's aspect ratio — `bottom` here collided at 640.
+         430 → 464 (2026-10-08): "(למשל, כתר)" wraps the stem to two lines, pushing the options to y≈441. -->
+    <!-- 2026-10-08: moved to the canvas's LEFT side — sprite first, bubble to its right
+         (.companion-say--left), so the bubble's tail points right-to-left at the character.
+         Then: bottom 74 = the nav bar's height, so his feet stand on the divider line; sprite
+         179 → 215; bubble margin-top 60 drops the beak to mouth height. -->
+    <div class="companion-say companion-say--left" style="left: 120px; bottom: 74px;">
       <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
-           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 179px;"></video>
+           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 215px;"></video>
+      <p class="companion-bubble hidden" id="s26-guess-bubble" style="--bubble-w: 300px; margin-top: 60px;">בהמשך נלמד בדיוק איך מודדים את הנפח שלהם.</p>
     </div>
+    <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
+         first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
+    <button class="comic-side-arrow comic-side-arrow--prev" id="s26-prev" type="button" onclick="comicArrowPrev('s26')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--next" id="s26-next" type="button" onclick="comicArrowNext('s26')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
     <div class="nav-bar">
       <button class="btn-continue" id="s26-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
@@ -614,7 +636,6 @@
           <span>לקרוא קומיקס</span></button>
       </div>
       <div class="comic-row">
-        <button class="comic-arrow" id="s27-prev" type="button" onclick="comicSliderPrev('s27')" aria-label="הפאנל הקודם"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 4L17 12L9 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="comic-frame">
           <div class="comic-viewport" id="s27-viewport" role="group" aria-roledescription="קרוסלת קומיקס" aria-label="פאנלים של הסיפור">
             <div class="comic-track" id="s27-track"><!-- built by comicBuild('s27') --></div>
@@ -623,12 +644,15 @@
             <div class="comic-track" id="s27-bleed-track"><!-- built by comicBuild('s27') --></div>
           </div>
         </div>
-        <button class="comic-arrow comic-arrow--next" id="s27-next" type="button" onclick="comicSliderNext('s27')" aria-label="הפאנל הבא"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M15 4L7 12L15 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
       <div class="comic-nav" id="s27-nav">
         <div class="comic-dots" id="s27-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
       </div>
     </div>
+    <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
+         first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
+    <button class="comic-side-arrow comic-side-arrow--prev" id="s27-prev" type="button" onclick="comicArrowPrev('s27')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--next" id="s27-next" type="button" onclick="comicArrowNext('s27')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
     <div class="nav-bar">
       <button class="btn-continue" id="s27-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
@@ -654,7 +678,6 @@
           <span>לקרוא קומיקס</span></button>
       </div>
       <div class="comic-row">
-        <button class="comic-arrow" id="s28-prev" type="button" onclick="comicSliderPrev('s28')" aria-label="הפאנל הקודם"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 4L17 12L9 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="comic-frame">
           <div class="comic-viewport" id="s28-viewport" role="group" aria-roledescription="קרוסלת קומיקס" aria-label="פאנלים של הסיפור">
             <div class="comic-track" id="s28-track"><!-- built by comicBuild('s28') --></div>
@@ -663,12 +686,15 @@
             <div class="comic-track" id="s28-bleed-track"><!-- built by comicBuild('s28') --></div>
           </div>
         </div>
-        <button class="comic-arrow comic-arrow--next" id="s28-next" type="button" onclick="comicSliderNext('s28')" aria-label="הפאנל הבא"><svg class="comic-arrow__icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M15 4L7 12L15 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
       <div class="comic-nav" id="s28-nav">
         <div class="comic-dots" id="s28-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
       </div>
     </div>
+    <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
+         first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
+    <button class="comic-side-arrow comic-side-arrow--prev" id="s28-prev" type="button" onclick="comicArrowPrev('s28')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--next" id="s28-next" type="button" onclick="comicArrowNext('s28')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
     <div class="nav-bar">
       <button class="btn-continue" id="s28-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
@@ -1805,7 +1831,7 @@
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=57"></script>
+<script src="js/main.js?v=75"></script>
 <script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>
