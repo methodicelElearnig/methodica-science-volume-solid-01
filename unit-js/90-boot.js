@@ -28,6 +28,16 @@
 (function boot() {
   window.addEventListener('resize', scaleApp);
   scaleApp();
+  /* Re-measure once the real viewport is known (responsiveness pattern 9; figma-lomda-builder
+     patterns → Viewport scaling): a mobile/tablet browser can report the content's width during
+     the call above and settle later WITHOUT firing resize; and a page restored from the
+     back/forward cache may come back to a different window. Both go through the resize path
+     rather than calling scaleApp() directly, so every resize subscriber re-fits with it — part
+     01's comic zoom (comicZoomApply) is one, and would otherwise keep the old canvas size.
+     `persisted` keeps an ordinary load from re-measuring twice. */
+  function remeasure() { window.dispatchEvent(new Event('resize')); }
+  window.addEventListener('load', remeasure);
+  window.addEventListener('pageshow', function (e) { if (e.persisted) remeasure(); });
 
   initImgZoom();
   initReportModal();
