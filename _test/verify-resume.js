@@ -297,9 +297,13 @@ function boards(p, screen) {
     ' var t = c.targets.map(function (x) { return x.id; });' +
     ' var model = {}, wrong = {};' +
     ' c.items.forEach(function (i) { model[i.id] = "source"; wrong[i.id] = "source"; });' +
+    ' var part = {}; c.items.forEach(function (i) { part[i.id] = "source"; });' +
     ' t.forEach(function (tid, i) { model[c.correctMap[tid]] = tid;' +
     '   wrong[c.correctMap[t[(i + 1) % t.length]]] = tid; });' +
-    ' return { model: model, wrong: wrong, n: t.length }; })()');
+    /* partly right: the first target holds its own item; the others are rotated among themselves */
+    ' var rest = t.slice(1); part[c.correctMap[t[0]]] = t[0];' +
+    ' rest.forEach(function (tid, i) { part[c.correctMap[rest[(i + 1) % rest.length]]] = tid; });' +
+    ' return { model: model, wrong: wrong, partly: part, n: t.length }; })()');
 }
 
 function place(p, screen, board) {
@@ -342,21 +346,29 @@ function ddqWrong(p, n) {
   ok(ctx, 'a wrong board reopens on the MODEL answer',
      slots.length === b.n && slots.every(c => /\bcorrect\b/.test(c)), slots.join(' | '));
   ok(ctx, 'wrong feedback reopens on a return', fb && fb.hidden === false, fb && fb.hidden);
+  /* Title: first line the authored wrong title (nothing on this board is right), second line the
+     board note — slide 70's two bold lines (G7, 2026-10-10). */
+  const t1 = p.val('DDQ_REG["' + screen + '"].cfg.popups.incorrect.title');
+  const note = p.val('DDQ_REG["' + screen + '"].cfg.answerNote');
   ok(ctx, 'the reopened popup is the INCORRECT one',
-     fb && sameHtml(fb.title, p.val('DDQ_REG["' + screen + '"].cfg.popups.incorrect.title')), fb && fb.title);
+     fb && sameHtml(fb.title, t1 + '<br>' + note), fb && fb.title);
   ok(ctx, 'the answer toggle is back',
      p.val('(document.getElementById("' + screen + '-ddq-answer-toggle") || {}).textContent') === 'התשובה שלי');
-  ok(ctx, 'the board note is back and visible',
-     p.val('(function(){ var e = document.getElementById("' + screen + '-ddq-answer-note");' +
-           ' return e ? e.style.display !== "none" : false; })()') === true);
+  ok(ctx, 'the board note is back as the title\'s second line',
+     fb && fb.title.split(/<br\s*\/?>/)[1] === note, fb && fb.title);
+  ok(ctx, 'the explanation body has no note paragraph',
+     p.val('!document.getElementById("' + screen + '-ddq-answer-note")') === true);
 
   /* The toggle is the whole point: the learner's own answer has to still be reachable. */
   p.exec('ddqToggleAnswer("' + screen + '");');
   slots = slotClasses(p, screen);
   ok(ctx, 'the toggle still yields the learner\'s own board',
      slots.length === b.n && slots.every(c => /\bwrong\b/.test(c)), slots.join(' | '));
-  ok(ctx, 'the note hides over the learner\'s own board',
-     p.val('document.getElementById("' + screen + '-ddq-answer-note").style.display') === 'none');
+  const own = popup(p, screen, 'ddq');
+  ok(ctx, 'over the learner\'s own board the second line is the View My Answer line',
+     own && sameHtml(own.title, t1 + '<br>אפשר לצפות שוב בפתרון הנכון.'), own && own.title);
+  ok(ctx, 'and the explanation body is unchanged',   // paragraphs only — the toggle's label flips by design
+     own && fb && own.body.replace('תשובה נכונה', '') === fb.body.replace('התשובה שלי', ''));
   ok(ctx, 'the toggle label flips', p.val('document.getElementById("' + screen + '-ddq-answer-toggle").textContent') === 'תשובה נכונה');
 
   /* Leaving while looking at your OWN answer and coming back must STILL land on the model board —
@@ -375,6 +387,27 @@ function ddqWrong(p, n) {
      p.val('(function(){ var s = DDQ_REG["' + screen + '"];' +
            ' var want = s.answerView === "learner" ? s.learnerPlacement : s.correctPlacement;' +
            ' return Object.keys(want).every(function (k) { return s.cfg.placement[k] === want[k]; }); })()') === true);
+}
+
+/* A partly right board (G7): the first title line is 'not fully correct' on the model board, on
+   the learner's own board, and after a return — decided from the snapshot, never from the board. */
+function ddqPartlyRight(p, n) {
+  const screen = 's' + n, ctx = '01/' + screen + '/partly';
+  const b = boards(p, screen);
+  p.exec('goTo(' + n + ');');
+  place(p, screen, b.partly);
+  p.exec('ddqCheck("' + screen + '");');
+  const note = p.val('DDQ_REG["' + screen + '"].cfg.answerNote');
+  const FIRST = 'התשובה אינה נכונה במלואה.';
+  let fb = popup(p, screen, 'ddq');
+  ok(ctx, 'a partly right board is still scored wrong', p.val('XAPI_Q_RESULTS["' + p.val('DDQ_REG["' + screen + '"].cfg.item') + '/q1"]') === false);
+  ok(ctx, 'model view: not-fully title + board note', fb && sameHtml(fb.title, FIRST + '<br>' + note), fb && fb.title);
+  p.exec('ddqToggleAnswer("' + screen + '");');
+  fb = popup(p, screen, 'ddq');
+  ok(ctx, 'own view: not-fully title + View My Answer line', fb && sameHtml(fb.title, FIRST + '<br>אפשר לצפות שוב בפתרון הנכון.'), fb && fb.title);
+  p.exec('goTo(' + AWAY['01'] + '); goTo(' + n + ');');
+  fb = popup(p, screen, 'ddq');
+  ok(ctx, 'after a return: still not-fully, back on the model board', fb && sameHtml(fb.title, FIRST + '<br>' + note), fb && fb.title);
 }
 
 /* Drags the learner made but never submitted have to survive a return: ddqEnter()'s unanswered
@@ -476,6 +509,24 @@ function reloadTests() {
     const own = slotClasses(b, 's18');
     ok(ctx, 'and it still leads back to the learner\'s own answer',
        own.length === b18.n && own.every(c => /\bwrong\b/.test(c)), own.join(' | '));
+    collectErrors(ctx, b);
+    b.close();
+  }
+
+  /* R2b — a PARTLY right matching answer, then reloaded: the 'not fully' title is re-derived. */
+  {
+    const a = boot('01');
+    a.exec('goTo(17);');
+    const b17 = boards(a, 's17');
+    place(a, 's17', b17.partly);
+    a.exec('ddqCheck("s17"); flushResumeSave();');
+    const state = a.dump();
+    a.close();
+    const b = boot('01', { state });
+    const ctx = 'reload/01/s17/partly';
+    const fb = popup(b, 's17', 'ddq');
+    ok(ctx, 'the not-fully title survives a reload',
+       fb && sameHtml(fb.title, 'התשובה אינה נכונה במלואה.<br>' + b.val('DDQ_REG["s17"].cfg.answerNote')), fb && fb.title);
     collectErrors(ctx, b);
     b.close();
   }
@@ -713,6 +764,7 @@ async function main() {
   for (const n of DDQ_SCREENS) {
     let p = boot('01'); ddqWrong(p, n); collectErrors('01/ddq-wrong-s' + n, p); p.close();
     p = boot('01'); ddqUnsubmitted(p, n); collectErrors('01/ddq-partial-s' + n, p); p.close();
+    p = boot('01'); ddqPartlyRight(p, n); collectErrors('01/ddq-partly-right-s' + n, p); p.close();
   }
 
   for (const part of ['05', '06']) {

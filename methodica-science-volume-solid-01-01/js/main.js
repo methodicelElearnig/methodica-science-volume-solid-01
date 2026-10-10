@@ -1996,25 +1996,36 @@ function ddqShowPopup(screen, type) {
      overlay's, which is what the note asks for. */
   const st = DDQ_REG[screen];
   if (type === 'incorrect' && st.learnerPlacement) {
-    /* `answerNote` describes the BOARD, not the answer, so it is rendered here rather than
-       written into the copy: ddqSyncAnswerToggle hides it the moment the learner switches to
-       their own placement. Storyboard slide 70 puts it directly under the title. */
-    if (st.cfg.answerNote) {
-      const n = document.createElement('p');
-      n.className = 'ddq-answer-note';
-      n.id = screen + '-ddq-answer-note';
-      n.textContent = st.cfg.answerNote;
-      body.insertBefore(n, body.firstChild);
-    }
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'scq-hint-close ddq-answer-toggle';
     b.id = screen + '-ddq-answer-toggle';
     b.onclick = function () { ddqToggleAnswer(screen); };
     body.appendChild(b);
-    ddqSyncAnswerToggle(screen);
+    ddqSyncAnswerToggle(screen);   // writes the two-line title for the board on screen
   }
   popup.classList.remove('hidden');
+}
+/* Wrong-answer title, decided from the learner's SNAPSHOT (never the board on screen, which may be
+   the model answer) every time the popup renders — so a reload or a toggle keeps the same first line.
+   720-templates (_question-template-defaults, "partly right", 2026-10-05): on a multi-pair board an
+   answer with at least one pair right is titled 'התשובה אינה נכונה במלואה.'; none right keeps the
+   authored 'התשובה אינה נכונה.'. Title only — scoring and the single attempt are unchanged.
+   Second line, bold, part of the title (slide 70 sets it as a second title line): `answerNote` on
+   the model board; on the learner's own board the template's View My Answer line, with the same
+   explanation body under both. */
+function ddqIsPartial(screen) {
+  const s = DDQ_REG[screen], lp = s && s.learnerPlacement;
+  if (!lp) return false;
+  return Object.keys(s.cfg.correctMap).some(t => lp[s.cfg.correctMap[t]] === t);
+}
+const DDQ_PARTIAL_TITLE = 'התשובה אינה נכונה במלואה.';
+const DDQ_ANSWER_VIEW_LINE = 'אפשר לצפות שוב בפתרון הנכון.';
+function ddqWrongTitle(screen) {
+  const s = DDQ_REG[screen];
+  const first = ddqIsPartial(screen) ? DDQ_PARTIAL_TITLE : s.cfg.popups.incorrect.title;
+  const second = (s.answerView === 'correct') ? s.cfg.answerNote : DDQ_ANSWER_VIEW_LINE;
+  return second ? first + '<br>' + second : first;
 }
 /* Swap the board between the model answer and what the learner actually did. */
 function ddqToggleAnswer(screen) {
@@ -2026,13 +2037,15 @@ function ddqToggleAnswer(screen) {
   ddqRender(screen);
   ddqSyncAnswerToggle(screen);
 }
-/* The label names what the button will SHOW next, not what is on screen now. */
+/* The label names what the button will SHOW next, not what is on screen now. The title's second
+   line names what IS on screen, so it is rewritten with it. */
 function ddqSyncAnswerToggle(screen) {
   const s = DDQ_REG[screen];
   const b = document.getElementById(screen + '-ddq-answer-toggle');
   if (!s || !b) return;
-  b.textContent = (s.answerView === 'correct') ? 'התשובה שלי' : 'תשובה נכונה';  const n = document.getElementById(screen + '-ddq-answer-note');
-  if (n) n.style.display = (s.answerView === 'correct') ? '' : 'none';
+  b.textContent = (s.answerView === 'correct') ? 'התשובה שלי' : 'תשובה נכונה';
+  const t = document.getElementById(screen + '-ddq-popup-title');
+  if (t) t.innerHTML = ddqWrongTitle(screen);
 }
 function ddqClosePopup(screen) { document.getElementById(screen + '-ddq-popup')?.classList.add('hidden'); }
 function ddqEnter(screen) {
@@ -2103,8 +2116,8 @@ registerPracticeDnD(3, {
     { id: 't-flood',    label: 'שיטת ההצפה' }
   ],
   correctMap: { 't-ruler': 'metal-cube', 't-displace': 'shell', 't-flood': 'goblet' },
-  /* Copy verbatim from storyboard slides 69 (correct) and 70 (wrong). Slide 70's second line,
-     'התשובה הנכונה מוצגת.', is `answerNote` and not body copy — see ddqShowPopup. */
+  /* Copy verbatim from storyboard slides 69 (correct) and 70 (wrong). Slide 70's second title line,
+     'התשובה הנכונה מוצגת.', is `answerNote` — see ddqWrongTitle. */
   answerNote: 'התשובה הנכונה מוצגת.',
   popups: {
     correct:   { title: 'תשובה נכונה!', body: ['קוביית המתכת היא גוף הנדסי ולכן נבצע מדידה הנדסית.', 'צדפה היא גוף שאינו הנדסי וקטן מספיק להיכנס למשורה ולכן נבצע דחיקת מים.', 'גביע הוא גוף שאינו הנדסי ולא נכנס במשורה ולכן נבצע את שיטת ההצפה.'] },
