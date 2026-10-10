@@ -39,3 +39,15 @@
 /* The bubble having left the column, the scenario text is its only child and starts level with the
    top of the frame rather than being centred against it. */
 #s10 .scq-side { align-self: flex-start; }
+
+/* S1 (QA 2026-10-10). The feedback popup keeps its default bottom-left position on every screen, so
+   the CONTENT moves (720-templates: "move the content, not the popup"). At the shared 760px centred
+   column the popup covered option d while it was still live (retry view) and the marked correct
+   answer in the final view. The column now hugs the 60px right gutter at 722px: options run
+   498..1220, clear of the popup's right edge (482) by 16px, and every option keeps its two lines.
+   Vertically it stays centred as before (50% − 20px, block 490 tall) but never starts above 116px —
+   16px under the progress bar, which the stem used to overlap at a 720px-high canvas. */
+#s1 .scq-question {
+  width: 722px; left: auto; right: 60px; transform: none;
+  top: max(116px, calc(50% - 20px - 245px));
+}

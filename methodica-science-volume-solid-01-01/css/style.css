@@ -679,3 +679,11 @@
 #s23 .s23-row .guess-opt { width: 100%; }
 #s23 .s23-crown { align-self: stretch; width: auto; aspect-ratio: 240 / 190; margin: 0; }
 #s23 .s23-crown > img { width: 100%; height: 100%; object-fit: contain; }
+
+/* S15 (QA 2026-10-10): at a 720px-high canvas the centred block (stem 67 + gap 18 + stage 469)
+   started at y 67, under the progress bar (48..100). The stage's top 80px are empty — the two
+   upper bubbles start at top: 80px — so the stage is pulled up 56px into that band: every bubble,
+   beak and ring keeps its place relative to the photo, and the block is 498px tall. It stays
+   centred (50% − 16px) but never starts above 116px, 16px under the progress bar. */
+#s15 .hotspot-stage { margin-top: -56px; }
+#s15 .hotspot-question { top: max(365px, calc(50% - 16px)); }   /* 365 = 116 + 498 / 2 */
