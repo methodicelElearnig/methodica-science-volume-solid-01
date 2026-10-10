@@ -61,12 +61,15 @@ function appScale() {
    The modal markup and the buttons are PROVISIONED HERE, not authored per part (see
    provisionImgZoom below). Part 01 still carries two hand-written buttons on s5/s6 from before
    that; provisioning skips any frame that already has one, so both forms coexist. */
-/* Target ~75% of the canvas (70-80% requested) on whichever axis is tighter, in the
-   photo's own proportions — never a fixed square. Computed here rather than in CSS
-   because #app's own design-pixel size varies with window aspect ratio (scaleApp() grows
-   whichever axis isn't the tight constraint to fill the real viewport — see 15-ui.js
-   scaleApp()), so "70-80% of the canvas" has to be measured live, not hardcoded. */
-var IMG_ZOOM_TARGET = 0.75;
+/* Image Zoom Surface (720-design-guidelines, producer decisions 2026-09-30 / 2026-10-05): the
+   surface follows the media's aspect ratio inside a 1200x640 envelope with 64px padding on every
+   side, so the media itself is fitted to at most 1072x512 — and is scaled UP to that, never left
+   at its on-page size (a zoom that only changes the backdrop is a defect). The envelope is in
+   design pixels; scaleApp() never makes the canvas smaller than 1280x710, but it is still clamped
+   to the live canvas (minus a 16px margin a side) so the surface can never leave it. */
+var IMG_ZOOM_ENVELOPE = { w: 1200, h: 640 };
+var IMG_ZOOM_PAD = 64;
+var IMG_ZOOM_MARGIN = 16;
 
 /* Every wrapper that counts as a zoomable content-image frame. Each is already position:relative
    (the .scq-figure rule says so in its own comment, "anchor for .img-zoom-btn"), which the
@@ -102,7 +105,11 @@ function provisionImgZoom() {
     modal.className = 'img-zoom-modal hidden';
     modal.setAttribute('aria-hidden', 'true');
     modal.innerHTML = IMG_ZOOM_MODAL_HTML;
-    document.body.appendChild(modal);
+    /* Directly in #app (720-templates, Image zoom → Zoom modal), as part 01 authors it — NOT on
+       <body>. Every size here is in design pixels; only inside #app does scaleApp()'s transform
+       apply to them (and `position: fixed` then resolves against the canvas). On <body> the
+       surface rendered unscaled and overflowed any viewport smaller than 1280x710. */
+    (document.getElementById('app') || document.body).appendChild(modal);
   }
   document.querySelectorAll(IMG_ZOOM_FRAMES).forEach(function (frame) {
     /* Opt-out for a frame the magnifier does not belong on. Added for 02/s5, where the deck
@@ -136,18 +143,26 @@ function openImageZoom(btn) {
   clone.querySelectorAll('button').forEach(b => b.remove());
   clone.classList.add('img-zoom-clone');
 
+  /* The frame is enlarged as ONE unit (720-templates, Image zoom → "A frame carrying live overlays"):
+     cloned at its authored layout size and scaled by a single transform, so a ring, a name tag or a
+     label stays on the point it marks. offsetWidth/Height are layout pixels — the canvas scale is
+     not in them. A frame not laid out (should not happen: the trigger is on the visible screen)
+     falls back to the photo's natural size. */
   const srcImg = wrapper.querySelector('img');
-  const ar = (srcImg && srcImg.naturalWidth && srcImg.naturalHeight)
-    ? srcImg.naturalWidth / srcImg.naturalHeight
-    : 1;
+  let w0 = wrapper.offsetWidth, h0 = wrapper.offsetHeight;
+  if (!w0 || !h0) { w0 = (srcImg && srcImg.naturalWidth) || 1; h0 = (srcImg && srcImg.naturalHeight) || 1; }
   const app = document.getElementById('app');
   const scale   = appScale();
   const canvasW = app ? app.getBoundingClientRect().width  / scale : 1280;
   const canvasH = app ? app.getBoundingClientRect().height / scale : 710;
-  let w = canvasW * IMG_ZOOM_TARGET, h = w / ar;
-  if (h > canvasH * IMG_ZOOM_TARGET) { h = canvasH * IMG_ZOOM_TARGET; w = h * ar; }
-  clone.style.width  = w + 'px';
-  clone.style.height = h + 'px';
+  const maxW = Math.min(IMG_ZOOM_ENVELOPE.w, canvasW - 2 * IMG_ZOOM_MARGIN) - 2 * IMG_ZOOM_PAD;
+  const maxH = Math.min(IMG_ZOOM_ENVELOPE.h, canvasH - 2 * IMG_ZOOM_MARGIN) - 2 * IMG_ZOOM_PAD;
+  const s = Math.min(maxW / w0, maxH / h0);   // not clamped at 1 — the zoom must enlarge
+  clone.style.width     = w0 + 'px';
+  clone.style.height    = h0 + 'px';
+  clone.style.transform = 'scale(' + s + ')';
+  stage.style.width  = (w0 * s) + 'px';
+  stage.style.height = (h0 * s) + 'px';
 
   stage.innerHTML = '';
   stage.appendChild(clone);
@@ -161,7 +176,7 @@ function closeImageZoom() {
   if (!modal) return;
   modal.classList.add('hidden');
   modal.setAttribute('aria-hidden', 'true');
-  if (stage) stage.innerHTML = '';
+  if (stage) { stage.innerHTML = ''; stage.style.width = ''; stage.style.height = ''; }
 }
 
 /* Delegated open/close. Registered from 90-boot.js.

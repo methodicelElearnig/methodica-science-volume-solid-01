@@ -1955,54 +1955,62 @@ html, body {
   display: none !important;
 }
 
+/* Shared popup backdrop (720-design-guidelines, shared-visual-vocabulary): #FFF at 80%, no blur. */
 .img-zoom-modal__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.8);
 }
 
-/* No fixed width/height: openImageZoom() (unit-js/15-ui.js) sets an explicit px size on
-   the clone itself, computed from the real photo's aspect ratio and the current canvas
-   size (~75% of whichever axis is tighter). An absolutely-positioned element with no
-   width/height already shrink-wraps to its content, so the panel just hugs whatever size
-   the clone ends up — never a fixed square regardless of the photo's real proportions. */
+/* Image Zoom Surface (720-design-guidelines, components-icons-states): #FFF, radius 24, no stroke,
+   NO shadow, clips its contents, 64px padding on all four sides (2026-10-05). It has no size of its
+   own — it hugs the stage, which openImageZoom() (unit-js/15-ui.js) sizes to the media's aspect ratio
+   within the 1200x640 envelope (media at most 1072x512). */
 .img-zoom-modal__panel {
   position: absolute;
   inset: 50% auto auto 50%;
   transform: translate(-50%, -50%);
   background: #fff;
   border-radius: 24px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+  padding: 64px;
+  box-shadow: none;
   overflow: hidden;
 }
 
+/* The Media viewport: radius 16, clips, no stroke, no shadow. The clone inside is the frame at its
+   authored layout size, enlarged by one transform from its top-left corner — so it is placed
+   absolutely, not flex-centred (a transform does not change the box flex would centre). */
 .img-zoom-modal__stage {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 16px;
   overflow: hidden;
 }
 
-/* The enlarged view is a clone of the image wrapper (image + overlays like .hook-eureka),
-   sized by openImageZoom() rather than a fixed box + transform:scale(). Speech bubbles
-   live outside the wrapper, so they are excluded. */
 .img-zoom-modal__stage > .img-zoom-clone {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  max-width: none;
+  max-height: none;
   flex: none;
+  transform-origin: 0 0;
   border: none;
-}
-.img-zoom-modal__stage > .img-zoom-clone img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  border-radius: 0;
+  box-shadow: none;
 }
 
+/* Close (Blue) — 40x40 at 16/16 from the surface's physical top-left; its centre (36,36) clears the
+   media's corner (64,64) by ~20px diagonally, which is what the 64 padding is for. Appearance is
+   the build's existing Close treatment (white, 2px Subject/500 ring, Subject/500 X; inverted on
+   hover) with the 15x15 X exported from the component; only the footprint changed from 44. */
 .img-zoom-modal__close {
   position: absolute;
   top: 16px;
   left: 16px;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: 2px solid var(--subject-500);
   border-radius: 50%;
   background: #fff;
