@@ -3378,6 +3378,14 @@ html, body {
 }
 .transition-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-500); }
 .transition-sub { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 400; color: #303030; line-height: 1.5; }
+/* Rules screens (01 s32, 02 s0 — 2026-10-10). Their lead-in and closing lines take the TransitionScreen
+   role token Body / B-1, 28 Regular, which every centred variant (A, B, C) shares; 22 was the generic
+   default above. The count lines keep the sizes QA set on each screen (40 / 48). */
+.transition-content--rules .transition-sub { font-size: 28px; }
+/* Compact flexible spacing — TransitionScreen "Vertical fit at the canvas floor", step 2 — for a column
+   that holds the mascot too (02 s0): at 28px the 16px gap pushed the first line to y 12 at the 710
+   canvas minimum; at 4px it starts at y 20 and the mascot ends 18px above the bar. */
+.transition-content--compact { gap: 4px; }
 
 /* Text-only SingleChoiceQuestion layout (practice questions) */
 .scq-question--textonly {
