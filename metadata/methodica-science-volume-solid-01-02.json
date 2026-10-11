@@ -15,7 +15,7 @@
   "skills": [],
   "estimatedTimeInMinutes": 12,
   "createdAt": "2026-07-14T00:00:00.000Z",
-  "updatedAt": "2026-07-14T00:00:00.000Z",
+  "updatedAt": "2026-10-11T00:00:00.000Z",
   "subContent": [
     {
       "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-02/methodica-science-volume-solid-01-02-01/",
@@ -97,8 +97,8 @@
           "questionId": "q1",
           "questionType": "choice",
           "questionText": "בתמונה א' רואים את נפח המים לפני שהכניסו בובת מפלצת. בתמונה ב' רואים את נפח המים אחרי הכנסת הבובה. סמנו בתמונה ב' את האזור בו ניתן לראות שגובה המים במשורה עלה.",
-          "answers": ["אזור המים ההתחלתי בתמונה ב'", "אזור העלייה — התוספת בתמונה ב'"],
-          "correctAnswers": ["אזור העלייה — התוספת בתמונה ב'"]
+          "answers": ["אזור המים ההתחלתי", "אזור העלייה — התוספת שמעל המפלס המקורי", "האזור הריק שמעל מפלס המים"],
+          "correctAnswers": ["אזור העלייה — התוספת שמעל המפלס המקורי"]
         }
       ]
     },
