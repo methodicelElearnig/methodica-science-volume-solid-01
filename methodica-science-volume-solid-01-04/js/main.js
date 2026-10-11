@@ -269,7 +269,7 @@ function scqCheck(screen) {
   }
   if (correct) { s.phase = 'correct'; scqMark(screen, cfg.correctId, 'correct'); renderFeedbackPopup(screen, 'correct', cfg.popups); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) { s.phase = 'wrong2'; scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'wrong2', cfg.popups); scqFinish(screen, false); }
-  else { s.phase = 'retry'; s.lastWrong = s.sel; const gate = document.getElementById(screen + '-scq-check'); if (gate) gate.disabled = true; scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'retry', cfg.popups); }
+  else { s.phase = 'retry'; s.lastWrong = s.sel; const gate = document.getElementById(screen + '-scq-check'); if (gate) gate.disabled = true; scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'retry', cfg.popups); scqSyncHint(screen); }
 
   /* Synchronous, after all painting. An answer given and then abandoned without navigating would
      otherwise rest entirely on the page-leave handlers, which Chrome may drop. */
@@ -283,27 +283,36 @@ function scqFinish(screen, ok) {
   const s = SCQ_REG[screen]; s.answered = true; s.done = true;
   scqOpts(screen).forEach(o => { o.disabled = true; });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = scqLabel(s.cfg, true); chk.disabled = false; }
-  const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden';
+  scqSyncHint(screen);
   if (s.cfg.onFinish) s.cfg.onFinish(ok);
 }
 function scqHint(screen) {
-  const s = SCQ_REG[screen]; if (!s || s.answered) return;
+  const s = SCQ_REG[screen]; if (!s || s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) return;
   /* Reported on open. No parentId: v2.4 mandates it for answered/evaluated only. */
   xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey).questionId });
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
+/* Hint availability in one place (720-templates "Hint policy": hidden, not disabled, while
+   unavailable): hidden once the question resolves, and on a `hintAfterWrong` question also until the
+   first wrong check. Reads `attempts`, which resume already carries. (2026-10-11, deck notes: s1-s5 "רמז אחרי שגיאה ראשונה" on slides 116/121/126/132/137) */
+function scqSyncHint(screen) {
+  const s = SCQ_REG[screen]; const hint = document.getElementById(screen + '-scq-hint');
+  if (!s || !hint) return;
+  hint.style.visibility = (s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) ? 'hidden' : '';
+}
 function scqEnter(screen) {
   const s = SCQ_REG[screen]; if (!s) return;
   document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); scqClosePopup(screen);
-  if (s.done) { scqOpts(screen).forEach(o => { o.disabled = true; }); const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = scqLabel(s.cfg, true); chk.disabled = false; } const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden'; }
+  if (s.done) { scqOpts(screen).forEach(o => { o.disabled = true; }); const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = scqLabel(s.cfg, true); chk.disabled = false; } scqSyncHint(screen); }
   else { scqReset(screen); }
 }
 function scqReset(screen) {
   const s = SCQ_REG[screen]; s.sel = null; s.attempts = 0; s.answered = false; s.phase = null; s.lastWrong = null;
   scqOpts(screen).forEach(o => { o.classList.remove('selected', 'correct', 'wrong'); o.setAttribute('aria-checked', 'false'); o.disabled = false; });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = scqLabel(s.cfg, false); chk.disabled = true; }
-  const hint = document.getElementById(screen + '-scq-hint'); if (hint) { hint.disabled = false; hint.style.visibility = ''; }
+  const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.disabled = false;
+  scqSyncHint(screen);
 }
 
 /* ═══ Progress dots + practice wiring (8 questions → Part 05) ═══ */
@@ -391,17 +400,17 @@ const fbPopups = explanation => ({
   wrong2:  { title: FB_WRONG2,    body: explanation }
 });
 
-registerPractice(0, { correctId: 'a', item: '01', qKey: 'q1', popups: fbPopups([   /* sb117/118 */
+registerPractice(0, { correctId: 'a', item: '01', qKey: 'q1', hintAfterWrong: true, popups: fbPopups([   /* sb117/118 */
   'הטבעת העלתה את מפלס המים במשורה.',
   'העלייה בגובה המים היא הרמז שאפשר למדוד באמצעותו את נפח הטבעת, משום שנפח המים שנדחקו שווה לנפח החלק השקוע של הטבעת.']) });
-registerPractice(1, { correctId: 'b', item: '02', qKey: 'q1', popups: fbPopups([   /* sb122/123 */
+registerPractice(1, { correctId: 'b', item: '02', qKey: 'q1', hintAfterWrong: true, popups: fbPopups([   /* sb122/123 */
   'עדשים הם מוצק גרגרי וניתן למדוד את נפחם באמצעות כוס מדידה:',
   'ממלאים את הכוס בעדשים וקוראים את הנפח לפי השנתות שעליה.']) });
-registerPractice(2, { correctId: 'a', item: '03', qKey: 'q1', popups: fbPopups([   /* sb127/128 */
+registerPractice(2, { correctId: 'a', item: '03', qKey: 'q1', hintAfterWrong: true, popups: fbPopups([   /* sb127/128 */
   'המדידות מהימנות משום שהתוצאות החוזרות קרובות מאוד זו לזו.']) });
-registerPractice(3, { correctId: 'b', item: '04', qKey: 'q1', popups: fbPopups([   /* sb133/134 */
+registerPractice(3, { correctId: 'b', item: '04', qKey: 'q1', hintAfterWrong: true, popups: fbPopups([   /* sb133/134 */
   'אם ליאן תעטוף משקולת קטנה בסליים ותכניס למשורה – הסליים ישקע והיא תוכל למדוד את הנפח שלו.']) });
-registerPractice(4, { correctId: 'd', item: '04', qKey: 'q2', popups: fbPopups([   /* sb138/139 */
+registerPractice(4, { correctId: 'd', item: '04', qKey: 'q2', hintAfterWrong: true, popups: fbPopups([   /* sb138/139 */
   'נפח המים הסופי במשורה = נפח מים התחלתי + נפח משקולת + נפח סליים.',
   'צריך להוריד מהנפח שהתקבל את הנפח ההתחלתי ואת נפח המשקולת כדי לקבל את נפח הסליים.']) });
 
@@ -641,6 +650,7 @@ function restoreScreenUI(n) {
       var chk = document.getElementById(screen + '-scq-check');
       if (chk) chk.disabled = !s.sel || s.sel === s.lastWrong;
     }
+    scqSyncHint(screen);
   } catch (e) { console.error('[resume] restoreScreenUI', e); }
 }
 

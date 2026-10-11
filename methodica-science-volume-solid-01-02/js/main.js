@@ -213,7 +213,7 @@ function scqCheck(screen) {
 
   if (correct) { s.phase = 'correct'; scqMark(screen, cfg.correctId, 'correct'); scqShowPopup(screen, 'correct'); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) { s.phase = 'wrong2'; scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'wrong2'); scqFinish(screen, false); }
-  else { s.phase = 'retry'; s.lastWrong = s.sel; const gate = document.getElementById(screen + '-scq-check'); if (gate) gate.disabled = true; scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); }
+  else { s.phase = 'retry'; s.lastWrong = s.sel; const gate = document.getElementById(screen + '-scq-check'); if (gate) gate.disabled = true; scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); scqSyncHint(screen); }
 
   /* Synchronous, at the tail so it runs after every branch and after all painting. An answer given
      and then abandoned without navigating would otherwise rest entirely on the page-leave handlers,
@@ -228,7 +228,7 @@ function scqFinish(screen, isCorrect) {
   const s = SCQ_REG[screen]; s.answered = true; s.done = true;
   scqOpts(screen).forEach(o => { o.disabled = true; });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'שנמשיך?'; chk.disabled = false; }
-  const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden';
+  scqSyncHint(screen);
   if (s.cfg.onFinish) s.cfg.onFinish(isCorrect);
 }
 function scqShowPopup(screen, type) {
@@ -253,7 +253,7 @@ function scqClosePopup(screen) {
   document.getElementById(screen + '-say')?.classList.add('hidden');
 }
 function scqHint(screen) {
-  const s = SCQ_REG[screen]; if (!s || s.answered) return;
+  const s = SCQ_REG[screen]; if (!s || s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) return;
   /* Reported on OPEN only. This overlay has no toggle — closing goes through scqCloseHint — so a
      learner reopening the hint legitimately reports a second request.
      No parentId: v2.4 mandates it for answered/evaluated only. */
@@ -262,6 +262,14 @@ function scqHint(screen) {
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
+/* Hint availability in one place (720-templates "Hint policy": hidden, not disabled, while
+   unavailable): hidden once the question resolves, and on a `hintAfterWrong` question also until the
+   first wrong check. Reads `attempts`, which resume already carries. (2026-10-11, deck notes: s5/s6 "רמז מופיע אחרי שגיאה ראשונה" on slides 101/106; s1-s4 "רמז מופיע תמיד") */
+function scqSyncHint(screen) {
+  const s = SCQ_REG[screen]; const hint = document.getElementById(screen + '-scq-hint');
+  if (!s || !hint) return;
+  hint.style.visibility = (s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) ? 'hidden' : '';
+}
 function scqEnter(screen) {
   const s = SCQ_REG[screen]; if (!s) return;
   document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden');
@@ -269,14 +277,15 @@ function scqEnter(screen) {
   if (s.done) {
     scqOpts(screen).forEach(o => { o.disabled = true; });
     const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'שנמשיך?'; chk.disabled = false; }
-    const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden';
+    scqSyncHint(screen);
   } else { scqReset(screen); }
 }
 function scqReset(screen) {
   const s = SCQ_REG[screen]; s.sel = null; s.attempts = 0; s.answered = false; s.phase = null; s.lastWrong = null;
   scqOpts(screen).forEach(o => { o.classList.remove('selected', 'correct', 'wrong'); o.setAttribute('aria-checked', 'false'); o.disabled = false; });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'צדקתי?'; chk.disabled = true; }
-  const hint = document.getElementById(screen + '-scq-hint'); if (hint) { hint.disabled = false; hint.style.visibility = ''; }
+  const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.disabled = false;
+  scqSyncHint(screen);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -451,12 +460,12 @@ registerPractice(3, {  // Basic 4 — flooding 760
     'גוף שנכנס למים גורם להצפת מים בכמות זהה לנפח שלו בדיוק. לכן נפח הגליל הוא בדיוק 760\u00A0מ"ל.'])
 });
 registerPractice(4, {  // Standard-ב 1 — rise area
-  correctId: 'b', item: '05',
+  correctId: 'b', item: '05', hintAfterWrong: true,   // slide 101
   popups: fbPopups('תשובה נכונה!', [   /* sb100/102/103 */
     'האזור שבו רואים את כמות המים שעלתה במשורה הוא זה שמייצג את נפח המפלצת.'])
 });
 registerPractice(5, {  // Standard-ב 2 — single bead = 10
-  correctId: 'a', item: '06',
+  correctId: 'a', item: '06', hintAfterWrong: true,   // slide 106
   popups: fbPopups('נכון מאוד!', [   /* sb105/107/108 */
     'שלושת החרוזים יחד העלו את מפלס המים ב־30\u00A0מ"ל <span class="section-result-expr">(130−100)</span>.',
     'לכן נפחם הכולל הוא 30\u00A0סמ"ק.',
@@ -641,6 +650,7 @@ function restoreScreenUI(n) {
       var chk = document.getElementById(screen + '-scq-check');
       if (chk) chk.disabled = !s.sel || s.sel === s.lastWrong;
     }
+    scqSyncHint(screen);
   } catch (e) { console.error('[resume] restoreScreenUI', e); }
 }
 
