@@ -391,7 +391,7 @@ function registerPractice(idx, cfg) { cfg.screen = 's' + practiceProgress.questi
      - the correct title is `נכון מאוד!`, not `נכון!`.
    Slides 128 and 134 write `התשובה הנכונה מוצגת.` where 118/123/139 write `מסומנת.`;
    the unit marks the correct option, so FB_WRONG2 keeps `מסומנת` everywhere
-   (QA/TEXT-FIDELITY.md §Deck defects). */
+   (docs-and-tools/TEXT-FIDELITY.md §Deck defects). */
 const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['<b>שננסה שוב?</b>'] };
 const FB_WRONG2 = 'התשובה אינה נכונה.<br />התשובה הנכונה מסומנת.';
 const fbPopups = explanation => ({
@@ -426,7 +426,7 @@ registerPractice(7, { correctId: 'b', silent: true, maxAttempts: 1, item: '05', 
    the companion's reflective prompt differ, so the body is written once. Bold runs follow
    the deck run for run, with two deliberate departures:
      - the deck writes `כל הגלות` (missing vav) — kept as `הגולות`, per the agreed policy
-       in QA/TEXT-FIDELITY.md §Deck defects
+       in docs-and-tools/TEXT-FIDELITY.md §Deck defects
      - the division is wrapped in .section-result-expr; its colon and equals sign are
        bidi-neutral and would otherwise be reordered inside this RTL paragraph */
 const SECTION_RESULT = {

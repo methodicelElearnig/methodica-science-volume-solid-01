@@ -45,6 +45,11 @@ to the one produced image per colour — see "how to land a pose" below.
   `dumbbells` (04 S0) · `run` (05 S0) · `cheer` (05 S5) · `think` (05 S6) · `two-fingers` (06 S0) ·
   `party` (06 S5) · `panting` (06 S6). The storyboard also asks for `overflow-can`, `headband`,
   `encourage` and `thumbs-up`, which land on popups/screens this build does not have.
+  **`encourage` now has a place (QA 2026-10-11):** slide 55 gives 01 s13's wrong-final the line
+  "לא נורא אם טעית, כל טעות היא צעד קדימה בדרך הנכונה!" in the mascot's bubble, with "the GIF with the
+  encouraging message". Until the pose is produced the line closes the wrong-final popup and no
+  mascot is shown; a substitute clip (e.g. `think`) is deliberately not used. When it lands: a
+  `.companion-say` beside the popup, revealed on `wrong2` only (02 s4's `-say` is the pattern).
   **How to land a pose:** drop the file in each part's `assets/img/` and add one line to
   `CHARACTER_ASSETS` in that part's `main.js` (e.g. `cheer: 'gif'`). Nothing else changes.
   A manifest is used rather than an `<img onerror>` fallback on purpose — `onerror` would fire a
