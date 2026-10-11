@@ -1434,6 +1434,14 @@ function scqSelect(screen, id) {
   });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) chk.disabled = false;
 }
+/* The element whose text IS the answer. An image-hotspot option is two controls sharing a data-id —
+   a ring over the photo (aria-hidden, no text) and the readable bubble, the real role="radio" — and
+   the ring comes first in the DOM, so a plain querySelector reported "" for every s15 answer
+   (2026-10-11). Prefer the role="radio" control; a one-element option is found either way. */
+function scqAnswerEl(screen, id) {
+  return document.querySelector('#' + screen + ' .scq-opt[data-id="' + id + '"][role="radio"]') ||
+         document.querySelector('#' + screen + ' .scq-opt[data-id="' + id + '"]');
+}
 function scqCheck(screen) {
   const s = SCQ_REG[screen], cfg = s.cfg;
   if (s.answered) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
@@ -1445,7 +1453,7 @@ function scqCheck(screen) {
      (v2.4 §2, mandatory); `response` is the option's visible text and was missing entirely. */
   const q = xapiQ(cfg.item, cfg.qKey || 'q1');
   xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question',
-    { response: xapiAnswerText(document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]')),
+    { response: xapiAnswerText(scqAnswerEl(screen, s.sel)),
       success: !!correct,
       score: { scaled: correct ? 1 : 0 } },
     { questionId: q.questionId, parentId: q.parentId });
