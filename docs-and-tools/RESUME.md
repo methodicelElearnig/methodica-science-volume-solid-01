@@ -187,6 +187,18 @@ back to the source bank and renders that, and the restore that follows puts the 
 into `cfg.placement` with nothing left to draw them: the board came back empty while the check button,
 computed from placement, sat enabled over it.
 
+### s17's retry — between two attempts (2026-10-11)
+
+s17 takes two attempts (`maxAttempts: 2`, storyboard 66–70); s18 keeps one. A wrong first check
+resolves nothing — `checked`/`done` stay false and the board stays live — so three fields travel with
+the board: `attempts`, `phase` (`'retry'` while the retry popup is open, cleared by the first change,
+as SCQ's re-pick clears it) and `lastWrong` (the judged board). `lastWrong` drives the per-slot
+verdicts — a slot keeps its mark only while it still holds the item it was judged with — and the gate
+that keeps בדיקה disabled until the board differs from it. `ddqRestoreUI` reopens the retry popup from
+`phase` and re-derives the hint (hidden until the first wrong check, slide 68) through `ddqSyncHint`;
+it sends nothing. A document written before these fields reads them as 0/null: an unsubmitted board
+comes back as a fresh first attempt, a resolved one is unaffected — so no state-version bump.
+
 ---
 
 ## The ledgers
