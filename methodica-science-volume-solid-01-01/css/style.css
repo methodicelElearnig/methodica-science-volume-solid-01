@@ -708,3 +708,21 @@
 /* Bubble b now covers the photo's top-right corner, where the zoom trigger sits by default (it had
    already been clipping b's border). Bottom-right is plain table edge; bottom-left is under the popup. */
 #s15 .hotspot-photo > .img-zoom-btn { top: auto; bottom: 10px; }
+
+/* S17 / S18 (2026-10-11). The feedback popup keeps its template position (left 2..482, bottom 84), so
+   the BOARD moves (720-templates: move the content, not the popup — the 04 s1 treatment). At the
+   shared centred width the popup covered the left landing column(s) in the final view and through
+   the התשובה שלי / solution toggle — on s17 the correct שיטת ההצפה column itself. The board is now a
+   722px column whose left edge is never closer than 16px to the popup (498), centred again only on
+   canvases wide enough (left = max(498, 50% − 361)). Vertically it stays centred (50% − 20px) but
+   never starts above 116px, 16px under the progress bar: --half-h is half the board's own height
+   (s17 427, s18 451 at 1280 wide), so `top` is its centre. */
+.dnd-question--beside-popup {
+  width: 722px; left: max(498px, calc(50% - 361px)); transform: translateY(-50%);
+  top: max(calc(116px + var(--half-h)), calc(50% - 20px));
+}
+#s17 .dnd-question--beside-popup { --half-h: 214px; }
+#s18 .dnd-question--beside-popup { --half-h: 226px; }
+/* Five columns in 722px are 136 wide, so s18's cards are 124 — still all the same size, which is the
+   QA 2026-08-24 rule; every task keeps its photo and at most two lines, nothing clips. */
+#s18 .dnd-question--columns .dnd-pill { width: 124px; }
