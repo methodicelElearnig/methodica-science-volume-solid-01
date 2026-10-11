@@ -54,6 +54,7 @@ Errors in the deck, corrected on screen. Each is noted next to the copy in the c
 | 04 result (144/145) | "כל **הגלות**" | "הגולות" | missing vav |
 | 06 result (170) | "12,50 סמ"ק" | "1,250 סמ"ק" | transposition: the question and every other line use 1,250 |
 | 06 result (171) | "א. ." | "א." | |
+| 02 s1 option d (78) | "גליל עץ" | "קוביית עץ" | slides 79, 81 and 82 (the same question) and the photo on the screen all show a wooden cube; QA 2026-10-11 (N18). The catalog says "קוביית עץ" too |
 
 ## Approved departures
 
@@ -77,7 +78,7 @@ QA decisions that keep the screen different from the deck on purpose.
 
 Not changed, recorded so nobody "fixes" them by accident.
 
-- **02 s1, option d:** slide 78 says "גליל עץ"; slides 79, 81 and 82 (the same question) say
-  "קוביית עץ", and the photo shows a cube. The screen and the catalog say "קוביית עץ".
 - **01 s16, options c/d:** the screen writes "כן, בגלל…"; slide 71 has no comma. Reported text, so a
-  change here moves the catalog too. Not part of any round yet.
+  change here moves the catalog too. Left as it is by QA decision, 2026-10-11 (N19).
+- **01 s18 feedback agreement:** "מתאימים" (45) and "מתאימה" (44) stay as the deck has them; no
+  unifying round is planned (N20, QA 2026-10-11).
