@@ -1602,7 +1602,7 @@ function aqEnter() {
   scqEnter('s10');
 }
 
-/* ═══ Feedback copy — the storyboard's, per QA/TEXT-FIDELITY.md §Agreed policy ═══
+/* ═══ Feedback copy — the storyboard's, per docs-and-tools/TEXT-FIDELITY.md §Agreed policy ═══
    The deck gives each question its own retry / correct / wrong-final slides, and the correct
    and wrong-final slides carry the SAME explanation — so it is written once per question and
    fbPopups() hands it to both. Same shape as part 04, which was ported first.
@@ -1616,10 +1616,13 @@ function aqEnter() {
        bidi-neutral and reorder inside an RTL paragraph without it. */
 const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['<b>שננסה שוב?</b>'] };
 const FB_WRONG2 = 'התשובה אינה נכונה.<br />התשובה הנכונה מסומנת.';
-const fbPopups = (correctTitle, explanation) => ({
+/* `wrong2Extra`: a line the deck adds to the wrong-final popup only. Slide 55 (s13) closes with the
+   encouragement "לא נורא אם טעית…", which its note gives to the mascot's GIF and bubble; that pose
+   (`encourage`) was never produced, so the line sits in the popup until it is (ASSETS-TODO.md). */
+const fbPopups = (correctTitle, explanation, wrong2Extra) => ({
   retry:   FB_RETRY,
   correct: { title: correctTitle, body: explanation },
-  wrong2:  { title: FB_WRONG2,    body: explanation }
+  wrong2:  { title: FB_WRONG2,    body: wrong2Extra ? explanation.concat(wrong2Extra) : explanation }
 });
 
 /* Register the aquarium SCQ instance */
@@ -1852,7 +1855,8 @@ registerPractice(0, {
   popups: fbPopups('נכון מאוד!', [   /* sb52/54/55 */
     'נפח הגוף שווה לכמות המים שדחק — כלומר ההפרש בין הנפח הסופי לנפח ההתחלתי.',
     '<span class="section-result-expr">73 – 50 = 23</span>',
-    'נפח האבן = 23\u00A0סמ"ק'])
+    'נפח האבן = 23\u00A0סמ"ק'],
+    ['לא נורא אם טעית, כל טעות היא צעד קדימה בדרך\u00A0הנכונה!']   /* sb55, not bold on the slide */)
 });
 registerPractice(1, {
   correctId: 'a',
@@ -2221,13 +2225,14 @@ ddqRegister({
     { id: 'wt-flood',    label: 'שיטת ההצפה' }
   ],
   correctMap: { 'wt-pour': 'wu-cup', 'wt-ruler': 'wu-cube', 'wt-scale': 'wu-melon', 'wt-displace': 'wu-shell', 'wt-flood': 'wu-doll' },
-  /* Copy from storyboard slides 45 (correct) and 44 (wrong) — both slides carry the same two
-     explanation lines. Slide 45 reads 'כל שיטת מדידה מתאימים'; that is a typo in the deck
-     (slide 44 has the agreeing 'מתאימה'), so both use the agreeing form here. */
+  /* Copy from storyboard slides 45 (correct) and 44 (wrong), each popup in its own slide's words
+     (QA 2026-10-11): 45 'כל כלי ושיטת מדידה מתאימים', 44 'כל כלי ושיטת מדידה מתאימה'. The two
+     agreements are the deck's, not unified — choosing one is a language call left to QA. Both slides
+     end the second line with '..'; one period is kept (docs-and-tools/TEXT-FIDELITY.md, deck defects). */
   answerNote: 'ההתאמה הנכונה מוצגת.',
   popups: {
-    correct:   { title: 'התאמה מושלמת!', body: ['כל שיטת מדידה מתאימה למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] },
-    incorrect: { title: 'התשובה אינה נכונה.', body: ['כל שיטת מדידה מתאימה למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] }
+    correct:   { title: 'התאמה מושלמת!', body: ['כל כלי ושיטת מדידה מתאימים למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] },
+    incorrect: { title: 'התשובה אינה נכונה.', body: ['כל כלי ושיטת מדידה מתאימה למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] }
   },
   onFinish: function (ok) { warmupFinish(0, 's18', ok); },
   onContinue: function () { goTo(19); }

@@ -664,6 +664,11 @@
    no <strong> and were not in this QA round — changing the shared rule would silently unbold
    them. S14 and S16 use the same treatment via their own wrappers. */
 #s13 .scq-qtext, #s14 .scq-qtext, #s16 .scq-qtext { font-weight: 400; }
+/* S16 — the stem is the full slide-71 text since QA 2026-10-11 (seven lines at 24px, not four), and
+   the block centred at the shared 50% − 20px brought its first line onto the progress labels on every
+   canvas under ~770px tall (measured −1px at 1280×710). The block moves down 16px instead of the type
+   shrinking (see the .is-long note in unit-css): the options still end ≥ 48px above the bottom bar. */
+#s16 .scq-question--withimage { top: calc(50% - 4px); }
 
 /* S26 — the stem + options block is centred vertically (justify-content) and the 100px question
    top-padding drops back to .exp's 24px, since centring already clears the top edge. */
