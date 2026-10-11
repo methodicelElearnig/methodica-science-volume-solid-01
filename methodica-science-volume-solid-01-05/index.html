@@ -72,12 +72,14 @@
     <div class="peak-question">
       <p class="scq-qtext scq-qtext--mixed">
         <b>סעיף ב:</b><br />
-        חזרו על מדידת נפח הפסלון 3 פעמים וקיבלו 60, 59, 61&nbsp;סמ"ק.<br />למה נדרשו 3 מדידות, ועל איזה ערך כדאי לדווח?</p>
+        עובדות ועובדי המעבדה חזרו על מדידת נפח הפסלון שלוש פעמים, אלו התוצאות:<br />
+        60&nbsp;סמ"ק, 59&nbsp;סמ"ק, 61&nbsp;סמ"ק.<br />
+        <b>למה נדרשו 3 מדידות ועל איזה ערך כדאי שידווחו?</b></p>
       <div class="scq-answers peak-options" id="s2-opts" role="radiogroup" aria-label="דיווח על נפח">
         <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(2,'a',this)"><span class="scq-opt-text">כדי לצמצם טעויות מקריות ולקבל קריאה מהימנה. כדאי לדווח על הממוצע = <span class="nobr">60 סמ"ק</span></span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(2,'b',this)"><span class="scq-opt-text">אסור למדוד רק פעם אחת. כדאי לדווח על התוצאה הגבוהה ביותר = <span class="nobr">61 סמ"ק</span></span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(2,'c',this)"><span class="scq-opt-text">כדי לוודא שהצורה לא השתנתה. כדאי לדווח את הקריאה הראשונה = <span class="nobr">60 סמ"ק</span></span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(2,'d',this)"><span class="scq-opt-text">אין צורך ב-3 מדידות, מדידה אחת מספיקה</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(2,'c',this)"><span class="scq-opt-text">כדי לוודא שהצורה של הפסל לא השתנתה. כדאי לדווח את הקריאה הראשונה = <span class="nobr">60 סמ"ק</span></span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(2,'d',this)"><span class="scq-opt-text">אין צורך בשלוש מדידות – מדידה אחת היא מדויקת ומספיקה</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
     <div class="nav-bar"><button class="scq-hint peak-hint" id="s2-hint" type="button" onclick="peakHint(2)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s2-continue" disabled onclick="peakContinue(2)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
@@ -88,17 +90,17 @@
     <div class="peak-question">
       <p class="scq-qtext scq-qtext--mixed">
         <b>סעיף ג:</b><br />
-        מנהל המעבדה טוען "המדידות מהימנות!"<br />
-        מי מסביר את הטענה בצורה מדעית המבוססת על נתונים?</p>
+        מנהל המעבדה טוען: "המדידות מהימנות"!<br />
+        סמנו מי מבין עובדות ועובדי המעבדה מסביר טענה זו בצורה מדעית המבוססת על נתונים ותומכת בטענה?</p>
       <!-- Storyboard slide 153 gives each speaker an avatar. The deck ships two
            generic role icons (ScientistMale / ScientistFemale), not portraits,
            so the same icon serving two speakers of one gender is intended,
            not a duplicate. All four speakers from the deck are present. -->
       <div class="scq-answers peak-options" id="s3-opts" role="radiogroup" aria-label="הסבר מדעי">
-        <button class="scq-opt peak-opt peak-opt--speaker" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(3,'a',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-female.svg" alt="" aria-hidden="true"><span class="scq-opt-text">איריס: שלוש תוצאות המדידה קרובות מאוד זו לזו, מה שמראה שהתוצאות יציבות ואינן מקריות</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt peak-opt--speaker" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(3,'b',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-male.svg" alt="" aria-hidden="true"><span class="scq-opt-text">משה: כיוון שחוקר מנוסה ביצע את המדידה, אין סיכוי לשגיאת מדידה</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt peak-opt--speaker" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(3,'c',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-female.svg" alt="" aria-hidden="true"><span class="scq-opt-text">רינה: תוצאות מדידת הנפח גדולות משמעותית מכמות המים ההתחלתית</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt peak-opt--speaker" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(3,'d',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-male.svg" alt="" aria-hidden="true"><span class="scq-opt-text">עופר: העובדה שניתן לחשב ממוצע למדידות מוכיחה שהמדידה מדויקת</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt peak-opt--speaker" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(3,'a',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-female.svg" alt="" aria-hidden="true"><span class="scq-opt-text"><b>איריס:</b> שלוש תוצאות המדידה קרובות מאוד זו לזו, מה שמוכיח שהתוצאות יציבות ואינן&nbsp;מקריות</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt peak-opt--speaker" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(3,'b',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-male.svg" alt="" aria-hidden="true"><span class="scq-opt-text"><b>משה:</b> כיוון שחוקר מנוסה ביצע את המדידה במעבדה, אין סיכוי לשגיאת מדידה אנושית</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt peak-opt--speaker" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(3,'c',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-female.svg" alt="" aria-hidden="true"><span class="scq-opt-text"><b>רינה:</b> תוצאות מדידת הנפח גדולות משמעותית מכמות המים ההתחלתית ולכן הטענה&nbsp;נכונה</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt peak-opt--speaker" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(3,'d',this)"><img class="peak-speaker-ico" src="assets/img/s3-speaker-male.svg" alt="" aria-hidden="true"><span class="scq-opt-text"><b>עופר:</b> העובדה שניתן לחשב ממוצע למדידות מוכיחה שהמדידה מדויקת</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
     <div class="nav-bar"><button class="scq-hint peak-hint" id="s3-hint" type="button" onclick="peakHint(3)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s3-continue" disabled onclick="peakContinue(3)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
@@ -109,12 +111,14 @@
     <div class="peak-question">
       <p class="scq-qtext scq-qtext--mixed">
         <b>סעיף ד:</b><br />
-        מדידה רביעית נתנה 80&nbsp;סמ"ק — רחוקה משאר המדידות (60, 59, 61).<br />מה על עובדי המעבדה לעשות?</p>
+        עובדות ועובדי המעבדה ביצעו מדידה חוזרת של נפח הפסלון וקיבלו תוצאה של 80&nbsp;סמ"ק.<br />
+        תוצאה זו רחוקה מאוד מהמדידות הקודמות.<br />
+        <b>מה על עובדות ועובדי המעבדה לעשות עכשיו?</b></p>
       <div class="scq-answers peak-options" id="s4-opts" role="radiogroup" aria-label="טיפול בערך חריג">
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(4,'a',this)"><span class="scq-opt-text">לחשב ממוצע של כל ארבע הקריאות ולדווח אותו כנפח הפסלון</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(4,'b',this)"><span class="scq-opt-text">לבצע את המדידה מחדש ולא להכליל את הערך 80 בחישוב הסופי</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(4,'c',this)"><span class="scq-opt-text">לדווח שנפח הפסלון הוא <span class="nobr">80 סמ"ק</span> כי זו המדידה האחרונה</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(4,'d',this)"><span class="scq-opt-text">לדווח שנפח הפסלון הוא <span class="nobr">80 סמ"ק</span> כי הוא הגדול ביותר</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(4,'a',this)"><span class="scq-opt-text">לחשב ממוצע של כל ארבע הקריאות ולדווח את הממוצע כנפח הפסלון</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(4,'b',this)"><span class="scq-opt-text">יש לבצע את המדידה מחדש ולא להכליל את הערך 80 בחישוב הסופי</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(4,'c',this)"><span class="scq-opt-text">לדווח שנפח הפסלון הוא <span class="nobr">80 סמ"ק</span> כיוון שזו המדידה האחרונה</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(4,'d',this)"><span class="scq-opt-text">לדווח שנפח הפסלון הוא <span class="nobr">80 סמ"ק</span> כיוון שככל שהמספר גדול יותר – המדידה מדויקת יותר</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
     <div class="nav-bar"><button class="scq-hint peak-hint" id="s4-hint" type="button" onclick="peakHint(4)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s4-continue" disabled onclick="peakContinue(4)">סיום</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
