@@ -1409,7 +1409,7 @@ const SCQ_REG = {};
 function scqRegister(cfg) {
   cfg.maxAttempts = cfg.maxAttempts || 2;
   SCQ_REG[cfg.screen] = { cfg: cfg, sel: null, attempts: 0, answered: false, done: false,
-                          phase: null, locked: !!cfg.startLocked };
+                          phase: null, locked: !!cfg.startLocked, lastWrong: null };
 }
 function scqOpts(screen) { return document.querySelectorAll('#' + screen + ' .scq-opt'); }
 function scqSetLocked(screen, locked) {
@@ -1421,6 +1421,10 @@ function scqSetLocked(screen, locked) {
 }
 function scqSelect(screen, id) {
   const s = SCQ_REG[screen]; if (!s || s.answered || s.locked) return;
+  /* Retry gate (720-templates "Retry gate", QA 2026-10-11): after a non-final wrong check the option
+     just judged wrong cannot be submitted again. Clicking it again changes nothing — marks, popup and
+     the locked button stay — and צדקתי? opens only for a different option. */
+  if (s.phase === 'retry' && id === s.sel) return;
   s.sel = id;
   /* A re-pick after a wrong attempt wipes the marks and the popup, so the screen is back to
      "chosen but unchecked" — and `phase` has to say so, or the painter would repaint the retry
@@ -1432,7 +1436,7 @@ function scqSelect(screen, id) {
     o.classList.toggle('selected', sel);
     o.setAttribute('aria-checked', sel ? 'true' : 'false');
   });
-  const chk = document.getElementById(screen + '-scq-check'); if (chk) chk.disabled = false;
+  const chk = document.getElementById(screen + '-scq-check'); if (chk) chk.disabled = (id === s.lastWrong);
 }
 /* The element whose text IS the answer. An image-hotspot option is two controls sharing a data-id —
    a ring over the photo (aria-hidden, no text) and the readable bubble, the real role="radio" — and
@@ -1445,7 +1449,7 @@ function scqAnswerEl(screen, id) {
 function scqCheck(screen) {
   const s = SCQ_REG[screen], cfg = s.cfg;
   if (s.answered) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
-  if (!s.sel) return;
+  if (!s.sel || s.sel === s.lastWrong) return;   // the retry gate, also against a programmatic or keyboard submit
   s.attempts++;
   const correct = s.sel === cfg.correctId;
   /* xAPI: resolved at send time — xapiQ() reads window.METADATA, which the library fetches
@@ -1465,7 +1469,7 @@ function scqCheck(screen) {
     s.phase = 'wrong2';
     scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong');
     scqShowPopup(screen, 'wrong2'); scqFinish(screen, false);
-  } else { s.phase = 'retry'; scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); scqSyncHint(screen); }
+  } else { s.phase = 'retry'; s.lastWrong = s.sel; const gate = document.getElementById(screen + '-scq-check'); if (gate) gate.disabled = true; scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); scqSyncHint(screen); }
 
   /* Synchronous, at the tail so it runs after every branch and after all painting. An answer given
      and then abandoned without navigating would otherwise rest entirely on the page-leave handlers,
@@ -1526,7 +1530,7 @@ function scqEnter(screen) {
 }
 function scqReset(screen) {
   const s = SCQ_REG[screen];
-  s.sel = null; s.attempts = 0; s.answered = false; s.phase = null;
+  s.sel = null; s.attempts = 0; s.answered = false; s.phase = null; s.lastWrong = null;
   scqOpts(screen).forEach(o => {
     o.classList.remove('selected', 'correct', 'wrong');
     o.setAttribute('aria-checked', 'false');
@@ -2719,7 +2723,7 @@ function captureScqState() {
   return Object.keys(SCQ_REG).reduce(function (o, k) {
     var s = SCQ_REG[k];
     o[k] = { sel: s.sel, attempts: s.attempts, answered: !!s.answered, done: !!s.done,
-             phase: s.phase || null, locked: !!s.locked };
+             phase: s.phase || null, lastWrong: s.lastWrong || null, locked: !!s.locked };
     return o;
   }, {});
 }
@@ -2732,6 +2736,9 @@ function applyScqState(scq) {
     s.sel = scq[k].sel; s.attempts = scq[k].attempts;
     s.answered = !!scq[k].answered; s.done = !!scq[k].done; s.locked = !!scq[k].locked;
     s.phase = scq[k].phase || null;
+    /* Retry gate (2026-10-11). A document written before it has no lastWrong: in the retry phase the
+       judged option is still `sel`; otherwise the gate starts open. No version bump. */
+    s.lastWrong = scq[k].lastWrong !== undefined ? scq[k].lastWrong : (s.phase === 'retry' ? s.sel : null);
   });
 }
 
@@ -2942,7 +2949,7 @@ function scqRestoreUI(screen) {
      here — a painter that leaves a full screen with a dead button strands the learner. */
   if (!s.done) {
     var chk = document.getElementById(screen + '-scq-check');
-    if (chk) chk.disabled = !s.sel || !!s.locked;
+    if (chk) chk.disabled = !s.sel || !!s.locked || s.sel === s.lastWrong;
   }
   scqSyncHint(screen);
 }

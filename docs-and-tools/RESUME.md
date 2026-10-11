@@ -165,6 +165,12 @@ It exists because neither can be safely derived:
 
 `s.correctResolved` was written by `scqFinish` and read nowhere. Removed in the same pass.
 
+**`lastWrong` — the retry gate (2026-10-11).** Every two-attempt SCQ (parts 01/02/04, 17 screens) keeps
+the option of its non-final wrong check. צדקתי? stays locked while that option is selected; re-picking
+it is a no-op (marks and popup stay); `scqCheck` refuses it, so no attempt is spent and nothing is
+sent. It travels in the state document; a document without it falls back to `sel` while `phase` is
+`'retry'`, else null.
+
 ### The matching boards — both, and the arrival rule
 
 A wrong matching answer holds two boards at once: the model answer and what the learner actually did.

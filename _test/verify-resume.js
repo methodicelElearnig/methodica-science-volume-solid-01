@@ -232,16 +232,25 @@ function scenarioWrong(p, part) {
     ok(ctx, 'retry feedback reopens on a return', fb && fb.hidden === false, fb && fb.hidden);
     ok(ctx, 'the reopened popup is the RETRY one',
        fb && sameHtml(fb.title, p.val('SCQ_REG["' + screen + '"].cfg.popups.retry.title')), fb && fb.title);
-    ok(ctx, 'the check button is alive after a mid-attempt return',
-       btnDisabled(p, screen + '-scq-check') === false);
-
-    // ── spend the last attempt ──
+    /* Retry gate (2026-10-11): the judged option cannot be submitted again — the button is locked on
+       it after a return, re-picking it changes nothing, and a submit on it is refused unspent. */
+    ok(ctx, 'the check button stays locked on the judged option after a return',
+       btnDisabled(p, screen + '-scq-check') === true);
     p.exec('scqSelect("' + screen + '", "' + w1 + '"); scqCheck("' + screen + '");');
+    ok(ctx, 'the same wrong option again spends no attempt',
+       p.val('SCQ_REG["' + screen + '"].attempts') === 1 && p.val('SCQ_REG["' + screen + '"].phase') === 'retry' && btnDisabled(p, screen + '-scq-check') === true);
+
+    // ── spend the last attempt, on a DIFFERENT wrong option ──
+    const w2 = wrong[1];
+    if (!w2) continue;                                   // one wrong option only: no wrong-final to reach
+    p.exec('scqSelect("' + screen + '", "' + w2 + '");');
+    ok(ctx, 'a different option opens the check button', btnDisabled(p, screen + '-scq-check') === false);
+    p.exec('scqCheck("' + screen + '");');
     ok(ctx, 'second wrong attempt closes the question', p.val('!!SCQ_REG["' + screen + '"].done') === true);
 
     p.exec('goTo(' + AWAY[part] + '); goTo(' + n + ');');
     cls = optClasses(p, screen); fb = popup(p, screen, 'scq');
-    ok(ctx, 'wrong-final keeps the learner mark', hasClass(cls, w1, 'wrong'), cls[w1]);
+    ok(ctx, 'wrong-final keeps the learner mark', hasClass(cls, w2, 'wrong'), cls[w2]);
     ok(ctx, 'wrong-final keeps the correct mark', hasClass(cls, correct, 'correct'), cls[correct]);
     ok(ctx, 'wrong-final feedback reopens on a return', fb && fb.hidden === false, fb && fb.hidden);
     ok(ctx, 'the reopened popup is the WRONG-FINAL one',
@@ -605,7 +614,7 @@ function reloadTests() {
     a.exec('goTo(3);');
     const { correct, wrong } = ids(a, 's3');
     a.exec('scqSelect("s3", "' + wrong[0] + '"); scqCheck("s3");');
-    a.exec('scqSelect("s3", "' + wrong[0] + '"); scqCheck("s3");');
+    a.exec('scqSelect("s3", "' + wrong[1] + '"); scqCheck("s3");');   // retry gate: a different wrong option
     const state = a.dump();
     a.close();
 
@@ -613,7 +622,7 @@ function reloadTests() {
     const ctx = 'reload/02/s3';
     ok(ctx, 'resumes onto the answered screen', b.val('currentScreen') === 3, b.val('currentScreen'));
     const cls = optClasses(b, 's3');
-    ok(ctx, 'the learner mark is repainted', hasClass(cls, wrong[0], 'wrong'), cls[wrong[0]]);
+    ok(ctx, 'the learner mark is repainted', hasClass(cls, wrong[1], 'wrong'), cls[wrong[1]]);
     ok(ctx, 'the correct mark is repainted', hasClass(cls, correct, 'correct'), cls[correct]);
     const fb = popup(b, 's3', 'scq');
     ok(ctx, 'the feedback is repainted', fb && fb.hidden === false, fb && fb.hidden);
