@@ -420,7 +420,7 @@ function registerPractice(idx, cfg) {
   attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup'));
 }
 
-/* ═══ Feedback copy — the storyboard's, per QA/TEXT-FIDELITY.md §Agreed policy ═══
+/* ═══ Feedback copy — the storyboard's, per docs-and-tools/TEXT-FIDELITY.md §Agreed policy ═══
    The deck gives each question its own retry / correct / wrong-final slides, and the correct
    and wrong-final slides carry the SAME explanation — so it is written once per question and
    fbPopups() hands it to both. Same shape as part 04, which was ported first.
