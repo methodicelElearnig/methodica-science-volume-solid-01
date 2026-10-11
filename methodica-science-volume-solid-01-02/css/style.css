@@ -126,6 +126,23 @@
 #s0 .companion-say,
 #s7 .companion-say { position: relative; }
 
+/* ── S5 · stem under the progress bar, תמונה ב' clear of the feedback (QA 2026-10-11, N17) ──
+   The feedback popup keeps the template's place, bottom-left at x 2–482 of the 1280-wide canvas.
+   Centred, the 778px photo pair put תמונה ב' (the photo with the answer rings) at x 251–631, so
+   every popup covered part of it; and the 501px block centred at 50% − 20px reached up into the
+   "שאלה 1/2" labels on every canvas shorter than ~900px (−9 to −14px).
+   So the block is narrowed to 736px (two 359px photos + the 18px gap, set inline on the two
+   figures) and centred in the free band RIGHT of the popup instead of on the canvas: from x 504
+   (popup edge + 22px) to W − 40, i.e. left = 504 + (W − 1280) / 2 = 50% − 136px. On the 1280-wide
+   canvas תמונה ב' starts at x 504; on a wider one (2560×1080 → W 1683) the band widens on both
+   sides and the gap to the popup only grows. Vertically it is centred in the band between the progress labels (bottom ≈ 100) and the
+   bottom bar (H − 74), i.e. at 50% + 15px rather than the shared 50% − 20px. The rings are placed
+   in percentages of the photo, so they scale with it. */
+#s5 .scq-question--textonly {
+  left: calc(50% - 136px); width: 736px;
+  top: calc(50% + 15px); transform: translateY(-50%);
+}
+
 /* ── S4 · the mascot's reflection line beside the feedback (slide 97, QA 2026-08-30) ──
    The question block is lifted so he has a band of his own and covers no answer text: the
    deck draws him OVER the options, which is fine on paper but not while a learner is reading
