@@ -139,6 +139,16 @@
   top: 112px;
   transform: translateX(-50%);
 }
+/* …and the 700 above was optimistic: the group is as tall as its 180px sprite, so on the shortest
+   canvas (H = 710, any window wider than ~1.8:1) he and his bubble came down 7px over option d in
+   both final states (QA 2026-10-11). The answers keep their size and place; on a short canvas the
+   SPRITE gives way instead — never taller than the band from option d's bottom (452) + a 12px gap
+   down to the popup's bottom line (H − 84): 100cqh − 548. That is 162px at H = 710 and the authored
+   180px from H = 728 up, so every other window is unchanged. The bubble (148px) hangs from the
+   group's top and needs nothing of its own. `container-type: size` is safe on a .screen: its box
+   comes from `inset: 0`, never from its content. */
+#s4 { container-type: size; }
+#s4-say > .companion { width: min(var(--cw, 190px), calc(100cqh - 548px)); }
 
 /* ── S7 · the mid-section transition, to storyboard slide 98 (QA 2026-08-30) ──
    The greeting is not the message on this screen — the sentence under it is — so the two swap
