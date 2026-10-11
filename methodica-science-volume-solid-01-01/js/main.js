@@ -1870,10 +1870,19 @@ registerPractice(4, {
      #S-ddq-check, #S-ddq-popup (+ -title/-body).
    ═══════════════════════════════════════════════════════════ */
 const DDQ_REG = {};
+/* Two attempts (opt-in, `maxAttempts: 2` — s17 only, per storyboard slides 66-70; s18 keeps one, per
+   42-45). A wrong non-final check is not a resolution: the board stays live, every slot still holding
+   the item it was judged with shows that verdict, and `lastWrong` (the judged board) both drives those
+   marks and gates בדיקה until the board differs from it (720-templates: "Retry gate", "Per-answer
+   verdict after a non-final wrong attempt"). `phase` is only which popup is open — 'retry' until the
+   first change after the check, as SCQ's re-pick clears it. `hintAfterWrong` hides the hint until
+   that first wrong check (slide 68). */
 function ddqRegister(cfg) {
   cfg.placement = {};
   cfg.items.forEach(it => { cfg.placement[it.id] = 'source'; });
-  DDQ_REG[cfg.screen] = { cfg: cfg, checked: false, done: false, dnd: null };
+  cfg.maxAttempts = cfg.maxAttempts || 1;
+  DDQ_REG[cfg.screen] = { cfg: cfg, checked: false, done: false, dnd: null,
+                          attempts: 0, phase: null, lastWrong: null };
 }
 function ddqInit(screen) {
   const s = DDQ_REG[screen];
@@ -1891,6 +1900,7 @@ function ddqPlace(screen, itemId, dest) {
     Object.keys(p).forEach(k => { if (k !== itemId && p[k] === dest) p[k] = 'source'; });
   }
   p[itemId] = dest;
+  if (s.phase === 'retry') { s.phase = null; ddqClosePopup(screen); }
   ddqRender(screen);
 }
 function ddqMakePill(screen, itemId) {
@@ -1933,6 +1943,9 @@ function ddqRender(screen) {
     const placed = Object.keys(cfg.placement).find(k => cfg.placement[k] === t.id);
     if (placed) { slot.appendChild(ddqMakePill(screen, placed)); slot.classList.add('occupied'); }
     if (s.checked) slot.classList.add(cfg.placement[cfg.correctMap[t.id]] === t.id ? 'correct' : 'wrong');
+    /* After a non-final wrong check: a slot keeps its verdict only while it still holds the item it
+       was judged with, so the board shows what is left to fix, not the judged board. */
+    else if (s.lastWrong && placed && s.lastWrong[placed] === t.id) slot.classList.add(cfg.correctMap[t.id] === placed ? 'correct' : 'wrong');
     wrap.appendChild(lab); wrap.appendChild(slot);
     tc.appendChild(wrap);
     s.dnd.attachTarget(slot, t.id);
@@ -1944,22 +1957,43 @@ function ddqRender(screen) {
 function ddqUpdateCheck(screen) {
   const s = DDQ_REG[screen]; if (s.checked) return;
   const allFilled = s.cfg.targets.every(t => Object.keys(s.cfg.placement).some(k => s.cfg.placement[k] === t.id));
-  const btn = document.getElementById(screen + '-ddq-check'); if (btn) btn.disabled = !allFilled;
+  const same = !!s.lastWrong && s.cfg.items.every(it => s.cfg.placement[it.id] === s.lastWrong[it.id]);
+  const btn = document.getElementById(screen + '-ddq-check'); if (btn) btn.disabled = !allFilled || same;
+}
+/* The hint is hidden, not disabled, while unavailable (720-templates "Hint policy"): after the
+   question resolves, and — on a `hintAfterWrong` board — before the first wrong check. */
+function ddqSyncHint(screen) {
+  const s = DDQ_REG[screen];
+  const hint = document.getElementById(screen + '-ddq-hint'); if (!s || !hint) return;
+  hint.style.visibility = (s.done || (s.cfg.hintAfterWrong && s.attempts < 1)) ? 'hidden' : '';
 }
 function ddqCheck(screen) {
   const s = DDQ_REG[screen], cfg = s.cfg;
   if (s.checked) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
   const allCorrect = cfg.targets.every(t => cfg.placement[cfg.correctMap[t.id]] === t.id);
-  /* One matching board = one question; a single closing 'answered.last'. `response` lists the
-     learner's pairings in a readable form, since there is no single option element to read. */
+  s.attempts++;
+  const final = allCorrect || s.attempts >= cfg.maxAttempts;
+  /* One matching board = one question, closed by a single 'answered.last'. A wrong non-final check
+     is an interim 'answered', the same split as scqCheck. `response` lists the learner's pairings in
+     a readable form, since there is no single option element to read. */
   const q = xapiQ(cfg.item, cfg.qKey || 'q1');
-  xapiSend('answered.last', 'question',
+  xapiSend(final ? 'answered.last' : 'answered', 'question',
     { response: Object.keys(cfg.placement).map(function (id) { return id + '->' + cfg.placement[id]; }).join(', '),
       success: !!allCorrect,
       score: { scaled: allCorrect ? 1 : 0 } },
     { questionId: q.questionId, parentId: q.parentId });
+  if (!final) {
+    /* Retry: nothing is resolved — no result, no onFinish, the board stays draggable. */
+    s.phase = 'retry';
+    s.lastWrong = Object.assign({}, cfg.placement);
+    ddqRender(screen);                              // marks + the gate (בדיקה disabled: same board)
+    ddqShowPopup(screen, 'retry');
+    ddqSyncHint(screen);
+    try { flushResumeSave(); } catch (e) {}
+    return;
+  }
   XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!allCorrect;
-  s.checked = true; s.done = true;
+  s.checked = true; s.done = true; s.phase = null; s.lastWrong = null;
   /* The learner's own placement used to be overwritten here and lost. QA 2026-08-25 (slide 29)
      asks for a toggle between "התשובה שלי" and "תשובה נכונה" inside the wrong-answer feedback,
      so both boards have to survive. ddqRender() already marks each slot correct/wrong against
@@ -1977,7 +2011,7 @@ function ddqCheck(screen) {
   ddqRender(screen);
   ddqShowPopup(screen, allCorrect ? 'correct' : 'incorrect');
   const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'שנמשיך?'; btn.disabled = false; }
-  const hint = document.getElementById(screen + '-ddq-hint'); if (hint) hint.style.visibility = 'hidden';
+  ddqSyncHint(screen);
   if (cfg.onFinish) cfg.onFinish(allCorrect);
 
   /* Synchronous, at the tail and after all painting — same rule as scqCheck's. */
@@ -1987,7 +2021,7 @@ function ddqCheck(screen) {
    which the DnD screens do not use, so they get their own thin pair. Overlay
    ids end in -hint-overlay, so goTo() closes them on navigation. */
 function ddqHint(screen) {
-  const s = DDQ_REG[screen]; if (!s || s.checked) return;
+  const s = DDQ_REG[screen]; if (!s || s.checked || (s.cfg.hintAfterWrong && s.attempts < 1)) return;
   xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey || 'q1').questionId });
   document.getElementById(screen + '-ddq-hint-overlay')?.classList.remove('hidden');
 }
@@ -1997,7 +2031,10 @@ function ddqShowPopup(screen, type) {
   const cfg = DDQ_REG[screen].cfg.popups[type];
   popup.style.background = (type === 'correct') ? '#edf8ed' : '#ffdbdc';
   popup.style.left = '2px'; popup.style.top = 'auto'; popup.style.bottom = '84px';
-  document.getElementById(screen + '-ddq-popup-title').textContent = cfg.title;
+  /* The retry title follows the same partly-right rule as the final one, judged on the board just
+     checked; slide 67's second line is the body, as FB_RETRY has it on the SCQ screens. */
+  if (type === 'retry') document.getElementById(screen + '-ddq-popup-title').textContent = ddqIsPartial(screen, DDQ_REG[screen].lastWrong) ? DDQ_PARTIAL_TITLE : cfg.title;
+  else document.getElementById(screen + '-ddq-popup-title').textContent = cfg.title;
   const body = document.getElementById(screen + '-ddq-popup-body');
   body.innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
   /* Only a wrong answer has two boards to switch between. Same button shape as the hint
@@ -2022,8 +2059,8 @@ function ddqShowPopup(screen, type) {
    Second line, bold, part of the title (slide 70 sets it as a second title line): `answerNote` on
    the model board; on the learner's own board the template's View My Answer line, with the same
    explanation body under both. */
-function ddqIsPartial(screen) {
-  const s = DDQ_REG[screen], lp = s && s.learnerPlacement;
+function ddqIsPartial(screen, board) {
+  const s = DDQ_REG[screen], lp = board || (s && s.learnerPlacement);
   if (!lp) return false;
   return Object.keys(s.cfg.correctMap).some(t => lp[s.cfg.correctMap[t]] === t);
 }
@@ -2060,7 +2097,7 @@ function ddqEnter(screen) {
   const s = DDQ_REG[screen]; if (!s) return;
   ddqClosePopup(screen);
   if (!s.done) {
-    s.checked = false;
+    s.checked = false; s.attempts = 0; s.phase = null; s.lastWrong = null;
     s.cfg.items.forEach(it => { s.cfg.placement[it.id] = 'source'; });
     const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'בדיקה'; btn.disabled = true; }
   }
@@ -2071,8 +2108,7 @@ function ddqEnter(screen) {
   ddqRender(screen);
   if (s.done) { const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'שנמשיך?'; btn.disabled = false; } }
   // An answered question keeps its hint hidden on return, as the SCQ screens do.
-  const hint = document.getElementById(screen + '-ddq-hint');
-  if (hint) hint.style.visibility = s.done ? 'hidden' : '';
+  ddqSyncHint(screen);
 }
 
 /* Register a standard-practice DragAndDropQuestion at practice index idx. */
@@ -2127,7 +2163,12 @@ registerPracticeDnD(3, {
   /* Copy verbatim from storyboard slides 69 (correct) and 70 (wrong). Slide 70's second title line,
      'התשובה הנכונה מוצגת.', is `answerNote` — see ddqWrongTitle. */
   answerNote: 'התשובה הנכונה מוצגת.',
+  /* Two attempts, slides 66-70: 67 is "מענה שגוי 1" (retry), 70 "מענה שגוי 2" (the model board).
+     Slide 68's note: the hint is available only after that first wrong answer. Approved 2026-10-11. */
+  maxAttempts: 2,
+  hintAfterWrong: true,
   popups: {
+    retry:     FB_RETRY,
     correct:   { title: 'תשובה נכונה!', body: ['קוביית המתכת היא גוף הנדסי ולכן נבצע מדידה הנדסית.', 'צדפה היא גוף שאינו הנדסי וקטן מספיק להיכנס למשורה ולכן נבצע דחיקת מים.', 'גביע הוא גוף שאינו הנדסי ולא נכנס במשורה ולכן נבצע את שיטת ההצפה.'] },
     incorrect: { title: 'התשובה אינה נכונה.', body: ['קוביית המתכת היא גוף הנדסי ולכן נבצע מדידה הנדסית.', 'צדפה היא גוף שאינו הנדסי וקטן מספיק להיכנס למשורה ולכן נבצע דחיקת מים.', 'גביע הוא גוף שאינו הנדסי ולא נכנס במשורה ולכן נבצע את שיטת ההצפה.'] }
   }
@@ -2698,7 +2739,9 @@ function captureDdqState() {
     var s = DDQ_REG[k];
     o[k] = { checked: !!s.checked, done: !!s.done, placement: Object.assign({}, s.cfg.placement),
              learnerPlacement: s.learnerPlacement ? Object.assign({}, s.learnerPlacement) : null,
-             correctPlacement: s.correctPlacement ? Object.assign({}, s.correctPlacement) : null };
+             correctPlacement: s.correctPlacement ? Object.assign({}, s.correctPlacement) : null,
+             attempts: s.attempts || 0, phase: s.phase || null,
+             lastWrong: s.lastWrong ? Object.assign({}, s.lastWrong) : null };
     return o;
   }, {});
 }
@@ -2713,6 +2756,11 @@ function applyDdqState(ddq) {
     s.cfg.placement = Object.assign({}, ddq[k].placement);
     s.learnerPlacement = ddq[k].learnerPlacement ? Object.assign({}, ddq[k].learnerPlacement) : null;
     s.correctPlacement = ddq[k].correctPlacement ? Object.assign({}, ddq[k].correctPlacement) : null;
+    /* Two-attempt fields (2026-10-11). A document written before them reads as 0/null — a fresh
+       first attempt, or a resolved board that never looks at them — so no version bump. */
+    s.attempts = ddq[k].attempts || 0;
+    s.phase = ddq[k].phase || null;
+    s.lastWrong = ddq[k].lastWrong ? Object.assign({}, ddq[k].lastWrong) : null;
   });
 }
 
@@ -2901,7 +2949,7 @@ function ddqRestoreUI(screen) {
      back empty while memory still held the pills — and the check button, computed from placement,
      sat enabled over it. */
   var anyPlaced = s.cfg.items.some(function (it) { return s.cfg.placement[it.id] !== 'source'; });
-  if (!s.checked && !anyPlaced) return;             // pristine — ddqEnter already drew a clean board
+  if (!s.checked && !anyPlaced) { ddqSyncHint(screen); return; }   // empty board — ddqEnter already drew it; a retry still owes the hint
 
   /* The arrival rule, applied on EVERY arrival and in one place: a revisited wrong answer opens on
      the model board, whatever the learner had toggled to before they left. Setting answerView and
@@ -2913,6 +2961,8 @@ function ddqRestoreUI(screen) {
   }
   ddqRender(screen);                                // also re-derives the check button from placement
   if (s.checked) ddqShowPopup(screen, s.learnerPlacement ? 'incorrect' : 'correct');
+  else if (s.phase === 'retry') ddqShowPopup(screen, 'retry');
+  ddqSyncHint(screen);
 }
 
 /* ── xAPI ready hook ──

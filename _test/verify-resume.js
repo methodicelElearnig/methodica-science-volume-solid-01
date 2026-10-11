@@ -310,6 +310,18 @@ function place(p, screen, board) {
   p.exec('DDQ_REG["' + screen + '"].cfg.placement = ' + JSON.stringify(board) + '; ddqRender("' + screen + '");');
 }
 
+/* Check a board as the learner's FINAL answer. s17 takes two attempts (slides 66-70, 2026-10-11), so
+   there the first attempt is spent on the other wrong board — different, so the retry gate allows the
+   second check — and `board` is what the question resolves on. Single-attempt boards check once. */
+function ddqCheckFinal(p, screen, board, b) {
+  if (p.val('DDQ_REG["' + screen + '"].cfg.maxAttempts') > 1) {
+    place(p, screen, board === b.wrong ? b.partly : b.wrong);
+    p.exec('ddqCheck("' + screen + '");');
+  }
+  place(p, screen, board);
+  p.exec('ddqCheck("' + screen + '");');
+}
+
 function ddqScenarios(p) {
   for (const n of DDQ_SCREENS) {
     const screen = 's' + n, ctx = '01/' + screen;
@@ -337,8 +349,7 @@ function ddqWrong(p, n) {
   const b = boards(p, screen);
 
   p.exec('goTo(' + n + ');');
-  place(p, screen, b.wrong);
-  p.exec('ddqCheck("' + screen + '");');
+  ddqCheckFinal(p, screen, b.wrong, b);
   p.exec('goTo(' + AWAY['01'] + '); goTo(' + n + ');');
 
   let slots = slotClasses(p, screen);
@@ -395,8 +406,7 @@ function ddqPartlyRight(p, n) {
   const screen = 's' + n, ctx = '01/' + screen + '/partly';
   const b = boards(p, screen);
   p.exec('goTo(' + n + ');');
-  place(p, screen, b.partly);
-  p.exec('ddqCheck("' + screen + '");');
+  ddqCheckFinal(p, screen, b.partly, b);
   const note = p.val('DDQ_REG["' + screen + '"].cfg.answerNote');
   const FIRST = 'התשובה אינה נכונה במלואה.';
   let fb = popup(p, screen, 'ddq');
@@ -408,6 +418,64 @@ function ddqPartlyRight(p, n) {
   p.exec('goTo(' + AWAY['01'] + '); goTo(' + n + ');');
   fb = popup(p, screen, 'ddq');
   ok(ctx, 'after a return: still not-fully, back on the model board', fb && sameHtml(fb.title, FIRST + '<br>' + note), fb && fb.title);
+}
+
+/* s17's retry phase (two attempts, 2026-10-11): between the attempts nothing is resolved, and a
+   return or a reload must bring back exactly the retry look — popup, per-slot marks, the closed gate,
+   the hint — without sending anything. Then the second attempt resolves it once. */
+function ddqRetryState(p, screen) {
+  return p.val('(function(){ var s = DDQ_REG["' + screen + '"];' +
+    ' var chk = document.getElementById("' + screen + '-ddq-check"), h = document.getElementById("' + screen + '-ddq-hint");' +
+    ' return { attempts: s.attempts, phase: s.phase, done: s.done, checkDisabled: chk.disabled, hint: h.style.visibility,' +
+    '   answered: __stmts().filter(function (x) { return /^answered/.test(x.verb) && /-01-08\\//.test(x.questionId || ""); }).map(function (x) { return x.verb; }).join(",") }; })()');
+}
+/* xapiSend() defers to the next tick, so the log is read after one. */
+const nextTick = () => new Promise(r => setTimeout(r, 20));
+async function ddqRetry(p) {
+  const screen = 's17', ctx = '01/s17/retry';
+  const b = boards(p, screen);
+  p.exec('goTo(17);');
+  ok(ctx, 'the hint starts hidden (slide 68: after a first wrong answer)', ddqRetryState(p, screen).hint === 'hidden');
+  place(p, screen, b.wrong);
+  p.exec('ddqCheck("s17");');
+  await nextTick();
+  let st = ddqRetryState(p, screen), fb = popup(p, screen, 'ddq'), slots = slotClasses(p, screen);
+  ok(ctx, 'a first wrong check is an interim answered, unresolved', st.attempts === 1 && st.phase === 'retry' && !st.done && st.answered === 'answered', JSON.stringify(st));
+  ok(ctx, 'no result recorded yet', p.val('XAPI_Q_RESULTS["08/q1"] === undefined') === true);
+  ok(ctx, 'the retry popup: title + שננסה שוב?', fb && !fb.hidden && fb.title === 'התשובה אינה נכונה.' && /שננסה שוב/.test(fb.body), fb && fb.title + ' | ' + fb.body);
+  ok(ctx, 'every judged slot carries its verdict', slots.length === b.n && slots.every(c => /\bwrong\b/.test(c)), slots.join(' | '));
+  ok(ctx, 'the gate is closed on the judged board, the hint is shown', st.checkDisabled === true && st.hint === '', JSON.stringify(st));
+
+  p.exec('goTo(' + AWAY['01'] + '); goTo(17);');
+  await nextTick();
+  st = ddqRetryState(p, screen); fb = popup(p, screen, 'ddq'); slots = slotClasses(p, screen);
+  ok(ctx, 'a return keeps the retry look and sends nothing',
+     st.attempts === 1 && st.phase === 'retry' && fb && !fb.hidden && slots.every(c => /\bwrong\b/.test(c)) && st.checkDisabled === true && st.hint === '' && st.answered === 'answered', JSON.stringify(st));
+
+  p.exec('flushResumeSave();');
+  const state = p.dump();
+  const r = boot('01', { state });
+  r.exec('if (currentScreen !== 17) goTo(17);');
+  await nextTick();
+  st = ddqRetryState(r, screen); fb = popup(r, screen, 'ddq'); slots = slotClasses(r, screen);
+  ok('reload/' + ctx, 'a reload keeps the retry look (popup, marks, gate, hint)',
+     st.attempts === 1 && st.phase === 'retry' && fb && !fb.hidden && slots.every(c => /\bwrong\b/.test(c)) && st.checkDisabled === true && st.hint === '', JSON.stringify(st));
+  ok('reload/' + ctx, 'and sends nothing', r.val('__stmts().filter(function (x) { return /^answered/.test(x.verb); }).length') === 0);
+
+  place(r, screen, b.model);
+  st = ddqRetryState(r, screen);
+  ok('reload/' + ctx, 'a different full board opens the gate', st.checkDisabled === false, JSON.stringify(st));
+  r.exec('ddqCheck("s17");');
+  await nextTick();
+  st = ddqRetryState(r, screen); fb = popup(r, screen, 'ddq');
+  ok('reload/' + ctx, 'right on the second attempt: one answered.last, counted correct',
+     st.done && st.answered === 'answered.last' && r.val('XAPI_Q_RESULTS["08/q1"]') === true && r.val('practiceProgress.questions[3].state') === 'correct', JSON.stringify(st));
+  ok('reload/' + ctx, 'correct popup, hint hidden', fb && !fb.hidden && /תשובה נכונה/.test(fb.title) && st.hint === 'hidden', fb && fb.title);
+  r.exec('goTo(' + AWAY['01'] + '); goTo(17);');
+  await nextTick();
+  ok('reload/' + ctx, 'no duplicate answered.last', r.val('__dupes().length') === 0);
+  collectErrors('reload/' + ctx, r);
+  r.close();
 }
 
 /* Drags the learner made but never submitted have to survive a return: ddqEnter()'s unanswered
@@ -518,8 +586,8 @@ function reloadTests() {
     const a = boot('01');
     a.exec('goTo(17);');
     const b17 = boards(a, 's17');
-    place(a, 's17', b17.partly);
-    a.exec('ddqCheck("s17"); flushResumeSave();');
+    ddqCheckFinal(a, 's17', b17.partly, b17);
+    a.exec('flushResumeSave();');
     const state = a.dump();
     a.close();
     const b = boot('01', { state });
@@ -765,6 +833,9 @@ async function main() {
     let p = boot('01'); ddqWrong(p, n); collectErrors('01/ddq-wrong-s' + n, p); p.close();
     p = boot('01'); ddqUnsubmitted(p, n); collectErrors('01/ddq-partial-s' + n, p); p.close();
     p = boot('01'); ddqPartlyRight(p, n); collectErrors('01/ddq-partly-right-s' + n, p); p.close();
+  }
+  {
+    const p = boot('01'); await ddqRetry(p); collectErrors('01/ddq-retry-s17', p); p.close();
   }
 
   for (const part of ['05', '06']) {
