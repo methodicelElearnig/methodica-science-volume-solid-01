@@ -1465,7 +1465,7 @@ function scqCheck(screen) {
     s.phase = 'wrong2';
     scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong');
     scqShowPopup(screen, 'wrong2'); scqFinish(screen, false);
-  } else { s.phase = 'retry'; scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); }
+  } else { s.phase = 'retry'; scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); scqSyncHint(screen); }
 
   /* Synchronous, at the tail so it runs after every branch and after all painting. An answer given
      and then abandoned without navigating would otherwise rest entirely on the page-leave handlers,
@@ -1484,7 +1484,7 @@ function scqFinish(screen, isCorrect) {
   s.answered = true; s.done = true;
   scqOpts(screen).forEach(o => { o.disabled = true; });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'שנמשיך?'; chk.disabled = false; }
-  const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden';
+  scqSyncHint(screen);
   if (s.cfg.onFinish) s.cfg.onFinish(isCorrect);
 }
 function scqShowPopup(screen, type) {
@@ -1498,11 +1498,20 @@ function scqShowPopup(screen, type) {
 }
 function scqClosePopup(screen) { document.getElementById(screen + '-scq-popup')?.classList.add('hidden'); }
 function scqHint(screen) {
-  const s = SCQ_REG[screen]; if (!s || s.answered) return;
+  const s = SCQ_REG[screen]; if (!s || s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) return;
   xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey || 'q1').questionId });
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
+/* Hint availability, in one place (720-templates "Hint policy": hidden, not disabled, while
+   unavailable). Hidden once the question resolves; on a `hintAfterWrong` question also until the
+   first wrong check — the practice questions s13-s16, whose hint slides (53/58/63/73) all say
+   "רמז זמין אחרי מענה שגוי 1" (2026-10-11). Reads `attempts`, which resume already carries. */
+function scqSyncHint(screen) {
+  const s = SCQ_REG[screen]; const hint = document.getElementById(screen + '-scq-hint');
+  if (!s || !hint) return;
+  hint.style.visibility = (s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) ? 'hidden' : '';
+}
 function scqEnter(screen) {
   const s = SCQ_REG[screen]; if (!s) return;
   document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden');
@@ -1510,7 +1519,7 @@ function scqEnter(screen) {
   if (s.done) {
     scqOpts(screen).forEach(o => { o.disabled = true; });   // marks already painted persist
     const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'שנמשיך?'; chk.disabled = false; }
-    const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden';
+    scqSyncHint(screen);
   } else {
     scqReset(screen);
   }
@@ -1524,7 +1533,8 @@ function scqReset(screen) {
     o.disabled = !!s.locked;
   });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'צדקתי?'; chk.disabled = true; }
-  const hint = document.getElementById(screen + '-scq-hint'); if (hint) { hint.disabled = false; hint.style.visibility = ''; }
+  const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.disabled = false;
+  scqSyncHint(screen);
 }
 /* Shared draggable feedback popup — resets to default position on each open
    (handled in scqShowPopup). Drag is app-scale aware. Attached once per popup. */
@@ -1810,6 +1820,9 @@ function practiceEnter(idx, screen) {
 /* Register one standard-practice SingleChoiceQuestion (idx = 0-based position). */
 function registerPractice(idx, cfg) {
   cfg.screen = 's' + practiceProgress.questions[idx].screen;
+  /* Slides 53/58/63/73: "רמז זמין אחרי מענה שגוי 1" — all four practice SCQs. The warm-up (s19,
+     slide 47 "זמין תמיד") and s10 register directly and keep their hint from the start. */
+  cfg.hintAfterWrong = true;
   cfg.onFinish = function (isCorrect) {
     const q = practiceProgress.questions[idx];
     q.state = isCorrect ? 'correct' : 'incorrect';
@@ -2931,6 +2944,7 @@ function scqRestoreUI(screen) {
     var chk = document.getElementById(screen + '-scq-check');
     if (chk) chk.disabled = !s.sel || !!s.locked;
   }
+  scqSyncHint(screen);
 }
 
 /* Mirrors ddqCheck's DOM writes, on the same terms as scqRestoreUI.
