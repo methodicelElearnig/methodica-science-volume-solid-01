@@ -624,6 +624,7 @@
    so the block sat high with a band of empty canvas under it. Scoped, like the 40px above --
    `.exp-head` is on every exp screen and most of them have no room to give. */
 #s20 .exp-head { margin-top: 80px; }
+#s20 .exp-title { font-size: 36px; }  /* QA 2026-10-12: matches the enlarged s11/s31 titles */
 
 /* S9 two-column stage, storyboard slide 26 (QA 2026-08-25, slide 17).
    `direction: ltr` on the row is what puts the applet physically LEFT and the explanation

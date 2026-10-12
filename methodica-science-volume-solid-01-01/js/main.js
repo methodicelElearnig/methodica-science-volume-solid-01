@@ -2347,21 +2347,18 @@ document.addEventListener('click', function (e) {
    unlocks once every card has been revealed at least once.
    ═══════════════════════════════════════════════════════════ */
 const flipState = {};
-/* One card open at a time — opening one turns the others back over (QA 2026-08-24, slide 14).
-   flipState is the SEEN ledger, not the open one: it keeps recording every card the learner has
-   turned, because that is what unlocks Continue, and it must not be cleared when a card closes. */
+/* Each card toggles on its own (QA 2026-10-12) — any number can be face-up at once, all three
+   included, and a second click turns a card back over. flipState is the SEEN ledger, not the
+   open one: it records every card the learner has turned, because that is what unlocks Continue,
+   and it is never cleared when a card closes. */
 function flipCard(screen, cardEl) {
-  const wrap = cardEl.closest('.flip-grid') || document.getElementById(screen + '-flip');
-  if (wrap) wrap.querySelectorAll('.flip-card.flipped').forEach(c => {
-    if (c !== cardEl) c.classList.remove('flipped');
-  });
-  cardEl.classList.add('flipped');
-  (flipState[screen] = flipState[screen] || {})[cardEl.dataset.card] = true;
+  const open = cardEl.classList.toggle('flipped');
+  cardEl.setAttribute('aria-pressed', open ? 'true' : 'false');
+  if (open) (flipState[screen] = flipState[screen] || {})[cardEl.dataset.card] = true;
   flipUpdateContinue(screen);
 }
-/* Gated on the SEEN ledger, not on what is currently face-up. Since only one card can be open at
-   a time now, "every card is .flipped" is a state that can never occur — reading the DOM here
-   would leave Continue disabled forever. */
+/* Gated on the SEEN ledger, not on what is currently face-up: a learner can turn a card back
+   over after reading it, and that must not re-lock Continue. */
 function flipUpdateContinue(screen) {
   const cards = document.querySelectorAll('#' + screen + '-flip .flip-card');
   const seen = flipState[screen] || {};
@@ -2371,10 +2368,10 @@ function flipUpdateContinue(screen) {
 }
 function flipEnter(screen) {
   syncPathToggle();
-  /* Back to all-face-down on re-entry: with one card open at a time there is no "the cards were
-     like this when I left" to restore, and re-flipping every seen card would put the screen in a
-     state the learner can no longer reach by clicking. Continue still reflects the ledger. */
-  document.querySelectorAll('#' + screen + '-flip .flip-card').forEach(c => c.classList.remove('flipped'));
+  /* Back to all-face-down on re-entry; Continue still reflects the SEEN ledger. */
+  document.querySelectorAll('#' + screen + '-flip .flip-card').forEach(c => {
+    c.classList.remove('flipped'); c.setAttribute('aria-pressed', 'false');
+  });
   flipUpdateContinue(screen);
 }
 
