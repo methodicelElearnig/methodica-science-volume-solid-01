@@ -211,7 +211,9 @@ html, body {
   cursor: pointer; direction: rtl;
   text-align: center; white-space: nowrap;
 }
-.btn-continue:not(:disabled):hover { font-weight: 600; }
+/* Hover emphasis is a faux-bold text-shadow, never font-weight: a real weight change widens the
+   text and the pill grows on hover. Same rule for every pill button below. */
+.btn-continue:not(:disabled):hover { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; }
 .btn-continue.hidden { display: none !important; }
 /* Disabled state — gray inactive pill (modeled on the reference צדקתי button) */
 .btn-continue:disabled {
@@ -604,7 +606,7 @@ html, body {
   background: var(--cta-gradient);
   color: #fff; cursor: pointer;
 }
-.scq-check:not(:disabled):hover { font-weight: 600; }
+.scq-check:not(:disabled):hover { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; }
 
 .scq-hint {
   display: flex; align-items: center; gap: 6px; justify-content: center;
@@ -617,7 +619,7 @@ html, body {
 /* Figma 196:6024 — bulb icon sits to the RIGHT of the text (first flex item in RTL) */
 .scq-hint .scq-hint-ico { width: 26px; height: 22.3px; order: -1; }
 /* Figma 1645:18704 — hint hover: text goes SemiBold, border/colors unchanged */
-.scq-hint:hover:not(:disabled) { font-weight: 600; }
+.scq-hint:hover:not(:disabled) { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; }
 .scq-hint:disabled { border-color: #aeaeae; color: #aeaeae; cursor: default; }
 /* Figma 196:6021 — disabled bulb is solid #aeaeae (black → invert 68.2% = rgb(174,174,174)) */
 .scq-hint:disabled .scq-hint-ico { filter: brightness(0) invert(0.682); }
@@ -631,7 +633,7 @@ html, body {
   font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400;
   cursor: pointer; direction: rtl;
 }
-.scq-back:hover { font-weight: 600; border-width: 1.5px; } /* Figma 230:4050 */
+.scq-back:hover { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; box-shadow: inset 0 0 0 0.5px var(--subject-700); } /* Figma 230:4050 */
 
 /* ── Hint popup (modal) ── */
 .scq-hint-overlay {
@@ -2389,7 +2391,7 @@ html, body {
   cursor: pointer;
 }
 
-.s13-continue:not(.disabled):hover { font-weight: 600; }
+.s13-continue:not(.disabled):hover { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; }
 
 /* ═══════════════════════════════════════════════════════════
    S14 — Q3 Practice SingleChoice (text-only, no image column)
@@ -2848,9 +2850,9 @@ html, body {
   border-radius: 1000px;
   font-family: 'Assistant', sans-serif;
   font-size: 20px; font-weight: 400;
-  cursor: pointer; transition: font-weight 0.1s;
+  cursor: pointer; transition: text-shadow 0.1s;
 }
-.btn-back:hover { font-weight: 600; }
+.btn-back:hover { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; }
 
 /* ═══════════════════════════════════════════════════════
    PLACEHOLDER — companion character slot (S0).
@@ -2955,9 +2957,9 @@ html, body {
   /* 20px. Shared component: .meas-confirm on the applet screens is the same class
      and only override min-width, so they take this size too — checked, they still fit. */
   font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400;
-  cursor: pointer; transition: font-weight 0.1s;
+  cursor: pointer; transition: text-shadow 0.1s;
 }
-.btn-hint-primary:not(:disabled):hover { font-weight: 600; }
+.btn-hint-primary:not(:disabled):hover { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; }
 .btn-hint-primary:disabled { background: #AEAEAE; color: #303030; cursor: not-allowed; }
 
 /* Eureka burst — a speech bubble pointing at Archimedes IN THE PHOTO (S6), not at a
