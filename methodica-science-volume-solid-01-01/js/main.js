@@ -209,7 +209,14 @@ const CHARACTER_ASSETS = {
      were the same headband artwork under different names, framed slightly differently, so keeping
      both would have meant shipping one 960x960 clip twice. `stretch` wins the name because that is
      what the delivery folder calls it (Orange_Stretching.mp4 / turquoise_streach.mp4). */
-  stretch: 'mp4', ask: 'mp4', 'wet-object': 'mp4'
+  stretch: 'mp4', ask: 'mp4', 'wet-object': 'mp4',
+  /* 2026-10-12: S6's Archimedes remark — finger raised, "thinking" (orange_think / blue_think). */
+  think: 'mp4',
+  /* 2026-10-12: S32's practice-rules screen — hand on the headband (orange_headband / blue_headband). */
+  headband: 'mp4',
+  /* 2026-10-12: S35's marble screen — holding a ping-pong ball (orange_pingpong / blue_pingpong).
+     Replaces `soap` there at the designer's request; `pingpong` (finger raised) stays on s33. */
+  'pingpong-ball': 'mp4'
 };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
@@ -381,6 +388,14 @@ function resetScreenState(n) {
     aqEnter();
   }
   if (n === 33) { syncPathToggle(); }
+  if (n === 35) {
+    // Slide 26: the mascot "GIF" and his bubble appear 5s after entry — restart so the delay counts from this visit.
+    document.querySelectorAll('#s35 .s35-gif').forEach(el => {   // the mascot and his bubble
+      el.classList.remove('is-on'); void el.offsetWidth; el.classList.add('is-on');
+    });
+    const gif = document.getElementById('s35-gif');
+    if (gif) gif.currentTime = 0;
+  }
   if (n === 11) {
     // Flooding / overflow applet.
     floodEnter();
@@ -617,6 +632,13 @@ const EXPERIMENTS_ENTRY = 10;
 const EXPERIMENTS_SCREENS = [9, 10, 11, 20, 21, 22, 29, 30, 31, 33, 34, 35];   // membership list for the path toggle, NOT the order
                                                                     // (runtime order is 10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31)
 const MERGE_SCREEN = 12;                       // both paths (comic end / flip-cards end) continue here
+/* Flow order for index_dev.html's jump bar (sent by ../unit-js/60-devbridge.js): the arrows walk
+   the lesson as the learner meets it, not by screen number. Both branches are listed — comic first,
+   then experiments — and must be kept in step with advanceScreen() below. */
+var DEV_FLOW_ORDER = [0, 1, 2, 3, 4, 5, 6, 7]
+  .concat(COMIC_SCREENS)
+  .concat([EXPERIMENTS_ENTRY, 29, 9, 35, 21, 11, 33, 20, 22, 34, 30, 31])
+  .concat([MERGE_SCREEN, 18, 19, 32, 13, 14, 15, 17, 16]);
 function selectPathOption(cardEl) {
   document.querySelectorAll('#s7 .option-card').forEach(c => {
     c.classList.remove('selected'); c.setAttribute('aria-checked', 'false');
@@ -1627,7 +1649,7 @@ function aqEnter() {
        earlier revision; the question asks about a crystal, so the subject follows the question.
      - deck expressions are wrapped in .section-result-expr: digits and operators are
        bidi-neutral and reorder inside an RTL paragraph without it. */
-const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['<b>שננסה שוב?</b>'] };
+const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['שננסה שוב?'] };
 const FB_WRONG2 = 'התשובה אינה נכונה.<br />התשובה הנכונה מסומנת.';
 /* `wrong2Extra`: a line the deck adds to the wrong-final popup only. Slide 55 (s13) closes with the
    encouragement "לא נורא אם טעית…", which its note gives to the mascot's GIF and bubble; that pose
@@ -1875,7 +1897,7 @@ registerPractice(1, {
   correctId: 'a',
   item: '06',
   popups: fbPopups('תשובה נכונה!', [   /* sb57/59/60 */
-    'נפח המים שישפכו מהכלי שווה בדיוק לנפח הכדור, כך ניתן למדוד נפח של גוף שלא נכנס במשורה — זוהי שיטת ההצפה.'])
+    'נפח המים שישפכו מהכלי שווה בדיוק לנפח הכדור, כך ניתן למדוד נפח של גוף שלא נכנס במשורה — זוהי שיטת\u00A0ההצפה.'])
 });
 registerPractice(2, {
   correctId: 'd',
@@ -2530,6 +2552,15 @@ function measNext() {
   if (MEAS[measStep] && MEAS[measStep].screen !== wasScreen) { goTo(MEAS[measStep].screen); return; }
   measRender();
 }
+/* s34's נסו שוב (QA 2026-10-12): back to step 3 — hammer out of the bowl, tray and measuring vessel
+   empty, answer cleared. Only s34 has the button; steps 1-2 on s22 are not touched. */
+function measReset() {
+  if (MEAS[measStep].screen !== 34) return;
+  measStep = 3; measDone = false; measRevealed = false; measPoured = false;
+  const inp = mEl('input');
+  if (inp) inp.value = '';
+  measRender();
+}
 function measRender() {
   const step = measStep, cfg = MEAS[step];
   const el = function (n) { return mEl(n); };
@@ -2551,9 +2582,6 @@ function measRender() {
   const reveal = el('reveal');
   reveal.classList.toggle('hidden', !measRevealed);
   if (measRevealed) reveal.textContent = cfg.reveal;
-  /* s34 shows the companion only with its reveal line — during the drag and the pour he stood
-     there with nothing to say (QA 2026-10-11). */
-  if (cfg.screen === 34) reveal.closest('.companion-say')?.classList.toggle('hidden', !measRevealed);
   el('error').classList.add('hidden');
   /* The tray is only grabbable while its pour is still pending. */
   if (el('tray')) el('tray').classList.toggle('is-pourable', awaitingPourFlag(cfg));
@@ -2573,6 +2601,8 @@ function measRender() {
      bowl sat empty while the משורה still showed the king, so the only object on screen belonged to
      the previous step (QA 2026-08-29). */
   if (el('bowl')) el('bowl').classList.toggle('has-object', step >= 4);
+  /* Offered once the hammer is in the bowl — before that there is nothing to undo. */
+  if (el('reset')) el('reset').classList.toggle('hidden', step < 4);
   const cont = document.getElementById(measScreenId() + '-continue');
   if (cont) cont.disabled = (cfg.screen === 34) ? !measDone : !(step > 2 || measRevealed);
 }

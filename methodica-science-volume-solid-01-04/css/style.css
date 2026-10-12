@@ -21,7 +21,10 @@
    transition screen that has no sprite under it.
    Text block ~90px over a 337px sprite with a 20px gap = 447px; centred in the 646px above the nav
    bar puts the text's own centre at 144. */
-#s0 .transition-content { top: 102px; }
+/* QA 2026-10-12 (slide 113): the sprite now stands on the nav bar's rule (bottom 12 in the slot), and
+   the heading runs to two lines (~178px block). With the sprite 109px lower the text centres at 170,
+   so it clears the headphones instead of hugging the top edge. */
+#s0 .transition-content { top: 170px; }
 /* QA 2026-08-30: the heading drops the blue for the unit's near-black and goes to 48px, the line
    under it to 24px. Scoped to #s0 because .transition-title / -sub are shared with parts 01 and 02.
    The 144px above became 102: the sprite grew 600 -> 750 (+25%), so its 16:9 box is 422px rather
@@ -31,14 +34,14 @@
 #s0 .transition-title { font-size: 48px; color: #303030; }
 #s0 .transition-sub { font-size: 24px; }
 
-/* S10 — Gili speaks from inside the photograph. His head starts about 275px into the 494px frame,
+/* S9 — Gili speaks from inside the photograph. His head starts about 275px into the 494px frame,
    so the bubble ends just short of that and the beak lands beside his face. The width is what
    forces the line onto two: at 21px the sentence runs ~350px on one, which would reach across him.
    Coordinates are photo-specific, which is why they sit here and not in the shared .thought-bubble. */
-#s10 .thought-bubble { left: 24px; top: 40px; width: 240px; }
+#s9 .thought-bubble { left: 24px; top: 40px; width: 240px; }
 /* The bubble having left the column, the scenario text is its only child and starts level with the
    top of the frame rather than being centred against it. */
-#s10 .scq-side { align-self: flex-start; }
+#s9 .scq-side { align-self: flex-start; }
 
 /* S1 (QA 2026-10-10). The feedback popup keeps its default bottom-left position on every screen, so
    the CONTENT moves (720-templates: "move the content, not the popup"). At the shared 760px centred
@@ -48,6 +51,15 @@
    Vertically it stays centred as before (50% − 20px, block 490 tall) but never starts above 116px —
    16px under the progress bar, which the stem used to overlap at a 720px-high canvas. */
 #s1 .scq-question {
-  width: 722px; left: auto; right: 60px; transform: none;
+  width: 722px; left: auto; right: 40px; transform: none;   /* 40px gutter, 2026-10-12 (was 60) */
   top: max(116px, calc(50% - 20px - 245px));
 }
+
+/* S5 options (QA 2026-10-12): option d ("...מנפח המים החדש שהתקבל") runs ~606px at 22px, so in the
+   shared 612px side column it alone broke to two lines and stood taller than the other three pills.
+   The photo gives up 100px (560 → 460, natural ratio kept) so the side column is 712px and all four
+   pills sit on one line at the same width and height (682 × 46, left edge at 558).
+   This replaced the earlier 604px-wide feedback popup (nowrap equation): its right edge (606) ran over
+   the end of the correct answer in the final view. The popup is back to the shared width (right edge
+   482) and the equation wraps — producer's call, 2026-10-12. */
+#s5 .scq-question--withimage > .scq-figure { width: 460px; }

@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · שאלת שיא (מועד ב)</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=82">
-  <link rel="stylesheet" href="css/style.css?v=1">
+  <link rel="stylesheet" href="../unit-css/style.css?v=109">
+  <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -36,22 +36,19 @@
   <!-- Storyboard slide 162. The photo and the method description are NOT repeated here: they are
        the scenario, and the scenario is s7 (slide 161), which now precedes this screen. -->
   <section class="screen" data-screen="1" id="s1">
-    <!-- Two-column, matching the practice questions in part 04 (.scq-question--withimage): media
-         column on the left, question column on the right. Here the media column is the companion
-         and his line rather than a photo — s1 is the only sub-part the deck gives a companion, and
-         it had been floating loose at the canvas corner while the question sat centred alone. -->
-    <div class="peak-question peak-question--withimage">
-      <!-- Slide 162's companion line. The deck renders a Wingdings smiley (U+F04A) mid-sentence; it is
-           a font glyph rather than text, so it is dropped rather than substituted with an emoji.
-           --right, not --left: with `into`, renderCompanion APPENDS the sprite, so it lands after the
-           bubble — see part 05's s1 and the result screens. -->
-      <div class="companion-say companion-say--right" id="s1-say">
-        <p class="companion-bubble" style="--bubble-w: 300px;">גם הפעם תדעו אם צדקתם רק בסוף.</p>
-      </div>
+    <!-- Slide 162's companion line. The deck renders a Wingdings smiley (U+F04A) mid-sentence; it is
+         a font glyph rather than text, so it is dropped rather than substituted with an emoji.
+         Pinned to the canvas's bottom-left (QA 2026-10-12) with the bubble on his right, instead of
+         a column beside the question. renderCompanion APPENDS the sprite, so part 06's sheet gives
+         it order: -1 to put it physically first, which is what --left expects. -->
+    <div class="companion-say companion-say--left" id="s1-say">
+      <p class="companion-bubble" style="--bubble-w: 300px;">גם הפעם תדעו אם צדקתם<br />רק בסוף.</p>
+    </div>
+    <div class="peak-question">
       <div class="peak-side">
         <p class="scq-qtext scq-qtext--mixed">
-          <b>סעיף א:</b><br />
-          באיזו שיטה ארז השתמש למדידת נפח הפסל?</p>
+          <b class="scq-qtext-part">סעיף א:</b><br />
+          <b>באיזו שיטה ארז השתמש למדידת נפח הפסל?</b></p>
         <div class="scq-answers peak-options" id="s1-opts" role="radiogroup" aria-label="באיזו שיטה">
           <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(1,'a',this)"><span class="scq-opt-text">שיטת ההצפה</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(1,'b',this)"><span class="scq-opt-text">שיטת דחיקת המים</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -60,15 +57,15 @@
         </div>
       </div>
     </div>
-    <div class="nav-bar"><button class="scq-hint peak-hint" id="s1-hint" type="button" onclick="peakHint(1)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s1-continue" disabled onclick="peakContinue(1)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="nav-bar"><button class="scq-hint peak-hint" id="s1-hint" type="button" onclick="peakHint(1)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s1-continue" disabled onclick="peakContinue(1)">המשך</button><button class="btn-continue peak-review-return" type="button" onclick="backToResult()">חזרה למשוב</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
   <div class="scq-hint-overlay hidden" id="s1-hint-overlay" onclick="if(event.target===this)peakCloseHint(1)"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>הפסל לא נכנס למשורה</strong></p><p>איזו שיטה מאפשרת למדוד נפח של גוף מוצק שאינו נכנס במשורה?</p></div></div></div><button class="scq-hint-close" type="button" onclick="peakCloseHint(1)">חזרה לשאלה</button></div></div>
 
   <section class="screen" data-screen="2" id="s2">
     <div class="peak-question">
       <p class="scq-qtext scq-qtext--mixed">
-        <b>סעיף ב:</b><br />
-        ממוצע המדידות הוא 1,250&nbsp;מ"ל.<br />מהו נפח הפסל ובאיזו יחידת מידה נוספת אפשר לבטא אותו?</p>
+        <b class="scq-qtext-part">סעיף ב:</b><br />
+        ממוצע המדידות הוא 1,250&nbsp;מ"ל.<br /><b>מהו נפח הפסל ובאיזו יחידת מידה נוספת אפשר לבטא אותו?</b></p>
       <div class="scq-answers peak-options" id="s2-opts" role="radiogroup" aria-label="נפח הפסל ויחידות">
         <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(2,'a',this)"><span class="scq-opt-text"><span class="nobr">1,250 סמ"ק</span> השווים ל-<span class="nobr">1.25 ליטר</span></span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(2,'b',this)"><span class="scq-opt-text"><span class="nobr">125 סמ"ק</span> השווים ל-<span class="nobr">0.125 ליטר</span></span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -76,15 +73,15 @@
         <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(2,'d',this)"><span class="scq-opt-text"><span class="nobr">12.5 סמ"ק</span> השווים ל-<span class="nobr">0.0125 ליטר</span></span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
-    <div class="nav-bar"><button class="scq-hint peak-hint" id="s2-hint" type="button" onclick="peakHint(2)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s2-continue" disabled onclick="peakContinue(2)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="nav-bar"><button class="scq-hint peak-hint" id="s2-hint" type="button" onclick="peakHint(2)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s2-continue" disabled onclick="peakContinue(2)">המשך</button><button class="btn-continue peak-review-return" type="button" onclick="backToResult()">חזרה למשוב</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
   <div class="scq-hint-overlay hidden" id="s2-hint-overlay" onclick="if(event.target===this)peakCloseHint(2)"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>תזכורת!</strong></p><p>למדנו ביחידות קודמות ש: 1 מ"ל = 1 סמ"ק, ו-1,000 מ"ל = 1 ליטר.</p></div></div></div><button class="scq-hint-close" type="button" onclick="peakCloseHint(2)">חזרה לשאלה</button></div></div>
 
   <section class="screen" data-screen="3" id="s3">
     <div class="peak-question">
       <p class="scq-qtext scq-qtext--mixed">
-        <b>סעיף ג:</b><br />
-        אחותו של ארז ראתה מה הוא עושה וטענה:<br />"כמות המים שנאספה בקערה – 1,250&nbsp;מ"ל, שווה בדיוק לנפח הפסל"!<br /><b>איזה מהמשפטים הבאים נכון?</b></p>
+        <b class="scq-qtext-part">סעיף ג:</b><br />
+        אחותו של ארז ראתה מה הוא עושה וטענה:<br />"כמות המים שנאספה היא 1,250&nbsp;מ"ל — שווה בדיוק לנפח הפסל!"<br /><b>איזה מהמשפטים הבאים נכון?</b></p>
       <div class="scq-answers peak-options" id="s3-opts" role="radiogroup" aria-label="איזה משפט נכון">
         <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(3,'a',this)"><span class="scq-opt-text">האקווריום הוא כלי גדול ולכן הנפח שנמדוד בו תמיד יהיה מדויק</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(3,'b',this)"><span class="scq-opt-text">כיוון שהאקווריום היה מלא עד הקצה, נפח המים שנדחקו החוצה שווה לנפח הפסל בדיוק</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -92,23 +89,23 @@
         <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(3,'d',this)"><span class="scq-opt-text">בגלל שהפסל עשוי מתכת וכבד, הוא דוחק הרבה מים החוצה ולכן הטענה&nbsp;נכונה</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
-    <div class="nav-bar"><button class="scq-hint peak-hint" id="s3-hint" type="button" onclick="peakHint(3)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s3-continue" disabled onclick="peakContinue(3)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="nav-bar"><button class="scq-hint peak-hint" id="s3-hint" type="button" onclick="peakHint(3)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s3-continue" disabled onclick="peakContinue(3)">המשך</button><button class="btn-continue peak-review-return" type="button" onclick="backToResult()">חזרה למשוב</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
-  <div class="scq-hint-overlay hidden" id="s3-hint-overlay" onclick="if(event.target===this)peakCloseHint(3)"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><!-- slide 167 writes "אותם"; the grammatical "שאותן" is kept by QA decision (2026-10-11, docs-and-tools/TEXT-FIDELITY.md §Approved departures) --><p>על מה מבוססות השיטות למדידת נפח שאותן למדנו ביחידה?</p></div></div></div><button class="scq-hint-close" type="button" onclick="peakCloseHint(3)">חזרה לשאלה</button></div></div>
+  <div class="scq-hint-overlay hidden" id="s3-hint-overlay" onclick="if(event.target===this)peakCloseHint(3)"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><!-- slide 167 writes "אותם"; the grammatical "שאותן" is kept by QA decision (2026-10-11, docs-and-tools/TEXT-FIDELITY.md §Approved departures) --><p>על מה מבוססות השיטות למדידת נפח שאותן<br />למדנו ביחידה?</p></div></div></div><button class="scq-hint-close" type="button" onclick="peakCloseHint(3)">חזרה לשאלה</button></div></div>
 
   <section class="screen" data-screen="4" id="s4">
     <div class="peak-question">
       <p class="scq-qtext scq-qtext--mixed">
-        <b>סעיף ד:</b><br />
-        כדי לבסס את הטענה כי נפח הפסל הוא 1,250&nbsp;סמ"ק, יש לתמוך בה בטיעון מדעי.<br />איזה מהמשפטים הבאים הוא טיעון מדעי הנתמך בראיה?</p>
+        <b class="scq-qtext-part">סעיף ד:</b><br />
+        כדי לבסס את הטענה כי נפח הפסל הוא 1,250&nbsp;סמ"ק, יש לתמוך בה בטיעון מדעי.<br /><b>איזה מהמשפטים הבאים הוא טיעון מדעי הנתמך בראיה?</b></p>
       <div class="scq-answers peak-options" id="s4-opts" role="radiogroup" aria-label="טיעון מדעי">
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(4,'a',this)"><span class="scq-opt-text">בשיטת ההצפה נאספו בממוצע <span class="nobr">1,250 מ"ל</span> מים, ונפח המים שנדחק שווה לנפח הגוף שהוכנס&nbsp;למים</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(4,'b',this)"><span class="scq-opt-text">נפח הפסל הוא כ-<span class="nobr">1,250 סמ"ק</span>, משום שכל גוף שמכניסים למים דוחק מים, וכך ניתן לדעת את&nbsp;נפחו</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(4,'c',this)"><span class="scq-opt-text">נפח הפסל הוא כ-<span class="nobr">1,250 סמ"ק</span>, משום שהפסל נראה גדול ותופס מקום רב בתוך האקווריום</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(4,'d',this)"><span class="scq-opt-text">נפח הפסל הוא כ-<span class="nobr">1,250 סמ"ק</span>, משום שהמוכרת בחנות העריכה שזהו נפחו והיא בעלת ניסיון רב&nbsp;בתחום</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="peakSelect(4,'c',this)"><span class="scq-opt-text">נפח הפסל הוא כ-<span class="nobr">1,250 סמ"ק</span>,<br />משום שהפסל נראה גדול ותופס מקום רב בתוך האקווריום</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="peakSelect(4,'b',this)"><span class="scq-opt-text">נפח הפסל הוא כ-<span class="nobr">1,250 סמ"ק</span>, משום שכל גוף<br />שמכניסים למים דוחק מים, וכך ניתן לדעת את נפחו</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="peakSelect(4,'a',this)"><span class="scq-opt-text">בשיטת ההצפה נאספו בממוצע <span class="nobr">1,250 מ"ל</span> מים,<br />ונפח המים שנדחק שווה לנפח הגוף שהוכנס למים</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(4,'d',this)"><span class="scq-opt-text">נפח הפסל הוא כ-<span class="nobr">1,250 סמ"ק</span>,<br />משום שהמוכרת בחנות העריכה שזהו נפחו והיא בעלת ניסיון רב בתחום</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
-    <div class="nav-bar"><button class="scq-hint peak-hint" id="s4-hint" type="button" onclick="peakHint(4)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s4-continue" disabled onclick="peakContinue(4)">סיום</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="nav-bar"><button class="scq-hint peak-hint" id="s4-hint" type="button" onclick="peakHint(4)"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button><button class="btn-continue" id="s4-continue" disabled onclick="peakContinue(4)">צדקתי?</button><button class="btn-continue peak-review-return" type="button" onclick="backToResult()">חזרה למשוב</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
   <div class="scq-hint-overlay hidden" id="s4-hint-overlay" onclick="if(event.target===this)peakCloseHint(4)"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>איך אנחנו יודעים שהטענה נכונה?</strong></p><p>בטיעון מדעי נחפש ממצא שנמדד בניסוי או בתצפית.</p></div></div></div><button class="scq-hint-close" type="button" onclick="peakCloseHint(4)">חזרה לשאלה</button></div></div>
 
@@ -123,8 +120,8 @@
       <div class="scq-side">
         <h1 class="peak-scenario-title">האקווריום של ארז</h1>
         <p class="scq-qtext scq-qtext--mixed">
-          ארז קנה פסל חדש של ספינה טרופה לאקווריום שלו. חשוב לו לדעת מה נפח הפסל.<br /><br />
-          <b>השיטה:</b> ארז הניח את האקווריום על כלי איסוף, מילא אותו במים עד הסוף והכניס פנימה את הפסל. את המים שנשפכו לכלי האיסוף הוא אסף ומדד את נפחם.<br /><br />
+          ארז קנה פסל חדש של ספינה טרופה לאקווריום שלו.<br />חשוב לו לדעת מה נפח הפסל.<br /><br />
+          <b>השיטה:</b><br />ארז הניח את האקווריום על כלי איסוף, מילא אותו במים עד הסוף והכניס פנימה את הפסל. את המים שנשפכו לכלי האיסוף הוא אסף ומדד את נפחם.<br /><br />
           <b>המדידות:</b></p>
         <ul class="peak-scenario-list">
           <li>מדידה 1: 1,250&nbsp;מ"ל</li>
@@ -153,7 +150,7 @@
       <div class="section-result-body" id="s5-result-body"></div>
       <p class="peak-end-score" id="s5-score"></p>
     </div>
-    <div class="companion-say companion-say--right" id="s5-say" style="left: 44px; bottom: 96px;">
+    <div class="companion-say companion-say--left" id="s5-say" style="left: 6px; bottom: 42px;">
       <p class="companion-bubble" id="s5-result-bubble" style="--bubble-w: 262px;"></p>
     </div>
     <div class="nav-bar"><button class="btn-continue" id="s5-continue" onclick="goTo(8)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
@@ -165,7 +162,7 @@
       <div class="section-result-body" id="s6-result-body"></div>
       <p class="peak-end-score" id="s6-score"></p>
     </div>
-    <div class="companion-say companion-say--right" id="s6-say" style="left: 44px; bottom: 96px;">
+    <div class="companion-say companion-say--left" id="s6-say" style="left: 6px; bottom: 56px;">
       <p class="companion-bubble" id="s6-result-bubble" style="--bubble-w: 262px;"></p>
     </div>
     <div class="nav-bar"><button class="btn-continue" id="s6-continue" onclick="goTo(9)">המשך</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
@@ -235,8 +232,8 @@
 <script src="../unit-js/30-nav.js?v=4"></script>
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
-<script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=30"></script>
+<script src="../unit-js/60-devbridge.js?v=2"></script>
+<script src="js/main.js?v=33"></script>
 <script src="../unit-js/90-boot.js?v=2"></script>
 </body>
 </html>

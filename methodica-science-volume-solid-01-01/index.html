@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=82">
-  <link rel="stylesheet" href="css/style.css?v=65">
+  <link rel="stylesheet" href="../unit-css/style.css?v=109">
+  <link rel="stylesheet" href="css/style.css?v=72">
 </head>
 <body data-subject-theme="science">
 
@@ -125,7 +125,7 @@
       <p class="companion-bubble" style="--bubble-w: 300px;">
         איך רוני יכולה לדעת<br>מה נפח התליון?</p>
       <video class="companion" src="assets/img/character-orange-examine.mp4?v=2" aria-hidden="true"
-           data-pose="examine" draggable="false" autoplay loop muted playsinline style="--cw: 162px;"></video>
+           data-pose="examine" draggable="false" autoplay loop muted playsinline></video>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s1-continue" onclick="advanceScreen()">המשך</button>
@@ -282,8 +282,8 @@
          left edge). The bubble hangs from the group's top (the default) so its beak meets him
          near head height and its bottom edge stays clear of the bar's line. -->
     <div class="companion-say companion-say--left" style="left: calc(50% - 560px); bottom: 74px;">
-      <video class="companion" src="assets/img/character-orange-stretch.mp4?v=3" aria-hidden="true"
-             data-pose="stretch" draggable="false" style="--cw: 178px;"
+      <video class="companion" src="assets/img/character-orange-think.mp4?v=4" aria-hidden="true"
+             data-pose="think" draggable="false" style="--cw: 178px;"
              autoplay loop muted playsinline></video>
       <p class="companion-bubble" style="--bubble-w: 500px;">ארכימדס לא היה גאון יוצא דופן שיודע את התשובות לכל דבר, אלא אדם שראה דברים בצורה שונה מאחרים, כמו בדוגמה של מפלס המים העולים באמבטיה.</p>
     </div>
@@ -785,12 +785,17 @@
                and the conclusion is spelled out in words. -->
           <h1 class="exp-title">מה קרה כאן?</h1>
           <p class="exp-instruction">מפלס המים עלה ברגע שהגולה נכנסה למשורה.</p>
-          <p class="exp-instruction">עיקרון ארכימדס אומר שכשמכניסים גוף למים, מפלס המים עולה <strong>בכמות שווה לנפח הגוף בדיוק.</strong></p>
+          <p class="exp-instruction">עיקרון ארכימדס אומר שכשמכניסים גוף למים, מפלס המים עולה<br><strong>בכמות שווה לנפח הגוף בדיוק.</strong></p>
           <p class="split-conclusion"><strong>נפח המים הסופי פחות נפח המים המקורי<br>=<br>נפח הגולה!</strong></p>
           <div class="companion-say companion-say--inline companion-say--right split-say">
-            <p class="companion-bubble" style="--bubble-w: 300px;">עיקרון זה תקף לגופים שלא מתמוססים במים.<br><br>אפשר לעטוף גופים שרגישים למים בשכבת מגן דקה לפני שמכניסים למשורה.</p>
-            <video class="companion" src="assets/img/character-orange-soap.mp4?v=2" alt="" aria-hidden="true"
-                 data-pose="soap" draggable="false" autoplay loop muted playsinline style="--cw: 170px;"></video>
+            <p class="companion-bubble s35-gif" style="--bubble-w: 375px;">עיקרון זה תקף לגופים שלא<br>מתמוססים במים.<span class="s35-para-gap"></span>אפשר לעטוף גופים שרגישים למים<br>בשכבת מגן דקה לפני שמכניסים&nbsp;למשורה.</p>
+            <!-- Slide 26 notes: "גיפ מופיע אחרי 5 שניות." — he and his bubble
+                 fade in together at 5s (bubble: QA 2026-10-12). Classed per element, not on the
+                 .companion-say wrapper, which must not become a stacking context.
+                 2026-10-12: the soap clip was swapped for the ping-pong-ball one (orange_pingpong /
+                 blue_pingpong) at the designer's request. -->
+            <video class="companion s35-gif" id="s35-gif" src="assets/img/character-orange-pingpong-ball.mp4?v=4" alt="" aria-hidden="true"
+                 data-pose="pingpong-ball" draggable="false" autoplay loop muted playsinline style="--cw: 170px;"></video>
           </div>
         </div>
       </div>
@@ -1148,9 +1153,13 @@
         <div class="hotspot-photo">
           <img src="assets/img/s15-four-kids.jpg" alt="ארבעה ילדים בחלוקי מעבדה ומשקפי מגן עומדים ליד שולחן במעבדה">
           <button class="scq-opt hotspot-area" type="button" data-id="d" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','d')" style="--x:82%;--y:58%;--w:13%;--h:46%"></button>
+          <span class="hotspot-pop" data-id="d" aria-hidden="true" style="--x:80%;--y:56%;--rw:12.5%;--rh:34%"></span>
           <button class="scq-opt hotspot-area" type="button" data-id="b" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','b')" style="--x:57%;--y:58%;--w:13%;--h:46%"></button>
+          <span class="hotspot-pop" data-id="b" aria-hidden="true" style="--x:57.6%;--y:55%;--rw:11.5%;--rh:34%"></span>
           <button class="scq-opt hotspot-area" type="button" data-id="c" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','c')" style="--x:39%;--y:58%;--w:13%;--h:46%"></button>
+          <span class="hotspot-pop" data-id="c" aria-hidden="true" style="--x:39.9%;--y:57%;--rw:10.5%;--rh:33%"></span>
           <button class="scq-opt hotspot-area" type="button" data-id="a" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','a')" style="--x:24%;--y:58%;--w:13%;--h:46%"></button>
+          <span class="hotspot-pop" data-id="a" aria-hidden="true" style="--x:21.8%;--y:57%;--rw:10.5%;--rh:33%"></span>
         </div>
         <button class="scq-opt hotspot-bubble hotspot-bubble--side hotspot-bubble--right" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s15','d')">
           <span class="scq-opt-text">הכנסתי את הכפית למשורה עם מים. המים עלו מ-50 ל-<span class="nobr">70 מ"ל</span>, ולכן נפח הכפית הוא <span class="nobr">20 מ"ל</span>.</span>
@@ -1294,7 +1303,7 @@
     <!-- DropdownQuestion — reuses the SCQ controller: dropdown options are
          .scq-opt (dqPick → scqSelect); onFinish colours the trigger. -->
     <div class="dq-question dq-question--withimage">
-      <div class="scq-figure" style="width: 520px">
+      <div class="scq-figure">
         <img src="assets/img/s19-sharpener.jpg" alt="מחדד עפרונות קטן">
       </div>
       <!-- Laid out as storyboard slide 46 lays it out: "עיקרון דחיקת המים" is its own blue
@@ -1507,14 +1516,9 @@
         </div>
       </div>
     </div>
-    <!-- The reveal is the companion telling the learner the volume, so it leaves .meas-side
-         and joins him in a .companion-say group at the free left band. measRender() only sets
-         textContent and toggles .hidden on the id. -->
-    <div class="companion-say companion-say--left" style="left: 24px; bottom: 84px;">
-      <video class="companion" src="assets/img/character-orange-wet-object.mp4?v=2" aria-hidden="true"
-           data-pose="wet-object" draggable="false" autoplay loop muted playsinline style="--cw: 150px;"></video>
-      <p class="companion-bubble hidden" id="meas-reveal" style="--bubble-w: 300px;"></p>
-    </div>
+    <!-- QA 2026-10-12: the reveal is a plain rectangular text popup at the free left band — the
+         mascot was removed. measRender() only sets textContent and toggles .hidden on the id. -->
+    <p class="meas-reveal-pop hidden" id="meas-reveal" role="status"></p>
     <div class="nav-bar">
       <button class="btn-continue" id="s22-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
@@ -1569,6 +1573,7 @@
             <div class="meas-tray" id="meas2-tray"><div class="meas-tray-water" id="meas2-tray-water"></div></div>
             <span class="meas-vessel-label">קערת הצפה + כלי איסוף</span>
             <svg class="meas-pour-arrow hidden" id="meas2-pour-arrow" viewBox="0 0 90 120" aria-hidden="true"><path d="M78 108 C 40 104, 22 70, 24 22" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M8 34 L24 12 L40 34" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <button class="disp-reset meas-reset hidden" id="meas2-reset" type="button" onclick="measReset()">נסו שוב</button>
             <p class="meas-pour-hint hidden" id="meas2-pour-hint">שפכו את המים מכלי האיסוף לכלי המדידה והקלידו את נפח הפטיש.</p>
           </div>
           <!-- The graduated measuring vessel the collected water is poured into. Slide 38 puts the
@@ -1597,11 +1602,7 @@
         </div>
       </div>
     </div>
-    <div class="companion-say companion-say--left" style="left: 24px; bottom: 84px;">
-      <video class="companion" src="assets/img/character-orange-wet-object.mp4?v=2" alt="" aria-hidden="true"
-           data-pose="wet-object" draggable="false" autoplay loop muted playsinline style="--cw: 150px;"></video>
-      <p class="companion-bubble hidden" id="meas2-reveal" style="--bubble-w: 300px;"></p>
-    </div>
+    <p class="meas-reveal-pop hidden" id="meas2-reveal" role="status"></p>
     <div class="nav-bar">
       <button class="btn-continue" id="s34-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
@@ -1755,14 +1756,16 @@
          "5 שאלות" on its own line at 40px. The closing line is the mascot's, so it moves into a
          bubble beside him rather than floating under the text. -->
     <div class="transition-content transition-content--intro transition-content--rules">
-      <p class="transition-sub">סיימנו את שלב הלימוד, נעבור לתרגול הראשון ונענה על</p>
-      <p class="transition-count">5 שאלות</p>
+      <div class="transition-head">
+        <p class="transition-sub transition-lead-in">סיימנו את שלב הלימוד, נעבור לתרגול הראשון</p>
+        <p class="transition-count">נענה על 5 שאלות</p>
+      </div>
       <p class="transition-sub">צריך לענות נכון על 4 שאלות (80%) לפחות.</p>
     </div>
-    <div class="companion-say companion-say--right" style="right: 150px; bottom: 150px;">
+    <div class="companion-say companion-say--right">
       <p class="companion-bubble" style="--bubble-w: 300px;">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</p>
-      <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
-           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 220px;"></video>
+      <video class="companion" src="assets/img/character-orange-headband.mp4?v=4" aria-hidden="true"
+           data-pose="headband" draggable="false" autoplay loop muted playsinline style="--cw: 298px;"></video>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s32-continue" onclick="advanceScreen()">שנמשיך?</button>
@@ -1830,8 +1833,8 @@
 <script src="../unit-js/30-nav.js?v=4"></script>
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
-<script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=87"></script>
+<script src="../unit-js/60-devbridge.js?v=2"></script>
+<script src="js/main.js?v=91"></script>
 <script src="../unit-js/90-boot.js?v=2"></script>
 </body>
 </html>

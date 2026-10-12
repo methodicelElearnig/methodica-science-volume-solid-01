@@ -69,6 +69,7 @@ QA decisions that keep the screen different from the deck on purpose.
 | retry gate, 17 two-attempt choice screens | silent | the option judged wrong cannot be submitted again | 2026-10-11 |
 | 02 s3 stem (87) | "דחיקת מים" | "דחיקת **המים**" | QA comment on slide 90: "כדאי להיות עקביים" |
 | 06 s3 hint (167) | "השיטות … **אותם** למדנו" | "**שאותן** למדנו" | grammatical correction kept, 2026-10-11 (F12) |
+| 06 s3 stem | "כמות המים שנאספה בקערה – 1,250 מ"ל, שווה בדיוק לנפח הפסל"! | "כמות המים שנאספה **היא** 1,250 מ"ל — שווה בדיוק לנפח הפסל!" | wording fix by the developer, 2026-10-12 |
 | 01 s17/s18 bank labels | none | "גופים למדידה:", "משימות המדידה:" | interface labels for the drag bank, kept, 2026-10-11 (F13) |
 | 01 s18 feedback (44 / 45) | "כל כלי ושיטת מדידה **מתאימה**" (44, wrong) · "…**מתאימים**" (45, correct) | each popup in its own slide's words | 2026-10-11 (FB1): the two agreements stay as the deck has them; choosing one is a language call for QA, not a typo fix |
 | 01 s13 wrong-final (55) | encouragement line in the mascot's bubble, with an "encourage" GIF | the line closes the wrong-final popup, no mascot | 2026-10-11 (FB2): the `encourage` pose was never produced (ASSETS-TODO.md); a substitute clip is not used. Moves to a bubble when the asset lands |

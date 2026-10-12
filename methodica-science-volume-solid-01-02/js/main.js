@@ -84,6 +84,8 @@ const CHARACTER_SLOTS = {};
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
   if (!screen) return;
+  // Lets a screen's CSS place things per variant where the two poses' artwork differs (s7's bubble).
+  screen.dataset.character = getCharacter();
   const slot = CHARACTER_SLOTS['s' + n];
   let el = screen.querySelector('.companion');
   if (!slot) {
@@ -244,7 +246,13 @@ function scqShowPopup(screen, type) {
      NOT on `retry`: his line asks the learner to name the rule they just used, which is a CLOSING
      thought. On the first wrong attempt the question is still open ("שננסה שוב?") and he would be
      asking them to sum up an answer they have not given yet. */
-  if (type !== 'retry') document.getElementById(screen + '-say')?.classList.remove('hidden');
+  const say = (type !== 'retry') && document.getElementById(screen + '-say');
+  if (say) {
+    /* He stands ON the popup (2026-10-12): its height follows the copy, so the group's floor is
+       re-pinned to the popup's top edge + a 12px gap each time it opens (popup is bottom: 84px). */
+    say.style.bottom = (84 + popup.offsetHeight + 12) + 'px';
+    say.classList.remove('hidden');
+  }
 }
 /* Hides the mascot with the popup — which also covers the re-pick after a wrong attempt and every
    re-entry, since scqSelect and scqEnter both come through here. */
@@ -301,8 +309,13 @@ function dqPick(screen, id, label) {
   scqSelect(screen, id);
   const tr = document.querySelector('#' + screen + '-dropdown-trigger .dropdown-trigger-text');
   if (tr) tr.textContent = label;
+  document.getElementById(screen + '-dropdown-trigger')?.classList.remove('is-placeholder');
   document.getElementById(screen + '-answers').classList.add('hidden');
 }
+/* Unsolved blank shows a plain-black prompt (same as 01's S19); the box is widened past the
+   longest option so the caret never sits on the word. */
+const DQ_PLACEHOLDER = 'בחרו מילה';
+const DQ_CARET_ROOM = 50;
 function dqEnter(screen) {
   const s = SCQ_REG[screen];
   const trigger = document.getElementById(screen + '-dropdown-trigger');
@@ -314,13 +327,14 @@ function dqEnter(screen) {
     // display:none, which can't be measured — then restore, all before paint.
     const wasHidden = list.classList.contains('hidden');
     if (wasHidden) list.classList.remove('hidden');
-    trigger.style.width = list.offsetWidth + 'px';
+    trigger.style.width = (list.offsetWidth + DQ_CARET_ROOM) + 'px';
     if (wasHidden) list.classList.add('hidden');
   }
   if (trigger && s && !s.done) {
     trigger.classList.remove('correct', 'wrong');
     const tr = trigger.querySelector('.dropdown-trigger-text');
-    if (tr) tr.textContent = '';
+    if (tr) tr.textContent = DQ_PLACEHOLDER;
+    trigger.classList.add('is-placeholder');
   }
   list?.classList.add('hidden');
   scqEnter(screen);
@@ -431,7 +445,7 @@ function registerPractice(idx, cfg) {
        deck's usual "נכון מאוד!".
      - deck expressions are wrapped in .section-result-expr: digits and operators are
        bidi-neutral and reorder inside an RTL paragraph without it. */
-const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['<b>שננסה שוב?</b>'] };
+const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['שננסה שוב?'] };
 const FB_WRONG2 = 'התשובה אינה נכונה.<br />התשובה הנכונה מסומנת.';
 const fbPopups = (correctTitle, explanation) => ({
   retry:   FB_RETRY,
@@ -467,7 +481,7 @@ registerPractice(4, {  // Standard-ב 1 — rise area
 registerPractice(5, {  // Standard-ב 2 — single bead = 10
   correctId: 'a', item: '06', hintAfterWrong: true,   // slide 106
   popups: fbPopups('נכון מאוד!', [   /* sb105/107/108 */
-    'שלושת החרוזים יחד העלו את מפלס המים ב־30\u00A0מ"ל <span class="section-result-expr">(130 − 100)</span>.',
+    'שלושת החרוזים יחד העלו את מפלס המים ב-30\u00A0מ"ל <span class="section-result-expr">(130 − 100)</span>.',
     'לכן נפחם הכולל הוא 30\u00A0סמ"ק.',
     'מכיוון שכל החרוזים זהים, נחלק את הנפח הכולל ב-3 ונגלה שנפחו של כל חרוז הוא 10\u00A0סמ"ק.'])
 });
@@ -532,7 +546,9 @@ function applyDropdownTexts(texts) {
   if (!texts) return;
   Object.keys(texts).forEach(function (id) {
     var t = document.querySelector('#' + id + ' .dropdown-trigger-text');
-    if (t) t.textContent = texts[id];
+    if (t) t.textContent = texts[id] || DQ_PLACEHOLDER;   // older saves stored the blank as ''
+    var trig = document.getElementById(id);
+    if (trig) trig.classList.toggle('is-placeholder', !texts[id] || texts[id] === DQ_PLACEHOLDER);
   });
 }
 

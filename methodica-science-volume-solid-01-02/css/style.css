@@ -126,6 +126,22 @@
 #s0 .companion-say,
 #s7 .companion-say { position: relative; }
 
+/* S0 — the mascot STANDS ON the bottom bar's line (2026-10-12): smaller (320px box ≈ 265px of
+   character, was 400) and pinned to the band's floor instead of centred with the copy.
+   The column now spans the whole band above the bar (top 0 → bottom 74px), and the two auto
+   margins split the free height equally above the copy and between the copy and the pair, so
+   the copy still floats in the band while his feet stay on the line at every canvas height.
+   -20px = the 46px of white under his feet in the 732px frame (cropdetect: artwork ends at
+   row 686), scaled to the 320px box — that strip goes under the opaque bar (z 9 > his 8).
+   multiply drops the mp4's baked-in white, same treatment as .option-card-img video. */
+#s0 .transition-content { top: 0; bottom: 74px; transform: translateX(-50%); }
+#s0 .transition-sub { margin-top: auto; }
+#s0 .companion-say { margin-top: auto; --say-gap: 0px; }
+/* Bubble pulled in toward him (2026-10-12): the 320px video box carries ~44px of empty frame
+   on his left, so the default 14px gap read as a ~58px hole between the beak and his fur. */
+#s0 .companion-bubble { margin-right: -30px; }
+#s0 .companion { width: 320px; margin-bottom: -20px; mix-blend-mode: multiply; }
+
 /* ── S5 · stem under the progress bar, תמונה ב' clear of the feedback (QA 2026-10-11, N17) ──
    The feedback popup keeps the template's place, bottom-left at x 2–482 of the 1280-wide canvas.
    Centred, the 778px photo pair put תמונה ב' (the photo with the answer rings) at x 251–631, so
@@ -139,7 +155,7 @@
    bottom bar (H − 74), i.e. at 50% + 15px rather than the shared 50% − 20px. The rings are placed
    in percentages of the photo, so they scale with it. */
 #s5 .scq-question--textonly {
-  left: calc(50% - 136px); width: 736px;
+  width: 736px;   /* right-anchored at the 40px gutter (2026-10-12): left = W − 776, 504 at 1280 */
   top: calc(50% + 15px); transform: translateY(-50%);
 }
 
@@ -154,18 +170,20 @@
    is 1280/aspect, so that is a window wider than roughly 1.83:1. */
 #s4 .scq-question--textonly {
   top: 112px;
-  transform: translateX(-50%);
+  transform: none;
 }
-/* …and the 700 above was optimistic: the group is as tall as its 180px sprite, so on the shortest
-   canvas (H = 710, any window wider than ~1.8:1) he and his bubble came down 7px over option d in
-   both final states (QA 2026-10-11). The answers keep their size and place; on a short canvas the
-   SPRITE gives way instead — never taller than the band from option d's bottom (452) + a 12px gap
-   down to the popup's bottom line (H − 84): 100cqh − 548. That is 162px at H = 710 and the authored
-   180px from H = 728 up, so every other window is unchanged. The bubble (148px) hangs from the
-   group's top and needs nothing of its own. `container-type: size` is safe on a .screen: its box
-   comes from `inset: 0`, never from its content. */
-#s4 { container-type: size; }
-#s4-say > .companion { width: min(var(--cw, 190px), calc(100cqh - 548px)); }
+/* 2026-10-12: he moved from beside the options to ABOVE the feedback popup, in the free column
+   left of the stem (x 16–470), with his bubble to his right; scqShowPopup pins the group's floor
+   to the popup's top edge. So he no longer competes with option d and the old height-driven
+   sprite shrink (min(…, 100cqh − 548px)) is gone.
+   multiply drops the mp4's baked-in white — same treatment as s0's mascot — so no white box
+   shows over the pills or the popup's shadow. */
+#s4-say > .companion { mix-blend-mode: multiply; }
+/* The stem's first sentence held "ההצפה." on a line of its own at 760px; 880px keeps it on line
+   one. Only the stem widens: the answers column is max-content and stays right-aligned. The extra
+   120px reaches into the mascot's column only at the stem's height (y 112–~200), well above him. */
+#s4 .scq-question--textonly { width: 880px; }
+#s4 .scq-question--textonly > .scq-qtext { width: 100%; }   /* the base .scq-qtext is a fixed 792px */
 
 /* ── S7 · the mid-section transition, to storyboard slide 98 (QA 2026-08-30) ──
    The greeting is not the message on this screen — the sentence under it is — so the two swap
@@ -197,4 +215,32 @@
    its own and its text sits centred, instead of being floored by the shared min-height and left
    sitting 7px high in the box. */
 #s7 .companion-bubble { width: 200px; padding-top: 21px; padding-bottom: 21px; }
-#s7 .companion-say > .companion { margin-right: 214px; }   /* 200 bubble + the 14px --say-gap */
+/* 2026-10-12: the bubble talks from his MOUTH, not from above his head, and he stands lower.
+   Measured on the 700×640 frame in its 438×400 box: art starts 76px in from the box's left
+   edge, his mouth is ~198px down, and 36px of white sits under his feet.
+   - margin-right −47px (gap 0 — a negative `gap` is invalid CSS) pulls the bubble 47px into his box, so the beak tip (19px past the bubble) lands
+     at x 66, just short of the art; margin-top 157 puts the beak's middle (28 + 13) at y 198.
+   - the mirror on his far side follows the gap: 200 bubble − 47 = 153, so he stays on x=640. */
+#s7 .companion-say { --say-gap: 0px; }
+#s7 .companion-bubble { margin-top: 157px; margin-right: -47px; }
+#s7 .companion-say > .companion { margin-right: 153px; margin-bottom: -36px; mix-blend-mode: multiply; }
+/* The turquoise variant lifts a barbell: at mouth height its left plate stands between the bubble
+   and him, so the bubble speaks at head height instead, just above the plate (box y ~150) with the
+   beak tip ~244px into his 665px box, at the side of his head. Mirror: 200 − 225 = −25. */
+#s7[data-character="turquoise"] .companion-bubble { margin-top: 63px; margin-right: -225px; }
+#s7[data-character="turquoise"] .companion-say > .companion { margin-right: -25px; }
+/* Lowered: same column shape as s0 — the column spans the band above the bar and auto margins
+   split the free height above the copy and between the copy and the pair, so his feet stand on
+   the bar's line at every canvas height (the −36px of white under them goes under the bar).
+   multiply drops the mp4's baked-in white. */
+#s7 .transition-content { top: 0; bottom: 74px; transform: translateX(-50%); }
+#s7 .transition-title { margin-top: auto; }
+#s7 .companion-say { margin-top: auto; }
+
+/* ── Feedback popup hugs its text (2026-10-12) ──
+   The template's fixed 480px left the two-line "שננסה שוב?" retry popup mostly empty and reaching
+   off the left edge of narrow windows. It now shrinks to its content; the longer explanation
+   bodies still wrap at the same 480px cap. */
+.scq-popup { width: fit-content; max-width: min(480px, 46%); }
+
+#s6 .s6-para-gap { display: block; height: 16px; }

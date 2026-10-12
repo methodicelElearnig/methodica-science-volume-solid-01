@@ -14,3 +14,37 @@
    here only if it is genuinely specific to THIS component — anything reusable
    belongs in the shared sheet.
    ═══════════════════════════════════════════════════════════════════════════ */
+
+/* s1 (storyboard 162): the companion stands at the canvas's bottom-left with his line to his
+   right (QA 2026-10-12). renderCompanion appends the sprite after the bubble; order: -1 puts it
+   physically first, as .companion-say--left expects. bottom: 52px keeps his feet clear of the
+   74px bottom bar (the frame has ~16% empty space under them). */
+#s1-say { left: 40px; bottom: 52px; }
+#s1-say > .companion { order: -1; }
+
+/* ═══ End screens s5/s6 — same treatment as part 05 (QA 2026-10-12) ═══ */
+/* The סעיף letters stay bold now that they sit in their own column. */
+.section-result--peak .section-result-letter { font-weight: 700; }
+.section-result--peak .section-result-item { margin-bottom: 10px; }
+/* fit-content: the card hugs its longest line plus padding instead of stretching with a wide
+   window; max-width keeps its left edge at 488, clear of the companion bubble (right edge ≤ 478). */
+.section-result--peak { left: auto; right: 20px; width: fit-content; max-width: calc(100% - 508px); padding-left: 14px; }
+/* Slimmer review pill on these cards. */
+.section-result--peak .section-result-review { margin-inline-start: 8px; padding: 0 10px; font-size: 16px; }
+
+/* Review mode on סעיפים א-ד (opened from the card's "לתשובה שלי"): the only action is back to
+   the feedback; hint, continue, back and the companion step aside. */
+.peak-review-return { display: none; }
+.screen.is-review .btn-continue:not(.peak-review-return),
+.screen.is-review .btn-back,
+.screen.is-review .peak-hint,
+.screen.is-review .companion-say { display: none; }
+.screen.is-review .peak-review-return { display: inline-block; }
+
+/* Mascot on the left, bubble to his right, feet on the nav bar's line. The bottoms on
+   #s5-say/#s6-say (index.html) are 74px minus the white margin under each clip's feet; the margin
+   dips behind the bar's white band. multiply drops the clips' baked-in white so it cannot paint a
+   box over the card (same trick as .option-card-img video in the shared sheet).
+   2num 960x960 at 196px: 155/960 empty = 32 -> bottom 42. panting 1280x720 at 200px (112 tall):
+   112/720 empty = 18 -> bottom 56. */
+#s5-say > .companion, #s6-say > .companion { mix-blend-mode: multiply; order: -1; }

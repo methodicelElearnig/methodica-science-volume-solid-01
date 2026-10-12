@@ -1,17 +1,16 @@
 'use strict';
 /* ═══════════════════════════════════════════════════════════
    js/main.js — 720 Science · Volume of a Solid · Part 03 (class task)
-   Single offline-synthesis task screen. "חזרתי" → Part 04.
+   S0 — the class-task opener (TransitionScreen). S1 — the offline-synthesis task itself.
+   "חזרתי" on S1 → Part 04.
    ═══════════════════════════════════════════════════════════ */
 
 const PART_04_URL = '../methodica-science-volume-solid-01-04/index.html';
 
-/* One screen, and no in-component navigation — but the constant is still required. The shared
-   goTo() in unit-js/30-nav.js rejects n >= TOTAL_SCREENS, index_dev.html derives its jump range
-   from it, and unit-js/25-report.js reads it to decide that a single-screen component reports
-   page 1 rather than the live screen index. It was absent, which is why the report from this part
-   briefly went out as page 0 during the extraction. */
-const TOTAL_SCREENS = 1;
+/* The shared goTo() in unit-js/30-nav.js rejects n >= TOTAL_SCREENS, index_dev.html derives its
+   jump range from it, and unit-js/25-report.js reads it to pick the reported page. Was 1 until the
+   opener (S0) was added on 2026-10-12. */
+const TOTAL_SCREENS = 2;
 
 /* ═══════════════════════════════════════════════════════════
    COMPONENT — Companion character
@@ -36,7 +35,7 @@ function getCharacter() {
    <img onerror> fallback: onerror would fire a real 404 on nearly every
    screen and this unit's QA gate checks the network log for zero 404s.
    Landing a produced GIF is one line here plus the file. */
-const CHARACTER_ASSETS = { selection: 'png', notebook: 'mp4' };
+const CHARACTER_ASSETS = { selection: 'png', notebook: 'mp4', stretch: 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
@@ -45,7 +44,7 @@ function characterAsset(pose) {
      Bump it whenever a character asset is re-exported. Over file:// the query is ignored
      rather than breaking the load, so it is safe there too. */
   return 'assets/img/character-' + getCharacter() + '-' +
-         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=2';
+         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=3';
 }
 /* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
 function startCompanionMedia(el) {
@@ -54,15 +53,24 @@ function startCompanionMedia(el) {
   const p = el.play();
   if (p && p.catch) p.catch(function () {});
 }
-const CHARACTER_SLOTS = {
-  s0: { pose: 'notebook', w: 180, right: 14, bottom: 95 }      /* sb110 */
-};
+/* Empty on purpose: the class-task screen (S1) shows no companion (removed by request). S0's
+   mascot is AUTHORED in the markup, inside a .companion-say group (as on part 02 s0), so it needs
+   no slot either. The machinery stays so renderCompanion() still clears .has-companion and any
+   stale sprite. */
+const CHARACTER_SLOTS = {};
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
   if (!screen) return;
   const slot = CHARACTER_SLOTS['s' + n];
+  /* An authored sprite is never removed — only its src is refreshed, so a learner who chose
+     turquoise does not see the ORANGE src baked into the markup. */
+  const authored = screen.querySelector('.companion-say > .companion');
+  if (authored) {
+    authored.src = characterAsset(authored.dataset.pose || 'selection');
+    startCompanionMedia(authored);
+  }
   // Lets a template reserve room for the sprite instead of being drawn over.
-  screen.classList.toggle('has-companion', !!slot);
+  screen.classList.toggle('has-companion', !!slot || !!authored);
   let el = screen.querySelector(':scope > .companion');
   if (!slot) { if (el) el.remove(); return; }
   const tag = CHARACTER_ASSETS[slot.pose] === 'mp4' ? 'video' : 'img';
@@ -88,15 +96,22 @@ function renderCompanion(n) {
   });
 }
 
-/* The per-screen re-entry hook the shared goTo() calls. This component has exactly one screen and
-   never navigates, so it only ever renders the companion — but the hook contract requires every
-   part to define it, and leaving it out would make the shared goTo() throw if the dev bridge or a
-   resume ever pointed here. */
+/* The per-screen re-entry hook the shared goTo() calls. Neither screen holds an answer, so it
+   only ever renders the companion — but the hook contract requires every part to define it. */
 function resetScreenState(n) {
   renderCompanion(n);
 }
 
 resetScreenState(0);
+
+/* S0 → S1 and back. S1 leaves the component only through "חזרתי" (classTaskDone), never by arrow
+   key, so the completion is always the learner's explicit act. */
+function advanceScreen() { if (currentScreen === 0) goTo(1); }
+function goBack()        { if (currentScreen === 1) goTo(0); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  advanceScreen();
+  if (e.key === 'ArrowRight') goBack();
+});
 
 /* The learner presses "חזרתי" when they come back from the off-computer task. */
 function classTaskDone() {
@@ -122,9 +137,10 @@ function classTaskDone() {
    xAPI (720) — per-part seams
    ═══════════════════════════════════════════════════════════ */
 
-/* One screen, one catalog item. */
+/* Two screens, one catalog item. The opener belongs to no item, like part 02's s0. */
 var SCREEN_TO_SUBCONTENT = {
-  0: ['01', 1]        // the class task itself (sb110)
+  0: null,            // opener (TransitionScreen)
+  1: ['01', 1]        // the class task itself (sb110)
 };
 
 var XAPI_COMP_SLUG = 'methodica-science-volume-solid-01-03';
@@ -142,7 +158,7 @@ var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-03.json'
 
 /* ═══════════════════════════════════════════════════════════
    RESUME — this component's payload
-   The whole hook contract, at its smallest. One screen, nothing answerable on it, so there is
+   The whole hook contract, at its smallest. Two screens, nothing answerable on either, so there is
    nothing to restore beyond the fact that the learner got here. The functions still have to exist:
    the shared goTo() and applyExecutionState() call them unconditionally.
    ═══════════════════════════════════════════════════════════ */

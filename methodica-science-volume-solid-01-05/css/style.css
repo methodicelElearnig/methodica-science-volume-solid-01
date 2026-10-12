@@ -14,3 +14,43 @@
    here only if it is genuinely specific to THIS component — anything reusable
    belongs in the shared sheet.
    ═══════════════════════════════════════════════════════════════════════════ */
+
+/* 2026-10-12 (producer): s1's companion group sits in the bottom-left corner instead of beside the
+   question. Sprite on the left, bubble to his right. renderCompanion() APPENDS the sprite into the
+   group (it lands after the bubble), so `order: -1` puts him physically first in the group's
+   ltr row; the --left class aims the beak at him. bottom: 74px stands his feet on the nav bar. */
+#s1-say { left: 40px; bottom: 74px; --say-gap: 0px; }
+#s1-say > .companion { order: -1; }
+
+/* QA 2026-10-12: review mode on סעיפים א-ד (opened from the result card's "לתשובה שלי").
+   The only action is back to the feedback; hint, continue, back and the companion step aside. */
+.peak-review-return { display: none; }
+.screen.is-review .btn-continue:not(.peak-review-return),
+.screen.is-review .btn-back,
+.screen.is-review .peak-hint,
+.screen.is-review .companion-say { display: none; }
+.screen.is-review .peak-review-return { display: inline-block; }
+/* The סעיף letters stay bold now that they sit in their own column. */
+.section-result--peak .section-result-letter { font-weight: 700; }
+.section-result--peak .section-result-item { margin-bottom: 10px; }
+/* QA 2026-10-12: card geometry for this part. Wide enough that סעיף א's "לתשובה שלי" stays on its text
+   line (with the slimmer pill below), and its left edge (488) clears the companion bubble beside the
+   mascot (bubble right edge 478 on s5, 472 on s6). Re-measure both if the bubble or the sprite moves. */
+/* fit-content: the card hugs its longest line (סעיף א + its pill) plus padding instead of stretching
+   with a wide window; max-width keeps the old left edge as the limit on a narrow one. */
+.section-result--peak { left: auto; right: 20px; width: fit-content; max-width: calc(100% - 508px); padding-left: 14px; }
+/* Slimmer review pill on these cards, so סעיף א still fits on one line in the narrower card. */
+.section-result--peak .section-result-review { margin-inline-start: 8px; padding: 0 10px; font-size: 16px; }
+
+/* 2026-10-12 (producer): סעיף ג's speaker options — no icons, every pill one line, all four the
+   same width (the column's full width, not max-content) and the speaker name in bold. */
+#s3-opts { width: 100%; }
+#s3-opts .scq-opt-text b { font-weight: 700; }
+
+/* QA 2026-10-12: the end-screen mascots stand on the nav bar's line. The bottoms on #s5-say/#s6-say
+   (index.html) are 74px minus the white margin under each clip's feet: 2num 155/960 of 196px = 32,
+   think 181/960 of 190px = 36. That margin dips behind the bar's white band. multiply drops the
+   clips' baked-in white so it cannot paint a box over the wider card above on short windows (same
+   trick as .option-card-img video in the shared sheet). */
+#s5-say > .companion, #s6-say > .companion { mix-blend-mode: multiply; order: -1; }
+/* Mascot on the left, bubble to his right (QA 2026-10-12), as on s1. */

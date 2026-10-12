@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · משימת כיתה</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=82">
-  <link rel="stylesheet" href="css/style.css?v=1">
+  <link rel="stylesheet" href="../unit-css/style.css?v=109">
+  <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -15,11 +15,34 @@
     <span class="flag-btn-label">מצאתם בעיה?</span>
   </button>
 
-  <!-- ═══ S0 — Class task (offline notebook synthesis task) ═══ -->
+  <!-- ═══ S0 — TransitionScreen · opening of the class task ═══
+       The standard "משימת כיתה" opener from the template, as built in yaad4-science-mass-weight-01
+       (part 04, screen 29): lead-in line, headline, closing line, and the mascot's "stretch your
+       legs" line. The pose is `stretch` (the same clip part 01 s6/s12 use), the one that says it.
+       Bubble FIRST, sprite second: .companion-say sets direction:ltr, so DOM order is physical
+       order and --right puts the beak on the edge facing him. -->
   <section class="screen active" data-screen="0" id="s0">
+    <div class="transition-content">
+      <p class="transition-sub">השלמתם בהצלחה את התרגול – כל הכבוד!</p>
+      <h1 class="transition-title">משימת כיתה</h1>
+      <p class="transition-sub">זמן טוב ללמוד גם בצורה אחרת, כי למידה מתרחשת בכל מיני צורות.</p>
+      <div class="companion-say companion-say--right">
+        <p class="companion-bubble" style="--bubble-w: 240px;">זמן טוב לחלץ עצמות!</p>
+        <video class="companion" src="assets/img/character-orange-stretch.mp4?v=3" aria-hidden="true"
+             data-pose="stretch" draggable="false" autoplay loop muted playsinline></video>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-back" id="back-to-prev-part" onclick="goBackToPrevPart()" hidden>חזרה</button>
+      <button class="btn-continue" id="s0-continue" onclick="advanceScreen()">אפשר להתחיל!</button>
+    </div>
+  </section>
+
+  <!-- ═══ S1 — Class task (offline notebook synthesis task) ═══ -->
+  <section class="screen" data-screen="1" id="s1">
     <div class="task-content">
       <h1 class="task-title">משימת כיתה: אימון מודל AI למדידת נפח</h1>
-      <p class="task-intro">דמיינו שאתם מלמדים מודל בינה מלאכותית איך למדוד נפח של גופים מוצקים. רשמו במחברת תשובות לשאלות הבאות:</p>
+      <p class="task-intro">דמיינו שאתם מלמדים מודל בינה מלאכותית איך למדוד נפח של גופים מוצקים.<br>רשמו במחברת תשובות לשאלות הבאות:</p>
       <ol class="task-list">
         <li>איזה מידע המודל צריך לקבל על גוף מוצק? (למשל: האם הוא בעל צורה הנדסית, והאם הוא נכנס למשורה)</li>
         <li>אילו שאלות המודל צריך לשאול כדי לבחור את שיטת המדידה המתאימה?</li>
@@ -29,8 +52,8 @@
       <p class="task-note">אין תשובה נכונה אחת — המשימה מזמינה אתכם לסכם את כל מה שלמדתם ביחידה.</p>
     </div>
     <div class="nav-bar">
-      <button class="btn-back" id="back-to-prev-part" onclick="goBackToPrevPart()" hidden>חזרה</button>
-      <button class="btn-continue" id="s0-continue" onclick="classTaskDone()">חזרתי</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+      <button class="btn-continue" id="s1-continue" onclick="classTaskDone()">חזרתי</button>
     </div>
   </section>
 
@@ -84,8 +107,8 @@
 <script src="../unit-js/30-nav.js?v=4"></script>
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
-<script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=15"></script>
+<script src="../unit-js/60-devbridge.js?v=2"></script>
+<script src="js/main.js?v=17"></script>
 <script src="../unit-js/90-boot.js?v=2"></script>
 </body>
 </html>
