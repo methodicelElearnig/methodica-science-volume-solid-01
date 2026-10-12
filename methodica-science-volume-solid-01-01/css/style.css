@@ -738,10 +738,21 @@
   top: max(calc(116px + var(--half-h)), calc(50% - 20px));
 }
 #s17 .dnd-question--beside-popup { --half-h: 214px; }
-#s18 .dnd-question--beside-popup { --half-h: 226px; }
+#s18 .dnd-question--beside-popup { --half-h: 258px; }  /* 20px type (QA 2026-10-11): board is 516 tall */
 /* Five columns in 722px are 136 wide, so s18's cards are 124 — still all the same size, which is the
    QA 2026-08-24 rule; every task keeps its photo and at most two lines, nothing clips. */
 #s18 .dnd-question--columns .dnd-pill { width: 124px; }
+/* QA 2026-10-11 (s18): column headers and task captions at 20px. A dropped card fills its whole
+   cell and drops its own border, so the slot's border (occupied / correct / wrong) is the only
+   outline — no double frame. Bank cards are the slot's size, so nothing jumps on drop. */
+#s18 .dnd-question--columns .dnd-target-label { font-size: 20px; line-height: 1.1; min-height: 0; height: 76px; padding: 4px 6px; }
+#s18 .dnd-question--columns .dnd-pill { width: 132px; height: 144px; font-size: 20px; line-height: 1.1; padding: 6px 4px; }
+#s18 .dnd-question--columns .dnd-pill-img { height: 52px; flex: 0 0 auto; }
+#s18 .dnd-question--columns .dnd-source { gap: 10px; min-height: 0; }
+#s18 .dnd-question--columns .dnd-slot { flex: 0 0 148px; min-height: 0; }
+#s18 .dnd-question--columns .dnd-slot.occupied { padding: 0; }
+#s18 .dnd-slot.occupied > .dnd-pill { width: 100%; height: 100%; border: 0; box-shadow: none; background: transparent; }
+
 /* QA 2026-10-11 (s1): the mascot and his bubble come down out of the narration column and stand
    on the bottom bar's top line. The group is a direct child of the section (not of .hook-content,
    whose transform would make it the containing block), so `bottom: 74px` is the bar's height and
