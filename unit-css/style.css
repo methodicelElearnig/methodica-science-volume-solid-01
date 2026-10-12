@@ -3378,7 +3378,7 @@ html, body {
   position: absolute; left: 50%; top: calc(50% - 37px); transform: translate(-50%, -50%);
   width: 760px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;
 }
-.transition-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-500); }
+.transition-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: #303030; }
 .transition-sub { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 400; color: #303030; line-height: 1.5; }
 /* Rules screens (01 s32, 02 s0 — 2026-10-10). Their lead-in and closing lines take the TransitionScreen
    role token Body / B-1, 28 Regular, which every centred variant (A, B, C) shares; 22 was the generic
