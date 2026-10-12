@@ -3224,7 +3224,7 @@ html, body {
    TEMPLATE — SingleChoiceQuestion (generic, reusable)
    Option pills, check/hint bar, draggable feedback popup, hint overlay.
    ═══════════════════════════════════════════════════════ */
-.scq-locknote { font-family: 'Assistant', sans-serif; font-size: 15px; color: #6a7683; text-align: right; direction: rtl; margin-top: 4px; }
+.scq-locknote { font-family: 'Assistant', sans-serif; font-size: 20px; color: #4a5562; text-align: right; direction: rtl; margin-top: 4px; }
 .scq-locknote.hidden { display: none !important; }
 
 /* Bottom action bar — .scq-check / .scq-hint / .scq-hint-ico are DEFINED ONCE, near the
@@ -3296,7 +3296,7 @@ html, body {
    moved by `transform`, stayed put. The learner's alignment was destroyed by the act of succeeding.
    Hence a FIXED width (not max-width) and a min-height covering both lines; aqMeasure() hides the
    hint with .is-spent (visibility) instead of clearing textContent, so the box survives either way. */
-.aq-ruler-hint { font-family: 'Assistant', sans-serif; font-size: 14px; color: #8a97a3; margin: 0; width: 120px; min-height: 37px; text-align: center; }
+.aq-ruler-hint { font-family: 'Assistant', sans-serif; font-size: 20px; color: #4a5562; margin: 0; width: 140px; min-height: 52px; text-align: center; }
 .aq-ruler-hint.is-spent { visibility: hidden; }
 
 .aq-side {
