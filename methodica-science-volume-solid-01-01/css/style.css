@@ -804,3 +804,17 @@
 #s11 .flood-scene .disp-reset[hidden] { display: inline-block; visibility: hidden; }
 #s11 .flood-hint { font-size: 20px; font-weight: 600; color: #303030; white-space: nowrap; }
 
+/* S31 (QA 2026-10-11): larger title, steps up under the heading, a bigger photo pushed to the
+   physical left edge, and plain (non-bold) step numbers. */
+#s31 .exp-title { font-size: 36px; }
+#s31 .steps-row { align-items: flex-start; justify-content: space-between; }
+#s31 .steps-list li::marker { font-weight: 400; }
+/* QA 2026-10-11 (round 2): the 460px photo ran 544px tall and spilled under the bottom bar.
+   360px wide = 426px tall (524x620 source), which with the 40px heading gap still ends ~20px
+   above the 84px bottom band of the 710px canvas. */
+#s31 .exp { gap: 40px; }
+#s31 .steps-row .scq-figure { width: 360px !important; }
+/* QA 2026-10-11 (round 3): the photo's top lines up with the title's top (title box 50px + the
+   40px gap = 90px up) and it steps 40px in from the left edge. */
+#s31 .steps-row .scq-figure { margin-top: -90px; margin-left: 40px; }
+
