@@ -2436,7 +2436,8 @@ const MEAS = {
   3: { screen: 34, obj: true, /* ?v=2 — the file was re-exported under the same name (upright -> lying down), and this
         path is written from JS, so it needs the buster the markup copies carry. */
        objImg: 's22-hammer.svg?v=2', objClass: 'meas-obj-img--hammer', objLabel: 'פטיש', correct: 'bowl',
-       instruction: 'שלב 3: גררו את הפטיש אל כלי המדידה המתאים.' },
+       /* Two lines (QA 2026-10-11): the question naming both methods, then the action in bold. */
+       instructionHtml: 'איך נמדוד נפח של פטיש – בדחיקת מים (במשורה) או בהצפת מים (בקערת הצפה)?<br><strong>גררו את הפטיש אל כלי המדידה המתאים.</strong>' },
   /* `pour` gates the input behind a real action: slide 37 says the level reaches 250 מ"ל "לאחר
      שהלומד שופך את המים לתוך כלי המדידה" — after the LEARNER pours. The target is the graduated
      MEASURING VESSEL (`mv`), not the משורה: slide 36 is explicit that the משורה still reads 65,
@@ -2531,7 +2532,8 @@ function measRender() {
   const step = measStep, cfg = MEAS[step];
   const el = function (n) { return mEl(n); };
   if (!el('instruction')) return;              // this half of the applet is not in the DOM
-  el('instruction').textContent = cfg.instruction;
+  if (cfg.instructionHtml) el('instruction').innerHTML = cfg.instructionHtml;
+  else el('instruction').textContent = cfg.instruction;
   const isDrag = !!cfg.obj, isInput = !!cfg.input;
   /* On a pour step the input waits for the pour; on every other input step it is immediate. */
   const inputReady = isInput && (!cfg.pour || measPoured);
@@ -2547,10 +2549,14 @@ function measRender() {
   const reveal = el('reveal');
   reveal.classList.toggle('hidden', !measRevealed);
   if (measRevealed) reveal.textContent = cfg.reveal;
+  /* s34 shows the companion only with its reveal line — during the drag and the pour he stood
+     there with nothing to say (QA 2026-10-11). */
+  if (cfg.screen === 34) reveal.closest('.companion-say')?.classList.toggle('hidden', !measRevealed);
   el('error').classList.add('hidden');
   /* The tray is only grabbable while its pour is still pending. */
   if (el('tray')) el('tray').classList.toggle('is-pourable', awaitingPourFlag(cfg));
   if (el('pour-hint')) el('pour-hint').classList.toggle('hidden', !awaitingPourFlag(cfg));
+  if (el('pour-arrow')) el('pour-arrow').classList.toggle('hidden', !awaitingPourFlag(cfg));
   /* The משורה reads 50 before the king goes in and 65 after — and STAYS at 65 through steps 3-4
      (slide 36 says so). The 250 belongs to the measuring vessel, which only exists on s34. */
   el('cyl-badge').textContent = (step >= 2) ? '65 מ"ל' : '50 מ"ל';

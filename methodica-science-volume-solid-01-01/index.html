@@ -1554,14 +1554,12 @@
                ends up reading 250. It is still a drop target so dragging the hammer here can be
                refused, which is the judgement step 3 tests. -->
           <div class="meas-vessel" id="meas2-cyl" data-vessel="cyl">
-            <!-- The משורה's water and the sunk king are overlays on the SVG, the same way s34's
-                 measuring vessel does it (.meas-mv-wrap). measRender() toggles `has-king` on the
-                 VESSEL — it always did; there was simply nothing here for it to act on, so the
-                 cylinder drew empty through both steps (QA 2026-08-29). -->
+            <!-- Water only — no king here (QA 2026-10-11): an object already standing in the משורה
+                 hinted it was not the place to drag the hammer. `has-king` still lifts the water
+                 to 65. -->
             <div class="meas-cyl-wrap">
               <img class="meas-cyl-img" src="assets/img/s9-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
               <div class="meas-cyl-water"></div>
-              <img class="meas-cyl-king" src="assets/img/s22-chess-king.svg" alt="" aria-hidden="true" draggable="false">
             </div>
             <div class="meas-badge" id="meas2-cyl-badge">65 מ"ל</div>
             <span class="meas-vessel-label">משורה</span>
@@ -1570,7 +1568,8 @@
             <div class="meas-bowl"><div class="meas-bowl-water" id="meas2-bowl-water"></div><img class="meas-bowl-object" src="assets/img/s22-hammer.svg?v=2" alt="" aria-hidden="true" draggable="false"></div>
             <div class="meas-tray" id="meas2-tray"><div class="meas-tray-water" id="meas2-tray-water"></div></div>
             <span class="meas-vessel-label">קערת הצפה + כלי איסוף</span>
-            <p class="meas-pour-hint hidden" id="meas2-pour-hint">גררו את כלי האיסוף אל כלי המדידה</p>
+            <svg class="meas-pour-arrow hidden" id="meas2-pour-arrow" viewBox="0 0 90 120" aria-hidden="true"><path d="M78 108 C 40 104, 22 70, 24 22" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M8 34 L24 12 L40 34" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <p class="meas-pour-hint hidden" id="meas2-pour-hint">שפכו את המים מכלי האיסוף לכלי המדידה והקלידו את נפח הפטיש.</p>
           </div>
           <!-- The graduated measuring vessel the collected water is poured into. Slide 38 puts the
                250 reading here. 0-250 scale, so the level is readable — the משורה's 0-100 one is not. -->

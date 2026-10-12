@@ -818,3 +818,22 @@
    40px gap = 90px up) and it steps 40px in from the left edge. */
 #s31 .steps-row .scq-figure { margin-top: -90px; margin-left: 40px; }
 
+/* s34 step 4 — the pour (QA 2026-10-11). After the hammer overflows the bowl it was not clear the
+   next move is to carry the tray across, so the tray pulses and a curved arrow points from it to
+   the measuring vessel on its left. The caption under it carries the step's instruction. */
+@keyframes meas-tray-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px var(--subject-200); }
+  50%      { box-shadow: 0 0 0 7px var(--subject-400); }
+}
+#s34 .meas-tray.is-pourable { animation: meas-tray-pulse 1.1s ease-in-out infinite; }
+#s34 .meas-tray.is-pourable.dragging { animation: none; }
+@keyframes meas-arrow-nudge {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(-6px, -6px); }
+}
+.meas-pour-arrow {
+  position: absolute; left: -62px; bottom: 58px; width: 64px; height: auto;
+  color: var(--subject-500); pointer-events: none;
+  animation: meas-arrow-nudge 1.1s ease-in-out infinite;
+}
+#s34 .meas-pour-hint { max-width: 260px; font-size: 16px; font-weight: 700; color: var(--subject-900); line-height: 1.3; }
