@@ -718,11 +718,12 @@
           <span>לקרוא קומיקס</span></button>
       </div>
       <div class="exp-head">
-        <h1 class="exp-title">שיטת ארכימדס – דחיקת מים</h1>
+        <h1 class="exp-title">שיטת ארכימדס – "דחיקת מים"</h1>
         <p class="exp-instruction" id="disp-instruction">הכניסו את הגולה אל תוך המשורה.</p>
       </div>
       <div class="disp-stage">
         <div class="disp-applet">
+          <div class="disp-vessel-col">
           <div class="disp-cylinder-wrap" id="disp-cylinder">
             <img class="disp-cylinder-img" src="assets/img/s9-cylinder.svg?v=3" alt="משורה מדורגת עם מים עד קו 50 מ&quot;ל" draggable="false">
             <div class="disp-water" id="disp-water"></div>
@@ -733,12 +734,13 @@
             <img id="disp-marble" src="assets/img/s9-marble.svg?v=2" alt="גולת זכוכית ירוקה — נִתנת לגרירה" draggable="false">
             <p class="disp-drag-hint" id="disp-drag-hint">גררו אותי למשורה</p>
           </div>
+          <!-- `is-hidden` (visibility), not the `hidden` ATTRIBUTE: taking it out of flow and putting it
+               back on the drop shifted the applet by 29px. It reserves its space from the first paint.
+               It lives in the vessel column so it sits centred directly under the cylinder. -->
+          <button class="disp-reset is-hidden" id="disp-reset" type="button" onclick="dispReset()">מדידה מחדש</button>
+          </div>
         </div>
       </div>
-      <!-- `is-hidden` (visibility), not the `hidden` ATTRIBUTE: this button sits below .disp-stage
-           inside a centred column, so taking it out of flow and putting it back on the drop shifted
-           the whole applet up by 29px. It reserves its space from the first paint now. -->
-      <button class="disp-reset is-hidden" id="disp-reset" type="button" onclick="dispReset()">מדידה מחדש</button>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s9-continue" disabled onclick="advanceScreen()">המשך</button>
@@ -940,7 +942,7 @@
           <span>לקרוא קומיקס</span></button>
       </div>
       <div class="exp-head">
-        <h1 class="exp-title">שיטת ההצפה לגוף שאינו נכנס למשורה</h1>
+        <h1 class="exp-title">"שיטת ההצפה" לגוף שאינו נכנס למשורה</h1>
         <p class="exp-instruction" id="flood-instruction">הכניסו את האבן לתוך הקערה הגדולה המלאה במים.</p>
       </div>
 
@@ -953,6 +955,7 @@
             <span class="flood-stream flood-stream--r"></span>
           </div>
           <div class="flood-tray"><div class="flood-tray-water" id="flood-tray-water"></div></div>
+          <button class="disp-reset" id="flood-reset" type="button" onclick="floodReset()" hidden>ניסוי מחדש</button>
         </div>
 
         <div class="flood-rock-zone">
@@ -962,7 +965,6 @@
 
       </div>
 
-      <button class="disp-reset" id="flood-reset" type="button" onclick="floodReset()" hidden>ניסוי מחדש</button>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s11-continue" disabled onclick="advanceScreen()">המשך</button>

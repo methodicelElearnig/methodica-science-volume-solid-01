@@ -464,8 +464,8 @@
 .disp-badge {
   position: absolute; right: 28px; top: 50%; transform: translate(100%, -50%);
   background: #fff; border: 2px solid var(--subject-500); color: #1e2a38;
-  font-family: 'Assistant', sans-serif; font-weight: 700; font-size: 15px;
-  padding: 3px 11px; border-radius: 999px; white-space: nowrap;
+  font-family: 'Assistant', sans-serif; font-weight: 700; font-size: 20px;
+  padding: 3px 12px; border-radius: 999px; white-space: nowrap;
   transition: top 1s cubic-bezier(.4,0,.2,1);
 }
 .disp-cylinder-wrap.risen .disp-badge { top: 41%; }
@@ -631,6 +631,17 @@
    .split-stage use. .disp-stage's own `direction: rtl` in unit-css is overridden here
    because this sheet loads second. */
 #s9 .disp-applet { flex: 0 0 auto; display: flex; direction: rtl; align-items: center; gap: 46px; }
+/* QA 2026-10-11: the cylinder is the centre of the screen, the reset button sits directly under it,
+   and the marble parks to its left OUT of flow — so the marble zone no longer pulls the cylinder off
+   centre. The head drops to the 100px question-screen line (.exp--question), and the cylinder is
+   160px here (384 tall) so cylinder + reset still fit above the bar at the 710px minimum canvas:
+   196 → 626 leaves 430. s35's frozen copy keeps the shared 190px. */
+#s9 .exp { padding-top: 100px; }
+#s9 .exp-title { font-size: 30px; }
+#s9 .disp-vessel-col { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+#s9 .disp-cylinder-wrap { width: 160px; }
+#s9 .disp-marble-zone { position: absolute; right: calc(100% + 60px); top: 192px; transform: translateY(-50%); }
+#s9 .disp-reset { margin-top: 0; }
 /* `#s9 .disp-side` and `#s9 .companion-say` went with the 2026-08-29 split: the right-hand column
    they described — slide 26's explanation and the mascot's caveat — is s35 now. What is left on s9
    is the applet alone, so the stage just centres it. */
@@ -753,4 +764,14 @@
 #s1 .companion[src*="turquoise-examine"]  { margin-bottom: calc(var(--cw) * -0.061); }
 #s6 .companion[src*="orange-stretch"]     { margin-bottom: calc(var(--cw) * -0.168); }
 #s6 .companion[src*="turquoise-stretch"]  { margin-bottom: calc(var(--cw) * -0.124); }
+
+/* QA 2026-10-11 (s11, flooding applet): the head drops to the same 100px line and 30px title as s9,
+   so the two applet screens match. The reset button lives inside .flood-scene now, directly under the
+   tray, and is hidden by VISIBILITY (not display) so revealing it does not re-centre the bowl.
+   The drag hint is 20px #303030 like s9's .disp-drag-hint. */
+#s11 .exp { padding-top: 100px; }
+#s11 .exp-title { font-size: 36px; }  /* QA 2026-10-11: enlarged past s9's 30px on request */
+#s11 .flood-scene .disp-reset { margin-top: 24px; }
+#s11 .flood-scene .disp-reset[hidden] { display: inline-block; visibility: hidden; }
+#s11 .flood-hint { font-size: 20px; font-weight: 600; color: #303030; white-space: nowrap; }
 

@@ -3200,7 +3200,7 @@ html, body {
 }
 #disp-marble.dragging { cursor: grabbing; }
 #disp-marble.placed { opacity: 0; pointer-events: none; }
-.disp-drag-hint { font-family: 'Assistant', sans-serif; font-size: 15px; color: #8a97a3; margin: 0; }
+.disp-drag-hint { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 600; color: #303030; margin: 0; white-space: nowrap; }
 /* Both of the applet's transient bits hide by VISIBILITY, never by leaving the flow. The stage is a
    centred row inside a centred column, so anything that changes size mid-interaction re-centres the
    cylinder under the learner's hand: emptying the hint narrowed .disp-marble-zone by 19px and slid
@@ -3217,7 +3217,7 @@ html, body {
 .disp-reset {
   margin-top: 4px; padding: 8px 22px; background: #fff; color: var(--subject-700);
   border: 1px solid var(--subject-700); border-radius: 1000px;
-  font-family: 'Assistant', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer;
+  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 600; cursor: pointer;
 }
 
 /* ═══════════════════════════════════════════════════════
