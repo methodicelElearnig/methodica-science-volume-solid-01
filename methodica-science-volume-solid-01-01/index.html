@@ -103,9 +103,9 @@
        S1 — Screen 04 · hookOpenQuestion (intro) · "רוני מצאה אוצר?"
        Scenario image + narration + a companion speech-bubble question.
        ═══════════════════════════════════════════════════════════ -->
-  <!-- say-inline: the mascot stands INSIDE the narration column next to his line, so this
-       screen opts out of the .has-companion 920px narrowing — the column needs its full
-       width to hold a 162px sprite plus a readable bubble. -->
+  <!-- say-inline: keeps the narration column at its full 1120px (opts out of the
+       .has-companion 920px narrowing). The mascot group itself now stands on the bottom bar's
+       line rather than inside the column — see `#s1 > .companion-say` in css/style.css. -->
   <section class="screen say-inline" data-screen="1" id="s1">
     <div class="hook-content">
       <h1 class="hook-title">רוני מצאה אוצר?</h1>
@@ -118,14 +118,14 @@
         <div class="hook-narration">
           <p>רוני קיבלה גלאי מתכות חדש והיא מנסה למצוא דברי ערך<br>על חוף הים.</p>
           <p>היא מצאה תליון בצורת כוכב ורוצה לגלות מאיזו מתכת<br>הוא עשוי.<br>לשם כך עליה למדוד בין השאר את <strong>נפח</strong> התליון.</p>
-          <div class="companion-say companion-say--inline companion-say--right">
-            <p class="companion-bubble" style="--bubble-w: 300px;">
-              איך רוני יכולה לדעת מה נפח התליון?</p>
-            <video class="companion" src="assets/img/character-orange-examine.mp4?v=2" aria-hidden="true"
-                 data-pose="examine" draggable="false" autoplay loop muted playsinline style="--cw: 162px;"></video>
-          </div>
         </div>
       </div>
+    </div>
+    <div class="companion-say companion-say--right">
+      <p class="companion-bubble" style="--bubble-w: 300px;">
+        איך רוני יכולה לדעת<br>מה נפח התליון?</p>
+      <video class="companion" src="assets/img/character-orange-examine.mp4?v=2" aria-hidden="true"
+           data-pose="examine" draggable="false" autoplay loop muted playsinline style="--cw: 162px;"></video>
     </div>
     <div class="nav-bar">
       <button class="btn-continue" id="s1-continue" onclick="advanceScreen()">המשך</button>
@@ -146,7 +146,7 @@
           <img src="assets/img/s2-roni-think.jpg" alt="רוני מחזיקה את התליון ביד אחת ומשורה עם מים ביד השנייה">
         </div>
         <div class="hook-narration">
-          <p class="hook-open-prompt">חשבו על רעיון או שניים – איך רוני יכולה למדוד את נפח התליון?</p>
+          <p class="hook-open-prompt">חשבו על רעיון או שניים – איך רוני יכולה למדוד את <span style="white-space: nowrap;">נפח התליון?</span></p>
           <label class="hook-open-label" for="s2-open-text">כדי לקבל רמז - כתבו את הרעיונות שלכם כאן:</label>
           <textarea id="s2-open-text" class="hook-open-textarea" rows="4"
                     placeholder="כתבו כאן את הרעיונות שלכם…" oninput="hookOpenInput()"></textarea>
@@ -275,28 +275,17 @@
        ═══════════════════════════════════════════════════════════ -->
   <section class="screen" data-screen="6" id="s6">
     <!-- His remark leaves .hook-narration and joins him in a .companion-say group, same
-         pattern as S5/S21/S22/S23/S26/S29 — absolute (not --inline), anchored where his
-         silent CHARACTER_SLOTS sprite used to sit (right:49/bottom:96), now authored. -->
-    <!-- bottom: 96px — QA 2026-10-08 lowered the group back from 196px (the 2026-08-25 lift)
-         so it sits near the nav bar, clear of the image/narration above. -->
-    <div class="companion-say companion-say--right" style="right: 49px; bottom: 96px;">
-      <!-- .hook-content is vertically CENTERED (unlike S1/S3/S5's top band), so the
-           narration's last line has almost no cushion above the nav bar — a narrower/
-           taller bubble collides with it. --bubble-w: 500px keeps this to 3 lines instead
-           of 4, and align-self: flex-end drops it to the row's bottom (flush with the
-           sprite's feet) instead of hanging from the top — together that's just enough
-           clearance both above (narration) and below (nav bar). Verified via
-           getBoundingClientRect() against the actual last <p>, not just the column's box.
-           Known caveat, same class as S5's existing one: because .hook-content re-centers
-           on canvas height while this group is anchored to the screen's bottom edge, the
-           margin above (currently ~6px at the baseline 710 canvas) shrinks by roughly half
-           of any height REDUCTION below 710 and goes negative under ~700px — i.e. only at
-           unusually short/ultra-wide windows (≤~640, matching the 21:9 case already noted
-           for S5). Comfortably clear at every taller ratio (720/800/960 all gain margin). -->
-      <p class="companion-bubble" style="--bubble-w: 500px; align-self: flex-end;">ארכימדס לא היה גאון יוצא דופן שיודע את התשובות לכל דבר, אלא אדם שראה דברים בצורה שונה מאחרים, כמו בדוגמה של מפלס המים העולים באמבטיה.</p>
+         pattern as S5/S21/S22/S23/S26/S29 — absolute (not --inline).
+         QA 2026-10-11: the pair moved to the LEFT (--left: sprite first, bubble to his right
+         with its beak pointing left at him) and stands on the bottom bar's line — `bottom: 74px`
+         is the bar's height. `left` matches the 1120px .hook-content's left edge (the image's
+         left edge). The bubble hangs from the group's top (the default) so its beak meets him
+         near head height and its bottom edge stays clear of the bar's line. -->
+    <div class="companion-say companion-say--left" style="left: calc(50% - 560px); bottom: 74px;">
       <video class="companion" src="assets/img/character-orange-stretch.mp4?v=3" aria-hidden="true"
              data-pose="stretch" draggable="false" style="--cw: 178px;"
              autoplay loop muted playsinline></video>
+      <p class="companion-bubble" style="--bubble-w: 500px;">ארכימדס לא היה גאון יוצא דופן שיודע את התשובות לכל דבר, אלא אדם שראה דברים בצורה שונה מאחרים, כמו בדוגמה של מפלס המים העולים באמבטיה.</p>
     </div>
     <div class="hook-content">
       <div class="hook-stage">

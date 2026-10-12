@@ -731,3 +731,26 @@
 /* Five columns in 722px are 136 wide, so s18's cards are 124 — still all the same size, which is the
    QA 2026-08-24 rule; every task keeps its photo and at most two lines, nothing clips. */
 #s18 .dnd-question--columns .dnd-pill { width: 124px; }
+/* QA 2026-10-11 (s1): the mascot and his bubble come down out of the narration column and stand
+   on the bottom bar's top line. The group is a direct child of the section (not of .hook-content,
+   whose transform would make it the containing block), so `bottom: 74px` is the bar's height and
+   holds the feet on the line at every canvas height. `right` matches the 1120px column's right
+   edge, so the sprite stays flush with the text above it. */
+#s1 > .companion-say { right: calc(50% - 560px); bottom: 74px; }
+/* With the group gone from the column the narration is shorter, and .hook-stage's
+   `align-items: center` would slide it ~90px down against the video. Pin it to the top instead so
+   the text stays where it was (aligned with the video's top edge). */
+#s1 .hook-narration { align-self: flex-start; }
+
+/* QA 2026-10-11: s1 and s6 stand their mascot ON the bottom bar's line, but each clip has a
+   different band of empty matte under the feet, so a box sitting on the line still leaves him
+   floating. Measured per file (last non-white row of a 0.5s frame, as a fraction of frame height):
+   orange-examine .283, turquoise-examine .061, orange-stretch .168, turquoise-stretch .124.
+   Keyed on the src renderCompanion() writes (it sets the attribute), so whichever mascot the
+   learner picked lands on the line. A negative margin in units of --cw (= the rendered height,
+   the clips are square) pulls the box down past the bar edge by exactly that band. */
+#s1 .companion[src*="orange-examine"]     { margin-bottom: calc(var(--cw) * -0.283); }
+#s1 .companion[src*="turquoise-examine"]  { margin-bottom: calc(var(--cw) * -0.061); }
+#s6 .companion[src*="orange-stretch"]     { margin-bottom: calc(var(--cw) * -0.168); }
+#s6 .companion[src*="turquoise-stretch"]  { margin-bottom: calc(var(--cw) * -0.124); }
+
