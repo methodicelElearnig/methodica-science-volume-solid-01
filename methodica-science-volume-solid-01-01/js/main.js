@@ -1498,6 +1498,19 @@ function scqShowPopup(screen, type) {
   popup.style.left = '2px'; popup.style.top = 'auto'; popup.style.bottom = '84px';  // reset to default on every open
   document.getElementById(screen + '-scq-popup-title').innerHTML = cfg.title;
   document.getElementById(screen + '-scq-popup-body').innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
+  /* A dropdown's wrong-final popup gets the same התשובה-שלי / תשובה-נכונה switch as the matching
+     screens (QA 2026-10-12): the correct option is marked inside a closed list, so without it the
+     model answer is never seen. Opens on the model answer, as ddqShowPopup does. */
+  if (type === 'wrong2' && document.getElementById(screen + '-dropdown-trigger')) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'scq-hint-close ddq-answer-toggle';
+    b.id = screen + '-dq-answer-toggle';
+    b.onclick = function () { dqToggleAnswer(screen); };
+    document.getElementById(screen + '-scq-popup-body').appendChild(b);
+    SCQ_REG[screen].answerView = 'correct';
+    dqSyncView(screen);
+  }
   popup.classList.remove('hidden');
 }
 function scqClosePopup(screen) { document.getElementById(screen + '-scq-popup')?.classList.add('hidden'); }
@@ -2247,8 +2260,7 @@ scqRegister({
     'כשמכניסים גוף מוצק למים, הגוף תופס מקום בתוך המשורה ולכן מפלס המים עולה.',
     'ההפרש בין קריאת הנפח לפני הכנסת הגוף ולאחריה שווה לנפח הגוף.']),
   onFinish: function (ok) {   // reflect result on the dropdown trigger, and on the warm-up bar
-    const t = document.getElementById('s19-dropdown-trigger');
-    if (t) { t.classList.remove('correct', 'wrong'); t.classList.add(ok ? 'correct' : 'wrong'); }
+    dqSyncView('s19');
     warmupFinish(1, 's19', ok);
   },
   onContinue: function () { goTo(32); }   // → practice rules (sb50) → Q1
@@ -2268,7 +2280,31 @@ function dqPick(screen, id, label) {
   scqSelect(screen, id);
   const tr = document.querySelector('#' + screen + '-dropdown-trigger .dropdown-trigger-text');
   if (tr) tr.textContent = label;
+  document.getElementById(screen + '-dropdown-trigger')?.classList.remove('is-placeholder');
   document.getElementById(screen + '-answers').classList.add('hidden');
+}
+/* Paint a resolved dropdown: the trigger shows the correct word (green) or, on a wrong answer
+   toggled to 'learner', the learner's word (red); the toggle label and the title's second line
+   follow, with the same wording as the matching screens' switch. */
+function dqSyncView(screen) {
+  const s = SCQ_REG[screen]; if (!s || (s.phase !== 'correct' && s.phase !== 'wrong2' && !s.done)) return;
+  const trig = document.getElementById(screen + '-dropdown-trigger'); if (!trig) return;
+  const showCorrect = s.sel === s.cfg.correctId || s.answerView !== 'learner';
+  const opt = document.querySelector('#' + screen + ' .dropdown-opt[data-id="' + (showCorrect ? s.cfg.correctId : s.sel) + '"]');
+  const tr = trig.querySelector('.dropdown-trigger-text');
+  if (tr && opt) tr.textContent = opt.textContent.trim();
+  trig.classList.remove('correct', 'wrong', 'is-placeholder');
+  trig.classList.add(showCorrect ? 'correct' : 'wrong');
+  const b = document.getElementById(screen + '-dq-answer-toggle');
+  if (!b) return;
+  b.textContent = showCorrect ? 'התשובה שלי' : 'תשובה נכונה';
+  const t = document.getElementById(screen + '-scq-popup-title');
+  if (t) t.innerHTML = showCorrect ? s.cfg.popups.wrong2.title : 'התשובה אינה נכונה.<br />' + DDQ_ANSWER_VIEW_LINE;
+}
+function dqToggleAnswer(screen) {
+  const s = SCQ_REG[screen]; if (!s) return;
+  s.answerView = (s.answerView === 'learner') ? 'correct' : 'learner';
+  dqSyncView(screen);
 }
 /* Space reserved beside the longest option for the open-arrow. */
 const DQ_CARET_ROOM = 50;
@@ -2293,8 +2329,10 @@ function dqEnter(screen) {
     trigger.classList.remove('correct', 'wrong');
     const tr = trigger.querySelector('.dropdown-trigger-text');
     if (tr) tr.textContent = 'בחרו מילה';
+    trigger.classList.add('is-placeholder');
   }
   list?.classList.add('hidden');
+  if (s && s.done) { s.answerView = 'correct'; dqSyncView(screen); }   // revisit opens on the model answer
   scqEnter(screen);
 }
 /* Close any open dropdown when clicking outside it. */
@@ -2938,13 +2976,11 @@ function scqRestoreUI(screen) {
     });
   }
 
-  /* s19 is a dropdown: its trigger carries the verdict rather than the options. */
-  if (s.done) {
-    var trig = document.getElementById(screen + '-dropdown-trigger');
-    if (trig) {
-      trig.classList.remove('correct', 'wrong');
-      trig.classList.add(s.sel === s.cfg.correctId ? 'correct' : 'wrong');
-    }
+  /* s19 is a dropdown: its trigger carries the verdict (and the word) rather than the options.
+     A returning learner arrives on the model answer, as on the matching screens. */
+  if (s.done && document.getElementById(screen + '-dropdown-trigger')) {
+    s.answerView = 'correct';
+    dqSyncView(screen);
   }
 
   if (s.phase) scqShowPopup(screen, s.phase);

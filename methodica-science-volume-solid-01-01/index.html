@@ -1294,7 +1294,7 @@
     <!-- DropdownQuestion — reuses the SCQ controller: dropdown options are
          .scq-opt (dqPick → scqSelect); onFinish colours the trigger. -->
     <div class="dq-question dq-question--withimage">
-      <div class="scq-figure" style="width: 300px">
+      <div class="scq-figure" style="width: 520px">
         <img src="assets/img/s19-sharpener.jpg" alt="מחדד עפרונות קטן">
       </div>
       <!-- Laid out as storyboard slide 46 lays it out: "עיקרון דחיקת המים" is its own blue
@@ -1306,7 +1306,7 @@
       <p class="dq-instruction">השלימו את המשפט הבא בעזרת תפריט המילים.</p>
       <p class="dq-sentence">כדי למדוד נפח של מחדד, נכניס אותו למים שבמשורה ונבדוק כמה הם:</p>
       <span class="dropdown dropdown--block" id="s19-dropdown">
-        <button class="dropdown-trigger" id="s19-dropdown-trigger" type="button" onclick="dqToggle('s19')"><span class="dropdown-trigger-text">בחרו מילה</span><span class="dropdown-caret" aria-hidden="true">▾</span></button>
+        <button class="dropdown-trigger is-placeholder" id="s19-dropdown-trigger" type="button" onclick="dqToggle('s19')"><span class="dropdown-trigger-text">בחרו מילה</span><span class="dropdown-caret" aria-hidden="true">▾</span></button>
         <span class="dropdown-list hidden" id="s19-answers" role="listbox">
           <button class="scq-opt dropdown-opt" type="button" role="option" data-id="a" onclick="dqPick('s19','a','עלו')">עלו</button>
           <button class="scq-opt dropdown-opt" type="button" role="option" data-id="b" onclick="dqPick('s19','b','ירדו')">ירדו</button>
