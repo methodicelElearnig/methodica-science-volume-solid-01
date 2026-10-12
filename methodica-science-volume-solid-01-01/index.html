@@ -1402,14 +1402,18 @@
         <h1 class="exp-title">מדידת נפח לגוף שאינו נכנס במשורה</h1>
         <p class="exp-instruction">נחשו – איך נמדוד נפח של גופים גדולים שלא נכנסים במשורה?</p>
       </div>
-      <div class="scq-figure" style="width: 420px">
-        <img src="assets/img/s21-large-bodies.jpg" alt="אבן גדולה מונחת ליד משורה קטנה שהיא לא נכנסת לתוכה">
-      </div>
+      <!-- 2026-10-11: options + photo share one row (options right, photo left — RTL DOM order),
+           so the options start right under the stem instead of below the photo. -->
+      <div class="s21-row">
       <div class="scq-answers guess-options" id="s21-guess" role="radiogroup" aria-label="נחשו – איך נמדוד נפח של גופים גדולים שלא נכנסים במשורה?">
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s21', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s21', this)"><span class="scq-opt-text">נמדוד את האורך שלהם</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s21', this)"><span class="scq-opt-text">נכניס אותם לכלי מים גדול אחר</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s21', this)"><span class="scq-opt-text">לא ניתן למדוד נפח של גופים כאלה</span><span class="scq-radio" aria-hidden="true"></span></button>
+      </div>
+      <div class="scq-figure s21-figure">
+        <img src="assets/img/s21-large-bodies.jpg" alt="אבן גדולה מונחת ליד משורה קטנה שהיא לא נכנסת לתוכה">
+      </div>
       </div>
     </div>
     <!-- The line is the companion's, so sprite and bubble are ONE authored .companion-say
@@ -1629,14 +1633,16 @@
         <h1 class="exp-title">מדידת נפח לגוף שאינו הנדסי</h1>
         <p class="exp-instruction">נחשו – איך נמדוד נפח של <strong>גופים שאינם הנדסיים</strong>, כמו אלה שבתמונה?</p>
       </div>
-      <div class="scq-figure" style="width: 460px">
-        <img src="assets/img/s29-nongeometric.jpg" alt="גולת זכוכית, אגוז, מפתח ישן וחייל צעצוע מונחים בשורה על משטח עץ">
-      </div>
-      <div class="scq-answers guess-options" id="s29-guess" role="radiogroup" aria-label="נחשו – איך נמדוד נפח של <strong>גופים שאינם הנדסיים</strong>, כמו אלה שבתמונה?">
+      <div class="s29-row">
+      <div class="scq-answers guess-options" id="s29-guess" role="radiogroup" aria-label="נחשו – איך נמדוד נפח של גופים שאינם הנדסיים, כמו אלה שבתמונה?">
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s29', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s29', this)"><span class="scq-opt-text">נחתוך אותם לחלקים ונמדוד עם סרגל</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s29', this)"><span class="scq-opt-text">נכניס אותם למים</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s29', this)"><span class="scq-opt-text">נעריך אותם לפי העין</span><span class="scq-radio" aria-hidden="true"></span></button>
+      </div>
+      <div class="scq-figure s29-figure">
+        <img src="assets/img/s29-nongeometric.jpg" alt="גולת זכוכית, אגוז, מפתח ישן וחייל צעצוע מונחים בשורה על משטח עץ">
+      </div>
       </div>
     </div>
     <!-- S29 had a bubble but no mascot, so its beak pointed at nothing. It is the

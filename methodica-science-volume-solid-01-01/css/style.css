@@ -777,6 +777,23 @@
 #s6 .companion[src*="orange-stretch"]     { margin-bottom: calc(var(--cw) * -0.168); }
 #s6 .companion[src*="turquoise-stretch"]  { margin-bottom: calc(var(--cw) * -0.124); }
 
+/* S29 (QA 2026-10-11) — the stem on one line (head widened past the 604px column), and under it a
+   row like S23's: options on the right, the photo on their physical left, centred on the options
+   (still well clear of the mascot's bubble in the bottom-left band). */
+#s29 .exp-head--question { width: auto; }
+#s29 .exp-instruction { white-space: nowrap; }
+#s29 .s29-row { align-self: flex-start; display: flex; align-items: flex-start; gap: 48px; }
+#s29 .s29-row .guess-options { width: 560px; align-self: auto; }
+#s29 .s29-row .guess-opt { width: 100%; }
+/* Top-aligned with the first option, and pushed further left (QA 2026-10-11). */
+#s29 .s29-figure { width: 460px; align-self: flex-start; margin-right: 72px; }
+/* The ask mp4 has a baked-in white background; multiply drops it so the mascot has none. */
+#s29 .companion { mix-blend-mode: multiply; }
+#s21 .s21-row { align-self: stretch; display: flex; align-items: flex-start; justify-content: space-between; gap: 48px; }
+#s21 .s21-row .guess-options { width: 560px; align-self: auto; }
+#s21 .s21-row .guess-opt { width: 100%; }
+#s21 .s21-figure { width: 420px; }
+
 /* QA 2026-10-11 (s11, flooding applet): the head drops to the same 100px line and 30px title as s9,
    so the two applet screens match. The reset button lives inside .flood-scene now, directly under the
    tray, and is hidden by VISIBILITY (not display) so revealing it does not re-centre the bowl.
