@@ -467,7 +467,7 @@ registerPractice(4, {  // Standard-ב 1 — rise area
 registerPractice(5, {  // Standard-ב 2 — single bead = 10
   correctId: 'a', item: '06', hintAfterWrong: true,   // slide 106
   popups: fbPopups('נכון מאוד!', [   /* sb105/107/108 */
-    'שלושת החרוזים יחד העלו את מפלס המים ב־30\u00A0מ"ל <span class="section-result-expr">(130−100)</span>.',
+    'שלושת החרוזים יחד העלו את מפלס המים ב־30\u00A0מ"ל <span class="section-result-expr">(130 − 100)</span>.',
     'לכן נפחם הכולל הוא 30\u00A0סמ"ק.',
     'מכיוון שכל החרוזים זהים, נחלק את הנפח הכולל ב-3 ונגלה שנפחו של כל חרוז הוא 10\u00A0סמ"ק.'])
 });

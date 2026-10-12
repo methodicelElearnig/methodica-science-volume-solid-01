@@ -1647,7 +1647,7 @@ scqRegister({
   popups: fbPopups('נכון מאוד!', [   /* sb20/22/23 */
     'למדידת נפח של תיבה משתמשים בסרגל: מודדים את אחת מצלעות הקובייה ומכפילים אותו בעצמו שלוש פעמים — פעם אחת לאורך, פעם אחת לרוחב ופעם אחת לגובה.',
     'אורך הצלע במקרה זה הוא 10\u00A0ס"מ וכיוון שכל הצלעות בקובייה זהות:',
-    '<span class="section-result-expr">10·10·10=1,000</span>']),
+    '<span class="section-result-expr">10 × 10 × 10 = 1,000</span>']),
   /* ⚠️ goTo(29), NOT goTo(9). This screen advances through its own check button rather than
      advanceScreen(), so the flow edge lives here — and it read `goTo(9)` while goBack() and
      SCREEN_TO_SUBCONTENT both said 10 → 29 → 9. The disagreement made s29 (sb24, the guess before
@@ -1867,7 +1867,7 @@ registerPractice(0, {
   item: '05',
   popups: fbPopups('נכון מאוד!', [   /* sb52/54/55 */
     'נפח הגוף שווה לכמות המים שדחק — כלומר ההפרש בין הנפח הסופי לנפח ההתחלתי.',
-    '<span class="section-result-expr">73 – 50 = 23</span>',
+    '<span class="section-result-expr">73 − 50 = 23</span>',
     'נפח האבן = 23\u00A0סמ"ק'],
     ['לא נורא אם טעית, כל טעות היא צעד קדימה בדרך\u00A0הנכונה!']   /* sb55, not bold on the slide */)
 });
@@ -2430,7 +2430,9 @@ const MEAS = {
        instruction: 'שלב 1: גררו את כלי השח-מט אל כלי המדידה המתאים.' },
   2: { screen: 22, input: true, instruction: 'שלב 2: מדדו את מפלס המים במשורה כעת והקלידו את נפחו של כלי השח-מט.',
        inputLabel: 'נפח כלי השח-מט (מ"ל):',
-       reveal: 'נפח כלי השח-מט הוא 15\u00A0מ"ל. מפלס המים המקורי במשורה היה 50\u00A0מ"ל והוא עלה ל-65\u00A0מ"ל, ולכן: 65 − 50 = 15.' },
+       /* The formula is an LRI…PDI isolate with no-break spaces — the same one-line LTR unit as
+          .section-result-expr, which textContent cannot carry (QA 2026-10-12). */
+       reveal: 'נפח כלי השח-מט הוא 15\u00A0מ"ל. מפלס המים המקורי במשורה היה 50\u00A0מ"ל והוא עלה ל-65\u00A0מ"ל, ולכן: \u206665\u00A0−\u00A050\u00A0=\u00A015\u2069.' },
   /* Deck slide 36 states the instruction without explaining WHY the cylinder is wrong — naming
      "too big for the cylinder" here would hand over the judgement this step exists to test. */
   3: { screen: 34, obj: true, /* ?v=2 — the file was re-exported under the same name (upright -> lying down), and this

@@ -3769,7 +3769,7 @@ html, body {
 }
 .peak-scenario-list {
   direction: rtl; text-align: right; padding-right: 24px;
-  font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 400; color: #303030;
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030;   /* 24, Body / B-4 like the paragraph above it (QA 2026-10-12) */
   line-height: 1.5;
 }
 /* The reset at the top of this sheet zeroes list padding and would leave the markers outside the
@@ -4147,7 +4147,7 @@ html, body {
 .steps-list {
   margin: 0; padding-inline-start: 26px; max-width: 520px;
   direction: rtl; text-align: right;
-  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400;
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400;   /* 24, Body / B-4 (QA 2026-10-12) */
   color: #303030; line-height: 1.5;
 }
 .steps-list li { margin-bottom: 10px; }
@@ -4251,7 +4251,9 @@ html, body {
 /* The deck writes the division as "50 : 5 = 10". Digits are LTR but the colon and the
    equals sign are bidi-neutral, so inside this RTL paragraph they would resolve to the
    paragraph direction and the expression would read back to front. Isolate it. */
-.section-result-expr { unicode-bidi: isolate; direction: ltr; }
+/* A formula is one LTR unit that never breaks across lines (QA 2026-10-12). Every one in the unit is
+   short (≤ 22 characters), so nowrap cannot push a popup line past its box. */
+.section-result-expr { unicode-bidi: isolate; direction: ltr; white-space: nowrap; }
 
 /* The peak components reuse the card on their end screens (storyboard 157/158, 170/171). No
    progress nav above it there, and four סעיפים of answer instead of three, so it starts higher
@@ -4317,7 +4319,7 @@ html, body {
   border-radius: 18px;
   padding: 14px 20px;
   font-family: 'Assistant', sans-serif;
-  font-size: 21px; font-weight: 400; color: #303030;
+  font-size: 20px;   /* Body / B-7, the character-bubble size (QA 2026-10-12) */ font-weight: 400; color: #303030;
   text-align: right; direction: rtl; line-height: 1.35;
 }
 .thought-bubble::before,
@@ -4415,7 +4417,9 @@ html, body {
   border-radius: 18px;
   padding: 14px 20px;
   font-family: 'Assistant', sans-serif;
-  font-size: 21px; font-weight: 400; color: #303030;
+  /* 20px, Body / B-7 — the size of every other speech bubble in the unit (QA 2026-10-12). The
+     comic route's guess bubbles on 01 s23/s26 keep 21px; see part 01's sheet. */
+  font-size: 20px; font-weight: 400; color: #303030;
   line-height: 1.35;
   direction: rtl; text-align: right;
 }

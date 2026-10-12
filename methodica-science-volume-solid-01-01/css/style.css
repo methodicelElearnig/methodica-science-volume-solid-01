@@ -688,6 +688,9 @@
 /* S23 (QA 2026-10-08) — back to the top: .exp--question's 100px inset, no centring. Under the title,
    a row: stem + options (narrowed 604 → 520) on the right and the crown on their physical left,
    stretched to the stem-plus-options height; its width follows the art's 240:190 ratio. */
+/* The comic route's guess bubbles keep the approved 21px; every other companion bubble is 20px now
+   (QA 2026-10-12). */
+#s23-guess-bubble, #s26-guess-bubble { font-size: 21px; }
 #s23 .s23-qblock { align-self: flex-start; display: flex; flex-direction: column; gap: 6px; }
 #s23 .s23-row { display: flex; align-items: stretch; gap: 64px; }
 #s23 .s23-main { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
@@ -809,6 +812,9 @@
 #s31 .exp-title { font-size: 36px; }
 #s31 .steps-row { align-items: flex-start; justify-content: space-between; }
 #s31 .steps-list li::marker { font-weight: 400; }
+/* At 24px (QA 2026-10-12) step 4 needs 600px to stay on one line — at the shared 520px cap "החפץ."
+   dropped to a line of its own. The photo column on the left leaves the room. */
+#s31 .steps-list { max-width: 600px; }
 /* QA 2026-10-11 (round 2): the 460px photo ran 544px tall and spilled under the bottom bar.
    360px wide = 426px tall (524x620 source), which with the 40px heading gap still ends ~20px
    above the 84px bottom band of the 710px canvas. */
