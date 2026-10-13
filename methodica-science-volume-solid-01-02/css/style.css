@@ -133,14 +133,14 @@
    the copy still floats in the band while his feet stay on the line at every canvas height.
    -20px = the 46px of white under his feet in the 732px frame (cropdetect: artwork ends at
    row 686), scaled to the 320px box — that strip goes under the opaque bar (z 9 > his 8).
-   multiply drops the mp4's baked-in white, same treatment as .option-card-img video. */
+   the mp4's baked-in white is keyed out globally (.companion in unit-css). */
 #s0 .transition-content { top: 0; bottom: 74px; transform: translateX(-50%); }
 #s0 .transition-sub { margin-top: auto; }
 #s0 .companion-say { margin-top: auto; --say-gap: 0px; }
 /* Bubble pulled in toward him (2026-10-12): the 320px video box carries ~44px of empty frame
    on his left, so the default 14px gap read as a ~58px hole between the beak and his fur. */
 #s0 .companion-bubble { margin-right: -30px; }
-#s0 .companion { width: 320px; margin-bottom: -20px; mix-blend-mode: multiply; }
+#s0 .companion { width: 320px; margin-bottom: -20px; }
 
 /* ── S5 · stem under the progress bar, תמונה ב' clear of the feedback (QA 2026-10-11, N17) ──
    The feedback popup keeps the template's place, bottom-left at x 2–482 of the 1280-wide canvas.
@@ -176,9 +176,8 @@
    left of the stem (x 16–470), with his bubble to his right; scqShowPopup pins the group's floor
    to the popup's top edge. So he no longer competes with option d and the old height-driven
    sprite shrink (min(…, 100cqh − 548px)) is gone.
-   multiply drops the mp4's baked-in white — same treatment as s0's mascot — so no white box
+   His mp4's baked-in white is keyed out globally (.companion in unit-css), so no white box
    shows over the pills or the popup's shadow. */
-#s4-say > .companion { mix-blend-mode: multiply; }
 /* The stem's first sentence held "ההצפה." on a line of its own at 760px; 880px keeps it on line
    one. Only the stem widens: the answers column is max-content and stays right-aligned. The extra
    120px reaches into the mascot's column only at the stem's height (y 112–~200), well above him. */
@@ -223,7 +222,7 @@
    - the mirror on his far side follows the gap: 200 bubble − 47 = 153, so he stays on x=640. */
 #s7 .companion-say { --say-gap: 0px; }
 #s7 .companion-bubble { margin-top: 157px; margin-right: -47px; }
-#s7 .companion-say > .companion { margin-right: 153px; margin-bottom: -36px; mix-blend-mode: multiply; }
+#s7 .companion-say > .companion { margin-right: 153px; margin-bottom: -36px; }
 /* The turquoise variant lifts a barbell: at mouth height its left plate stands between the bubble
    and him, so the bubble speaks at head height instead, just above the plate (box y ~150) with the
    beak tip ~244px into his 665px box, at the side of his head. Mirror: 200 − 225 = −25. */
@@ -232,7 +231,7 @@
 /* Lowered: same column shape as s0 — the column spans the band above the bar and auto margins
    split the free height above the copy and between the copy and the pair, so his feet stand on
    the bar's line at every canvas height (the −36px of white under them goes under the bar).
-   multiply drops the mp4's baked-in white. */
+   the mp4's baked-in white is keyed out globally (.companion in unit-css). */
 #s7 .transition-content { top: 0; bottom: 74px; transform: translateX(-50%); }
 #s7 .transition-title { margin-top: auto; }
 #s7 .companion-say { margin-top: auto; }

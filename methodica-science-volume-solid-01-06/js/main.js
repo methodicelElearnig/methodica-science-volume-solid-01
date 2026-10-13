@@ -88,7 +88,10 @@ const CHARACTER_SLOTS = {
      screen. No `ca`: it is 960x960, and the 16:9 ratio the old slot declared would have letterboxed
      it to 210x118, drawing the mascot at 118px. 210 in both parts so the twin screens match. */
   s5: { pose: '2num', w: 196, into: 's5-say' },                             /* sb170 */
-  s6: { pose: 'panting',     w: 200, into: 's6-say', ca: '16 / 9' },         /* sb171 */
+  /* 360, not 200: the 16:9 clip's mascot fills only ~70% of the frame, so at 200 he drew ~80px tall
+     (QA 2026-10-13, "too small", then "bigger still"). The frame's empty sides are trimmed in CSS
+     (#s6-say > .companion); change this and those margins and bottoms have to follow. */
+  s6: { pose: 'panting',     w: 360, into: 's6-say', ca: '16 / 9' },         /* sb171 */
   /* Both endings share the `success` pose. `w` is documentation only — .peak-end-video sizes
      the sprite at 100% of its own 320px box. No `ca`: the pair is 960x960 in both colours. */
   s8: { pose: 'success',     w: 480, into: 's8-video' },                     /* sb173 */
@@ -97,6 +100,8 @@ const CHARACTER_SLOTS = {
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
   if (!screen) return;
+  // Lets a screen's CSS place things per variant where the two poses' artwork differs (s6's panting clip).
+  screen.dataset.character = getCharacter();
   const slot = CHARACTER_SLOTS['s' + n];
   // Lets a template reserve room for the sprite instead of being drawn over.
   screen.classList.toggle('has-companion', !!slot);

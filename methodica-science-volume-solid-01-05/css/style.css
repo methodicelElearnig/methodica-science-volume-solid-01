@@ -49,8 +49,13 @@
 
 /* QA 2026-10-12: the end-screen mascots stand on the nav bar's line. The bottoms on #s5-say/#s6-say
    (index.html) are 74px minus the white margin under each clip's feet: 2num 155/960 of 196px = 32,
-   think 181/960 of 190px = 36. That margin dips behind the bar's white band. multiply drops the
-   clips' baked-in white so it cannot paint a box over the wider card above on short windows (same
-   trick as .option-card-img video in the shared sheet). */
-#s5-say > .companion, #s6-say > .companion { mix-blend-mode: multiply; order: -1; }
+   think 181/960 of 190px = 36. That margin dips behind the bar's white band. The clips'
+   baked-in white is keyed out globally (.companion in unit-css), so it cannot paint a box over the
+   wider card above on short windows. */
+#s5-say > .companion, #s6-say > .companion { order: -1; }
+/* The two colours' think clips are NOT framed alike: orange's feet end at ~776/960 (181 empty at
+   190px = 36 -> bottom 38), turquoise's at ~870/960 (90 empty = 18 -> bottom 56). One shared 38 sank
+   the turquoise mascot's feet behind the bar's band. data-character is set by renderCompanion(). */
+#s6-say { bottom: 38px; }
+#s6[data-character="turquoise"] #s6-say { bottom: 56px; }
 /* Mascot on the left, bubble to his right (QA 2026-10-12), as on s1. */

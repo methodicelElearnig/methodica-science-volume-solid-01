@@ -179,6 +179,26 @@ function closeImageZoom() {
   if (stage) { stage.innerHTML = ''; stage.style.width = ''; stage.style.height = ''; }
 }
 
+/* White key for the mascot sprites. Every character-*.mp4 has a baked-in white background, and
+   the old per-screen fix, mix-blend-mode: multiply, only hid it over white: wherever a mascot
+   overlapped a photo, the photo showed through his fur too (01/s29, 06's big-body guess). This
+   filter makes only near-white pixels transparent (R+G+B above ~2.94 of 3) and leaves the artwork
+   fully opaque, so he stands IN FRONT of whatever is behind him. The feComposite clips the result
+   to the source alpha; without it the filter region's transparent margin keys to opaque black.
+   Injected rather than authored so all six parts share one copy; `.companion` in unit-css uses it.
+   CSS `filter: url()` only resolves same-document ids in Chromium, hence not an external .svg. */
+function injectMascotKey() {
+  if (document.getElementById('mascot-white-key')) return;
+  const holder = document.createElement('div');
+  holder.innerHTML =
+    '<svg aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">' +
+    '<filter id="mascot-white-key" color-interpolation-filters="sRGB">' +
+    '<feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  -8.33 -8.33 -8.33 0 24.5"/>' +
+    '<feComposite in2="SourceAlpha" operator="in"/>' +
+    '</filter></svg>';
+  document.body.insertBefore(holder.firstChild, document.body.firstChild);
+}
+
 /* Delegated open/close. Registered from 90-boot.js.
    Escape IS handled here now: the zoom reaches all six parts, and only part 01 has a keydown
    listener of its own. Part 01 closes the zoom before falling through to comic paging, so by the

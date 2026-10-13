@@ -4235,6 +4235,10 @@ html, body {
      it, and white because every .screen behind a sprite is #fff. The 1px it covers is the sprite's
      own white margin, so no artwork is lost. */
   outline: 1px solid #fff; outline-offset: -1px;
+  /* Keys out the mp4s' baked-in white (and the white outline above with it), so a mascot overlapping
+     a photo shows no white box and no photo through his fur. Filter injected by injectMascotKey()
+     in 15-ui.js. Replaces the per-screen mix-blend-mode: multiply. */
+  filter: url(#mascot-white-key);
 }
 .companion--center { left: 50%; transform: translateX(-50%); }
 
@@ -4472,6 +4476,11 @@ html, body {
   line-height: 1.35;
   direction: rtl; text-align: right;
 }
+/* No lone word on a bubble's last line (producer, 2026-10-13): `pretty` pulls a word down from the
+   line above when the last one would be a single word, e.g. part 06 s6's "בעתיד?". Covers every
+   speech bubble in the unit — the companion bubbles, the thought bubble, and parts 01/02's
+   .speech-bubble. A browser without support simply wraps as before. */
+.companion-bubble, .thought-bubble, .speech-bubble { text-wrap: pretty; }
 .companion-bubble p { margin: 4px 0; }
 /* The hook and story screens set his line in bold Subject/900 (storyboard 4, 6, 9). */
 .companion-bubble--strong { font-size: 22px; font-weight: 700; color: var(--subject-500); }

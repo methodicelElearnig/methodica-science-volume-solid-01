@@ -94,6 +94,8 @@ const CHARACTER_SLOTS = {
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
   if (!screen) return;
+  // Lets a screen's CSS place things per variant where the two poses' artwork differs (s6's think clip).
+  screen.dataset.character = getCharacter();
   const slot = CHARACTER_SLOTS['s' + n];
   // Lets a template reserve room for the sprite instead of being drawn over.
   screen.classList.toggle('has-companion', !!slot);

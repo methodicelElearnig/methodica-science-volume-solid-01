@@ -43,8 +43,18 @@
 
 /* Mascot on the left, bubble to his right, feet on the nav bar's line. The bottoms on
    #s5-say/#s6-say (index.html) are 74px minus the white margin under each clip's feet; the margin
-   dips behind the bar's white band. multiply drops the clips' baked-in white so it cannot paint a
-   box over the card (same trick as .option-card-img video in the shared sheet).
-   2num 960x960 at 196px: 155/960 empty = 32 -> bottom 42. panting 1280x720 at 200px (112 tall):
-   112/720 empty = 18 -> bottom 56. */
-#s5-say > .companion, #s6-say > .companion { mix-blend-mode: multiply; order: -1; }
+   dips behind the bar's white band. The clips' baked-in white is keyed out globally
+   (.companion in unit-css), so it cannot paint a box over the card.
+   2num 960x960 at 196px: 155/960 empty = 32 -> bottom 42.
+   panting 1280x720 at 360px (202.5 tall), enlarged from 200 (QA 2026-10-13). The two colours are
+   framed differently: turquoise's feet end at ~605/720 (115 empty = 32 -> bottom 42), orange's at
+   ~620/720 (100 empty = 28 -> bottom 46). data-character is set by renderCompanion(). */
+#s5-say > .companion, #s6-say > .companion { order: -1; }
+#s6-say { bottom: 46px; --say-gap: 0px; }
+#s6[data-character="turquoise"] #s6-say { bottom: 42px; }
+/* The clip's empty sides: the mascot (with the turquoise barbell, the wider of the two) spans
+   ~215-1100 of 1280, i.e. 60px | 249px | 51px at 360. Trimming them keeps him at the canvas's left
+   edge and the bubble (narrowed to 240 in index.html) ending at ~511. The answers card is
+   right-anchored and hugs its content (743 wide), and the canvas is never narrower than 1280, so its
+   left edge stays at ~516. Re-measure if the card's text or the bubble changes. */
+#s6-say > .companion { margin-left: -60px; margin-right: -35px; }

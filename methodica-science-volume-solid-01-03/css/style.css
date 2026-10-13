@@ -21,8 +21,8 @@
 #s0 .transition-sub { font-size: 24px; }
 /* 420px box (was 300) — in line with the other transition mascots (02 s7 400, 04 s0 422).
    Fits at the 710 canvas floor: ~170px of copy + ~350px of visible character in the 636px band.
-   multiply drops the mp4's baked-in white, as on part 02 s0. */
-#s0 .companion { width: 420px; mix-blend-mode: multiply; }
+   the mp4's baked-in white is keyed out globally (.companion in unit-css). */
+#s0 .companion { width: 420px; }
 /* Empty matte under his feet, as a fraction of the square frame — measured on part 01 (see the
    #s6 rule there): orange .168, turquoise .124. Keyed on the src renderCompanion() writes. */
 #s0 .companion[src*="orange-stretch"]    { margin-bottom: calc(420px * -0.168); }

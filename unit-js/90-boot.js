@@ -39,6 +39,7 @@
   window.addEventListener('load', remeasure);
   window.addEventListener('pageshow', function (e) { if (e.persisted) remeasure(); });
 
+  injectMascotKey();
   initImgZoom();
   initReportModal();
   initDevBridge();

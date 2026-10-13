@@ -566,6 +566,8 @@
    `position: static` is the whole mechanism: .companion is absolute by default, and as a static
    flex item it takes its width from --cw and lets the column measure it. */
 #s12 .companion { position: static; }
+/* QA 2026-10-13: title + mascot column lowered 40px to close the empty band above the title. */
+#s12 .transition-content { top: calc(50% + 3px); }
 
 /* S32 practice intro — Figma "TransitionScreen - A - Example" (720 UI Templates, node 4492:37696,
    QA 2026-10-12). The text block is pinned to the top (y 70, 810 wide) instead of centred: a 28
@@ -702,6 +704,9 @@
    canvas under ~770px tall (measured −1px at 1280×710). The block moves down 16px instead of the type
    shrinking (see the .is-long note in unit-css): the options still end ≥ 48px above the bottom bar. */
 #s16 .scq-question--withimage { top: calc(50% - 4px); }
+/* S14 — QA 2026-10-13: at the 710 canvas floor the stem's first line sat 15px under the progress
+   labels and read as touching them. Down 24px: 39px clear above, options still end 57px above the bar. */
+#s14 .scq-question--withimage { top: calc(50% + 4px); }
 
 /* S26 — the stem + options block is centred vertically (justify-content) and the 100px question
    top-padding drops back to .exp's 24px, since centring already clears the top edge. */
@@ -835,8 +840,9 @@
 #s29 .s29-row { align-self: stretch; display: flex; align-items: flex-start; gap: 48px; }
 #s29 .s29-row .guess-options { width: 560px; align-self: auto; }
 #s29 .s29-row .guess-opt { width: 100%; }
-/* The ask mp4 has a baked-in white background; multiply drops it so the mascot has none. */
-#s29 .companion { mix-blend-mode: multiply; }
+/* z-index keeps the mascot (and his bubble) in front of the figure; his white background is keyed
+   out globally (.companion in unit-css). */
+#s29 > .companion-say { z-index: 5; }
 #s21 .s21-row { align-self: stretch; display: flex; align-items: flex-start; justify-content: space-between; gap: 48px; }
 #s21 .s21-row .guess-options { width: 560px; align-self: auto; }
 #s21 .s21-row .guess-opt { width: 100%; }
