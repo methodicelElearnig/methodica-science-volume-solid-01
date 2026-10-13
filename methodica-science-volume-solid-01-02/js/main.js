@@ -84,6 +84,8 @@ const CHARACTER_SLOTS = {};
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
   if (!screen) return;
+  // Lets a screen's CSS place things per variant where the two poses' artwork differs (s7's bubble).
+  screen.dataset.character = getCharacter();
   const slot = CHARACTER_SLOTS['s' + n];
   let el = screen.querySelector('.companion');
   if (!slot) {
@@ -165,10 +167,14 @@ const SCQ_REG = {};
 /* `phase` records WHAT THE LEARNER WAS LAST SHOWN — one of the three keys in cfg.popups, or null
    for a screen never checked (or whose marks a re-pick cleared). Single source for both halves of
    the answered look: which marks, and which feedback popup. Same field as part 01's. */
-function scqRegister(cfg) { cfg.maxAttempts = cfg.maxAttempts || 2; SCQ_REG[cfg.screen] = { cfg: cfg, sel: null, attempts: 0, answered: false, done: false, phase: null }; }
+function scqRegister(cfg) { cfg.maxAttempts = cfg.maxAttempts || 2; SCQ_REG[cfg.screen] = { cfg: cfg, sel: null, attempts: 0, answered: false, done: false, phase: null, lastWrong: null }; }
 function scqOpts(screen) { return document.querySelectorAll('#' + screen + ' .scq-opt'); }
 function scqSelect(screen, id) {
   const s = SCQ_REG[screen]; if (!s || s.answered) return;
+  /* Retry gate (720-templates "Retry gate", QA 2026-10-11): after a non-final wrong check the option
+     just judged wrong cannot be submitted again. Clicking it again changes nothing — marks, popup and
+     the locked button stay — and צדקתי? opens only for a different option. */
+  if (s.phase === 'retry' && id === s.sel) return;
   s.sel = id;
   /* A re-pick after a wrong attempt wipes the marks and the popup, so the screen is back to
      "chosen but unchecked" — and `phase` has to say so, or the painter would repaint the retry
@@ -176,12 +182,12 @@ function scqSelect(screen, id) {
      attempt LEDGER, not the display state. */
   if (s.attempts > 0) { s.phase = null; scqClosePopup(screen); scqOpts(screen).forEach(o => o.classList.remove('wrong', 'correct')); }
   scqOpts(screen).forEach(o => { const sel = o.dataset.id === id; o.classList.toggle('selected', sel); o.setAttribute('aria-checked', sel ? 'true' : 'false'); });
-  const chk = document.getElementById(screen + '-scq-check'); if (chk) chk.disabled = false;
+  const chk = document.getElementById(screen + '-scq-check'); if (chk) chk.disabled = (id === s.lastWrong);
 }
 function scqCheck(screen) {
   const s = SCQ_REG[screen], cfg = s.cfg;
   if (s.answered) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
-  if (!s.sel) return;
+  if (!s.sel || s.sel === s.lastWrong) return;   // the retry gate, also against a programmatic or keyboard submit
   s.attempts++;
   const correct = s.sel === cfg.correctId;
 
@@ -209,7 +215,7 @@ function scqCheck(screen) {
 
   if (correct) { s.phase = 'correct'; scqMark(screen, cfg.correctId, 'correct'); scqShowPopup(screen, 'correct'); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) { s.phase = 'wrong2'; scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'wrong2'); scqFinish(screen, false); }
-  else { s.phase = 'retry'; scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); }
+  else { s.phase = 'retry'; s.lastWrong = s.sel; const gate = document.getElementById(screen + '-scq-check'); if (gate) gate.disabled = true; scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); scqSyncHint(screen); }
 
   /* Synchronous, at the tail so it runs after every branch and after all painting. An answer given
      and then abandoned without navigating would otherwise rest entirely on the page-leave handlers,
@@ -224,7 +230,7 @@ function scqFinish(screen, isCorrect) {
   const s = SCQ_REG[screen]; s.answered = true; s.done = true;
   scqOpts(screen).forEach(o => { o.disabled = true; });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'שנמשיך?'; chk.disabled = false; }
-  const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden';
+  scqSyncHint(screen);
   if (s.cfg.onFinish) s.cfg.onFinish(isCorrect);
 }
 function scqShowPopup(screen, type) {
@@ -240,7 +246,13 @@ function scqShowPopup(screen, type) {
      NOT on `retry`: his line asks the learner to name the rule they just used, which is a CLOSING
      thought. On the first wrong attempt the question is still open ("שננסה שוב?") and he would be
      asking them to sum up an answer they have not given yet. */
-  if (type !== 'retry') document.getElementById(screen + '-say')?.classList.remove('hidden');
+  const say = (type !== 'retry') && document.getElementById(screen + '-say');
+  if (say) {
+    /* He stands ON the popup (2026-10-12): its height follows the copy, so the group's floor is
+       re-pinned to the popup's top edge + a 12px gap each time it opens (popup is bottom: 84px). */
+    say.style.bottom = (84 + popup.offsetHeight + 12) + 'px';
+    say.classList.remove('hidden');
+  }
 }
 /* Hides the mascot with the popup — which also covers the re-pick after a wrong attempt and every
    re-entry, since scqSelect and scqEnter both come through here. */
@@ -249,7 +261,7 @@ function scqClosePopup(screen) {
   document.getElementById(screen + '-say')?.classList.add('hidden');
 }
 function scqHint(screen) {
-  const s = SCQ_REG[screen]; if (!s || s.answered) return;
+  const s = SCQ_REG[screen]; if (!s || s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) return;
   /* Reported on OPEN only. This overlay has no toggle — closing goes through scqCloseHint — so a
      learner reopening the hint legitimately reports a second request.
      No parentId: v2.4 mandates it for answered/evaluated only. */
@@ -258,6 +270,14 @@ function scqHint(screen) {
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
+/* Hint availability in one place (720-templates "Hint policy": hidden, not disabled, while
+   unavailable): hidden once the question resolves, and on a `hintAfterWrong` question also until the
+   first wrong check. Reads `attempts`, which resume already carries. (2026-10-11, deck notes: s5/s6 "רמז מופיע אחרי שגיאה ראשונה" on slides 101/106; s1-s4 "רמז מופיע תמיד") */
+function scqSyncHint(screen) {
+  const s = SCQ_REG[screen]; const hint = document.getElementById(screen + '-scq-hint');
+  if (!s || !hint) return;
+  hint.style.visibility = (s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) ? 'hidden' : '';
+}
 function scqEnter(screen) {
   const s = SCQ_REG[screen]; if (!s) return;
   document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden');
@@ -265,14 +285,15 @@ function scqEnter(screen) {
   if (s.done) {
     scqOpts(screen).forEach(o => { o.disabled = true; });
     const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'שנמשיך?'; chk.disabled = false; }
-    const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden';
+    scqSyncHint(screen);
   } else { scqReset(screen); }
 }
 function scqReset(screen) {
-  const s = SCQ_REG[screen]; s.sel = null; s.attempts = 0; s.answered = false; s.phase = null;
+  const s = SCQ_REG[screen]; s.sel = null; s.attempts = 0; s.answered = false; s.phase = null; s.lastWrong = null;
   scqOpts(screen).forEach(o => { o.classList.remove('selected', 'correct', 'wrong'); o.setAttribute('aria-checked', 'false'); o.disabled = false; });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'צדקתי?'; chk.disabled = true; }
-  const hint = document.getElementById(screen + '-scq-hint'); if (hint) { hint.disabled = false; hint.style.visibility = ''; }
+  const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.disabled = false;
+  scqSyncHint(screen);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -288,8 +309,13 @@ function dqPick(screen, id, label) {
   scqSelect(screen, id);
   const tr = document.querySelector('#' + screen + '-dropdown-trigger .dropdown-trigger-text');
   if (tr) tr.textContent = label;
+  document.getElementById(screen + '-dropdown-trigger')?.classList.remove('is-placeholder');
   document.getElementById(screen + '-answers').classList.add('hidden');
 }
+/* Unsolved blank shows a plain-black prompt (same as 01's S19); the box is widened past the
+   longest option so the caret never sits on the word. */
+const DQ_PLACEHOLDER = 'בחרו מילה';
+const DQ_CARET_ROOM = 50;
 function dqEnter(screen) {
   const s = SCQ_REG[screen];
   const trigger = document.getElementById(screen + '-dropdown-trigger');
@@ -301,13 +327,14 @@ function dqEnter(screen) {
     // display:none, which can't be measured — then restore, all before paint.
     const wasHidden = list.classList.contains('hidden');
     if (wasHidden) list.classList.remove('hidden');
-    trigger.style.width = list.offsetWidth + 'px';
+    trigger.style.width = (list.offsetWidth + DQ_CARET_ROOM) + 'px';
     if (wasHidden) list.classList.add('hidden');
   }
   if (trigger && s && !s.done) {
     trigger.classList.remove('correct', 'wrong');
     const tr = trigger.querySelector('.dropdown-trigger-text');
-    if (tr) tr.textContent = '';
+    if (tr) tr.textContent = DQ_PLACEHOLDER;
+    trigger.classList.add('is-placeholder');
   }
   list?.classList.add('hidden');
   scqEnter(screen);
@@ -407,7 +434,7 @@ function registerPractice(idx, cfg) {
   attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup'));
 }
 
-/* ═══ Feedback copy — the storyboard's, per QA/TEXT-FIDELITY.md §Agreed policy ═══
+/* ═══ Feedback copy — the storyboard's, per docs-and-tools/TEXT-FIDELITY.md §Agreed policy ═══
    The deck gives each question its own retry / correct / wrong-final slides, and the correct
    and wrong-final slides carry the SAME explanation — so it is written once per question and
    fbPopups() hands it to both. Same shape as part 04, which was ported first.
@@ -418,7 +445,7 @@ function registerPractice(idx, cfg) {
        deck's usual "נכון מאוד!".
      - deck expressions are wrapped in .section-result-expr: digits and operators are
        bidi-neutral and reorder inside an RTL paragraph without it. */
-const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['<b>שננסה שוב?</b>'] };
+const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['שננסה שוב?'] };
 const FB_WRONG2 = 'התשובה אינה נכונה.<br />התשובה הנכונה מסומנת.';
 const fbPopups = (correctTitle, explanation) => ({
   retry:   FB_RETRY,
@@ -444,19 +471,19 @@ registerPractice(2, {  // Basic 3 — which tool
 registerPractice(3, {  // Basic 4 — flooding 760
   correctId: 'b', item: '04',
   popups: fbPopups('נכון מאוד!', [   /* sb93/95/96 */
-    'גוף שנכנס למים גורם להצפת מים בכמות זהה לנפח שלו בדיוק. לכן נפח הגליל הוא בדיוק 760 מ"ל.'])
+    'גוף שנכנס למים גורם להצפת מים בכמות זהה לנפח שלו בדיוק. לכן נפח הגליל הוא בדיוק 760\u00A0מ"ל.'])
 });
 registerPractice(4, {  // Standard-ב 1 — rise area
-  correctId: 'b', item: '05',
+  correctId: 'b', item: '05', hintAfterWrong: true,   // slide 101
   popups: fbPopups('תשובה נכונה!', [   /* sb100/102/103 */
     'האזור שבו רואים את כמות המים שעלתה במשורה הוא זה שמייצג את נפח המפלצת.'])
 });
 registerPractice(5, {  // Standard-ב 2 — single bead = 10
-  correctId: 'a', item: '06',
+  correctId: 'a', item: '06', hintAfterWrong: true,   // slide 106
   popups: fbPopups('נכון מאוד!', [   /* sb105/107/108 */
-    'שלושת החרוזים יחד העלו את מפלס המים ב־30 מ"ל <span class="section-result-expr">(130−100)</span>.',
-    'לכן נפחם הכולל הוא 30 סמ"ק.',
-    'מכיוון שכל החרוזים זהים, נחלק את הנפח הכולל ב-3 ונגלה שנפחו של כל חרוז הוא 10 סמ"ק.'])
+    'שלושת החרוזים יחד העלו את מפלס המים ב-30\u00A0מ"ל <span class="section-result-expr">(130 − 100)</span>.',
+    'לכן נפחם הכולל הוא 30\u00A0סמ"ק.',
+    'מכיוון שכל החרוזים זהים, נחלק את הנפח הכולל ב-3 ונגלה שנפחו של כל חרוז הוא 10\u00A0סמ"ק.'])
 });
 
 /* ═══════════════════════════════════════════════════════════
@@ -519,7 +546,9 @@ function applyDropdownTexts(texts) {
   if (!texts) return;
   Object.keys(texts).forEach(function (id) {
     var t = document.querySelector('#' + id + ' .dropdown-trigger-text');
-    if (t) t.textContent = texts[id];
+    if (t) t.textContent = texts[id] || DQ_PLACEHOLDER;   // older saves stored the blank as ''
+    var trig = document.getElementById(id);
+    if (trig) trig.classList.toggle('is-placeholder', !texts[id] || texts[id] === DQ_PLACEHOLDER);
   });
 }
 
@@ -529,7 +558,7 @@ function captureScqState() {
   return Object.keys(SCQ_REG).reduce(function (o, k) {
     var s = SCQ_REG[k];
     o[k] = { sel: s.sel, attempts: s.attempts, answered: !!s.answered, done: !!s.done,
-             phase: s.phase || null };
+             phase: s.phase || null, lastWrong: s.lastWrong || null };
     return o;
   }, {});
 }
@@ -542,6 +571,9 @@ function applyScqState(scq) {
     s.sel = scq[k].sel; s.attempts = scq[k].attempts;
     s.answered = !!scq[k].answered; s.done = !!scq[k].done;
     s.phase = scq[k].phase || null;
+    /* Retry gate (2026-10-11). A document written before it has no lastWrong: in the retry phase the
+       judged option is still `sel`; otherwise the gate starts open. No version bump. */
+    s.lastWrong = scq[k].lastWrong !== undefined ? scq[k].lastWrong : (s.phase === 'retry' ? s.sel : null);
   });
 }
 
@@ -632,8 +664,9 @@ function restoreScreenUI(n) {
        painter that leaves a full screen with a dead button strands the learner. */
     if (!s.done) {
       var chk = document.getElementById(screen + '-scq-check');
-      if (chk) chk.disabled = !s.sel;
+      if (chk) chk.disabled = !s.sel || s.sel === s.lastWrong;
     }
+    scqSyncHint(screen);
   } catch (e) { console.error('[resume] restoreScreenUI', e); }
 }
 

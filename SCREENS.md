@@ -92,11 +92,12 @@ Notes:
 
 | Screen | Screen Type | Item | Item Title | Q# |
 |---|---|---|---|---|
-| s0 | Class task (offline notebook synthesis) | 01 | משימת כיתה: אימון מודל AI למדידת נפח | q1 |
+| s0 | TransitionScreen (class-task opener) | — (intro screen) | — | — |
+| s1 | Class task (offline notebook synthesis) | 01 | משימת כיתה: אימון מודל AI למדידת נפח | q1 |
 
 Notes:
-- This component is a single screen (`TOTAL_SCREENS = 1`); "Screen Type" is taken directly from its header comment ("Class task (offline notebook synthesis task)").
-- `q1` is marked here because the screen's task list textually mirrors `questions[0].questionText`, and it is the only screen/item pair in the component — but it is **not programmatically graded**: `XAPI_EVAL_ITEMS = {}` and main.js documents that the answer is written on paper, so no `answered` xAPI statement is ever sent for it. Presented, not scored in-app.
+- `TOTAL_SCREENS = 2`. s0 is the standard "משימת כיתה" opener (added 2026-10-12, modelled on yaad4-science-mass-weight-01 part 04 screen 29); it carries the cross-part "חזרה". s1's type is taken from its header comment ("Class task (offline notebook synthesis task)").
+- `q1` is marked on s1 because the screen's task list textually mirrors `questions[0].questionText`, and it is the only screen/item pair in the component — but it is **not programmatically graded**: `XAPI_EVAL_ITEMS = {}` and main.js documents that the answer is written on paper, so no `answered` xAPI statement is ever sent for it. Presented, not scored in-app.
 
 ---
 
@@ -109,21 +110,22 @@ Notes:
 | s1 | SingleChoiceQuestion (inferred from `.scq-*`) | 01 | מתקדם 1: יעל וטבעת הכסף — טיעון מדעי לתקפות הניסוי | q1 |
 | s2 | SingleChoiceQuestion (inferred from `.scq-*`) | 02 | מתקדם 2: מפעל אריזת עדשים — נפח מוצק גרגרי | q1 |
 | s3 | SingleChoiceQuestion (inferred from `.scq-*`) | 03 | מתקדם 3: מהימנות מדידות — גוש הזהב של תומר | q1 |
-| s4 | SingleChoiceQuestion (inferred from `.scq-*`) | 04 | מתקדם 4: הסליים של ליאן (2 סעיפים) | q1 |
+| s11 | Scenario / narrative bridge screen (sb129) — flows between s3 and s4 | 04 | מתקדם 4: הסליים של ליאן (2 סעיפים) | — (narrative opening, no question) |
+| s4 | SingleChoiceQuestion (inferred from `.scq-*`) — סעיף א (sb130) | 04 | מתקדם 4: הסליים של ליאן (2 סעיפים) | q1 |
 | s5 | SingleChoiceQuestion (inferred from `.scq-*`) | 04 | מתקדם 4: הסליים של ליאן (2 סעיפים) | q2 |
 | s6 | SingleChoiceQuestion, silent/no-feedback (inferred) | 05 | מתקדם 5: הגולות של גילי (3 סעיפים) | q1 |
 | s7 | SingleChoiceQuestion, silent/no-feedback (inferred) | 05 | מתקדם 5: הגולות של גילי (3 סעיפים) | q2 |
 | s8 | SingleChoiceQuestion, silent/no-feedback (inferred) | 05 | מתקדם 5: הגולות של גילי (3 סעיפים) | q3 |
-| s9 | Scenario / narrative bridge screen | 04 | מתקדם 4: הסליים של ליאן (2 סעיפים) | — (narrative opening, no question) |
-| s10 | Scenario / narrative bridge screen | 05 | מתקדם 5: הגולות של גילי (3 סעיפים) | — (narrative opening, no question) |
-| s11 | Result / verdict screen (companion speech bubble) | 05 | מתקדם 5: הגולות של גילי (3 סעיפים) | — (reveals q1–q3 together, no new question) |
+| s9 | Scenario / narrative bridge screen | 05 | מתקדם 5: הגולות של גילי (3 סעיפים) | — (narrative opening, no question) |
+| s10 | Result / verdict screen (companion speech bubble) | 05 | מתקדם 5: הגולות של גילי (3 סעיפים) | — (reveals q1–q3 together, no new question) |
 
 Notes:
 - s1–s6 and s8 have no per-screen `S# — … · Type ·` header; Screen Type inferred from `.scq-*` markup.
 - s7's own preceding comment reads "Q7 — numeric (ValueInputQuestion)", but the markup is `scq-opt` buttons like every other question here — classified as SingleChoiceQuestion (silent) per actual structure, not per that stale label.
 - s6/s7/s8 are the three "silent" sub-questions (`SILENT_SCREENS = [6,7,8]`, no popup at answer time); their q1/q2/q3 mapping to item 05 was confirmed from the `qKey` arguments in `registerPractice(5/6/7, …)`.
-- s9/s10 are scenario-only screens with no question of their own but are explicitly step 1 of items 04/05 in `SCREEN_TO_SUBCONTENT` (narrative openings) — Item filled in, Q# `—`.
-- s11 is the combined result screen for item 05's three sub-questions; it reveals previously-recorded verdicts rather than presenting a new question.
+- s9 is a scenario-only screen with no question of its own but is explicitly step 1 of item 05 in `SCREEN_TO_SUBCONTENT` (narrative opening) — Item filled in, Q# `—`.
+- The slime scenario (sb129) was briefly merged onto s4 and split back out on 2026-10-12 as its own screen, s11 (next free id; flow order lives in `SCENARIOS`). Like s9, it is page 1 of its item in `SCREEN_TO_SUBCONTENT`.
+- s10 is the combined result screen for item 05's three sub-questions; it reveals previously-recorded verdicts rather than presenting a new question.
 
 ---
 
@@ -175,6 +177,6 @@ Notes:
 | 1 | פתיחה עד סוף + תרגול סטנדרטי א | 1 | 33 (s0–s32) | 01, 02, 03, 04, 05, 06, 07, 08, 09 | Hook + branching acquisition (comic/experiments) + 5 standard practice Qs |
 | 2 | תרגול בסיסי + סטנדרטי ב | 2 | 8 (s0–s7) | 01–06 | 4 basic + 2 standard-B practice Qs, one Q per item |
 | 3 | משימת כיתה | 3 | 1 (s0) | 01 | Offline class task, presented not graded |
-| 4 | תרגול מתקדם | 4 | 12 (s0–s11) | 01–05 | Items 04/05 are multi-part (2 and 3 sub-questions) |
+| 4 | תרגול מתקדם | 4 | 11 (s0–s10) | 01–05 | Items 04/05 are multi-part (2 and 3 sub-questions) |
 | 5 | שאלת שיא (מועד א) | 5 | 7 (s0–s6) | 01 | Single 4-part peak-question item, retry path exists |
 | 6 | שאלת שיא (מועד ב) | 6 | 7 (s0–s6) | 01 | Single 4-part peak-question item, no retry (final attempt) |

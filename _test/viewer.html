@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QA — יעד 8: ניווט בדיקה</title>
+<!-- Local QA viewer. NOT shipped, NOT committed (kept out of git on purpose).
+     One page for all six components: pick a component, a section and a screen (and, on a comic
+     slider, a panel); previous / next in navigation order; start of component; reset progress.
+
+     What it does NOT do: it never opens a gate inside the unit. Screens are reached through the
+     unit's existing dev bridge (DEV_GOTO → goTo(), unit-js/60-devbridge.js) — the same call the
+     back button makes — so s10 still needs the ruler drag, guesses still need an answer, and a
+     check button still needs a pick. A comic panel is shown through comicSliderGo(), the function
+     the slider's own arrows call: it marks THAT panel as seen, and the slider counts as viewed only
+     once every panel has been seen, exactly as when paging.
+
+     Reporting and resume run against the local test library (?xapiLib=../_test/xapi-720-j.js):
+     state and statements live in this tab's sessionStorage. Switching component keeps every
+     component's progress: the viewer points the saved document at the component you chose (its
+     `part` field) after the frame has unloaded, so the loader does not hop back to the last one. -->
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: #1a1a2e; font-family: system-ui, Arial, sans-serif; }
+  body { display: flex; flex-direction: column; }
+  #top { flex: none; background: #f9ca24; color: #1a1a2e; display: flex; flex-wrap: wrap; align-items: center;
+         gap: 6px 8px; padding: 8px 10px; font-size: 13px; font-weight: 700; }
+  #top .tag { background: #1a1a2e; color: #f9ca24; padding: 3px 8px; border-radius: 4px; }
+  #top label { display: flex; align-items: center; gap: 4px; }
+  select { height: 32px; border: 2px solid #1a1a2e; border-radius: 5px; background: #fff; font: inherit; font-weight: 600; padding: 0 4px; max-width: 260px; }
+  .btn { height: 32px; padding: 0 10px; border: none; border-radius: 5px; background: #1a1a2e; color: #f9ca24; font: inherit; cursor: pointer; white-space: nowrap; }
+  .btn:disabled { opacity: .35; cursor: default; }
+  .btn.warn { background: #b00020; color: #fff; margin-inline-start: auto; }
+  #where { flex: none; background: #1a1a2e; color: #fff; display: flex; flex-wrap: wrap; align-items: center;
+           gap: 2px 10px; padding: 7px 12px; font-size: 14px; line-height: 1.4; }
+  #where b { color: #f9ca24; }
+  #where .hint { margin-inline-start: auto; color: #aab; font-size: 12px; }
+  #main { flex: 1; min-height: 0; display: flex; }
+  #side { flex: none; width: 270px; background: #fff; overflow-y: auto; border-left: 1px solid #ccc; font-size: 13px; }
+  #side h3 { position: sticky; top: 0; background: #eee; padding: 6px 10px; font-size: 12px; color: #444; z-index: 1; }
+  .row { display: grid; grid-template-columns: 40px 1fr; gap: 2px 8px; padding: 6px 10px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+  .row:hover { background: #fff7d6; }
+  .row.on { background: #f9ca24; }
+  .row .s { font-family: monospace; font-weight: 700; color: #1a1a2e; grid-row: span 2; align-self: center; }
+  .row .sl { color: #777; font-size: 11px; }
+  .row .pn { color: #2a5bd7; font-size: 11px; }
+  #frame { flex: 1; min-width: 0; height: 100%; border: none; background: #fff; }
+  @media (max-width: 900px) { #side { width: 190px; } }
+</style>
+</head>
+<body>
+<div id="top">
+  <span class="tag">QA</span>
+  <label>רכיב <select id="selPart" onchange="openPart(this.value)"></select></label>
+  <label>חלק <select id="selSec" onchange="pickSection(+this.value)"></select></label>
+  <label>מסך <select id="selScr" onchange="go(+this.value)"></select></label>
+  <label id="panelBox" hidden>פאנל <select id="selPanel" onchange="goPanel(+this.value)"></select></label>
+  <button class="btn" onclick="toStart()" title="המסך הראשון של הרכיב הנוכחי">⏮ תחילת הרכיב</button>
+  <button class="btn" id="bPrev" onclick="step(-1)" title="המסך הקודם בסדר הניווט (Ctrl+→)">▶ הקודם</button>
+  <button class="btn" id="bNext" onclick="step(+1)" title="המסך הבא בסדר הניווט (Ctrl+←)">הבא ◀</button>
+  <button class="btn warn" onclick="resetProgress()" title="מחיקת ההתקדמות ויומן הדיווח בטאב הזה">⟲ איפוס התקדמות</button>
+</div>
+<div id="where"><span id="whereText">טוען…</span><span class="hint">הניווט לבדיקה בלבד: שערים ביחידה לא נפתחים אוטומטית</span></div>
+<div id="main"><aside id="side"></aside><iframe id="frame" title="היחידה"></iframe></div>
+<script>
+/* Navigation order (goBack / advanceScreen), not numeric order. Slides = the validated deck. */
+const PARTS = {
+  '01': { name: 'הוק עד סטנדרטי א', sections: [
+    ['פתיחה והוק', [[0,'בחירת דמות','3'], [1,'הוק: רוני והתליון','4'], [2,'הוק: שאלה פתוחה + רמז','5'], [3,'הוק: חשיפת העיקרון','6'],
+                    [4,'למה חשוב למדוד נפח','7–8'], [5,'הירון וארכימדס','9'], [6,'אאוריקה','10'], [7,'בחירת מסלול','11']]],
+    ['מסלול קומיקס', [[8,'קומיקס: גוף הנדסי','12'], [24,'קומיקס: קובייה','14'], [23,'ניחוש: גופים לא הנדסיים','13'],
+                    [25,'קומיקס: דחיקת מים','15'], [26,'ניחוש: גופים גדולים','16'], [27,'קומיקס: הצפה','17'], [28,'קומיקס: מוצק גרגרי','18']]],
+    ['מסלול ניסויים', [[10,'אקווריום + סרגל (01-02)','19–23'], [29,'ניחוש: גופים לא הנדסיים','24'], [9,'יישומון דחיקת מים','25'],
+                    [35,'מה קרה כאן? (דחיקה)','26 · 174'], [21,'ניחוש: לא נכנס במשורה','27'], [11,'יישומון הצפה','28'], [33,'מה קרה כאן? (הצפה)','29 · 175–176']]],
+    ['סיום הקנייה (בקוד: מסלול ניסויים בלבד)', [[20,'קרוסלת עולם אמיתי','30–32'], [22,'מדידה שלבים 1–2','33–35'], [34,'מדידה שלבים 3–4','36–38'],
+                    [30,'כלי הצפה: שאלה','39'], [31,'כלי הצפה: הסבר','40']]],
+    ['חימום ותרגול סטנדרטי א', [[12,'מעבר לחימום','41'], [18,'חימום 1: התאמה (01-03)','42–45'], [19,'חימום 2: תפריט (01-04)','46–49'],
+                    [32,'מסך כללים','50'], [13,'שאלה 1: אבן (01-05)','51–55'], [14,'שאלה 2: באולינג (01-06)','56–60'],
+                    [15,'שאלה 3: ארבעה ילדים (01-07)','61–65'], [17,'שאלה 4: גרירה לשיטות (01-08)','66–70'], [16,'שאלה 5: קריסטלים (01-09)','71–75']]] ] },
+  '02': { name: 'בסיסי + סטנדרטי ב', sections: [
+    ['תרגול בסיסי', [[0,'מעבר לבסיסי','77'], [1,'גוף לא הנדסי (02-01)','78–82'], [2,'תום / שירלי (02-02)','83–86'],
+                    [3,'תפריט: משורה (02-03)','87–91'], [4,'גליל 760 (02-04)','92–97']]],
+    ['תרגול סטנדרטי ב', [[7,'מעבר לסטנדרטי ב','98'], [5,'סימון על התמונה: משורה ומפלצת (02-05)','99–103'], [6,'חרוזים (02-06)','104–108']]] ] },
+  '03': { name: 'משימת כיתה', sections: [ ['משימת כיתה', [[0,'משימת כיתה: מודל AI (03-01)','110–111']]] ] },
+  '04': { name: 'מתקדם', sections: [
+    ['שאלות 1–3', [[0,'פתיחה','113'], [1,'יעל וטבעת הכסף (04-01)','114–118'], [2,'עדשים (04-02)','119–123'], [3,'גוש הזהב (04-03)','124–128']]],
+    ['סליים', [[11,'סליים: תרחיש','129'], [4,'סליים סעיף א','130–134'], [5,'סליים סעיף ב','135–139']]],
+    ['גולות', [[9,'גולות: תרחיש','140'], [6,'גולות סעיף א','141'], [7,'גולות סעיף ב','142'], [8,'גולות סעיף ג','143'], [10,'גולות: משוב מאוחד','144–145']]] ] },
+  '05': { name: 'שיא 1', sections: [
+    ['פתיחה ותרחיש', [[0,'פתיחת שיא 1','147'], [7,'תרחיש: משחק קופסה','148']]],
+    ['סעיפים', [[1,'סעיף א','149–150'], [2,'סעיף ב','151–152'], [3,'סעיף ג','153–154'], [4,'סעיף ד','155–156']]],
+    ['משוב וסיום', [[5,'משוב הצלחה','157'], [6,'משוב כישלון → 06','158'], [8,'סיום מוצלח','173']]] ] },
+  '06': { name: 'שיא 2 (מועד ב)', sections: [
+    ['פתיחה ותרחיש', [[0,'פתיחת שיא 2','160'], [7,'תרחיש: האקווריום של ארז','161']]],
+    ['סעיפים', [[1,'סעיף א','162–163'], [2,'סעיף ב','164–165'], [3,'סעיף ג','166–167'], [4,'סעיף ד','168–169']]],
+    ['משוב וסיום', [[5,'משוב הצלחה','170'], [6,'משוב כישלון','171'], [8,'סיום מוצלח','173'], [9,'סיום כישלון','172']]] ] }
+};
+const PREFIX = 'methodica-science-volume-solid-01-';
+const LIB = 'xapiLib=../_test/xapi-720-j.js';
+const STATE_KEY = '__test_state', LOG_KEY = '__test_statements', FAIL_KEY = '__test_fail_writes';   // _test/xapi-720-j.js
+const frame = document.getElementById('frame');
+let part = null, cur = 0, ready = false, pending = null, pendingPanel = null, panel = null, panels = 0;
+/* An explicit choice must survive the unit's own resume, which can land AFTER DEV_READY (it waits for
+   the metadata) and put the saved screen back. `want` is re-asserted until the frame shows it. */
+let want = null, wantUntil = 0;
+
+const order = k => PARTS[k].sections.flatMap(s => s[1].map(r => r[0]));
+const rowOf = (k, n) => { for (const [sec, rows] of PARTS[k].sections) { const r = rows.find(x => x[0] === n); if (r) return { sec, r }; } return null; };
+const secIndexOf = (k, n) => PARTS[k].sections.findIndex(s => s[1].some(r => r[0] === n));
+const partFromUrl = u => { const m = /solid-01-(0\d)\//.exec(u || ''); return m ? m[1] : null; };
+const win = () => { try { return frame.contentWindow; } catch (e) { return null; } };
+
+/* ── comic panels: read from the unit, never written except through comicSliderGo ── */
+function comicInfo() {
+  const w = win(); if (!w || part !== '01') return null;
+  try {
+    return w.eval(`(function(){ var sid='s${cur}';
+      if (typeof COMIC_SCREENS==='undefined' || COMIC_SCREENS.indexOf(${cur})===-1) return null;
+      var d=COMIC_DATA[sid]; if (!d || d.kind==='guess' || !d.panels) return null;
+      var st=(typeof comicState!=='undefined') && comicState[sid];
+      return { n: d.panels.length, i: st ? st.i : 0 }; })()`);
+  } catch (e) { return null; }
+}
+
+function render() {
+  const P = PARTS[part];
+  document.getElementById('selPart').innerHTML = Object.keys(PARTS).map(k => `<option value="${k}"${k === part ? ' selected' : ''}>${k} · ${PARTS[k].name}</option>`).join('');
+  const si = Math.max(0, secIndexOf(part, cur));
+  document.getElementById('selSec').innerHTML = P.sections.map((s, i) => `<option value="${i}"${i === si ? ' selected' : ''}>${s[0]}</option>`).join('');
+  document.getElementById('selScr').innerHTML = P.sections[si][1].map(r => `<option value="${r[0]}"${r[0] === cur ? ' selected' : ''}>s${r[0]} · ${r[1]}</option>`).join('');
+  const box = document.getElementById('panelBox'); box.hidden = !panels;
+  if (panels) document.getElementById('selPanel').innerHTML = Array.from({ length: panels }, (_, i) => `<option value="${i}"${i === panel ? ' selected' : ''}>${i + 1} מתוך ${panels}</option>`).join('');
+  document.getElementById('side').innerHTML = `<h3>רכיב ${part}: ${P.name}</h3>` + P.sections.map(([sec, rows]) => `<h3>${sec}</h3>` + rows.map(r =>
+    `<div class="row${r[0] === cur ? ' on' : ''}" onclick="go(${r[0]})"><span class="s">s${r[0]}</span><span class="t">${r[1]}</span>` +
+    `<span class="sl">שקופיות ${r[2]}${r[0] === cur && panels ? ` · <span class="pn">פאנל ${panel + 1}/${panels}</span>` : ''}</span></div>`).join('')).join('');
+  const o = order(part), i = o.indexOf(cur), keys = Object.keys(PARTS), pi = keys.indexOf(part);
+  document.getElementById('bPrev').disabled = i <= 0 && pi <= 0;
+  document.getElementById('bNext').disabled = i >= o.length - 1 && pi >= keys.length - 1;
+  const x = rowOf(part, cur);
+  document.getElementById('whereText').innerHTML = `רכיב <b>${part}</b> (${P.name}) · ${x ? x.sec : ''} · <b>s${cur}</b> ${x ? '— ' + x.r[1] + ` · שקופיות ${x.r[2]}` : ''}` +
+    (panels ? ` · פאנל <b>${panel + 1}</b> מתוך ${panels}` : '') + ` · מסך ${i + 1} מתוך ${o.length} ברכיב`;
+  try { history.replaceState(null, '', `#${part}-${cur}` + (panels ? `-p${panel + 1}` : '')); } catch (e) {}
+}
+
+/* ── loading a component ── */
+function loadFrame(k, opts) {
+  ready = false; part = k;
+  frame.src = 'about:blank';                       // let the current page unload (and flush its save) first
+  frame.onload = () => {
+    frame.onload = null;
+    if (opts && opts.reset) { sessionStorage.removeItem(STATE_KEY); sessionStorage.removeItem(LOG_KEY); sessionStorage.removeItem(FAIL_KEY); }
+    else {
+      /* Point the saved document at the chosen component, so the loader stays there. Test state only. */
+      try { const raw = sessionStorage.getItem(STATE_KEY); if (raw) { const d = JSON.parse(raw); if (d && d.part && d.part !== PREFIX + k) { d.part = PREFIX + k; sessionStorage.setItem(STATE_KEY, JSON.stringify(d)); } } } catch (e) {}
+    }
+    /* `_cb` busts the browser's heuristic cache: http.server sends no Cache-Control, and a hard
+       refresh of the viewer does not revalidate the iframe's document, so edits stayed invisible. */
+    frame.src = `../${PREFIX}${k}/index.html?${opts && opts.reset ? 'resetState&' : ''}${LIB}&_cb=${Date.now()}`;
+  };
+}
+function openPart(k, screen, p) {
+  /* No screen given (the component menu): land where the saved progress says, or s0 when there is none. */
+  pending = screen == null ? null : screen; pendingPanel = p == null ? null : p;
+  cur = screen == null ? order(k)[0] : screen; panels = 0; panel = null;
+  if (screen != null) { want = screen; wantUntil = Date.now() + 15000; } else want = null;
+  loadFrame(k); render();
+}
+function go(n, p) {
+  cur = n; panels = 0; panel = null; pendingPanel = p == null ? null : p; want = n; wantUntil = Date.now() + 4000;
+  if (ready) { win().postMessage({ type: 'DEV_GOTO', screen: n }, '*'); afterGo(); } else pending = n;
+  render();
+}
+function afterGo() {
+  setTimeout(() => {
+    const c = comicInfo();
+    if (c && pendingPanel != null) { try { win().comicSliderGo('s' + cur, Math.min(pendingPanel, c.n - 1)); } catch (e) {} }
+    pendingPanel = null; sync();
+  }, 350);
+}
+function goPanel(i) { const c = comicInfo(); if (!c) return; try { win().comicSliderGo('s' + cur, i); } catch (e) {} sync(); }
+function pickSection(i) { go(PARTS[part].sections[i][1][0][0]); }
+function toStart() { go(order(part)[0]); }
+function step(d) {
+  const o = order(part), j = o.indexOf(cur) + d;
+  if (j >= 0 && j < o.length) { go(o[j]); return; }
+  const keys = Object.keys(PARTS), pi = keys.indexOf(part) + d;      // past the end → next / previous component
+  if (pi >= 0 && pi < keys.length) { const no = order(keys[pi]); openPart(keys[pi], d > 0 ? no[0] : no[no.length - 1]); }
+}
+function resetProgress() {
+  if (!confirm('לאפס את ההתקדמות?\n\nיימחקו בטאב הזה: מסמך השמירה של כל ששת הרכיבים ויומן הדיווח (__stmts).\nהרכיב הנוכחי ייפתח מחדש מהמסך הראשון. אי אפשר לבטל.')) return;
+  pending = order(part)[0]; cur = pending; panels = 0; panel = null; want = pending; wantUntil = Date.now() + 15000;
+  loadFrame(part, { reset: true }); render();
+}
+
+window.addEventListener('message', e => {
+  if (e.source !== win() || !e.data || e.data.type !== 'DEV_READY') return;
+  const p = partFromUrl(win().location.href);
+  if (p && p !== part) { part = p; pending = null; }               // the unit moved on to another component itself
+  ready = true;
+  if (pending != null) { win().postMessage({ type: 'DEV_GOTO', screen: pending }, '*'); pending = null; afterGo(); }
+  else sync();
+});
+
+/* Follow the learner's own navigation inside the frame (המשך / חזרה / panel arrows). */
+function sync() {
+  const w = win(); if (!w || !ready) return;
+  try {
+    const a = w.document.querySelector('.screen.active'); if (!a) return;
+    const n = parseInt(a.getAttribute('data-screen'), 10), p = partFromUrl(w.location.href);
+    if (want != null) {
+      if (n === want) { want = null; if (pendingPanel != null) afterGo(); }
+      else if (Date.now() < wantUntil) { w.postMessage({ type: 'DEV_GOTO', screen: want }, '*'); return; }
+      else want = null;
+    }
+    let changed = false;
+    if (p && p !== part) { part = p; changed = true; }
+    if (!isNaN(n) && n !== cur) { cur = n; changed = true; }
+    const c = comicInfo(), np = c ? c.n : 0, ni = c ? c.i : null;
+    if (np !== panels || ni !== panel) { panels = np; panel = ni; changed = true; }
+    if (changed) render();
+  } catch (e) {}
+}
+setInterval(sync, 400);
+
+document.addEventListener('keydown', e => {
+  if (!e.ctrlKey) return;
+  if (e.key === 'ArrowLeft') { e.preventDefault(); step(+1); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); step(-1); }
+});
+
+const h = /^#(0\d)-(\d+)(?:-p(\d+))?$/.exec(location.hash);
+openPart(h && PARTS[h[1]] ? h[1] : '01', h ? parseInt(h[2], 10) : null, h && h[3] ? parseInt(h[3], 10) - 1 : null);
+</script>
+</body>
+</html>

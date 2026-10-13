@@ -14,7 +14,7 @@
        goTo() rejects anything out of range or without markup, so the worst a hostile parent frame
        can do is move the learner between screens of the lomda they already have open.
      - DEV_READY is posted to the parent whenever the page is framed — which includes the real
-       platform, since it hosts the lomda in an iframe. It carries only a screen count, and an
+       platform, since it hosts the lomda in an iframe. It carries only a screen count (and the part's flow order), and an
        unrecognised message type is ignored. Preserved as-is; changing the target origin from '*'
        would be a behaviour change with no security gain worth the risk here, because the payload
        carries nothing about the learner. */
@@ -33,7 +33,10 @@ function initDevBridge() {
   if (window.parent !== window) {
     window.parent.postMessage({
       type: 'DEV_READY',
-      total: document.querySelectorAll('.screen').length
+      total: document.querySelectorAll('.screen').length,
+      /* A part whose flow is not screen-number order defines DEV_FLOW_ORDER (part 01); the jump
+         bar then steps through it. Absent → the bar falls back to 0..total-1. */
+      order: (typeof DEV_FLOW_ORDER !== 'undefined') ? DEV_FLOW_ORDER : null
     }, '*');
   }
 }

@@ -209,7 +209,14 @@ const CHARACTER_ASSETS = {
      were the same headband artwork under different names, framed slightly differently, so keeping
      both would have meant shipping one 960x960 clip twice. `stretch` wins the name because that is
      what the delivery folder calls it (Orange_Stretching.mp4 / turquoise_streach.mp4). */
-  stretch: 'mp4', ask: 'mp4', 'wet-object': 'mp4'
+  stretch: 'mp4', ask: 'mp4', 'wet-object': 'mp4',
+  /* 2026-10-12: S6's Archimedes remark — finger raised, "thinking" (orange_think / blue_think). */
+  think: 'mp4',
+  /* 2026-10-12: S32's practice-rules screen — hand on the headband (orange_headband / blue_headband). */
+  headband: 'mp4',
+  /* 2026-10-12: S35's marble screen — holding a ping-pong ball (orange_pingpong / blue_pingpong).
+     Replaces `soap` there at the designer's request; `pingpong` (finger raised) stays on s33. */
+  'pingpong-ball': 'mp4'
 };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
@@ -235,7 +242,7 @@ function startCompanionMedia(el) {
   const p = el.play();
   if (p && p.catch) p.catch(function () {});
 }
-/* Screens where the mascot SPEAKS are not here: s1, s3, s5, s6, s21, s22, s23, s26 and s29
+/* Screens where the mascot SPEAKS are not here: s1, s3, s6, s21, s22, s23, s26 and s29
    author their sprite in index.html inside a .companion-say group, because its position
    only makes sense next to a bubble that also lives in the markup — a slot as well would
    be two sources of truth for one offset. renderCompanion() adopts those sprites and
@@ -365,6 +372,7 @@ function resetScreenState(n) {
     const cont = document.getElementById('s7-continue');
     if (cont) cont.disabled = !p;
   }
+  comicZoomClose();   // a zoom left open on a comic screen must not survive the screen change
   if (COMIC_SCREENS.indexOf(n) !== -1) {
     // Comic path (storyboard slides 12–18) — one screen per slide.
     const cid = 's' + n;
@@ -380,6 +388,14 @@ function resetScreenState(n) {
     aqEnter();
   }
   if (n === 33) { syncPathToggle(); }
+  if (n === 35) {
+    // Slide 26: the mascot "GIF" and his bubble appear 5s after entry — restart so the delay counts from this visit.
+    document.querySelectorAll('#s35 .s35-gif').forEach(el => {   // the mascot and his bubble
+      el.classList.remove('is-on'); void el.offsetWidth; el.classList.add('is-on');
+    });
+    const gif = document.getElementById('s35-gif');
+    if (gif) gif.currentTime = 0;
+  }
   if (n === 11) {
     // Flooding / overflow applet.
     floodEnter();
@@ -399,17 +415,18 @@ function resetScreenState(n) {
 }
 
 /* ─── Keyboard Navigation ──────────────────────────────────
-   Inside a comic slider the arrows page PANELS; at the edges they fall through
-   to screen navigation (RTL: ArrowLeft = forward). Panel paging deliberately
-   lives here and not in advanceScreen(), because #sN-continue's
-   onclick="advanceScreen()" must always mean "leave this screen" — otherwise a
-   learner who has seen every panel and paged back would get a page-turn. */
+   On a comic screen the arrow keys ARE the carousel arrows (comicArrowNext/Prev):
+   panels first, then across comic screens, with the same gates (RTL: ArrowLeft =
+   forward). Elsewhere they fall through to screen navigation. Panel paging
+   deliberately lives outside advanceScreen(), because #sN-continue's
+   onclick="advanceScreen()" must always mean "leave this screen". */
 document.addEventListener('keydown', e => {
   /* Escape closes any open hint overlay as well as the zoom, matching parts 02/04. The
      close must happen BEFORE the return, or the overlays would never see the key. */
   if (e.key === 'Escape') {
     document.querySelectorAll('[id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
     closeImageZoom();
+    comicZoomClose();
     return;
   }
   if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
@@ -417,10 +434,15 @@ document.addEventListener('keydown', e => {
   if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
 
   const cid = 's' + currentScreen;
-  if (comicHasSlider(cid)) {
-    const st = comicState[cid], last = COMIC_DATA[cid].panels.length - 1;
-    if (e.key === 'ArrowLeft'  && st && st.i < last) { comicSliderNext(cid); return; }
-    if (e.key === 'ArrowRight' && st && st.i > 0)    { comicSliderPrev(cid); return; }
+  if (COMIC_SCREENS.indexOf(currentScreen) !== -1) {
+    // The keys do exactly what the carousel arrows do, gates included (RTL: ArrowLeft = forward).
+    // While zoomed they only page panels — crossing to another screen would close the zoom.
+    if (comicZoomedId === cid) {
+      if (e.key === 'ArrowLeft') comicSliderNext(cid); else comicSliderPrev(cid);
+      return;
+    }
+    if (e.key === 'ArrowLeft') comicArrowNext(cid); else comicArrowPrev(cid);
+    return;
   }
   if (e.key === 'ArrowLeft') advanceScreen(); else goBack();
 });
@@ -516,6 +538,16 @@ function advanceFromS0() {
   if (!window.lomdaState.selectedCharacter) return;
   goTo(1);
 }
+/* Each S0 card's mascot animates only while the pointer is over that card; on leave it
+   rewinds to its first frame so both cards rest on a still pose. */
+(function wireS0HoverVideos() {
+  document.querySelectorAll('#s0 .option-card').forEach(card => {
+    const v = card.querySelector('video');
+    if (!v) return;
+    card.addEventListener('mouseenter', () => { const p = v.play(); if (p && p.catch) p.catch(() => {}); });
+    card.addEventListener('mouseleave', () => { v.pause(); try { v.currentTime = 0; } catch (e) {} });
+  });
+})();
 /* Keyboard activation for the radio cards (Enter / Space) */
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -593,13 +625,20 @@ function imgqEnter() {
 // index.html / style.css / every routing branch already reference.
 const COMIC_ENTRY   = 8;
 const COMIC_SCREEN  = COMIC_ENTRY;                     // alias kept for advanceFromPathChoice()
-const COMIC_SCREENS = [8, 23, 24, 25, 26, 27, 28];
+const COMIC_SCREENS = [8, 24, 23, 25, 26, 27, 28];   // s24 (the cube) before the s23 guess-Q — QA 2026-10-08
 // Experiments path (pedagogical order ≠ screen-number order, wired explicitly):
 //   entry = S10 aquarium (geometric) → S9 displacement → (flooding, tbd)
 const EXPERIMENTS_ENTRY = 10;
 const EXPERIMENTS_SCREENS = [9, 10, 11, 20, 21, 22, 29, 30, 31, 33, 34, 35];   // membership list for the path toggle, NOT the order
                                                                     // (runtime order is 10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31)
 const MERGE_SCREEN = 12;                       // both paths (comic end / flip-cards end) continue here
+/* Flow order for index_dev.html's jump bar (sent by ../unit-js/60-devbridge.js): the arrows walk
+   the lesson as the learner meets it, not by screen number. Both branches are listed — comic first,
+   then experiments — and must be kept in step with advanceScreen() below. */
+var DEV_FLOW_ORDER = [0, 1, 2, 3, 4, 5, 6, 7]
+  .concat(COMIC_SCREENS)
+  .concat([EXPERIMENTS_ENTRY, 29, 9, 35, 21, 11, 33, 20, 22, 34, 30, 31])
+  .concat([MERGE_SCREEN, 18, 19, 32, 13, 14, 15, 17, 16]);
 function selectPathOption(cardEl) {
   document.querySelectorAll('#s7 .option-card').forEach(c => {
     c.classList.remove('selected'); c.setAttribute('aria-checked', 'false');
@@ -680,17 +719,18 @@ const COMIC_DATA = {
   /* ── S8 · slide 12 · composite: (right) Archimedes addresses the learners,
         rectangular box on the bench · (left) he measures it with a ruler ── */
   s8: {
-    slide: 12, kind: 'panels', ratio: 2,
+    slide: 12, kind: 'panels',
     panels: [{
       src: 'assets/img/comic/12.jpg',
       alt: 'ארכימדס במעבדה עתיקה. מימין הוא עומד ליד תיבת מתכת על השולחן ופונה אל הלומדים, משמאל הוא מודד את התיבה בעזרת סרגל.',
       bubbles: [
-        /* Slide 12's band belongs to the RIGHT scene (Archimedes addressing the learner), not to
-           the whole composite — it ran under both halves until QA 2026-08-24. */
-        { type: 'caption', half: 'right', text: 'ארכימדס הגיע עד לימינו כדי ללמד אותנו על השיטות לחישוב נפח שהוא המציא.' },
-        { type: 'speech', tail: 'left', r: -3, t: 5, w: 21,
+        { type: 'caption', text: 'ארכימדס הגיע עד לימינו כדי ללמד אותנו על השיטות לחישוב נפח שהוא המציא.' },
+        /* 12.jpg is 2:1 but every comic frame is now the same 16:9 box (QA 2026-10-08), so its
+           art is cropped ~53px each side: these r/w were rescaled to keep each bubble on the
+           same spot of the art at the same pixel width. */
+        { type: 'speech', tail: 'left', r: -9.6, t: 5, w: 23.6,
           text: 'בואו נתחיל בתזכורת! איך מודדים גוף בעל צורה הנדסית מוגדרת כמו גליל או תיבה?' },
-        { type: 'speech', tail: 'left', r: 51, t: 38, w: 25,
+        { type: 'speech', tail: 'left', r: 51.2, t: 38, w: 28.1,
           text: 'למדידת נפח של תיבה משתמשים בסרגל: מודדים את צלעות התיבה (אורך, רוחב, גובה) ומכפילים.' }
       ]
     }]
@@ -708,15 +748,23 @@ const COMIC_DATA = {
       src: 'assets/img/comic/14.jpg',
       alt: 'מימין ארכימדס מודד תיבה בעזרת סרגל ומחשב את נפחה, משמאל מונחים על השולחן מפתח, בלוט וגולה.',
       bubbles: [
-        { type: 'narration', r: 27, t: 4, w: 22, text: 'ככה מודדים נפח של גוף הנדסי' },
         /* Side beak, not down-left: the bubble sits at the panel's right edge and Archimedes'
            head is to its LEFT, so trailing circles downward pointed them away from the thinker
            (QA 2026-08-24). Widened too — the thought frame's new padding needs the room. */
         /* r is NEGATIVE on purpose: the bubble overhangs the panel's right edge by 8% so it
            clears Archimedes' head. .comic-viewport does not clip it — the panel is inside a
            track that only clips horizontally between slides. */
-        { type: 'thought', tail: 'left', r: -8, t: 20, w: 33,
-          text: 'יש לנו קובייה שכל צלע\nשלה = 10 ס"מ.\n10·10·10 = 1,000.\nנפח הקובייה = 1,000 סמ"ק!' },
+        /* Lifted above the frame's top edge (t: -8, r: -14) once the "ככה מודדים…" narration was
+           dropped — at t: 20 it covered his face. The product line is wrapped in LRI…PDI so it reads left-to-right
+           with spaces around the operators, as math is written (QA 2026-10-08). */
+        /* Re-aimed (QA 2026-10-08): the bubble floats up-right of his head and the circles
+           rise FROM his head to its lower-left edge — they used to leave the bubble's top and
+           trail upward, away from him. ty places the lead circle on the bubble's left edge. */
+        { type: 'thought', tail: 'left', r: -22, t: -19, w: 35, ty: 120,
+          text: 'יש לנו קובייה שכל צלע\nשלה = 10\u00A0ס"מ.\n\u206610 · 10 · 10 = 1,000\u2069\nנפח הקובייה\u00A0=\n1,000\u00A0סמ"ק!' },
+        /* Restored per slide 14 (QA 2026-10-09): the right scene's own narration, top of that half
+           and left of his head, clear of the thought bubble above the frame and its trail. */
+        { type: 'narration', r: 29, t: 4, w: 19, text: 'ככה מודדים נפח של גוף הנדסי' },
         { type: 'narration', r: 56, t: 6, w: 30,
           text: 'אבל מה לגבי גוף שאינו הנדסי, כמו מפתח, בלוט, או גולה?' }
       ]
@@ -730,16 +778,21 @@ const COMIC_DATA = {
       { src: 'assets/img/comic/15a.jpg',
         alt: 'ארכימדס מחזיק משורה מלאה במים וגולה; עיגול הגדלה מראה שמפלס המים עומד על 50 מ"ל.',
         bubbles: [
-          { type: 'caption', text: 'ארכימדס ממלא את המשורה ומתעד עד לאן המים מגיעים: 50 מ"ל.' },
-          { type: 'speech', tail: 'down-left', r: 3, t: 5, w: 30,
-            text: 'אם נכניס את הגולה למשורה – מפלס המים יעלה!' }
+          { type: 'caption', text: 'ארכימדס ממלא את המשורה במים ומתעד עד לאן המים מגיעים: 50\u00A0מ"ל.' },
+          /* Left of him, beak on its right edge at mid-height pointing back at him; break after
+             the dash; kept above the magnifier (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 47, t: 6, w: 30, ty: '50%',
+            text: 'אם נכניס את הגולה למשורה\n– מפלס המים יעלה!' }
         ] },
       { src: 'assets/img/comic/15b.jpg',
         alt: 'ארכימדס מסתכל אל המשורה וחושב.',
         bubbles: [
-          { type: 'caption', text: 'מפלס המים עלה ל-62 מ"ל.' },
-          { type: 'thought', tail: 'down-left', r: 3, t: 5, w: 30,
-            text: 'רגע... אז הנפח של הגולה הוא 62? אולי 50? מה צריך לחשב פה?' }
+          { type: 'caption', text: 'אחרי שארכימדס הכניס את הגולה למשורה עם המים, מפלס המים עלה ל-62\u00A0מ"ל.' },
+          /* Bubble sits below his head with the circles on its top edge, rising up-left to
+             his head — the thought comes down from him into the bubble (QA 2026-10-08). */
+          /* Explicit breaks: "מה" moved down to open the last line (QA 2026-10-08). */
+          { type: 'thought', tail: 'up-right', r: 8, t: 32, w: 33, tx: 150,
+            text: 'רגע... אז הנפח של הגולה\nהוא 62? אולי 50?\nמה צריך לחשב פה?' }
         ] },
       { src: 'assets/img/comic/15c.jpg',
         alt: 'ארכימדס מרים אצבע למעלה בסימן "הבנתי!".',
@@ -748,22 +801,27 @@ const COMIC_DATA = {
              across his face, and a down-beak pointed away from him. Sitting lower with the beak
              on the upper edge, it clears the face and still leads back to his head (QA
              2026-08-24, which suggested exactly this). */
-          { type: 'speech', tail: 'up-left', r: 3, t: 30, w: 32,
-            text: 'אה! כמות המים החדשה פחות כמות המים המקורית = נפח הגולה!' }
+          /* Explicit break: left to wrap, "הגולה!" fell alone onto a third line (QA 2026-10-08). */
+          /* Left of him (clear of the raised finger), beak on its right edge at mid-height (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 48, t: 4, w: 35, ty: '50%',
+            text: 'אה! כמות המים **החדשה** פחות\nכמות המים **המקורית** = נפח הגולה!' }   // emphasis per slide 15
         ] },
       { src: 'assets/img/comic/15d.jpg',
         alt: 'זום על המשורה: הגולה בתוך המים ומפלס המים מגיע ל-62 מ"ל.',
         bubbles: [
           { type: 'caption', text: 'מה קרה כאן?' },
-          { type: 'speech', tail: 'down-left', r: 5, t: 6, w: 32,
-            text: 'כשמכניסים גוף מוצק למים, מפלס המים שעולה שווה לנפח הגוף בדיוק.' }
+          /* Explicit break: "בדיוק." sat alone on a third line; moved up to close line 2 (QA 2026-10-08). */
+          { type: 'speech', tail: 'left', r: 2, t: 15, w: 37, ty: '50%',   // side beak at the 62 ml water line (QA 2026-10-08); 35 -> 37 so bold "בדיוק" keeps line 2 whole (QA 2026-10-09)
+            text: 'כשמכניסים גוף מוצק למים, מפלס\nהמים שעולה שווה לנפח הגוף **בדיוק**.' }   // emphasis per slide 15
         ] },
       { src: 'assets/img/comic/15e.jpg',
         alt: 'ארכימדס מסתכל אל המצלמה.',
         bubbles: [
-          { type: 'banner', t: 78, text: 'זוהי שיטת דחיקת המים!' },
-          { type: 'speech', tail: 'down-left', r: 1, t: 1, w: 28,
-            text: 'אם רוצים למדוד נפח של גוף שעלול להיפגע במים, אפשר לעטוף אותו בשכבת מגן דקה ואטומה למים.' }
+          { type: 'banner', t: 78, fit: true, text: 'זוהי שיטת דחיקת המים!' },   // pill hugs the text (QA 2026-10-08)
+          /* Raised and moved to his left, beak on its right edge at mid-height pointing at him;
+             explicit breaks after "במים," and before "דקה" (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 49, t: 2, w: 33, ty: '50%',
+            text: 'אם רוצים למדוד נפח של גוף\nשעלול להיפגע במים,\nאפשר לעטוף אותו בשכבת מגן\nדקה ואטומה למים.' }
         ] }
     ]
   },
@@ -778,51 +836,62 @@ const COMIC_DATA = {
       { src: 'assets/img/comic/17a.jpg',
         alt: 'ארכימדס מחזיק אבטיח.',
         bubbles: [
-          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 28,
-            text: 'או! אני שמח ששאלתם מה לגבי גופים שלא נכנסים במשורה.' }
+          /* s27 rule: every bubble sits to the character's LEFT, beak on its right edge pointing
+             back at him (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 44, t: 10, w: 31, ty: 50,
+            text: 'או! אני שמח ששאלתם מה לגבי\nגופים שלא נכנסים במשורה.' }
         ] },
       { src: 'assets/img/comic/17b.jpg',
         alt: 'ארכימדס מכניס את האבטיח לקערה מלאה במים; מתחת לקערה מגש עמוק שאליו נשפכים המים.',
         bubbles: [
           { type: 'caption', text: 'ארכימדס מכין קערה גדולה עם מים מלאים ממש עד לקצה. מתחתיה יש כלי עמוק נוסף.' },
-          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 29,
-            text: 'אם אני אניח את האבטיח בתוך קערת המים, המים ישפכו, נכון?' }
+          /* Left of him, beak toward his mouth; explicit break so "נכון?" no longer sits alone (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 46, t: 14, w: 32, ty: 45,
+            text: 'אם אני אניח את האבטיח בתוך\nקערת המים, המים ישפכו, נכון?' }
         ] },
       { src: 'assets/img/comic/17c.jpg',
         alt: 'ארכימדס מסתכל על הקערה וחושב.',
         bubbles: [
-          { type: 'thought', tail: 'down-left', r: 2, t: 5, w: 26,
-            text: 'אוקי... המים נשפכו. מה עכשיו?' }
+          /* Left of him and above the trail: the circles leave the bubble's bottom edge near its
+             right end and step down-right to his head, so the cloud sits over the small circles
+             (QA 2026-10-08). tail-down-left is the mirrored trail (small circle down-RIGHT);
+             tx slides it along to the right end of the bottom edge. */
+          { type: 'thought', tail: 'down-left', r: 46, t: -4, w: 29, tx: 190,
+            text: 'אוקי... המים נשפכו.\nמה עכשיו?' }
         ] },
       { src: 'assets/img/comic/17d.jpg',
         alt: 'ארכימדס מחזיק כלי מדידה גדול ומראה אותו לצופים.',
         bubbles: [
-          { type: 'speech', tail: 'down-left', r: 5, t: 6, w: 28,
-            text: 'רגע! יש לנו פה גם כלי מדידה!' }
+          /* Left of him, beak toward his head; "גם" up a line (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 59, t: 6, w: 21, ty: 40,   // clear of the measuring cylinder's top
+            text: 'רגע! יש לנו פה גם\nכלי מדידה!' }
         ] },
       { src: 'assets/img/comic/17e.jpg',
         alt: 'ארכימדס שופך את המים מהכלי העמוק לתוך כלי המדידה.',
         bubbles: [
           { type: 'caption', text: 'ארכימדס שופך את המים מהכלי העמוק לתוך כלי המדידה.' },
-          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 28,
-            text: 'רואים? המים שנשפכו החוצה מגיעים בדיוק ל 6.4 ליטר' }
+          /* Left of him, beak toward him; kept left of the raised tray so it never covers the pour (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 56, t: 6, w: 30, ty: 45,
+            text: 'רואים? המים שנשפכו החוצה\nמגיעים בדיוק ל 6.4\u00A0ליטר' }
         ] },
       { src: 'assets/img/comic/17f.jpg',
         alt: 'זום על כלי המדידה: המים מגיעים ל-6.4 ליטר.',
         bubbles: [
           { type: 'caption', text: 'מה קרה כאן?' },
-          { type: 'speech', tail: 'down-left', r: 4, t: 5, w: 30,
-            text: 'שכשמכניסים גוף מוצק לקערת מים, המים שנשפכים החוצה שווים לנפח הגוף במדויק!' },
-          { type: 'note', r: 4, t: 42, w: 30,
-            text: 'זה נכון רק אם הכלי מלא במים ממש עד הסוף.' }
+          { type: 'speech', tail: 'left', r: 4, t: 5, w: 33,   // side beak, toward the vessel (QA 2026-10-08, as s25 15d); wider for 20px text
+            text: 'כשמכניסים גוף מוצק לקערת מים, המים שנשפכים החוצה שווים לנפח הגוף במדויק!' },
+          { type: 'note', r: 64, t: 42, w: 32,   // moved to the left of the frame (QA 2026-10-08)
+            text: 'זה נכון רק אם הכלי מלא במים\nממש עד הסוף.' }
         ] },
       { src: 'assets/img/comic/17g.jpg',
         alt: 'ארכימדס מחזיק משקולת קטנה.',
         bubbles: [
-          { type: 'banner', t: 80, text: 'זוהי שיטת ההצפה!' },
-          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 30,
-            text: 'אם הגוף שמודדים צף במים, אפשר לחבר לו משקולת שישקע.' },
-          { type: 'note', r: 2, t: 42, w: 30,
+          { type: 'banner', t: 80, fit: true, text: 'זוהי שיטת ההצפה!' },   // pill hugs the text (QA 2026-10-08)
+          /* Explicit break so "שישקע." no longer sits alone (QA 2026-10-08). Moved to his left (the
+             frame's left side), beak on the right edge pointing back to his mouth (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 53, t: 14, w: 34, ty: 55,
+            text: 'אם הגוף שמודדים צף במים,\nאפשר לחבר לו משקולת שישקע.' },   // break after the comma (QA 2026-10-08)
+          { type: 'note', r: 66, t: 42, w: 30,   // moved to the left of the frame (QA 2026-10-08)
             text: 'כמובן שצריך להחסיר את נפח המשקולת מהתוצאה הסופית' }
         ] }
     ]
@@ -835,26 +904,29 @@ const COMIC_DATA = {
       { src: 'assets/img/comic/18a.jpg',
         alt: 'ארכימדס עומד ליד שולחן המעבדה ומפנה את ראשו הצידה כדי להקשיב לשאלה.',
         bubbles: [
-          // The first line is an off-panel voice (storyboard: "הדיבור הזה מגיע
-          // כאילו מחוץ לקומיקס") — the tail points off the right edge, the side
-          // Archimedes is turned toward.
-          { type: 'speech', tail: 'down-right', r: 2, t: 5, w: 29,
-            text: 'ארכימדס! מה לגבי מוצק שמתנהג כמו נוזל?' },
-          { type: 'thought', tail: 'down-right', r: 48, t: 6, w: 26,
-            text: 'או! חיכיתי לשאלה הזאת!' }
+          // Off-panel voice (storyboard: "הדיבור הזה מגיע כאילו מחוץ לקומיקס") —
+          // shown as the blue narration strip with white text (QA 2026-10-08).
+          { type: 'caption', text: 'ארכימדס! מה לגבי מוצק שמתנהג כמו נוזל?' },
+          /* Speech bubble left of him, beak on its right edge pointing to his mouth (QA 2026-10-08). */
+          { type: 'speech', tail: 'right', r: 50, t: 6, w: 22, ty: 60,
+            text: 'או! חיכיתי\nלשאלה הזאת!' }
         ] },
       { src: 'assets/img/comic/18b.jpg',
         alt: 'ארכימדס שופך אורז לתוך כלי מדידה ריק.',
         bubbles: [
           { type: 'caption', text: 'ארכימדס שופך אורז לתוך כלי מדידה' },
-          { type: 'speech', tail: 'down-left', r: 2, t: 5, w: 30,
-            text: 'מוצק בצורת גרגרים או אבקה מתנהג כמו נוזל! לכן ניתן למדוד את הנפח שלו בכלי למדידת נוזלים.' }
+          /* Off his hair, side beak toward his head; explicit breaks so "נוזלים." no longer sits
+             alone (QA 2026-10-08). */
+          { type: 'speech', tail: 'left', r: -8, t: 4, w: 37, ty: 60,   // 34 -> 37: line 1 wrapped into 4 ragged lines (QA 2026-10-09)
+            text: 'מוצק בצורת גרגרים או אבקה מתנהג\nכמו נוזל! לכן ניתן למדוד את הנפח\nשלו בכלי למדידת נוזלים.' }
         ] },
-      { src: 'assets/img/comic/18c.jpg',
-        alt: 'ארכימדס באמבטיה מרים כתר וקורא "אאוריקה".',
+      { src: 'assets/img/s6-archimedes-bath.jpg?v=2',   // same bath art as S6 (QA 2026-10-08)
+        alt: 'ארכימדס באמבטיה מרים כתר וקורא "אאוריקה", המים גולשים מהאמבט החוצה.',
         bubbles: [
-          { type: 'thought', tail: 'down-left', r: 4, t: 6, w: 32,
-            text: 'וכל זה בזכות האמבטיה שעשיתי לפני אלפי שנים... לא רע!' }
+          /* Trail leaves the bubble's bottom edge, big circle against the cloud and the small ones
+             stepping down-left to his head (QA 2026-10-08); tx slides it toward the left end. */
+          { type: 'thought', tail: 'down-right', r: 6, t: 10, w: 36, tx: 185,
+            text: 'וכל זה בזכות האמבטיה\nשעשיתי לפני אלפי שנים...\nלא רע!' }
         ] }
     ]
   }
@@ -894,15 +966,17 @@ function comicCanAdvance(screenId) {
    tx aims an up/down beak along the horizontal edge (default 28px), ty aims a
    left/right beak along the vertical one (default 38px, measured to its centre);
    both sit outside the `docked` branch so a banner may carry a beak too. */
+/* Bubble text is escaped first, so authored markup can never reach the DOM. The one exception is
+   the deck's emphasis: **word** becomes <strong>word</strong> AFTER escaping (slide 15, QA 2026-10-09). */
+function comicBubbleText(s) {
+  return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+}
 function comicBubbleHtml(b, k) {
   const type  = b.type || 'speech';
   const docked = (type === 'caption');   // banner is width-docked but honours --t
   let cls = 'speech-bubble speech-bubble--' + type;
   if (b.tail) cls += ' speech-bubble--tail-' + b.tail;
-  /* A caption normally docks across the whole frame. On a COMPOSITE panel (two scenes side by
-     side, e.g. s8 / storyboard slide 12) the deck gives each scene its own band, so `half` scopes
-     one to the scene it belongs to instead of letting it run under both. */
-  if (docked && b.half) cls += ' speech-bubble--caption-' + b.half;
+  if (b.fit) cls += ' speech-bubble--fit';   // banner shrinks to its text, centred
   let style = '--k:' + k + ';';
   if (!docked) {
     style += '--r:' + (b.r != null ? b.r : 5) + '%;'
@@ -910,9 +984,9 @@ function comicBubbleHtml(b, k) {
            + '--w:' + (b.w != null ? b.w : 30) + '%;';
   }
   if (b.tx != null) style += '--tail-x:' + b.tx + 'px;';
-  if (b.ty != null) style += '--tail-y:' + b.ty + 'px;';
+  if (b.ty != null) style += '--tail-y:' + (typeof b.ty === 'number' ? b.ty + 'px' : b.ty) + ';';   // '50%' = beak at mid-height
   return '<div class="' + cls + '" style="' + style + '">'
-       +   '<div class="speech-bubble__frame"><p class="speech-bubble__text">' + esc(b.text) + '</p></div>'
+       +   '<div class="speech-bubble__frame"><p class="speech-bubble__text">' + comicBubbleText(b.text) + '</p></div>'
        +   (b.tail ? '<span class="speech-bubble__tail" aria-hidden="true"></span>' : '')
        + '</div>';
 }
@@ -928,6 +1002,10 @@ function comicBuild(screenId) {
       i: 0, seen: new Array(cfg.panels.length).fill(false),
       done: false, built: false, timer: null, token: 0, reported: false
     };
+    if (typeof comicPendingRestore !== 'undefined' && comicPendingRestore[screenId]) {
+      comicCopyRecord(st, comicPendingRestore[screenId]);   // progress saved before a reload
+      delete comicPendingRestore[screenId];
+    }
   }
   if (st.built) return;
 
@@ -968,15 +1046,26 @@ function comicBuild(screenId) {
     }).join('');
   }
 
-  // Single-panel screens are static: no arrows, no dots, no drag.
+  // Single-panel screens are static: no dots, no drag. The carousel arrows stay — on a
+  // single panel they simply page across to the neighbouring comic screen.
   const nav = document.getElementById(screenId + '-nav');
   if (nav) nav.hidden = n < 2;
-  ['-prev', '-next'].forEach(function (sfx) {
-    const b = document.getElementById(screenId + sfx);
-    if (b) b.hidden = n < 2;
-  });
   const vp = document.getElementById(screenId + '-viewport');
   if (vp && n < 2) vp.classList.add('is-static');
+  // Zoom: enlarges the WHOLE frame — art and the live-HTML bubbles together — so the dialogue
+  // can be read. The shared image zoom (15-ui.js) clones the <img> only and would drop the text.
+  const frame = vp && vp.parentElement;
+  if (frame && !frame.querySelector('.comic-zoom-btn')) {
+    const zb = document.createElement('button');
+    zb.type = 'button';
+    zb.className = 'img-zoom-btn comic-zoom-btn';
+    zb.id = screenId + '-zoom';
+    zb.setAttribute('aria-label', 'הגדלת הקומיקס');
+    zb.setAttribute('aria-pressed', 'false');
+    zb.innerHTML = COMIC_ZOOM_ICON_OPEN;
+    zb.addEventListener('click', function () { comicZoomToggle(screenId); });
+    frame.appendChild(zb);
+  }
   if (n > 1) comicAttachDrag(screenId);
 
   st.built = true;
@@ -1067,23 +1156,130 @@ function comicRevealBubbles(screenId, i) {
 function comicUpdateNav(screenId) {
   const cfg = COMIC_DATA[screenId], st = comicState[screenId];
   if (!cfg || !st) return;
-  const last = cfg.panels.length - 1;
-  const prev = document.getElementById(screenId + '-prev');
-  const next = document.getElementById(screenId + '-next');
-  /* HIDDEN at the ends, not greyed: a disabled arrow still occupies its slot and reads as an
-     affordance the learner has failed to use. Requested by QA 2026-08-24 for the first and last
-     panel. `disabled` is kept in step so a hidden button can never be reached by keyboard.
-     comicBuild() separately hides both for a single-panel screen (n < 2). */
-  if (prev) { prev.disabled = st.i === 0;    prev.hidden = st.i === 0; }
-  if (next) { next.disabled = st.i === last; next.hidden = st.i === last; }
   document.querySelectorAll('#' + screenId + '-dots .comic-dot').forEach(function (d, k) {
     d.classList.toggle('is-active', k === st.i);
     d.classList.toggle('is-seen', !!st.seen[k]);
     d.setAttribute('aria-selected', k === st.i ? 'true' : 'false');
   });
-  const cont = document.getElementById(screenId + '-continue');
-  if (cont) cont.disabled = !st.done;
+  comicSyncNav(screenId);
+  if (comicZoomedId === screenId) comicZoomApply(screenId);
 }
+
+/* ─── Carousel navigation across the whole comic ───────────────────────
+   Figma 720-UI-Templates "Carousel": the side arrows are the ONLY way through the comic.
+   They page panels first, then cross to the next / previous comic screen (guess-questions
+   included), so the comic reads as one carousel even though it is seven screens.
+   The bar's המשך stays disabled on every comic screen and opens only on the LAST one, once
+   its panels have all been seen — i.e. when the comic is finished. Forward is gated exactly
+   as before: a slider until every panel is seen, a guess-question until an option is picked.
+   Arrows at the comic's two ends are greyed (Figma State 01), not hidden. */
+function comicArrowNext(screenId) {
+  const cfg = COMIC_DATA[screenId], st = comicState[screenId];
+  if (!cfg) return;
+  if (cfg.kind !== 'guess' && st && st.i < cfg.panels.length - 1) { comicSliderNext(screenId); return; }
+  const ci = COMIC_SCREENS.indexOf(+screenId.slice(1));
+  if (ci === -1 || ci === COMIC_SCREENS.length - 1) return;      // comic end — המשך takes over
+  if (!comicCanAdvance(screenId)) return;
+  goTo(COMIC_SCREENS[ci + 1]);
+}
+function comicArrowPrev(screenId) {
+  const cfg = COMIC_DATA[screenId], st = comicState[screenId];
+  if (!cfg) return;
+  if (cfg.kind !== 'guess' && st && st.i > 0) { comicSliderPrev(screenId); return; }
+  const ci = COMIC_SCREENS.indexOf(+screenId.slice(1));
+  if (ci <= 0) return;                                            // comic start
+  goTo(COMIC_SCREENS[ci - 1]);   // lands on that screen's own remembered panel (its last, coming back)
+}
+function comicSyncNav(screenId) {
+  const cfg = COMIC_DATA[screenId];
+  if (!cfg) return;
+  const st = comicState[screenId];
+  const ci = COMIC_SCREENS.indexOf(+screenId.slice(1));
+  const isLastScreen = ci === COMIC_SCREENS.length - 1;
+  const atFirstPanel = cfg.kind === 'guess' || !st || st.i === 0;
+  const atLastPanel  = cfg.kind === 'guess' || !st || st.i === cfg.panels.length - 1;
+  const prev = document.getElementById(screenId + '-prev');
+  const next = document.getElementById(screenId + '-next');
+  if (prev) prev.disabled = ci === 0 && atFirstPanel;
+  if (next) next.disabled = atLastPanel && (isLastScreen || !comicCanAdvance(screenId));
+  const cont = document.getElementById(screenId + '-continue');
+  if (cont) cont.disabled = !(isLastScreen && comicCanAdvance(screenId));
+}
+
+/* ─── Comic zoom ─────────────────────────────────────────────────────
+   Scales the frame in place to fill the canvas (minus a small margin), bubbles included —
+   they live in .comic-bleed inside the frame, so one transform carries art and text together.
+   The fitted box is the frame PLUS every bubble that overhangs it on any panel of the screen,
+   so an overhanging bubble never leaves the canvas and the zoom does not jump while paging.
+   Arrow keys and swipe still page panels while zoomed; Escape / the button / the backdrop close. */
+const COMIC_ZOOM_ICON_OPEN =
+  '<svg class="img-zoom-btn__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">'
+  + '<circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="2"/>'
+  + '<path d="M13.2 13.2L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const COMIC_ZOOM_ICON_CLOSE =
+  '<svg class="img-zoom-btn__icon" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">'
+  + '<path d="M1.5 1.5L13.5 13.5M13.5 1.5L1.5 13.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+const COMIC_ZOOM_MARGIN = 16;   // design px kept clear around the zoomed comic
+let comicZoomedId = null;
+
+function comicZoomToggle(screenId) {
+  if (comicZoomedId === screenId) comicZoomClose(); else comicZoomOpen(screenId);
+}
+function comicZoomOpen(screenId) {
+  comicZoomClose();
+  const vp = document.getElementById(screenId + '-viewport');
+  const frame = vp && vp.parentElement;
+  const screen = frame && frame.closest('.screen');
+  if (!screen) return;
+  let bd = screen.querySelector('.comic-zoom-backdrop');
+  if (!bd) {
+    bd = document.createElement('div');
+    bd.className = 'comic-zoom-backdrop';
+    bd.addEventListener('click', comicZoomClose);
+    screen.appendChild(bd);
+  }
+  comicZoomedId = screenId;
+  frame.classList.add('is-zoomed');
+  screen.classList.add('comic-zoom-open');
+  const zb = document.getElementById(screenId + '-zoom');
+  if (zb) { zb.innerHTML = COMIC_ZOOM_ICON_CLOSE; zb.setAttribute('aria-label', 'סגירת ההגדלה'); zb.setAttribute('aria-pressed', 'true'); }
+  comicZoomApply(screenId);
+}
+function comicZoomApply(screenId) {
+  const vp = document.getElementById(screenId + '-viewport');
+  const frame = vp && vp.parentElement;
+  const screen = frame && frame.closest('.screen');
+  if (!screen) return;
+  // Frame box in the screen's own (unscaled) design px — offsets ignore the zoom transform.
+  let fx = 0, fy = 0, el = frame;
+  while (el && el !== screen) { fx += el.offsetLeft; fy += el.offsetTop; el = el.offsetParent; }
+  const fw = frame.offsetWidth, fh = frame.offsetHeight;
+  // Union with every bubble, measured inside its own panel (each panel is exactly the frame box).
+  let x0 = 0, y0 = 0, x1 = fw, y1 = fh;
+  frame.querySelectorAll('.comic-bleed .speech-bubble').forEach(function (b) {
+    x0 = Math.min(x0, b.offsetLeft);            y0 = Math.min(y0, b.offsetTop);
+    x1 = Math.max(x1, b.offsetLeft + b.offsetWidth); y1 = Math.max(y1, b.offsetTop + b.offsetHeight);
+  });
+  const uw = x1 - x0, uh = y1 - y0;
+  const SW = screen.clientWidth, SH = screen.clientHeight, m = COMIC_ZOOM_MARGIN;
+  const z = Math.min((SW - 2 * m) / uw, (SH - 2 * m) / uh);
+  const tx = (SW - uw * z) / 2 - fx - x0 * z;
+  const ty = (SH - uh * z) / 2 - fy - y0 * z;
+  frame.style.transform = 'translate(' + tx + 'px, ' + ty + 'px) scale(' + z + ')';
+}
+function comicZoomClose() {
+  if (!comicZoomedId) return;
+  const screenId = comicZoomedId;
+  comicZoomedId = null;
+  const vp = document.getElementById(screenId + '-viewport');
+  const frame = vp && vp.parentElement;
+  if (frame) { frame.classList.remove('is-zoomed'); frame.style.transform = ''; }
+  const screen = frame && frame.closest('.screen');
+  if (screen) screen.classList.remove('comic-zoom-open');
+  const zb = document.getElementById(screenId + '-zoom');
+  if (zb) { zb.innerHTML = COMIC_ZOOM_ICON_OPEN; zb.setAttribute('aria-label', 'הגדלת הקומיקס'); zb.setAttribute('aria-pressed', 'false'); }
+}
+window.addEventListener('resize', function () { if (comicZoomedId) comicZoomApply(comicZoomedId); });
 
 /* Pointer drag / swipe. clientX is in SCREEN px while the track's transform is
    in DESIGN px, so every delta is divided by getAppScale(). */
@@ -1093,13 +1289,14 @@ function comicAttachDrag(screenId) {
   if (!vp || !tracks.length || vp.dataset.dragAttached === '1') return;
   vp.dataset.dragAttached = '1';
 
-  let on = false, pid = null, startX = 0, startT = 0, lastX = 0, vpW = 1, moved = false;
+  let on = false, pid = null, startX = 0, startT = 0, lastX = 0, vpW = 1, dragScale = 1, moved = false;
 
   vp.addEventListener('pointerdown', function (e) {
     if (!comicHasSlider(screenId)) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault();
-    vpW = vp.getBoundingClientRect().width / getAppScale();   // screen px → design px
+    vpW = vp.offsetWidth;                                       // the track's own px
+    dragScale = vp.getBoundingClientRect().width / vpW || 1;    // app scale × comic zoom
     on = true; moved = false; pid = e.pointerId;
     startX = lastX = e.clientX; startT = performance.now();
     try { vp.setPointerCapture(pid); } catch (err) {}
@@ -1112,7 +1309,7 @@ function comicAttachDrag(screenId) {
     const st = comicState[screenId];
     if (!st) return;
     const last = COMIC_DATA[screenId].panels.length - 1;
-    let dx = (e.clientX - startX) / getAppScale();
+    let dx = (e.clientX - startX) / dragScale;
     if ((st.i === 0 && dx < 0) || (st.i === last && dx > 0)) dx *= 0.32;   // rubber band
     if (Math.abs(dx) > 4) moved = true;
     tracks.forEach(function (t) { t.style.transform = 'translateX(' + (st.i * vpW + dx) + 'px)'; });
@@ -1126,7 +1323,7 @@ function comicAttachDrag(screenId) {
     vp.classList.remove('is-dragging');
     const st = comicState[screenId];
     if (!st) return;
-    const dx = ((e ? e.clientX : lastX) - startX) / getAppScale();
+    const dx = ((e ? e.clientX : lastX) - startX) / dragScale;
     const v  = dx / Math.max(1, performance.now() - startT);   // design px per ms
     // A flick counts only once it has actually travelled: without the distance
     // floor, a tap with a few px of jitter divides by a ~1ms elapsed time and
@@ -1234,7 +1431,7 @@ const SCQ_REG = {};
 function scqRegister(cfg) {
   cfg.maxAttempts = cfg.maxAttempts || 2;
   SCQ_REG[cfg.screen] = { cfg: cfg, sel: null, attempts: 0, answered: false, done: false,
-                          phase: null, locked: !!cfg.startLocked };
+                          phase: null, locked: !!cfg.startLocked, lastWrong: null };
 }
 function scqOpts(screen) { return document.querySelectorAll('#' + screen + ' .scq-opt'); }
 function scqSetLocked(screen, locked) {
@@ -1246,6 +1443,10 @@ function scqSetLocked(screen, locked) {
 }
 function scqSelect(screen, id) {
   const s = SCQ_REG[screen]; if (!s || s.answered || s.locked) return;
+  /* Retry gate (720-templates "Retry gate", QA 2026-10-11): after a non-final wrong check the option
+     just judged wrong cannot be submitted again. Clicking it again changes nothing — marks, popup and
+     the locked button stay — and צדקתי? opens only for a different option. */
+  if (s.phase === 'retry' && id === s.sel) return;
   s.sel = id;
   /* A re-pick after a wrong attempt wipes the marks and the popup, so the screen is back to
      "chosen but unchecked" — and `phase` has to say so, or the painter would repaint the retry
@@ -1257,12 +1458,20 @@ function scqSelect(screen, id) {
     o.classList.toggle('selected', sel);
     o.setAttribute('aria-checked', sel ? 'true' : 'false');
   });
-  const chk = document.getElementById(screen + '-scq-check'); if (chk) chk.disabled = false;
+  const chk = document.getElementById(screen + '-scq-check'); if (chk) chk.disabled = (id === s.lastWrong);
+}
+/* The element whose text IS the answer. An image-hotspot option is two controls sharing a data-id —
+   a ring over the photo (aria-hidden, no text) and the readable bubble, the real role="radio" — and
+   the ring comes first in the DOM, so a plain querySelector reported "" for every s15 answer
+   (2026-10-11). Prefer the role="radio" control; a one-element option is found either way. */
+function scqAnswerEl(screen, id) {
+  return document.querySelector('#' + screen + ' .scq-opt[data-id="' + id + '"][role="radio"]') ||
+         document.querySelector('#' + screen + ' .scq-opt[data-id="' + id + '"]');
 }
 function scqCheck(screen) {
   const s = SCQ_REG[screen], cfg = s.cfg;
   if (s.answered) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
-  if (!s.sel) return;
+  if (!s.sel || s.sel === s.lastWrong) return;   // the retry gate, also against a programmatic or keyboard submit
   s.attempts++;
   const correct = s.sel === cfg.correctId;
   /* xAPI: resolved at send time — xapiQ() reads window.METADATA, which the library fetches
@@ -1270,7 +1479,7 @@ function scqCheck(screen) {
      (v2.4 §2, mandatory); `response` is the option's visible text and was missing entirely. */
   const q = xapiQ(cfg.item, cfg.qKey || 'q1');
   xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question',
-    { response: xapiAnswerText(document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]')),
+    { response: xapiAnswerText(scqAnswerEl(screen, s.sel)),
       success: !!correct,
       score: { scaled: correct ? 1 : 0 } },
     { questionId: q.questionId, parentId: q.parentId });
@@ -1282,7 +1491,7 @@ function scqCheck(screen) {
     s.phase = 'wrong2';
     scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong');
     scqShowPopup(screen, 'wrong2'); scqFinish(screen, false);
-  } else { s.phase = 'retry'; scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); }
+  } else { s.phase = 'retry'; s.lastWrong = s.sel; const gate = document.getElementById(screen + '-scq-check'); if (gate) gate.disabled = true; scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'retry'); scqSyncHint(screen); }
 
   /* Synchronous, at the tail so it runs after every branch and after all painting. An answer given
      and then abandoned without navigating would otherwise rest entirely on the page-leave handlers,
@@ -1301,7 +1510,7 @@ function scqFinish(screen, isCorrect) {
   s.answered = true; s.done = true;
   scqOpts(screen).forEach(o => { o.disabled = true; });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'שנמשיך?'; chk.disabled = false; }
-  const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden';
+  scqSyncHint(screen);
   if (s.cfg.onFinish) s.cfg.onFinish(isCorrect);
 }
 function scqShowPopup(screen, type) {
@@ -1311,15 +1520,37 @@ function scqShowPopup(screen, type) {
   popup.style.left = '2px'; popup.style.top = 'auto'; popup.style.bottom = '84px';  // reset to default on every open
   document.getElementById(screen + '-scq-popup-title').innerHTML = cfg.title;
   document.getElementById(screen + '-scq-popup-body').innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
+  /* A dropdown's wrong-final popup gets the same התשובה-שלי / תשובה-נכונה switch as the matching
+     screens (QA 2026-10-12): the correct option is marked inside a closed list, so without it the
+     model answer is never seen. Opens on the model answer, as ddqShowPopup does. */
+  if (type === 'wrong2' && document.getElementById(screen + '-dropdown-trigger')) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'scq-hint-close ddq-answer-toggle';
+    b.id = screen + '-dq-answer-toggle';
+    b.onclick = function () { dqToggleAnswer(screen); };
+    document.getElementById(screen + '-scq-popup-body').appendChild(b);
+    SCQ_REG[screen].answerView = 'correct';
+    dqSyncView(screen);
+  }
   popup.classList.remove('hidden');
 }
 function scqClosePopup(screen) { document.getElementById(screen + '-scq-popup')?.classList.add('hidden'); }
 function scqHint(screen) {
-  const s = SCQ_REG[screen]; if (!s || s.answered) return;
+  const s = SCQ_REG[screen]; if (!s || s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) return;
   xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey || 'q1').questionId });
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
+/* Hint availability, in one place (720-templates "Hint policy": hidden, not disabled, while
+   unavailable). Hidden once the question resolves; on a `hintAfterWrong` question also until the
+   first wrong check — the practice questions s13-s16, whose hint slides (53/58/63/73) all say
+   "רמז זמין אחרי מענה שגוי 1" (2026-10-11). Reads `attempts`, which resume already carries. */
+function scqSyncHint(screen) {
+  const s = SCQ_REG[screen]; const hint = document.getElementById(screen + '-scq-hint');
+  if (!s || !hint) return;
+  hint.style.visibility = (s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) ? 'hidden' : '';
+}
 function scqEnter(screen) {
   const s = SCQ_REG[screen]; if (!s) return;
   document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden');
@@ -1327,21 +1558,22 @@ function scqEnter(screen) {
   if (s.done) {
     scqOpts(screen).forEach(o => { o.disabled = true; });   // marks already painted persist
     const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'שנמשיך?'; chk.disabled = false; }
-    const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.style.visibility = 'hidden';
+    scqSyncHint(screen);
   } else {
     scqReset(screen);
   }
 }
 function scqReset(screen) {
   const s = SCQ_REG[screen];
-  s.sel = null; s.attempts = 0; s.answered = false; s.phase = null;
+  s.sel = null; s.attempts = 0; s.answered = false; s.phase = null; s.lastWrong = null;
   scqOpts(screen).forEach(o => {
     o.classList.remove('selected', 'correct', 'wrong');
     o.setAttribute('aria-checked', 'false');
     o.disabled = !!s.locked;
   });
   const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = 'צדקתי?'; chk.disabled = true; }
-  const hint = document.getElementById(screen + '-scq-hint'); if (hint) { hint.disabled = false; hint.style.visibility = ''; }
+  const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.disabled = false;
+  scqSyncHint(screen);
 }
 /* Shared draggable feedback popup — resets to default position on each open
    (handled in scqShowPopup). Drag is app-scale aware. Attached once per popup. */
@@ -1405,7 +1637,7 @@ function aqEnter() {
   scqEnter('s10');
 }
 
-/* ═══ Feedback copy — the storyboard's, per QA/TEXT-FIDELITY.md §Agreed policy ═══
+/* ═══ Feedback copy — the storyboard's, per docs-and-tools/TEXT-FIDELITY.md §Agreed policy ═══
    The deck gives each question its own retry / correct / wrong-final slides, and the correct
    and wrong-final slides carry the SAME explanation — so it is written once per question and
    fbPopups() hands it to both. Same shape as part 04, which was ported first.
@@ -1417,12 +1649,15 @@ function aqEnter() {
        earlier revision; the question asks about a crystal, so the subject follows the question.
      - deck expressions are wrapped in .section-result-expr: digits and operators are
        bidi-neutral and reorder inside an RTL paragraph without it. */
-const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['<b>שננסה שוב?</b>'] };
+const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['שננסה שוב?'] };
 const FB_WRONG2 = 'התשובה אינה נכונה.<br />התשובה הנכונה מסומנת.';
-const fbPopups = (correctTitle, explanation) => ({
+/* `wrong2Extra`: a line the deck adds to the wrong-final popup only. Slide 55 (s13) closes with the
+   encouragement "לא נורא אם טעית…", which its note gives to the mascot's GIF and bubble; that pose
+   (`encourage`) was never produced, so the line sits in the popup until it is (ASSETS-TODO.md). */
+const fbPopups = (correctTitle, explanation, wrong2Extra) => ({
   retry:   FB_RETRY,
   correct: { title: correctTitle, body: explanation },
-  wrong2:  { title: FB_WRONG2,    body: explanation }
+  wrong2:  { title: FB_WRONG2,    body: wrong2Extra ? explanation.concat(wrong2Extra) : explanation }
 });
 
 /* Register the aquarium SCQ instance */
@@ -1433,8 +1668,8 @@ scqRegister({
   item: '02',
   popups: fbPopups('נכון מאוד!', [   /* sb20/22/23 */
     'למדידת נפח של תיבה משתמשים בסרגל: מודדים את אחת מצלעות הקובייה ומכפילים אותו בעצמו שלוש פעמים — פעם אחת לאורך, פעם אחת לרוחב ופעם אחת לגובה.',
-    'אורך הצלע במקרה זה הוא 10 ס"מ וכיוון שכל הצלעות בקובייה זהות:',
-    '<span class="section-result-expr">10·10·10=1,000</span>']),
+    'אורך הצלע במקרה זה הוא 10\u00A0ס"מ וכיוון שכל הצלעות בקובייה זהות:',
+    '<span class="section-result-expr">10 × 10 × 10 = 1,000</span>']),
   /* ⚠️ goTo(29), NOT goTo(9). This screen advances through its own check button rather than
      advanceScreen(), so the flow edge lives here — and it read `goTo(9)` while goBack() and
      SCREEN_TO_SUBCONTENT both said 10 → 29 → 9. The disagreement made s29 (sb24, the guess before
@@ -1627,6 +1862,9 @@ function practiceEnter(idx, screen) {
 /* Register one standard-practice SingleChoiceQuestion (idx = 0-based position). */
 function registerPractice(idx, cfg) {
   cfg.screen = 's' + practiceProgress.questions[idx].screen;
+  /* Slides 53/58/63/73: "רמז זמין אחרי מענה שגוי 1" — all four practice SCQs. The warm-up (s19,
+     slide 47 "זמין תמיד") and s10 register directly and keep their hint from the start. */
+  cfg.hintAfterWrong = true;
   cfg.onFinish = function (isCorrect) {
     const q = practiceProgress.questions[idx];
     q.state = isCorrect ? 'correct' : 'incorrect';
@@ -1651,14 +1889,15 @@ registerPractice(0, {
   item: '05',
   popups: fbPopups('נכון מאוד!', [   /* sb52/54/55 */
     'נפח הגוף שווה לכמות המים שדחק — כלומר ההפרש בין הנפח הסופי לנפח ההתחלתי.',
-    '<span class="section-result-expr">73 – 50 = 23</span>',
-    'נפח האבן = 23 סמ"ק'])
+    '<span class="section-result-expr">73 − 50 = 23</span>',
+    'נפח האבן = 23\u00A0סמ"ק'],
+    ['לא נורא אם טעית, כל טעות היא צעד קדימה בדרך\u00A0הנכונה!']   /* sb55, not bold on the slide */)
 });
 registerPractice(1, {
   correctId: 'a',
   item: '06',
   popups: fbPopups('תשובה נכונה!', [   /* sb57/59/60 */
-    'נפח המים שישפכו מהכלי שווה בדיוק לנפח הכדור, כך ניתן למדוד נפח של גוף שלא נכנס במשורה — זוהי שיטת ההצפה.'])
+    'נפח המים שישפכו מהכלי שווה בדיוק לנפח הכדור, כך ניתן למדוד נפח של גוף שלא נכנס במשורה — זוהי שיטת\u00A0ההצפה.'])
 });
 registerPractice(2, {
   correctId: 'd',
@@ -1687,10 +1926,19 @@ registerPractice(4, {
      #S-ddq-check, #S-ddq-popup (+ -title/-body).
    ═══════════════════════════════════════════════════════════ */
 const DDQ_REG = {};
+/* Two attempts (opt-in, `maxAttempts: 2` — s17 only, per storyboard slides 66-70; s18 keeps one, per
+   42-45). A wrong non-final check is not a resolution: the board stays live, every slot still holding
+   the item it was judged with shows that verdict, and `lastWrong` (the judged board) both drives those
+   marks and gates בדיקה until the board differs from it (720-templates: "Retry gate", "Per-answer
+   verdict after a non-final wrong attempt"). `phase` is only which popup is open — 'retry' until the
+   first change after the check, as SCQ's re-pick clears it. `hintAfterWrong` hides the hint until
+   that first wrong check (slide 68). */
 function ddqRegister(cfg) {
   cfg.placement = {};
   cfg.items.forEach(it => { cfg.placement[it.id] = 'source'; });
-  DDQ_REG[cfg.screen] = { cfg: cfg, checked: false, done: false, dnd: null };
+  cfg.maxAttempts = cfg.maxAttempts || 1;
+  DDQ_REG[cfg.screen] = { cfg: cfg, checked: false, done: false, dnd: null,
+                          attempts: 0, phase: null, lastWrong: null };
 }
 function ddqInit(screen) {
   const s = DDQ_REG[screen];
@@ -1708,6 +1956,7 @@ function ddqPlace(screen, itemId, dest) {
     Object.keys(p).forEach(k => { if (k !== itemId && p[k] === dest) p[k] = 'source'; });
   }
   p[itemId] = dest;
+  if (s.phase === 'retry') { s.phase = null; ddqClosePopup(screen); }
   ddqRender(screen);
 }
 function ddqMakePill(screen, itemId) {
@@ -1750,6 +1999,9 @@ function ddqRender(screen) {
     const placed = Object.keys(cfg.placement).find(k => cfg.placement[k] === t.id);
     if (placed) { slot.appendChild(ddqMakePill(screen, placed)); slot.classList.add('occupied'); }
     if (s.checked) slot.classList.add(cfg.placement[cfg.correctMap[t.id]] === t.id ? 'correct' : 'wrong');
+    /* After a non-final wrong check: a slot keeps its verdict only while it still holds the item it
+       was judged with, so the board shows what is left to fix, not the judged board. */
+    else if (s.lastWrong && placed && s.lastWrong[placed] === t.id) slot.classList.add(cfg.correctMap[t.id] === placed ? 'correct' : 'wrong');
     wrap.appendChild(lab); wrap.appendChild(slot);
     tc.appendChild(wrap);
     s.dnd.attachTarget(slot, t.id);
@@ -1761,22 +2013,43 @@ function ddqRender(screen) {
 function ddqUpdateCheck(screen) {
   const s = DDQ_REG[screen]; if (s.checked) return;
   const allFilled = s.cfg.targets.every(t => Object.keys(s.cfg.placement).some(k => s.cfg.placement[k] === t.id));
-  const btn = document.getElementById(screen + '-ddq-check'); if (btn) btn.disabled = !allFilled;
+  const same = !!s.lastWrong && s.cfg.items.every(it => s.cfg.placement[it.id] === s.lastWrong[it.id]);
+  const btn = document.getElementById(screen + '-ddq-check'); if (btn) btn.disabled = !allFilled || same;
+}
+/* The hint is hidden, not disabled, while unavailable (720-templates "Hint policy"): after the
+   question resolves, and — on a `hintAfterWrong` board — before the first wrong check. */
+function ddqSyncHint(screen) {
+  const s = DDQ_REG[screen];
+  const hint = document.getElementById(screen + '-ddq-hint'); if (!s || !hint) return;
+  hint.style.visibility = (s.done || (s.cfg.hintAfterWrong && s.attempts < 1)) ? 'hidden' : '';
 }
 function ddqCheck(screen) {
   const s = DDQ_REG[screen], cfg = s.cfg;
   if (s.checked) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
   const allCorrect = cfg.targets.every(t => cfg.placement[cfg.correctMap[t.id]] === t.id);
-  /* One matching board = one question; a single closing 'answered.last'. `response` lists the
-     learner's pairings in a readable form, since there is no single option element to read. */
+  s.attempts++;
+  const final = allCorrect || s.attempts >= cfg.maxAttempts;
+  /* One matching board = one question, closed by a single 'answered.last'. A wrong non-final check
+     is an interim 'answered', the same split as scqCheck. `response` lists the learner's pairings in
+     a readable form, since there is no single option element to read. */
   const q = xapiQ(cfg.item, cfg.qKey || 'q1');
-  xapiSend('answered.last', 'question',
+  xapiSend(final ? 'answered.last' : 'answered', 'question',
     { response: Object.keys(cfg.placement).map(function (id) { return id + '->' + cfg.placement[id]; }).join(', '),
       success: !!allCorrect,
       score: { scaled: allCorrect ? 1 : 0 } },
     { questionId: q.questionId, parentId: q.parentId });
+  if (!final) {
+    /* Retry: nothing is resolved — no result, no onFinish, the board stays draggable. */
+    s.phase = 'retry';
+    s.lastWrong = Object.assign({}, cfg.placement);
+    ddqRender(screen);                              // marks + the gate (בדיקה disabled: same board)
+    ddqShowPopup(screen, 'retry');
+    ddqSyncHint(screen);
+    try { flushResumeSave(); } catch (e) {}
+    return;
+  }
   XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!allCorrect;
-  s.checked = true; s.done = true;
+  s.checked = true; s.done = true; s.phase = null; s.lastWrong = null;
   /* The learner's own placement used to be overwritten here and lost. QA 2026-08-25 (slide 29)
      asks for a toggle between "התשובה שלי" and "תשובה נכונה" inside the wrong-answer feedback,
      so both boards have to survive. ddqRender() already marks each slot correct/wrong against
@@ -1794,7 +2067,7 @@ function ddqCheck(screen) {
   ddqRender(screen);
   ddqShowPopup(screen, allCorrect ? 'correct' : 'incorrect');
   const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'שנמשיך?'; btn.disabled = false; }
-  const hint = document.getElementById(screen + '-ddq-hint'); if (hint) hint.style.visibility = 'hidden';
+  ddqSyncHint(screen);
   if (cfg.onFinish) cfg.onFinish(allCorrect);
 
   /* Synchronous, at the tail and after all painting — same rule as scqCheck's. */
@@ -1804,7 +2077,7 @@ function ddqCheck(screen) {
    which the DnD screens do not use, so they get their own thin pair. Overlay
    ids end in -hint-overlay, so goTo() closes them on navigation. */
 function ddqHint(screen) {
-  const s = DDQ_REG[screen]; if (!s || s.checked) return;
+  const s = DDQ_REG[screen]; if (!s || s.checked || (s.cfg.hintAfterWrong && s.attempts < 1)) return;
   xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey || 'q1').questionId });
   document.getElementById(screen + '-ddq-hint-overlay')?.classList.remove('hidden');
 }
@@ -1814,32 +2087,46 @@ function ddqShowPopup(screen, type) {
   const cfg = DDQ_REG[screen].cfg.popups[type];
   popup.style.background = (type === 'correct') ? '#edf8ed' : '#ffdbdc';
   popup.style.left = '2px'; popup.style.top = 'auto'; popup.style.bottom = '84px';
-  document.getElementById(screen + '-ddq-popup-title').textContent = cfg.title;
+  /* The retry title follows the same partly-right rule as the final one, judged on the board just
+     checked; slide 67's second line is the body, as FB_RETRY has it on the SCQ screens. */
+  if (type === 'retry') document.getElementById(screen + '-ddq-popup-title').textContent = ddqIsPartial(screen, DDQ_REG[screen].lastWrong) ? DDQ_PARTIAL_TITLE : cfg.title;
+  else document.getElementById(screen + '-ddq-popup-title').textContent = cfg.title;
   const body = document.getElementById(screen + '-ddq-popup-body');
   body.innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
   /* Only a wrong answer has two boards to switch between. Same button shape as the hint
      overlay's, which is what the note asks for. */
   const st = DDQ_REG[screen];
   if (type === 'incorrect' && st.learnerPlacement) {
-    /* `answerNote` describes the BOARD, not the answer, so it is rendered here rather than
-       written into the copy: ddqSyncAnswerToggle hides it the moment the learner switches to
-       their own placement. Storyboard slide 70 puts it directly under the title. */
-    if (st.cfg.answerNote) {
-      const n = document.createElement('p');
-      n.className = 'ddq-answer-note';
-      n.id = screen + '-ddq-answer-note';
-      n.textContent = st.cfg.answerNote;
-      body.insertBefore(n, body.firstChild);
-    }
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'scq-hint-close ddq-answer-toggle';
     b.id = screen + '-ddq-answer-toggle';
     b.onclick = function () { ddqToggleAnswer(screen); };
     body.appendChild(b);
-    ddqSyncAnswerToggle(screen);
+    ddqSyncAnswerToggle(screen);   // writes the two-line title for the board on screen
   }
   popup.classList.remove('hidden');
+}
+/* Wrong-answer title, decided from the learner's SNAPSHOT (never the board on screen, which may be
+   the model answer) every time the popup renders — so a reload or a toggle keeps the same first line.
+   720-templates (_question-template-defaults, "partly right", 2026-10-05): on a multi-pair board an
+   answer with at least one pair right is titled 'התשובה אינה נכונה במלואה.'; none right keeps the
+   authored 'התשובה אינה נכונה.'. Title only — scoring and the single attempt are unchanged.
+   Second line, bold, part of the title (slide 70 sets it as a second title line): `answerNote` on
+   the model board; on the learner's own board the template's View My Answer line, with the same
+   explanation body under both. */
+function ddqIsPartial(screen, board) {
+  const s = DDQ_REG[screen], lp = board || (s && s.learnerPlacement);
+  if (!lp) return false;
+  return Object.keys(s.cfg.correctMap).some(t => lp[s.cfg.correctMap[t]] === t);
+}
+const DDQ_PARTIAL_TITLE = 'התשובה אינה נכונה במלואה.';
+const DDQ_ANSWER_VIEW_LINE = 'אפשר לצפות שוב בפתרון הנכון.';
+function ddqWrongTitle(screen) {
+  const s = DDQ_REG[screen];
+  const first = ddqIsPartial(screen) ? DDQ_PARTIAL_TITLE : s.cfg.popups.incorrect.title;
+  const second = (s.answerView === 'correct') ? s.cfg.answerNote : DDQ_ANSWER_VIEW_LINE;
+  return second ? first + '<br>' + second : first;
 }
 /* Swap the board between the model answer and what the learner actually did. */
 function ddqToggleAnswer(screen) {
@@ -1851,20 +2138,22 @@ function ddqToggleAnswer(screen) {
   ddqRender(screen);
   ddqSyncAnswerToggle(screen);
 }
-/* The label names what the button will SHOW next, not what is on screen now. */
+/* The label names what the button will SHOW next, not what is on screen now. The title's second
+   line names what IS on screen, so it is rewritten with it. */
 function ddqSyncAnswerToggle(screen) {
   const s = DDQ_REG[screen];
   const b = document.getElementById(screen + '-ddq-answer-toggle');
   if (!s || !b) return;
-  b.textContent = (s.answerView === 'correct') ? 'התשובה שלי' : 'תשובה נכונה';  const n = document.getElementById(screen + '-ddq-answer-note');
-  if (n) n.style.display = (s.answerView === 'correct') ? '' : 'none';
+  b.textContent = (s.answerView === 'correct') ? 'התשובה שלי' : 'תשובה נכונה';
+  const t = document.getElementById(screen + '-ddq-popup-title');
+  if (t) t.innerHTML = ddqWrongTitle(screen);
 }
 function ddqClosePopup(screen) { document.getElementById(screen + '-ddq-popup')?.classList.add('hidden'); }
 function ddqEnter(screen) {
   const s = DDQ_REG[screen]; if (!s) return;
   ddqClosePopup(screen);
   if (!s.done) {
-    s.checked = false;
+    s.checked = false; s.attempts = 0; s.phase = null; s.lastWrong = null;
     s.cfg.items.forEach(it => { s.cfg.placement[it.id] = 'source'; });
     const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'בדיקה'; btn.disabled = true; }
   }
@@ -1875,8 +2164,7 @@ function ddqEnter(screen) {
   ddqRender(screen);
   if (s.done) { const btn = document.getElementById(screen + '-ddq-check'); if (btn) { btn.textContent = 'שנמשיך?'; btn.disabled = false; } }
   // An answered question keeps its hint hidden on return, as the SCQ screens do.
-  const hint = document.getElementById(screen + '-ddq-hint');
-  if (hint) hint.style.visibility = s.done ? 'hidden' : '';
+  ddqSyncHint(screen);
 }
 
 /* Register a standard-practice DragAndDropQuestion at practice index idx. */
@@ -1928,10 +2216,15 @@ registerPracticeDnD(3, {
     { id: 't-flood',    label: 'שיטת ההצפה' }
   ],
   correctMap: { 't-ruler': 'metal-cube', 't-displace': 'shell', 't-flood': 'goblet' },
-  /* Copy verbatim from storyboard slides 69 (correct) and 70 (wrong). Slide 70's second line,
-     'התשובה הנכונה מוצגת.', is `answerNote` and not body copy — see ddqShowPopup. */
+  /* Copy verbatim from storyboard slides 69 (correct) and 70 (wrong). Slide 70's second title line,
+     'התשובה הנכונה מוצגת.', is `answerNote` — see ddqWrongTitle. */
   answerNote: 'התשובה הנכונה מוצגת.',
+  /* Two attempts, slides 66-70: 67 is "מענה שגוי 1" (retry), 70 "מענה שגוי 2" (the model board).
+     Slide 68's note: the hint is available only after that first wrong answer. Approved 2026-10-11. */
+  maxAttempts: 2,
+  hintAfterWrong: true,
   popups: {
+    retry:     FB_RETRY,
     correct:   { title: 'תשובה נכונה!', body: ['קוביית המתכת היא גוף הנדסי ולכן נבצע מדידה הנדסית.', 'צדפה היא גוף שאינו הנדסי וקטן מספיק להיכנס למשורה ולכן נבצע דחיקת מים.', 'גביע הוא גוף שאינו הנדסי ולא נכנס במשורה ולכן נבצע את שיטת ההצפה.'] },
     incorrect: { title: 'התשובה אינה נכונה.', body: ['קוביית המתכת היא גוף הנדסי ולכן נבצע מדידה הנדסית.', 'צדפה היא גוף שאינו הנדסי וקטן מספיק להיכנס למשורה ולכן נבצע דחיקת מים.', 'גביע הוא גוף שאינו הנדסי ולא נכנס במשורה ולכן נבצע את שיטת ההצפה.'] }
   }
@@ -1967,13 +2260,14 @@ ddqRegister({
     { id: 'wt-flood',    label: 'שיטת ההצפה' }
   ],
   correctMap: { 'wt-pour': 'wu-cup', 'wt-ruler': 'wu-cube', 'wt-scale': 'wu-melon', 'wt-displace': 'wu-shell', 'wt-flood': 'wu-doll' },
-  /* Copy from storyboard slides 45 (correct) and 44 (wrong) — both slides carry the same two
-     explanation lines. Slide 45 reads 'כל שיטת מדידה מתאימים'; that is a typo in the deck
-     (slide 44 has the agreeing 'מתאימה'), so both use the agreeing form here. */
+  /* Copy from storyboard slides 45 (correct) and 44 (wrong), each popup in its own slide's words
+     (QA 2026-10-11): 45 'כל כלי ושיטת מדידה מתאימים', 44 'כל כלי ושיטת מדידה מתאימה'. The two
+     agreements are the deck's, not unified — choosing one is a language call left to QA. Both slides
+     end the second line with '..'; one period is kept (docs-and-tools/TEXT-FIDELITY.md, deck defects). */
   answerNote: 'ההתאמה הנכונה מוצגת.',
   popups: {
-    correct:   { title: 'התאמה מושלמת!', body: ['כל שיטת מדידה מתאימה למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] },
-    incorrect: { title: 'התשובה אינה נכונה.', body: ['כל שיטת מדידה מתאימה למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] }
+    correct:   { title: 'התאמה מושלמת!', body: ['כל כלי ושיטת מדידה מתאימים למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] },
+    incorrect: { title: 'התשובה אינה נכונה.', body: ['כל כלי ושיטת מדידה מתאימה למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] }
   },
   onFinish: function (ok) { warmupFinish(0, 's18', ok); },
   onContinue: function () { goTo(19); }
@@ -1988,8 +2282,7 @@ scqRegister({
     'כשמכניסים גוף מוצק למים, הגוף תופס מקום בתוך המשורה ולכן מפלס המים עולה.',
     'ההפרש בין קריאת הנפח לפני הכנסת הגוף ולאחריה שווה לנפח הגוף.']),
   onFinish: function (ok) {   // reflect result on the dropdown trigger, and on the warm-up bar
-    const t = document.getElementById('s19-dropdown-trigger');
-    if (t) { t.classList.remove('correct', 'wrong'); t.classList.add(ok ? 'correct' : 'wrong'); }
+    dqSyncView('s19');
     warmupFinish(1, 's19', ok);
   },
   onContinue: function () { goTo(32); }   // → practice rules (sb50) → Q1
@@ -2009,7 +2302,31 @@ function dqPick(screen, id, label) {
   scqSelect(screen, id);
   const tr = document.querySelector('#' + screen + '-dropdown-trigger .dropdown-trigger-text');
   if (tr) tr.textContent = label;
+  document.getElementById(screen + '-dropdown-trigger')?.classList.remove('is-placeholder');
   document.getElementById(screen + '-answers').classList.add('hidden');
+}
+/* Paint a resolved dropdown: the trigger shows the correct word (green) or, on a wrong answer
+   toggled to 'learner', the learner's word (red); the toggle label and the title's second line
+   follow, with the same wording as the matching screens' switch. */
+function dqSyncView(screen) {
+  const s = SCQ_REG[screen]; if (!s || (s.phase !== 'correct' && s.phase !== 'wrong2' && !s.done)) return;
+  const trig = document.getElementById(screen + '-dropdown-trigger'); if (!trig) return;
+  const showCorrect = s.sel === s.cfg.correctId || s.answerView !== 'learner';
+  const opt = document.querySelector('#' + screen + ' .dropdown-opt[data-id="' + (showCorrect ? s.cfg.correctId : s.sel) + '"]');
+  const tr = trig.querySelector('.dropdown-trigger-text');
+  if (tr && opt) tr.textContent = opt.textContent.trim();
+  trig.classList.remove('correct', 'wrong', 'is-placeholder');
+  trig.classList.add(showCorrect ? 'correct' : 'wrong');
+  const b = document.getElementById(screen + '-dq-answer-toggle');
+  if (!b) return;
+  b.textContent = showCorrect ? 'התשובה שלי' : 'תשובה נכונה';
+  const t = document.getElementById(screen + '-scq-popup-title');
+  if (t) t.innerHTML = showCorrect ? s.cfg.popups.wrong2.title : 'התשובה אינה נכונה.<br />' + DDQ_ANSWER_VIEW_LINE;
+}
+function dqToggleAnswer(screen) {
+  const s = SCQ_REG[screen]; if (!s) return;
+  s.answerView = (s.answerView === 'learner') ? 'correct' : 'learner';
+  dqSyncView(screen);
 }
 /* Space reserved beside the longest option for the open-arrow. */
 const DQ_CARET_ROOM = 50;
@@ -2034,8 +2351,10 @@ function dqEnter(screen) {
     trigger.classList.remove('correct', 'wrong');
     const tr = trigger.querySelector('.dropdown-trigger-text');
     if (tr) tr.textContent = 'בחרו מילה';
+    trigger.classList.add('is-placeholder');
   }
   list?.classList.add('hidden');
+  if (s && s.done) { s.answerView = 'correct'; dqSyncView(screen); }   // revisit opens on the model answer
   scqEnter(screen);
 }
 /* Close any open dropdown when clicking outside it. */
@@ -2050,21 +2369,18 @@ document.addEventListener('click', function (e) {
    unlocks once every card has been revealed at least once.
    ═══════════════════════════════════════════════════════════ */
 const flipState = {};
-/* One card open at a time — opening one turns the others back over (QA 2026-08-24, slide 14).
-   flipState is the SEEN ledger, not the open one: it keeps recording every card the learner has
-   turned, because that is what unlocks Continue, and it must not be cleared when a card closes. */
+/* Each card toggles on its own (QA 2026-10-12) — any number can be face-up at once, all three
+   included, and a second click turns a card back over. flipState is the SEEN ledger, not the
+   open one: it records every card the learner has turned, because that is what unlocks Continue,
+   and it is never cleared when a card closes. */
 function flipCard(screen, cardEl) {
-  const wrap = cardEl.closest('.flip-grid') || document.getElementById(screen + '-flip');
-  if (wrap) wrap.querySelectorAll('.flip-card.flipped').forEach(c => {
-    if (c !== cardEl) c.classList.remove('flipped');
-  });
-  cardEl.classList.add('flipped');
-  (flipState[screen] = flipState[screen] || {})[cardEl.dataset.card] = true;
+  const open = cardEl.classList.toggle('flipped');
+  cardEl.setAttribute('aria-pressed', open ? 'true' : 'false');
+  if (open) (flipState[screen] = flipState[screen] || {})[cardEl.dataset.card] = true;
   flipUpdateContinue(screen);
 }
-/* Gated on the SEEN ledger, not on what is currently face-up. Since only one card can be open at
-   a time now, "every card is .flipped" is a state that can never occur — reading the DOM here
-   would leave Continue disabled forever. */
+/* Gated on the SEEN ledger, not on what is currently face-up: a learner can turn a card back
+   over after reading it, and that must not re-lock Continue. */
 function flipUpdateContinue(screen) {
   const cards = document.querySelectorAll('#' + screen + '-flip .flip-card');
   const seen = flipState[screen] || {};
@@ -2074,10 +2390,10 @@ function flipUpdateContinue(screen) {
 }
 function flipEnter(screen) {
   syncPathToggle();
-  /* Back to all-face-down on re-entry: with one card open at a time there is no "the cards were
-     like this when I left" to restore, and re-flipping every seen card would put the screen in a
-     state the learner can no longer reach by clicking. Continue still reflects the ledger. */
-  document.querySelectorAll('#' + screen + '-flip .flip-card').forEach(c => c.classList.remove('flipped'));
+  /* Back to all-face-down on re-entry; Continue still reflects the SEEN ledger. */
+  document.querySelectorAll('#' + screen + '-flip .flip-card').forEach(c => {
+    c.classList.remove('flipped'); c.setAttribute('aria-pressed', 'false');
+  });
   flipUpdateContinue(screen);
 }
 
@@ -2109,6 +2425,7 @@ function guessPick(screen, btn) {
   guessPicked[screen] = btn.dataset.id;
   guessSayToggle(screen, true);
   const cont = document.getElementById(screen + '-continue'); if (cont) cont.disabled = false;
+  if (COMIC_DATA[screen]) comicSyncNav(screen);   // inside the comic: unlocks the forward arrow instead
   xapiSend('interacted', 'question', { response: btn.dataset.id }, { category: 'guess' });
 }
 function guessEnter(screen) {
@@ -2121,6 +2438,7 @@ function guessEnter(screen) {
   });
   guessSayToggle(screen, !!picked);
   const cont = document.getElementById(screen + '-continue'); if (cont) cont.disabled = !picked;
+  if (COMIC_DATA[screen]) comicSyncNav(screen);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -2134,13 +2452,16 @@ const MEAS = {
        instruction: 'שלב 1: גררו את כלי השח-מט אל כלי המדידה המתאים.' },
   2: { screen: 22, input: true, instruction: 'שלב 2: מדדו את מפלס המים במשורה כעת והקלידו את נפחו של כלי השח-מט.',
        inputLabel: 'נפח כלי השח-מט (מ"ל):',
-       reveal: 'נפח כלי השח-מט הוא 15 מ"ל. מפלס המים המקורי במשורה היה 50 מ"ל והוא עלה ל-65 מ"ל, ולכן: 65 − 50 = 15.' },
+       /* The formula is an LRI…PDI isolate with no-break spaces — the same one-line LTR unit as
+          .section-result-expr, which textContent cannot carry (QA 2026-10-12). */
+       reveal: 'נפח כלי השח-מט הוא 15\u00A0מ"ל. מפלס המים המקורי במשורה היה 50\u00A0מ"ל והוא עלה ל-65\u00A0מ"ל, ולכן: \u206665\u00A0−\u00A050\u00A0=\u00A015\u2069.' },
   /* Deck slide 36 states the instruction without explaining WHY the cylinder is wrong — naming
      "too big for the cylinder" here would hand over the judgement this step exists to test. */
   3: { screen: 34, obj: true, /* ?v=2 — the file was re-exported under the same name (upright -> lying down), and this
         path is written from JS, so it needs the buster the markup copies carry. */
        objImg: 's22-hammer.svg?v=2', objClass: 'meas-obj-img--hammer', objLabel: 'פטיש', correct: 'bowl',
-       instruction: 'שלב 3: גררו את הפטיש אל כלי המדידה המתאים.' },
+       /* Two lines (QA 2026-10-11): the question naming both methods, then the action in bold. */
+       instructionHtml: 'איך נמדוד נפח של פטיש – בדחיקת מים (במשורה) או בהצפת מים (בקערת הצפה)?<br><strong>גררו את הפטיש אל כלי המדידה המתאים.</strong>' },
   /* `pour` gates the input behind a real action: slide 37 says the level reaches 250 מ"ל "לאחר
      שהלומד שופך את המים לתוך כלי המדידה" — after the LEARNER pours. The target is the graduated
      MEASURING VESSEL (`mv`), not the משורה: slide 36 is explicit that the משורה still reads 65,
@@ -2148,7 +2469,7 @@ const MEAS = {
   4: { screen: 34, input: true, last: true, pour: true, correct: 'mv',
        instruction: 'שלב 4: שפכו את המים מכלי האיסוף אל תוך כלי המדידה והקלידו את נפח הפטיש.',
        inputLabel: 'נפח הפטיש (מ"ל):',
-       reveal: 'המים שנשפכו היו בנפח 250 מ"ל — כלומר נפח הפטיש הוא 250 מ"ל, כי הוא הציף החוצה כמות מים השווה לנפחו!' }
+       reveal: 'המים שנשפכו היו בנפח 250\u00A0מ"ל — כלומר נפח הפטיש הוא 250\u00A0מ"ל, כי הוא הציף החוצה כמות מים השווה לנפחו!' }
 };
 let measStep = 1, measDone = false, measRevealed = false, measPoured = false;
 const measDnd = {};
@@ -2231,11 +2552,21 @@ function measNext() {
   if (MEAS[measStep] && MEAS[measStep].screen !== wasScreen) { goTo(MEAS[measStep].screen); return; }
   measRender();
 }
+/* s34's נסו שוב (QA 2026-10-12): back to step 3 — hammer out of the bowl, tray and measuring vessel
+   empty, answer cleared. Only s34 has the button; steps 1-2 on s22 are not touched. */
+function measReset() {
+  if (MEAS[measStep].screen !== 34) return;
+  measStep = 3; measDone = false; measRevealed = false; measPoured = false;
+  const inp = mEl('input');
+  if (inp) inp.value = '';
+  measRender();
+}
 function measRender() {
   const step = measStep, cfg = MEAS[step];
   const el = function (n) { return mEl(n); };
   if (!el('instruction')) return;              // this half of the applet is not in the DOM
-  el('instruction').textContent = cfg.instruction;
+  if (cfg.instructionHtml) el('instruction').innerHTML = cfg.instructionHtml;
+  else el('instruction').textContent = cfg.instruction;
   const isDrag = !!cfg.obj, isInput = !!cfg.input;
   /* On a pour step the input waits for the pour; on every other input step it is immediate. */
   const inputReady = isInput && (!cfg.pour || measPoured);
@@ -2255,6 +2586,7 @@ function measRender() {
   /* The tray is only grabbable while its pour is still pending. */
   if (el('tray')) el('tray').classList.toggle('is-pourable', awaitingPourFlag(cfg));
   if (el('pour-hint')) el('pour-hint').classList.toggle('hidden', !awaitingPourFlag(cfg));
+  if (el('pour-arrow')) el('pour-arrow').classList.toggle('hidden', !awaitingPourFlag(cfg));
   /* The משורה reads 50 before the king goes in and 65 after — and STAYS at 65 through steps 3-4
      (slide 36 says so). The 250 belongs to the measuring vessel, which only exists on s34. */
   el('cyl-badge').textContent = (step >= 2) ? '65 מ"ל' : '50 מ"ל';
@@ -2269,6 +2601,8 @@ function measRender() {
      bowl sat empty while the משורה still showed the king, so the only object on screen belonged to
      the previous step (QA 2026-08-29). */
   if (el('bowl')) el('bowl').classList.toggle('has-object', step >= 4);
+  /* Offered once the hammer is in the bowl — before that there is nothing to undo. */
+  if (el('reset')) el('reset').classList.toggle('hidden', step < 4);
   const cont = document.getElementById(measScreenId() + '-continue');
   if (cont) cont.disabled = (cfg.screen === 34) ? !measDone : !(step > 2 || measRevealed);
 }
@@ -2305,7 +2639,7 @@ function measEnter() {
 
    Flow order is neither screen order nor DOM order:
      hook          0 → 1 → 2 → 3 → 4
-     acquisition   5 → 6 → 7 ─┬─ comic:       8 → 23 → 24 → 25 → 26 → 27 → 28 ─┐
+     acquisition   5 → 6 → 7 ─┬─ comic:       8 → 24 → 23 → 25 → 26 → 27 → 28 ─┐
                               └─ experiments: 10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31 ─┤
                                                                           merge 12 ←──────┘
      practice      12 → 18 → 19 → 32 → 13 → 14 → 15 → 17 → 16 → (Part 02 or 03)
@@ -2329,8 +2663,8 @@ var SCREEN_TO_SUBCONTENT = {
 
   /* item 02 — comic branch */
   8:  ['02', 4],
-  23: ['02', 5],
-  24: ['02', 6],
+  24: ['02', 5],      // the cube — moved before the guess-Q (QA 2026-10-08); pages follow flow order
+  23: ['02', 6],
   25: ['02', 7],
   26: ['02', 8],
   27: ['02', 9],
@@ -2428,23 +2762,36 @@ function captureResumeInputs() {
    `seen` is an array, so it is sliced rather than referenced.
    `reported` is what stops a resumed panel re-emitting its 'experienced'. */
 function captureComicState() {
+  /* Saved records of comic screens not rebuilt since the reload are carried over as they are —
+     without them the next save would overwrite that progress with nothing. */
+  var o = {};
+  Object.keys(comicPendingRestore).forEach(function (k) { o[k] = comicPendingRestore[k]; });
   return Object.keys(comicState).reduce(function (o, k) {
     var s = comicState[k];
     o[k] = { i: s.i, seen: (s.seen || []).slice(), done: !!s.done, reported: !!s.reported };
     return o;
-  }, {});
+  }, o);
+}
+
+/* A reload builds only the screen it resumes onto. The saved records of every OTHER comic screen
+   wait here until comicBuild() first seeds that screen, which adopts them (QA 2026-10-09: walking
+   back from a resumed s25/s26 found s24/s8/s25 fresh — panels unseen, and 'experienced' re-sent). */
+var comicPendingRestore = {};
+
+function comicCopyRecord(cur, src) {
+  cur.i = src.i;
+  cur.seen = (src.seen || []).slice();
+  cur.done = !!src.done;
+  cur.reported = !!src.reported;
 }
 
 function applyComicState(comic) {
   if (!comic) return;
   Object.keys(comic).forEach(function (k) {
     var cur = comicState[k];
-    if (!cur) return;   // not built yet — comicBuild() seeds it, then the second pass re-applies
-    var src = comic[k];
-    cur.i = src.i;
-    cur.seen = (src.seen || []).slice();
-    cur.done = !!src.done;
-    cur.reported = !!src.reported;
+    if (!cur) { comicPendingRestore[k] = comic[k]; return; }   // adopted by comicBuild()
+    comicCopyRecord(cur, comic[k]);
+    delete comicPendingRestore[k];
   });
 }
 
@@ -2454,7 +2801,7 @@ function captureScqState() {
   return Object.keys(SCQ_REG).reduce(function (o, k) {
     var s = SCQ_REG[k];
     o[k] = { sel: s.sel, attempts: s.attempts, answered: !!s.answered, done: !!s.done,
-             phase: s.phase || null, locked: !!s.locked };
+             phase: s.phase || null, lastWrong: s.lastWrong || null, locked: !!s.locked };
     return o;
   }, {});
 }
@@ -2467,6 +2814,9 @@ function applyScqState(scq) {
     s.sel = scq[k].sel; s.attempts = scq[k].attempts;
     s.answered = !!scq[k].answered; s.done = !!scq[k].done; s.locked = !!scq[k].locked;
     s.phase = scq[k].phase || null;
+    /* Retry gate (2026-10-11). A document written before it has no lastWrong: in the retry phase the
+       judged option is still `sel`; otherwise the gate starts open. No version bump. */
+    s.lastWrong = scq[k].lastWrong !== undefined ? scq[k].lastWrong : (s.phase === 'retry' ? s.sel : null);
   });
 }
 
@@ -2487,7 +2837,9 @@ function captureDdqState() {
     var s = DDQ_REG[k];
     o[k] = { checked: !!s.checked, done: !!s.done, placement: Object.assign({}, s.cfg.placement),
              learnerPlacement: s.learnerPlacement ? Object.assign({}, s.learnerPlacement) : null,
-             correctPlacement: s.correctPlacement ? Object.assign({}, s.correctPlacement) : null };
+             correctPlacement: s.correctPlacement ? Object.assign({}, s.correctPlacement) : null,
+             attempts: s.attempts || 0, phase: s.phase || null,
+             lastWrong: s.lastWrong ? Object.assign({}, s.lastWrong) : null };
     return o;
   }, {});
 }
@@ -2502,6 +2854,11 @@ function applyDdqState(ddq) {
     s.cfg.placement = Object.assign({}, ddq[k].placement);
     s.learnerPlacement = ddq[k].learnerPlacement ? Object.assign({}, ddq[k].learnerPlacement) : null;
     s.correctPlacement = ddq[k].correctPlacement ? Object.assign({}, ddq[k].correctPlacement) : null;
+    /* Two-attempt fields (2026-10-11). A document written before them reads as 0/null — a fresh
+       first attempt, or a resolved board that never looks at them — so no version bump. */
+    s.attempts = ddq[k].attempts || 0;
+    s.phase = ddq[k].phase || null;
+    s.lastWrong = ddq[k].lastWrong ? Object.assign({}, ddq[k].lastWrong) : null;
   });
 }
 
@@ -2654,13 +3011,11 @@ function scqRestoreUI(screen) {
     });
   }
 
-  /* s19 is a dropdown: its trigger carries the verdict rather than the options. */
-  if (s.done) {
-    var trig = document.getElementById(screen + '-dropdown-trigger');
-    if (trig) {
-      trig.classList.remove('correct', 'wrong');
-      trig.classList.add(s.sel === s.cfg.correctId ? 'correct' : 'wrong');
-    }
+  /* s19 is a dropdown: its trigger carries the verdict (and the word) rather than the options.
+     A returning learner arrives on the model answer, as on the matching screens. */
+  if (s.done && document.getElementById(screen + '-dropdown-trigger')) {
+    s.answerView = 'correct';
+    dqSyncView(screen);
   }
 
   if (s.phase) scqShowPopup(screen, s.phase);
@@ -2670,8 +3025,9 @@ function scqRestoreUI(screen) {
      here — a painter that leaves a full screen with a dead button strands the learner. */
   if (!s.done) {
     var chk = document.getElementById(screen + '-scq-check');
-    if (chk) chk.disabled = !s.sel || !!s.locked;
+    if (chk) chk.disabled = !s.sel || !!s.locked || s.sel === s.lastWrong;
   }
+  scqSyncHint(screen);
 }
 
 /* Mirrors ddqCheck's DOM writes, on the same terms as scqRestoreUI.
@@ -2690,7 +3046,7 @@ function ddqRestoreUI(screen) {
      back empty while memory still held the pills — and the check button, computed from placement,
      sat enabled over it. */
   var anyPlaced = s.cfg.items.some(function (it) { return s.cfg.placement[it.id] !== 'source'; });
-  if (!s.checked && !anyPlaced) return;             // pristine — ddqEnter already drew a clean board
+  if (!s.checked && !anyPlaced) { ddqSyncHint(screen); return; }   // empty board — ddqEnter already drew it; a retry still owes the hint
 
   /* The arrival rule, applied on EVERY arrival and in one place: a revisited wrong answer opens on
      the model board, whatever the learner had toggled to before they left. Setting answerView and
@@ -2702,6 +3058,8 @@ function ddqRestoreUI(screen) {
   }
   ddqRender(screen);                                // also re-derives the check button from placement
   if (s.checked) ddqShowPopup(screen, s.learnerPlacement ? 'incorrect' : 'correct');
+  else if (s.phase === 'retry') ddqShowPopup(screen, 'retry');
+  ddqSyncHint(screen);
 }
 
 /* ── xAPI ready hook ──

@@ -165,6 +165,12 @@ It exists because neither can be safely derived:
 
 `s.correctResolved` was written by `scqFinish` and read nowhere. Removed in the same pass.
 
+**`lastWrong` — the retry gate (2026-10-11).** Every two-attempt SCQ (parts 01/02/04, 17 screens) keeps
+the option of its non-final wrong check. צדקתי? stays locked while that option is selected; re-picking
+it is a no-op (marks and popup stay); `scqCheck` refuses it, so no attempt is spent and nothing is
+sent. It travels in the state document; a document without it falls back to `sel` while `phase` is
+`'retry'`, else null.
+
 ### The matching boards — both, and the arrival rule
 
 A wrong matching answer holds two boards at once: the model answer and what the learner actually did.
@@ -186,6 +192,18 @@ gets persisted**. The rule now lives in the painter alone, which runs last.
 back to the source bank and renders that, and the restore that follows puts the learner's drags back
 into `cfg.placement` with nothing left to draw them: the board came back empty while the check button,
 computed from placement, sat enabled over it.
+
+### s17's retry — between two attempts (2026-10-11)
+
+s17 takes two attempts (`maxAttempts: 2`, storyboard 66–70); s18 keeps one. A wrong first check
+resolves nothing — `checked`/`done` stay false and the board stays live — so three fields travel with
+the board: `attempts`, `phase` (`'retry'` while the retry popup is open, cleared by the first change,
+as SCQ's re-pick clears it) and `lastWrong` (the judged board). `lastWrong` drives the per-slot
+verdicts — a slot keeps its mark only while it still holds the item it was judged with — and the gate
+that keeps בדיקה disabled until the board differs from it. `ddqRestoreUI` reopens the retry popup from
+`phase` and re-derives the hint (hidden until the first wrong check, slide 68) through `ddqSyncHint`;
+it sends nothing. A document written before these fields reads them as 0/null: an unsubmitted board
+comes back as a fresh first attempt, a resolved one is unaffected — so no state-version bump.
 
 ---
 

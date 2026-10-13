@@ -39,7 +39,7 @@ Companions: [REPORT-XAPI.md](REPORT-XAPI.md) · [RESUME.md](RESUME.md)
 because whichever router navigated is the one that wrote the edge.
 
 **Screen order is not flow order** anywhere in this unit. Part 01's practice runs 13, 14, 15, **17**, 16;
-part 04's scenario screens 9/10 sit outside the numeric sequence. `advanceScreen()`/`goBack()` are the
+part 04's scenario screen 9 sits between 5 and 6. `advanceScreen()`/`goBack()` are the
 authoritative graph — **no code may assume `currentScreen ± 1`.**
 
 ---

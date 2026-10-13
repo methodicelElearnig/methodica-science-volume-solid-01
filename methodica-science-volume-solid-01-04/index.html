@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · תרגול מתקדם</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=72">
-  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="../unit-css/style.css?v=111">
+  <link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -18,11 +18,12 @@
   <!-- ═══ S0 — intro ═══ -->
   <section class="screen active" data-screen="0" id="s0">
     <div class="transition-content">
-      <h1 class="transition-title">תרגול מתקדם</h1>
-      <p class="transition-sub">כמה שאלות מאתגרות שמשלבות את כל מה שלמדתם על מדידת נפח.</p>
+      <!-- Storyboard slide 113, verbatim: two-line heading, the remark in brackets under it. -->
+      <h1 class="transition-title">זמן ל־5 שאלות מתקדמות<br>ועוד הפתעות מעניינות...</h1>
+      <p class="transition-sub">(זה אומר שעלינו רמה 😊)</p>
     </div>
     <div class="nav-bar"><button class="btn-back" id="back-to-prev-part" onclick="goBackToPrevPart()" hidden>חזרה</button>
-      <button class="btn-continue" id="s0-continue" onclick="advanceScreen()">קדימה</button></div>
+      <button class="btn-continue" id="s0-continue" onclick="advanceScreen()">שנמשיך?</button></div>
   </section>
 
   <!-- 8 practice questions (Q1–Q8). Progress nav injected by JS from a template. -->
@@ -32,7 +33,7 @@
       <!-- Storyboard slide 114, verbatim. Scenario regular over two lines, blank
            line, then the question in bold — the deck's own formatting. -->
       <p class="scq-qtext scq-qtext--mixed">
-        בשיעור מדעים יעל מילאה משורה במים עד 60 מ"ל.<br />היא הכניסה פנימה טבעת כסף וראתה שפני המים עלו ל- 85 מ"ל.<br />
+        בשיעור מדעים יעל מילאה משורה במים עד 60&nbsp;מ"ל.<br />היא הכניסה פנימה טבעת כסף וראתה שפני המים עלו ל- 85&nbsp;מ"ל.<br />
         היא טענה: "הניסוי לא מודד את נפח הטבעת, אלא רק את המים שעלו"<br /><br />
         <b>איך המורה למדעים יסביר ליעל שהניסוי מספק ראיה מדעית תקפה לנפח הטבעת?</b></p>
       <!-- Option ORDER follows the deck (top to bottom on slide 114). Each data-id
@@ -40,7 +41,7 @@
       <div class="scq-answers" id="s1-answers" role="radiogroup" aria-label="הסבר מדעי">
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s1','b')"><span class="scq-opt-text">יעל צודקת. הניסוי מודד רק מים וכדי לקבל ראיה מדעית תקפה לנפח הטבעת חייבים להשתמש בנוסחה מתמטית ולא בניסוי אמפירי</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s1','a')"><span class="scq-opt-text">המים שעלו הם ראיה ישירה לכך שהטבעת תופסת מקום במרחב, ולכן נפח המים שנדחקו מעלה שווה בדיוק לנפח הטבעת</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s1','c')"><span class="scq-opt-text">העלייה של המים ל-85 מ"ל היא רק הערכה כללית, מכיוון שכסף הוא חומר כבד המשנה את תכונות המים ופוגע בדיוק הראיות</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s1','c')"><span class="scq-opt-text">העלייה של המים ל-<span class="nobr">85 מ"ל</span> היא רק הערכה כללית, מכיוון שכסף הוא חומר כבד המשנה את תכונות המים ופוגע בדיוק הראיות</span><span class="scq-radio" aria-hidden="true"></span></button>
         <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s1','d')"><span class="scq-opt-text">הנתונים הנוכחיים אינם מהווים ראיה מדעית תקפה, כל עוד לא חזרו על הניסוי עם נוזלים אחרים כמו שמן או אלכוהול.</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
@@ -57,12 +58,12 @@
       </div>
       <div class="scq-side">
         <p class="scq-qtext scq-qtext--mixed">
-          במפעל אריזת עדשים כתומות רוצים לדעת כמה עדשים להכניס לכל שקית בנפח 500 מ"ל.<br /><br />
+          במפעל אריזת עדשים כתומות רוצים לדעת כמה עדשים להכניס לכל שקית בנפח 500&nbsp;מ"ל.<br /><br />
           <b>איך ניתן למדוד את נפח העדשים?</b></p>
         <div class="scq-answers" id="s2-answers" role="radiogroup" aria-label="איך למדוד נפח עדשים">
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s2','a')"><span class="scq-opt-text">מודדים את העדשים במאזניים וקוראים את המסה בגרמים</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s2','b')"><span class="scq-opt-text">מכניסים את העדשים לכוס מדידה וקוראים את הנפח לפי השנתות</span><span class="scq-radio" aria-hidden="true"></span></button>
-          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s2','c')"><span class="scq-opt-text">סופרים את העדשים אחד – אחד ומחברים את מספרם</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s2','c')"><span class="scq-opt-text">סופרים את העדשים אחד-אחד ומחברים את מספרם</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s2','d')"><span class="scq-opt-text">מודדים בסרגל אורך של עדש אחד ומכפילים באורך השקית</span><span class="scq-radio" aria-hidden="true"></span></button>
         </div>
       </div>
@@ -70,7 +71,7 @@
     <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s2-scq-check" type="button" disabled onclick="scqCheck('s2')">צדקתי?</button><button class="scq-hint" id="s2-scq-hint" type="button" onclick="scqHint('s2')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
   <div class="scq-popup hidden" id="s2-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s2-scq-popup-title"></p></div><div class="scq-popup-body" id="s2-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s2-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s2')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><b>האם צריך למדוד כל עדש בנפרד?</b></p><p>האם ניתן להתייחס לעדשים כמו חומר שנשפך ומקבל את צורת כלי המדידה?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s2')">חזרה לשאלה</button></div></div>
+  <div class="scq-hint-overlay hidden" id="s2-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s2')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><b>האם צריך למדוד כל עדש בנפרד?</b></p><p>האם ניתן להתייחס לעדשים כמו חומר שנשפך<br>ומקבל את צורת כלי המדידה?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s2')">חזרה לשאלה</button></div></div>
 
   <section class="screen" data-screen="3" id="s3">
     <nav class="progress-question" data-count="8"></nav>
@@ -82,7 +83,7 @@
         <p class="scq-qtext scq-qtext--mixed">
           תומר מצא גוש זהב ומדד את הנפח שלו 5 פעמים.<br />
           אלה היו התוצאות שקיבל:<br />
-          23 סמ"ק, 22 סמ"ק, 24 סמ"ק, 23 סמ"ק, 23 סמ"ק.<br /><br />
+          23&nbsp;סמ"ק, 22&nbsp;סמ"ק, 24&nbsp;סמ"ק, 23&nbsp;סמ"ק, 23&nbsp;סמ"ק.<br /><br />
           <b>מה אפשר לומר על מהימנות המדידות?</b></p>
         <div class="scq-answers" id="s3-answers" role="radiogroup" aria-label="מהימנות המדידות">
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s3','a')"><span class="scq-opt-text">המדידות מהימנות כי הן קרובות זו לזו</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -97,25 +98,25 @@
   <div class="scq-popup hidden" id="s3-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s3-scq-popup-title"></p></div><div class="scq-popup-body" id="s3-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s3-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s3')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>מהו טווח הערכים שנמדדו?</strong></p><p>במהימנות גבוהה הערכים קרובים זה לזה.</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s3')">חזרה לשאלה</button></div></div>
 
-  <!-- ═══ S9 — Liyan slime scenario (storyboard slide 129) ═══
-       Sits BETWEEN s3 and s4 in the flow, but keeps the next free id so none of the
-       existing screen ids, popup ids or progress-nav indices have to shift. Order is
-       wired explicitly in goBack()/the s3 onContinue — the same approach part 01 uses
-       for its out-of-sequence screens. Scenario only: no progress nav, no question. -->
-  <section class="screen" data-screen="9" id="s9">
+  <!-- ═══ S11 — Liyan slime scenario (storyboard slide 129) ═══
+       Sits between s3 and s4; id is the next free one and the order lives in the
+       SCENARIOS table in main.js. Scenario only — no question, but it carries the same
+       progress nav as the questions, in the state of the one it introduces (סעיף א).
+       Split back out of s4 on 2026-10-12 (producer): the scenario gets its own page, as in the deck. -->
+  <section class="screen" data-screen="11" id="s11">
     <nav class="progress-question" data-count="8"></nav>
     <div class="scq-question scq-question--withimage">
       <div class="scq-figure">
-        <img src="assets/img/s9-slime-intro.jpg" alt="ליאן מכינה סליים במטבח ומודדת אותו במשורה, לידה קופסאות וצנצנות סליים">
+        <img src="assets/img/s4-slime.jpg" alt="ליאן מכינה סליים במטבח ומודדת אותו במשורה, לידה קופסאות וצנצנות סליים">
       </div>
       <div class="scq-side">
         <p class="scq-qtext scq-qtext--mixed">
-          ליאן מכינה סליים ומוכרת אותו בתוך קופסאות פלסטיק קטנות בנפח 20 סמ"ק כל אחת.<br /><br />
+          ליאן מכינה סליים ומוכרת אותו בתוך קופסאות פלסטיק קטנות בנפח 20&nbsp;סמ"ק כל אחת.<br /><br />
           היא רוצה למדוד נפח של כל חתיכת סליים לפני שהיא מכניסה אותה לקופסה, אבל הסליים כל הזמן צף והמים במשורה לא עולים.</p>
       </div>
     </div>
     <div class="nav-bar">
-      <button class="btn-continue" id="s9-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s11-continue" onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
@@ -124,15 +125,16 @@
     <nav class="progress-question" data-count="8"></nav>
     <div class="scq-question scq-question--withimage">
       <div class="scq-figure">
-        <img src="assets/img/s4-slime.jpg" alt="סליים ירוק צף על פני המים שבתוך משורה">
+        <img src="assets/img/s4-slime.jpg" alt="ליאן מכינה סליים במטבח ומודדת אותו במשורה, לידה קופסאות וצנצנות סליים">
       </div>
       <div class="scq-side">
-        <!-- Storyboard slide 130: only "סעיף א:" is bold, the question is REGULAR.
-             The scenario sentence the unit had here belongs to slide 129, which the
-             deck shows as its own screen before the question. -->
+        <!-- Storyboard slide 130. Liyan's scenario (sb129) is the preceding screen, s11. -->
         <p class="scq-qtext scq-qtext--mixed">
-          <strong>סעיף א:</strong><br />
+          <b class="scq-qtext-part">סעיף א:</b><br />
           איך ליאן יכולה להכניס את הסליים לתוך המים?</p>
+        <!-- Option a reads "ללחוץ עליו", NOT slide 130's "עליה": הסליים is masculine on the same slide
+             ("עד שהסליים ישקע"), so the deck's form is a typo. Kept since 246a9b0; confirmed as a deliberate
+             deviation from the script by QA 2026-10-11, and the catalog follows this wording. -->
         <div class="scq-answers" id="s4-answers" role="radiogroup" aria-label="איך להכניס גוף צף">
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s4','a')"><span class="scq-opt-text">ללחוץ עליו כלפי מטה עם היד בתוך המשורה</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s4','b')"><span class="scq-opt-text">לעטוף משקולת קטנה עם הסליים ולהכניס למשורה</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -155,7 +157,7 @@
       <div class="scq-side">
         <!-- Storyboard slide 135: tag bold, scenario regular, closing question bold. -->
         <p class="scq-qtext scq-qtext--mixed">
-          <strong>סעיף ב:</strong><br />
+          <b class="scq-qtext-part">סעיף ב:</b><br />
           אחרי שהמשקולת והסליים שקעו במשורה ליאן קראה את הנפח שהתקבל.<br /><br />
           <b>איך היא תחשב את נפח הסליים לבדו?</b></p>
         <div class="scq-answers" id="s5-answers" role="radiogroup" aria-label="חישוב נפח הסליים">
@@ -171,11 +173,11 @@
   <div class="scq-popup hidden" id="s5-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s5-scq-popup-title"></p></div><div class="scq-popup-body" id="s5-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s5-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s5')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>מה במשורה?</strong></p><p>מדדנו את המשקולת ואת הסליים ביחד.</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s5')">חזרה לשאלה</button></div></div>
 
-  <!-- ═══ S10 — Gili marbles scenario (storyboard slide 140) ═══
+  <!-- ═══ S9 — Gili marbles scenario (storyboard slide 140) ═══
        Sits between s5 and s6; id is the next free one and the order lives in the
        SCENARIOS table in main.js. Scenario only — no question, but it carries the same
        progress nav as the questions, in the state of the one it introduces (סעיף א). -->
-  <section class="screen" data-screen="10" id="s10">
+  <section class="screen" data-screen="9" id="s9">
     <nav class="progress-question" data-count="8"></nav>
     <div class="scq-question scq-question--withimage">
       <!-- Gili's line lives INSIDE the figure so it can sit beside him on the photograph rather
@@ -189,11 +191,11 @@
         <p class="scq-qtext scq-qtext--mixed">
           גילי מתכנן מסלול מכשולים לגולות.<br />
           כדי לתכנן את אחד המעברים הוא צריך לדעת מה הנפח של גולה.<br /><br />
-          בגלל שהגולות מאוד קטנות הוא חושש שהמדידה שלו לא תהיה מספיק מדויקת.</p>
+          בגלל שהגולות מאוד קטנות הוא חושש שהמדידה שלו לא תהיה<br />מספיק מדויקת.</p>
       </div>
     </div>
     <div class="nav-bar">
-      <button class="btn-continue" id="s10-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s9-continue" onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
@@ -206,17 +208,17 @@
       </div>
       <div class="scq-side">
         <p class="scq-qtext scq-qtext--mixed">
-          <b>סעיף א:</b><br />
-          האם גילי צודק וניתן מבחינה מדעית למדוד 5 גולות ביחד כדי לדעת מה הנפח של אחת מהן?</p>
+          <b class="scq-qtext-part">סעיף א:</b><br />
+          <b>האם גילי צודק וניתן מבחינה מדעית למדוד 5 גולות ביחד<br />כדי לדעת מה הנפח של אחת מהן?</b></p>
         <div class="scq-answers" id="s6-answers" role="radiogroup" aria-label="האם גילי צודק">
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s6','a')"><span class="scq-opt-text">גילי צודק רק אם כל הגולות זהות</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s6','b')"><span class="scq-opt-text">גילי צודק רק אם הגולות שונות זו מזו</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s6','c')"><span class="scq-opt-text">גילי טועה, חייבים למדוד כל גולה בנפרד</span><span class="scq-radio" aria-hidden="true"></span></button>
-          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s6','d')"><span class="scq-opt-text">גילי צודק רק אם מדובר ב- 5 גולות ולא יותר</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s6','d')"><span class="scq-opt-text">גילי צודק רק אם מדובר ב-5 גולות ולא יותר</span><span class="scq-radio" aria-hidden="true"></span></button>
         </div>
       </div>
     </div>
-    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s6-scq-check" type="button" disabled onclick="scqCheck('s6')">המשך</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s6-scq-check" type="button" disabled onclick="scqCheck('s6')">המשך</button><button class="scq-check scq-review-return" type="button" onclick="backToResult()">חזרה למשוב</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
 
   <!-- Q7 — numeric (ValueInputQuestion) -->
@@ -230,9 +232,9 @@
         <!-- Storyboard slide 142: "סעיף ב:" bold, the rest regular. The deck specifies a
              4-option multiple choice here, not a numeric field; options are in its order. -->
         <p class="scq-qtext scq-qtext--mixed">
-          <b>סעיף ב:</b><br />
-          גילי מדד ומצא שהנפח של כל הגולות ביחד הוא 50 סמ"ק.<br />
-          מהו הנפח של גולה אחת בהנחה שכל הגולות זהות בגודלן?</p>
+          <b class="scq-qtext-part">סעיף ב:</b><br />
+          גילי מדד ומצא שהנפח של כל הגולות ביחד הוא 50&nbsp;סמ"ק.<br />
+          <b>מהו הנפח של גולה אחת בהנחה שכל הגולות זהות בגודלן?</b></p>
         <div class="scq-answers" id="s7-answers" role="radiogroup" aria-label="נפח גולה אחת">
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s7','a')"><span class="scq-opt-text">10 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s7','b')"><span class="scq-opt-text">50 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -258,7 +260,7 @@
         בגלל שכל כך התקדמנו, נענה בלי רמזים ונדע אם צדקנו רק בסוף!<br />
         איזה מתח....</p>
     </div>
-    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s7-scq-check" type="button" disabled onclick="scqCheck('s7')">המשך</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s7-scq-check" type="button" disabled onclick="scqCheck('s7')">המשך</button><button class="scq-check scq-review-return" type="button" onclick="backToResult()">חזרה למשוב</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
 
   <section class="screen" data-screen="8" id="s8">
@@ -269,20 +271,20 @@
       </div>
       <div class="scq-side">
         <p class="scq-qtext scq-qtext--mixed">
-          <b>סעיף ג:</b><br />
-          האם השיטה שגילי מודד בה את הגולות תעבוד גם עבור גולות בגדלים שונים?</p>
+          <b class="scq-qtext-part">סעיף ג:</b><br />
+          <b>האם השיטה שגילי מודד בה את הגולות תעבוד גם עבור<br />גולות בגדלים שונים?</b></p>
         <div class="scq-answers" id="s8-answers" role="radiogroup" aria-label="גולות בגדלים שונים">
-          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s8','a')"><span class="scq-opt-text">כן, אפשר להכניס גולות שונות למשורה ולמדוד את הנפח של כל הגולות</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s8','a')"><span class="scq-opt-text">כן, אפשר להכניס גולות שונות למשורה ולמדוד את נפחן הכולל</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s8','b')"><span class="scq-opt-text">לא, כך גילי ידע רק את הנפח הכללי ולא את הנפח של כל גולה</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s8','c')"><span class="scq-opt-text">כן, זה אפשרי אבל רק אם המשורה גדולה מספיק</span><span class="scq-radio" aria-hidden="true"></span></button>
           <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s8','d')"><span class="scq-opt-text">במקרה כזה עדיף להשתמש בשיטת ההצפה</span><span class="scq-radio" aria-hidden="true"></span></button>
         </div>
       </div>
     </div>
-    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s8-scq-check" type="button" disabled onclick="scqCheck('s8')">המשך</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s8-scq-check" type="button" disabled onclick="scqCheck('s8')">המשך</button><button class="scq-check scq-review-return" type="button" onclick="backToResult()">חזרה למשוב</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
 
-  <!-- ═══════════════ S11 — combined result for סעיפים א-ג (storyboard 144/145) ═══════════════
+  <!-- ═══════════════ S10 — combined result for סעיפים א-ג (storyboard 144/145) ═══════════════
        The three marbles סעיפים run without per-question feedback: the companion on slide 141
        promises no hints and results only at the end, and the deck backs that up by giving
        141/142/143 no feedback slides of their own and 144/145 one verdict for all three.
@@ -290,19 +292,19 @@
        for each סעיף — is identical in both, so renderSectionResult() fills it in rather than
        the markup carrying two copies. His reflective line is the .companion-say group down the
        left, so the verdict card keeps the right-hand half to itself. -->
-  <section class="screen" data-screen="11" id="s11">
+  <section class="screen" data-screen="10" id="s10">
     <nav class="progress-question" data-count="8"></nav>
-    <div class="section-result" id="s11-result">
-      <p class="section-result-title" id="s11-result-title"></p>
-      <div class="section-result-body" id="s11-result-body"></div>
+    <div class="section-result" id="s10-result">
+      <p class="section-result-title" id="s10-result-title"></p>
+      <div class="section-result-body" id="s10-result-body"></div>
     </div>
     <div class="companion-say companion-say--left" style="left: 40px; bottom: 84px;">
       <video class="companion" src="assets/img/character-orange-ask.mp4?v=3" aria-hidden="true"
            data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 150px;"></video>
-      <p class="companion-bubble" id="s11-result-bubble" style="--bubble-w: 240px;"></p>
+      <p class="companion-bubble" id="s10-result-bubble" style="--bubble-w: 240px;"></p>
     </div>
     <div class="nav-bar">
-      <button class="btn-continue" id="s11-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s10-continue" onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
@@ -337,14 +339,14 @@
 
 </div><!-- /#app -->
 <script src="../unit-js/10-identity.js?v=2"></script>
-<script src="../unit-js/15-ui.js?v=4"></script>
-<script src="../unit-js/20-xapi.js?v=4"></script>
+<script src="../unit-js/15-ui.js?v=6"></script>
+<script src="../unit-js/20-xapi.js?v=5"></script>
 <script src="../unit-js/25-report.js?v=1"></script>
 <script src="../unit-js/30-nav.js?v=4"></script>
 <script src="../unit-js/40-resume.js?v=1"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
-<script src="../unit-js/60-devbridge.js?v=1"></script>
-<script src="js/main.js?v=29"></script>
-<script src="../unit-js/90-boot.js?v=1"></script>
+<script src="../unit-js/60-devbridge.js?v=2"></script>
+<script src="js/main.js?v=40"></script>
+<script src="../unit-js/90-boot.js?v=3"></script>
 </body>
 </html>

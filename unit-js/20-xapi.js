@@ -42,7 +42,13 @@ function xapiAnswerText(el) {
   var c = el.cloneNode(true);
   var drop = c.querySelectorAll('.scq-info, .scq-tooltip, .opt-tooltip, .peak-opt-info, .img-zoom-btn');
   for (var i = 0; i < drop.length; i++) { drop[i].remove(); }
-  return c.textContent.replace(/\s+/g, ' ').trim();
+  var t = c.textContent.replace(/\s+/g, ' ').trim();
+  /* An option drawn as an AREA (an image hotspot, 02 s5) has no text of its own; its explicit label
+     is its aria-label, the same name a screen reader announces. Without this fallback the response
+     went out empty (2026-10-11). Only consulted when there is no text, so every text option reports
+     exactly what it did before. */
+  if (!t && el.getAttribute) t = (el.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim();
+  return t;
 }
 
 /* Question context: the question's own id plus the id of the ITEM containing it.

@@ -84,8 +84,8 @@ const CHARACTER_SLOTS = {
      was shown the intro animation again. `2num` is a distinct clip, delivered for exactly this
      screen. No `ca`: it is 960x960, and the 16:9 ratio the old slot declared would have letterboxed
      it to 210x118, drawing the mascot at 118px. 210 in both parts so the twin screens match. */
-  s5: { pose: '2num', w: 210, into: 's5-say' },                             /* sb157 */
-  s6: { pose: 'think', w: 200, into: 's6-say' },                             /* sb158 */
+  s5: { pose: '2num', w: 196, into: 's5-say' },                             /* sb157 */
+  s6: { pose: 'think', w: 190, into: 's6-say' },                             /* sb158 */
   /* The closing screen. `w` is documentation only — .peak-end-video sizes the sprite at 100%
      of its own 320px box. No `ca`: the success pair is 960x960 in both colours (the turquoise
      source was 1936x1080 and was re-framed to match; see DEPLOY.md). */
@@ -94,6 +94,8 @@ const CHARACTER_SLOTS = {
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
   if (!screen) return;
+  // Lets a screen's CSS place things per variant where the two poses' artwork differs (s6's think clip).
+  screen.dataset.character = getCharacter();
   const slot = CHARACTER_SLOTS['s' + n];
   // Lets a template reserve room for the sprite instead of being drawn over.
   screen.classList.toggle('has-companion', !!slot);
@@ -136,11 +138,14 @@ const PEAK_RESULT = {
              bubble: 'קחו שנייה לחגוג את ההצלחה. מה הניצחון הקטן שלכם בתרגיל הזה?' },
   partial: { title: 'התשובה אינה נכונה במלואה.<br />הנה התשובות הנכונות.',
              bubble: 'אם תפגשו מחר שאלה דומה, מה יהיה הדבר הראשון שתעשו כדי להצליח?' },
+  /* One row per סעיף, as part 04's SECTION_RESULT: the letter in its own column so every
+     continuation line starts under the text (hanging indent), and a review button inline at the end. */
   body: [
-    '<b>א.</b> נפח הפסלון = נפח המים הסופי פחות נפח המים המקורי = <b>60 סמ"ק</b>.',
-    '<b>ב.</b> בוצעו 3 מדידות כדי <b>לצמצם טעויות מקריות ולקבל קריאה מהימנה</b>. כדאי <b>לדווח על הממוצע</b> = 60 סמ"ק.',
-    '<b>ג.</b> איריס צודקת: שלוש תוצאות המדידה קרובות מאוד זו לזו, מה שמוכיח שהתוצאות יציבות ואינן מקריות.',
-    '<b>ד.</b> המדידה חריגה מאוד וסביר שנפלה בה טעות. <b>יש למדוד מחדש ולא להכליל את הערך 80 בחישוב הסופי</b>.'
+    { letter: 'א.', text: 'נפח הפסלון = נפח המים הסופי פחות נפח המים המקורי = <b>60\u00A0סמ"ק</b>.' },
+    { letter: 'ב.', text: 'בוצעו 3 מדידות כדי <b>לצמצם טעויות מקריות ולקבל קריאה מהימנה</b>.<br />כדאי <b>לדווח על הממוצע</b> = 60\u00A0סמ"ק.' },
+    { letter: 'ג.', text: 'איריס צודקת: שלוש תוצאות המדידה קרובות מאוד זו לזו,<br />מה שמוכיח שהתוצאות יציבות ואינן מקריות.' },
+    /* QA 2026-10-12: forced break after "טעות." */
+    { letter: 'ד.', text: 'המדידה חריגה מאוד וסביר שנפלה בה טעות.<br /><b>יש למדוד מחדש ולא להכליל את הערך 80 בחישוב הסופי</b>.' }
   ]
 };
 /* The title follows the DECK's split (all four right), the screen follows the pass threshold. */
@@ -152,7 +157,13 @@ function renderPeakResult(n) {
   card.classList.toggle('section-result--retry', !allRight);
   document.getElementById('s' + n + '-result-title').innerHTML = v.title;
   document.getElementById('s' + n + '-result-body').innerHTML =
-    PEAK_RESULT.body.map(x => '<p>' + x + '</p>').join('');
+    PEAK_RESULT.body.map((x, i) =>
+      '<div class="section-result-item">' +
+        '<span class="section-result-letter">' + x.letter + '</span>' +
+        '<p class="section-result-text">' + x.text +
+          '<button class="section-result-review" type="button" onclick="reviewPeakPart(' + (i + 1) + ')"' +
+            ' aria-label="צפייה בשאלה ובתשובה שלי, סעיף ' + x.letter.charAt(0) + '">לתשובה שלי</button></p>' +
+      '</div>').join('');
   document.getElementById('s' + n + '-result-bubble').textContent = v.bubble;
 }
 
@@ -165,9 +176,35 @@ function renderPeakResult(n) {
    learner who answered nothing was reported as having PASSED, and being deferred it would have
    escaped both of resume's guards — the sender stub and the _restoring flag are both gone by the
    time a macrotask runs. See RESUME.md risk R1. It now lives in peakFinish(), synchronously. */
+/* ═══ Review mode — a סעיף revisited from the result screen ═══
+   Same contract as part 04's: opens the sub-part with the learner's own (locked) pick painted with
+   its verdict, and swaps the bar for one action, back to the feedback. Remembers WHICH result screen
+   it came from (s5 pass / s6 fail). Not resume state — a reload lands on the plain locked screen. */
+var reviewFrom = null;
+function reviewPeakPart(idx) { reviewFrom = currentScreen; goTo(idx); }
+function backToResult() { const r = reviewFrom; reviewFrom = null; goTo(r || 5); }
+function syncReviewMode(n) {
+  if (!(n >= 1 && n <= PEAK_PARTS)) reviewFrom = null;
+  for (let i = 1; i <= PEAK_PARTS; i++)
+    document.getElementById('s' + i)?.classList.toggle('is-review', reviewFrom !== null && i === n);
+  if (reviewFrom === null || !(n >= 1 && n <= PEAK_PARTS)) return;
+  const picked = peakAnswers[n];
+  document.querySelectorAll('#s' + n + '-opts .peak-opt').forEach(o => {
+    o.classList.remove('correct', 'wrong');
+    if (o.dataset.id === picked) {
+      o.classList.remove('selected');
+      o.classList.add(picked === PEAK_CORRECT[n] ? 'correct' : 'wrong');
+    }
+  });
+}
+
 function resetScreenState(n) {
   renderCompanion(n);
-  if (n >= 1 && n <= PEAK_PARTS) peakEnter(n);
+  if (n >= 1 && n <= PEAK_PARTS) {
+    document.querySelectorAll('#s' + n + '-opts .peak-opt').forEach(o => o.classList.remove('correct', 'wrong'));
+    peakEnter(n);
+  }
+  syncReviewMode(n);
   if (n === 5 || n === 6) {
     renderPeakResult(n);
     const el = document.getElementById('s' + n + '-score');
@@ -185,6 +222,7 @@ document.addEventListener('keydown', e => {
    here twice over (the scenario is screen 7, the endings are 8/9). Walking back into an answered
    sub-part is already safe: the doneQ ledger is what stops a graded answer being reported twice. */
 function goBack() {
+  if (reviewFrom !== null) { backToResult(); return; }
   if (currentScreen === 8) { goTo(5); return; }                    // ending -> the review it came from
   if (currentScreen === 5 || currentScreen === 6) { goTo(PEAK_PARTS); return; }   // review -> last sub-part
   if (currentScreen >= 2 && currentScreen <= PEAK_PARTS) { goTo(currentScreen - 1); return; }

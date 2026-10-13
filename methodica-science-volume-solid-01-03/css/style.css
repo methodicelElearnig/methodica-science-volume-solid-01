@@ -1,16 +1,39 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    css/style.css — 720 Science · Volume of a Solid · component 03 (PART-LOCAL)
 
-   INTENTIONALLY EMPTY — this component needs no CSS of its own.
-
-   Everything it renders comes from ../unit-css/style.css, which index.html loads
-   before this file. What used to be here was dead weight inherited from the
-   mass-measure port: #sN rules for screens this component does not have, #sN-back
-   rules for ids that exist nowhere in the unit, and per-screen
-   `background: #fff` now stated once on .screen in the shared sheet.
-
-   The file is deliberately kept rather than deleted: index.html links it, and the
-   720 publish checklist expects a css/ directory in every component. Add a rule
-   here only if it is genuinely specific to THIS component — anything reusable
-   belongs in the shared sheet.
+   Only the opening transition (S0) needs anything of its own. Everything else —
+   including S1, the task screen — comes from ../unit-css/style.css, which index.html
+   loads before this file. Add a rule here only if it is genuinely specific to THIS
+   component — anything reusable belongs in the shared sheet.
    ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── S0 · class-task opener — same column shape as part 02 s0 ──
+   The pair stays shrink-to-fit inside .transition-content's centred column, which is what centres
+   it (not .companion-say--inline, which packs the pair against one edge). The column spans the
+   band above the bar and the two auto margins split the free height above the copy and between
+   the copy and the pair, so the copy floats in the band while his feet stand on the bar's line. */
+#s0 .transition-content { top: 0; bottom: 74px; transform: translateX(-50%); }
+#s0 .transition-content > .transition-sub:first-child { margin-top: auto; }
+#s0 .companion-say { position: relative; margin-top: auto; }
+/* Type matches the unit's other transition screens (04 s0 title 48 / 01 s12 & 04 s0 sub 24);
+   the shared defaults (34 / 22) read small next to them. */
+#s0 .transition-title { font-size: 48px; }
+#s0 .transition-sub { font-size: 24px; }
+/* 420px box (was 300) — in line with the other transition mascots (02 s7 400, 04 s0 422).
+   Fits at the 710 canvas floor: ~170px of copy + ~350px of visible character in the 636px band.
+   the mp4's baked-in white is keyed out globally (.companion in unit-css). */
+#s0 .companion { width: 420px; }
+/* Empty matte under his feet, as a fraction of the square frame — measured on part 01 (see the
+   #s6 rule there): orange .168, turquoise .124. Keyed on the src renderCompanion() writes. */
+#s0 .companion[src*="orange-stretch"]    { margin-bottom: calc(420px * -0.168); }
+#s0 .companion[src*="turquoise-stretch"] { margin-bottom: calc(420px * -0.124); }
+
+/* Bubble tucked in to speak from his MOUTH (2026-10-12) instead of hanging ~115px off his box.
+   gap 0, then a negative margin pulls the bubble into his 420px box so the beak tip (19px past the
+   bubble) stops ~8px short of the fur; margin-top puts the beak's middle (--tail-y 28 + 13 = 41)
+   at mouth height. Measured on the 960 frame: orange body edge at mouth height ≈ .29, mouth ≈ .46;
+   turquoise body edge ≈ .25, mouth ≈ .44. The bubble precedes the sprite, so the variant is keyed
+   with :has() on the src renderCompanion() writes. */
+#s0 .companion-say { --say-gap: 0px; }
+#s0 .companion-bubble { margin-top: 152px; margin-right: -95px; }
+#s0 .companion-say:has(.companion[src*="turquoise"]) .companion-bubble { margin-top: 144px; margin-right: -78px; }

@@ -170,7 +170,10 @@ html, body {
    Icon = exact Figma PNG; label = live HTML (never baked in).
    ═══════════════════════════════════════════════════════ */
 .flag-btn {
-  position: absolute; top: 16px; left: 16px;
+  /* Figma places the visible 38×38 icon at x 32 / y 32 (720-templates, producer decision 2026-10-06).
+     The box is 88px wide only so the hover label can centre under the icon, so the icon sits
+     (88 − 38) / 2 = 25px into it: left 32 − 25 = 7px puts the ICON on 32/32. Size unchanged. */
+  position: absolute; top: 32px; left: 7px;
   width: 88px;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   background: none; border: none; padding: 0; cursor: pointer;
@@ -208,7 +211,9 @@ html, body {
   cursor: pointer; direction: rtl;
   text-align: center; white-space: nowrap;
 }
-.btn-continue:not(:disabled):hover { font-weight: 600; }
+/* Hover emphasis is a faux-bold text-shadow, never font-weight: a real weight change widens the
+   text and the pill grows on hover. Same rule for every pill button below. */
+.btn-continue:not(:disabled):hover { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; }
 .btn-continue.hidden { display: none !important; }
 /* Disabled state — gray inactive pill (modeled on the reference צדקתי button) */
 .btn-continue:disabled {
@@ -290,9 +295,12 @@ html, body {
    clocks — caught by reasoning from the card's transition list, not by measurement.) */
 .option-card-img video {
   outline: 1px solid #fff; outline-offset: 0;
-  transition: outline-color 0.15s;
+  /* The character mp4s have a baked-in white background, which shows as a white box on the
+     Subject/100 selected fill. multiply makes white transparent against the card, so the mascot
+     sits directly on the card colour. The white outline above multiplies to nothing as well, so
+     it keeps hiding the compositing seam in both states without a per-state colour. */
+  mix-blend-mode: multiply;
 }
-.option-card.selected .option-card-img video { outline-color: var(--subject-100); }
 /* Hover + keyboard-focus — Figma ImageContainer state=hover: Subject/500 border */
 .option-card:hover .option-card-img,
 .option-card:focus-visible .option-card-img { border-color: var(--subject-500); }
@@ -403,11 +411,15 @@ html, body {
   font-family: 'Assistant', sans-serif;
   overflow: visible;
 }
+/* A number and its unit never split across lines (720 _question-template-defaults). Used inside
+   answer options, where the reported text must stay byte-identical, instead of an NBSP. */
+.nobr { white-space: nowrap; }
 .scq-opt-text {
   flex: 1; text-align: right;
-  /* 24px — the one question type size, shared with the title and the stem. This rule
-     governs almost every answer option in the unit (pills, guess, peak, hotspot). */
-  font-size: 24px; font-weight: 400; color: #222; line-height: 1.1;
+  /* 22px Regular in every state — 720 typography "text size by surface": answer capsule 22,
+     canvas/stem 24 (QA 2026-10-09, was 24). This rule governs almost every answer option in
+     the unit (pills, guess, peak, hotspot). */
+  font-size: 22px; font-weight: 400; color: #222; line-height: 1.1;
 }
 .scq-opt:focus-visible { outline: 2px solid var(--subject-700); outline-offset: 2px; }
 .scq-opt:disabled { cursor: default; }
@@ -594,7 +606,7 @@ html, body {
   background: var(--cta-gradient);
   color: #fff; cursor: pointer;
 }
-.scq-check:not(:disabled):hover { font-weight: 600; }
+.scq-check:not(:disabled):hover { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; }
 
 .scq-hint {
   display: flex; align-items: center; gap: 6px; justify-content: center;
@@ -607,7 +619,7 @@ html, body {
 /* Figma 196:6024 — bulb icon sits to the RIGHT of the text (first flex item in RTL) */
 .scq-hint .scq-hint-ico { width: 26px; height: 22.3px; order: -1; }
 /* Figma 1645:18704 — hint hover: text goes SemiBold, border/colors unchanged */
-.scq-hint:hover:not(:disabled) { font-weight: 600; }
+.scq-hint:hover:not(:disabled) { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; }
 .scq-hint:disabled { border-color: #aeaeae; color: #aeaeae; cursor: default; }
 /* Figma 196:6021 — disabled bulb is solid #aeaeae (black → invert 68.2% = rgb(174,174,174)) */
 .scq-hint:disabled .scq-hint-ico { filter: brightness(0) invert(0.682); }
@@ -621,7 +633,7 @@ html, body {
   font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400;
   cursor: pointer; direction: rtl;
 }
-.scq-back:hover { font-weight: 600; border-width: 1.5px; } /* Figma 230:4050 */
+.scq-back:hover { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; box-shadow: inset 0 0 0 0.5px var(--subject-700); } /* Figma 230:4050 */
 
 /* ── Hint popup (modal) ── */
 .scq-hint-overlay {
@@ -637,12 +649,12 @@ html, body {
   width: 546px; max-width: 92%;
 }
 .scq-hint-content {
-  display: flex; flex-direction: column; gap: 24px; align-items: flex-end;
+  display: flex; flex-direction: column; gap: 24px; align-items: stretch;
   width: 462px; max-width: 100%; direction: rtl;
 }
 .scq-hint-text {
-  flex: 1; min-width: 0; direction: rtl;
-  display: flex; flex-direction: column; gap: 24px; align-items: flex-end;
+  width: 100%; min-width: 0; direction: rtl;
+  display: flex; flex-direction: column; gap: 24px; align-items: flex-start;
   color: #fff;
 }
 .scq-hint-title {
@@ -1945,54 +1957,62 @@ html, body {
   display: none !important;
 }
 
+/* Shared popup backdrop (720-design-guidelines, shared-visual-vocabulary): #FFF at 80%, no blur. */
 .img-zoom-modal__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.8);
 }
 
-/* No fixed width/height: openImageZoom() (unit-js/15-ui.js) sets an explicit px size on
-   the clone itself, computed from the real photo's aspect ratio and the current canvas
-   size (~75% of whichever axis is tighter). An absolutely-positioned element with no
-   width/height already shrink-wraps to its content, so the panel just hugs whatever size
-   the clone ends up — never a fixed square regardless of the photo's real proportions. */
+/* Image Zoom Surface (720-design-guidelines, components-icons-states): #FFF, radius 24, no stroke,
+   NO shadow, clips its contents, 64px padding on all four sides (2026-10-05). It has no size of its
+   own — it hugs the stage, which openImageZoom() (unit-js/15-ui.js) sizes to the media's aspect ratio
+   within the 1200x640 envelope (media at most 1072x512). */
 .img-zoom-modal__panel {
   position: absolute;
   inset: 50% auto auto 50%;
   transform: translate(-50%, -50%);
   background: #fff;
   border-radius: 24px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+  padding: 64px;
+  box-shadow: none;
   overflow: hidden;
 }
 
+/* The Media viewport: radius 16, clips, no stroke, no shadow. The clone inside is the frame at its
+   authored layout size, enlarged by one transform from its top-left corner — so it is placed
+   absolutely, not flex-centred (a transform does not change the box flex would centre). */
 .img-zoom-modal__stage {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 16px;
   overflow: hidden;
 }
 
-/* The enlarged view is a clone of the image wrapper (image + overlays like .hook-eureka),
-   sized by openImageZoom() rather than a fixed box + transform:scale(). Speech bubbles
-   live outside the wrapper, so they are excluded. */
 .img-zoom-modal__stage > .img-zoom-clone {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  max-width: none;
+  max-height: none;
   flex: none;
+  transform-origin: 0 0;
   border: none;
-}
-.img-zoom-modal__stage > .img-zoom-clone img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  border-radius: 0;
+  box-shadow: none;
 }
 
+/* Close (Blue) — 40x40 at 16/16 from the surface's physical top-left; its centre (36,36) clears the
+   media's corner (64,64) by ~20px diagonally, which is what the 64 padding is for. Appearance is
+   the build's existing Close treatment (white, 2px Subject/500 ring, Subject/500 X; inverted on
+   hover) with the 15x15 X exported from the component; only the footprint changed from 44. */
 .img-zoom-modal__close {
   position: absolute;
   top: 16px;
   left: 16px;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: 2px solid var(--subject-500);
   border-radius: 50%;
   background: #fff;
@@ -2371,7 +2391,7 @@ html, body {
   cursor: pointer;
 }
 
-.s13-continue:not(.disabled):hover { font-weight: 600; }
+.s13-continue:not(.disabled):hover { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; }
 
 /* ═══════════════════════════════════════════════════════════
    S14 — Q3 Practice SingleChoice (text-only, no image column)
@@ -2830,9 +2850,9 @@ html, body {
   border-radius: 1000px;
   font-family: 'Assistant', sans-serif;
   font-size: 20px; font-weight: 400;
-  cursor: pointer; transition: font-weight 0.1s;
+  cursor: pointer; transition: text-shadow 0.1s;
 }
-.btn-back:hover { font-weight: 600; }
+.btn-back:hover { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; }
 
 /* ═══════════════════════════════════════════════════════
    PLACEHOLDER — companion character slot (S0).
@@ -2937,9 +2957,9 @@ html, body {
   /* 20px. Shared component: .meas-confirm on the applet screens is the same class
      and only override min-width, so they take this size too — checked, they still fit. */
   font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400;
-  cursor: pointer; transition: font-weight 0.1s;
+  cursor: pointer; transition: text-shadow 0.1s;
 }
-.btn-hint-primary:not(:disabled):hover { font-weight: 600; }
+.btn-hint-primary:not(:disabled):hover { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; }
 .btn-hint-primary:disabled { background: #AEAEAE; color: #303030; cursor: not-allowed; }
 
 /* Eureka burst — a speech bubble pointing at Archimedes IN THE PHOTO (S6), not at a
@@ -2950,8 +2970,11 @@ html, body {
    a % offset scales with the frame at any size. Same white/subject-500/beak language as
    .companion-bubble, but the beak points straight down (position does the aiming) since
    this tag isn't paired with a sprite to lean toward sideways. */
+/* 2026-10-08: photo replaced — Archimedes now sits right of centre with his arm (and the crown)
+   raised over the left half, so the bubble moved to the bare wall RIGHT of his face and the beak
+   flipped to point LEFT at him. top 28% centres the 76px bubble on his face (~40% down). */
 .hook-eureka {
-  position: absolute; top: 6%; left: 33%;
+  position: absolute; top: 28%; left: 68%;
   background: var(--pure-white); color: var(--subject-900);
   border: 3px solid var(--subject-500);
   font-family: 'Assistant', sans-serif; font-size: 22px;
@@ -2960,8 +2983,8 @@ html, body {
   box-shadow: 0 3px 10px rgba(0,0,0,0.18);
   z-index: 4;
 }
-/* The beak points RIGHT, at Archimedes: the bubble sits at left 33% and he is just past its
-   right edge, so the tail this replaced -- centred underneath and pointing straight DOWN --
+/* (Superseded 2026-10-08: the beak now points LEFT — see above.) The beak points RIGHT, at
+   Archimedes: the bubble sits at left 33% and he is just past its right edge, so the tail this replaced -- centred underneath and pointing straight DOWN --
    aimed at the bath rather than at the man saying the line. Same two-triangle construction as
    .companion-say--right's, and `top: 50%` keeps it inside the straight run of the edge
    (16..60 of a 76px bubble) rather than in a rounded corner. */
@@ -2970,8 +2993,8 @@ html, body {
   content: ''; position: absolute; top: 50%; transform: translateY(-50%);
   border-top: 13px solid transparent; border-bottom: 13px solid transparent;
 }
-.hook-eureka::before { right: -19px; border-left: 19px solid var(--subject-500); }
-.hook-eureka::after  { right: -15px; border-left: 19px solid var(--pure-white); }
+.hook-eureka::before { left: -19px; border-right: 19px solid var(--subject-500); }
+.hook-eureka::after  { left: -15px; border-right: 19px solid var(--pure-white); }
 
 /* ═══════════════════════════════════════════════════════
    TEMPLATE — SingleChoiceQuestionImage (S4, mark-for-feedback)
@@ -3052,10 +3075,10 @@ html, body {
 .path-card { width: 300px; }
 .path-card-label {
   font-family: 'Assistant', sans-serif;
-  font-size: 24px; font-weight: 700; color: var(--subject-900);
+  font-size: 24px; font-weight: 400; color: var(--subject-900);
   text-align: center;
 }
-.path-card.selected .path-card-label { color: var(--subject-700); }
+.path-card.selected .path-card-label { color: var(--subject-700); font-weight: 700; }
 
 /* ═══════════════════════════════════════════════════════
    COMPONENT — Learning-path toggle (position-locked).
@@ -3177,7 +3200,7 @@ html, body {
 }
 #disp-marble.dragging { cursor: grabbing; }
 #disp-marble.placed { opacity: 0; pointer-events: none; }
-.disp-drag-hint { font-family: 'Assistant', sans-serif; font-size: 15px; color: #8a97a3; margin: 0; }
+.disp-drag-hint { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 600; color: #303030; margin: 0; white-space: nowrap; }
 /* Both of the applet's transient bits hide by VISIBILITY, never by leaving the flow. The stage is a
    centred row inside a centred column, so anything that changes size mid-interaction re-centres the
    cylinder under the learner's hand: emptying the hint narrowed .disp-marble-zone by 19px and slid
@@ -3194,14 +3217,14 @@ html, body {
 .disp-reset {
   margin-top: 4px; padding: 8px 22px; background: #fff; color: var(--subject-700);
   border: 1px solid var(--subject-700); border-radius: 1000px;
-  font-family: 'Assistant', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer;
+  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 600; cursor: pointer;
 }
 
 /* ═══════════════════════════════════════════════════════
    TEMPLATE — SingleChoiceQuestion (generic, reusable)
    Option pills, check/hint bar, draggable feedback popup, hint overlay.
    ═══════════════════════════════════════════════════════ */
-.scq-locknote { font-family: 'Assistant', sans-serif; font-size: 15px; color: #6a7683; text-align: right; direction: rtl; margin-top: 4px; }
+.scq-locknote { font-family: 'Assistant', sans-serif; font-size: 20px; color: #4a5562; text-align: right; direction: rtl; margin-top: 4px; }
 .scq-locknote.hidden { display: none !important; }
 
 /* Bottom action bar — .scq-check / .scq-hint / .scq-hint-ico are DEFINED ONCE, near the
@@ -3223,12 +3246,15 @@ html, body {
   background: #edf8ed; border-radius: 16px; box-shadow: 0 8px 26px rgba(0,32,96,0.22);
   direction: rtl; text-align: right; overflow: hidden;
 }
+/* s19: "לנפח הגוף." used to drop to a line of its own; at 560px the explanation's second sentence
+   fits on one line and the popup is a line shorter (QA 2026-10-12). Still under the 46% cap. */
+#s19-scq-popup { width: 560px; }
 .scq-popup-header { display: flex; align-items: flex-start; gap: 8px; padding: 12px 16px 4px; cursor: grab; touch-action: none; }
 .scq-popup-header:active { cursor: grabbing; }
 /* The ✕ that used to sit here is gone from the markup in all 19 places (QA 2026-08-25, slide 26:
    feedback popups close on advance, not by dismissal), so its rule went with it. The popup is still
    draggable by its header. */
-.scq-popup-title { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 800; color: #1c3a2a; }
+.scq-popup-title { font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 700; color: #1c3a2a; }   /* Bold 20 (720 feedback typography; was 800) */
 .scq-popup-body { padding: 0 16px 14px; }
 /* 17px here was shadowing the 20px rule earlier in this sheet; QA 2026-08-25 (slide 26) sets ALL
    feedback text at 20px, so the two now agree. */
@@ -3273,7 +3299,7 @@ html, body {
    moved by `transform`, stayed put. The learner's alignment was destroyed by the act of succeeding.
    Hence a FIXED width (not max-width) and a min-height covering both lines; aqMeasure() hides the
    hint with .is-spent (visibility) instead of clearing textContent, so the box survives either way. */
-.aq-ruler-hint { font-family: 'Assistant', sans-serif; font-size: 14px; color: #8a97a3; margin: 0; width: 120px; min-height: 37px; text-align: center; }
+.aq-ruler-hint { font-family: 'Assistant', sans-serif; font-size: 20px; color: #4a5562; margin: 0; width: 140px; min-height: 52px; text-align: center; }
 .aq-ruler-hint.is-spent { visibility: hidden; }
 
 .aq-side {
@@ -3355,12 +3381,20 @@ html, body {
   position: absolute; left: 50%; top: calc(50% - 37px); transform: translate(-50%, -50%);
   width: 760px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;
 }
-.transition-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: var(--subject-500); }
+.transition-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: #303030; }
 .transition-sub { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 400; color: #303030; line-height: 1.5; }
+/* Rules screens (01 s32, 02 s0 — 2026-10-10). Their lead-in and closing lines take the TransitionScreen
+   role token Body / B-1, 28 Regular, which every centred variant (A, B, C) shares; 22 was the generic
+   default above. The count lines keep the sizes QA set on each screen (40 / 48). */
+.transition-content--rules .transition-sub { font-size: 28px; }
+/* Compact flexible spacing — TransitionScreen "Vertical fit at the canvas floor", step 2 — for a column
+   that holds the mascot too (02 s0): at 28px the 16px gap pushed the first line to y 12 at the 710
+   canvas minimum; at 4px it starts at y 20 and the mascot ends 18px above the bar. */
+.transition-content--compact { gap: 4px; }
 
 /* Text-only SingleChoiceQuestion layout (practice questions) */
 .scq-question--textonly {
-  position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%);
+  position: absolute; right: 40px; left: auto; top: calc(50% - 20px); transform: translateY(-50%);
   width: 760px; display: flex; flex-direction: column; align-items: stretch; gap: 20px;
 }
 /* `display: block` for the same reason as the --withimage block below — see the note there. */
@@ -3396,7 +3430,7 @@ html, body {
    defines .ddq-target/.ddq-target-label/.ddq-source with a different layout;
    a distinct prefix avoids the collision. */
 .dnd-question {
-  position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%);
+  position: absolute; right: 40px; left: auto; top: calc(50% - 20px); transform: translateY(-50%);
   width: 860px; display: flex; flex-direction: column; align-items: stretch; gap: 20px;
 }
 /* QA 2026-08-25 (slides 21, 28): the base .scq-qtext is `position: absolute; right:0; top:0`,
@@ -3476,7 +3510,7 @@ html, body {
    rules are gone. The rest of the family is live in parts 01 and 02.
    ═══════════════════════════════════════════════════════ */
 .hotspot-question {
-  position: absolute; left: 50%; top: calc(50% - 16px); transform: translate(-50%, -50%);
+  position: absolute; right: 40px; left: auto; top: calc(50% - 16px); transform: translateY(-50%);
   width: 820px; display: flex; flex-direction: column; align-items: center; gap: 18px;
 }
 /* QA 2026-08-25 (slide 27): same absolute-stem defect as .dnd-question above — the stem drew over
@@ -3499,7 +3533,7 @@ html, body {
    TEMPLATE — DropdownQuestion (S19). Inline word-menu; reuses SCQ.
    ═══════════════════════════════════════════════════════ */
 .dq-question {
-  position: absolute; left: 50%; top: calc(50% - 24px); transform: translate(-50%, -50%);
+  position: absolute; right: 40px; left: auto; top: calc(50% - 24px); transform: translateY(-50%);
   width: 760px; display: flex; flex-direction: column; align-items: center; gap: 18px;
 }
 .dq-question .scq-qtext { display: block; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: right; line-height: 2.2; }
@@ -3520,10 +3554,13 @@ html, body {
   min-height: 40px; white-space: nowrap;   /* S19's "בחרו מילה" placeholder wraps to two lines at 24px otherwise */
   position: relative; display: inline-flex; align-items: center; vertical-align: middle;
   background: #fff; border: 2px solid var(--subject-500); border-radius: 10px; padding: 0 4px 4px 8px;
-  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-700); cursor: pointer;
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030; cursor: pointer;   /* black, also after a wrong pick (QA 2026-10-11); regular weight, not bold, once picked (QA 2026-10-12) */
 }
-.dropdown-trigger.correct { border-color: #2e9b57; color: #1c5b32; background: #edf8ed; }
-.dropdown-trigger.wrong { border-color: #d64550; color: #8a2b32; background: #ffe3e5; }
+.dropdown-trigger.correct { border-color: #2e9b57; color: #303030; background: #edf8ed; }   /* word stays black; frame + fill flag it (QA 2026-10-12) */
+/* Wrong: the frame and fill flag it; the chosen word itself stays black (QA 2026-10-11). */
+.dropdown-trigger.wrong { border-color: #d64550; color: #303030; background: #ffe3e5; }
+/* "בחרו מילה" placeholder — plain black, not bold, until a word is picked (QA 2026-10-11). */
+.dropdown-trigger.is-placeholder { color: #303030; font-weight: 400; }
 .dropdown-caret { position: absolute; left: 2px; top: 50%; transform: translateY(-50%); font-size: 24px; }
 .dropdown-list {
   position: absolute; top: 100%; right: 0; margin-top: 6px; z-index: 20;
@@ -3537,16 +3574,20 @@ html, body {
   font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030; cursor: pointer;
 }
 .dropdown-opt:hover { background: var(--subject-100); border: none; }
-.dropdown-opt.selected { background: var(--subject-100); font-weight: 700; }
+.dropdown-opt.selected { background: var(--subject-100); font-weight: 600; }   /* SemiBold (QA 2026-10-12) */
 .dropdown-opt.correct { background: #edf8ed; color: #1c5b32; }
-.dropdown-opt.wrong { background: #ffe3e5; color: #8a2b32; }
+.dropdown-opt.wrong { background: #ffe3e5; color: #303030; }
 
 /* ═══════════════════════════════════════════════════════
    TEMPLATE — FlipCardsReveal (S20). Click a card to flip (3D).
    ═══════════════════════════════════════════════════════ */
 .flip-grid { display: flex; gap: 26px; justify-content: center; align-items: stretch; margin-top: 8px; }
-.flip-card { width: 260px; height: 300px; perspective: 1000px; background: none; border: none; padding: 0; cursor: pointer; }
-.flip-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s cubic-bezier(.4,0,.2,1); transform-style: preserve-3d; display: block; }
+/* The button is a column: the 260x300 flipping face, then the card's title UNDER it (QA 2026-10-12 —
+   the title moved off the back face so it reads before and after the flip). The caption sits inside
+   the button so clicking it flips the card too, and it becomes part of the button's accessible name. */
+.flip-card { width: 260px; perspective: 1000px; background: none; border: none; padding: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.flip-caption { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-500); line-height: 1.3; text-align: center; direction: rtl; }
+.flip-inner { position: relative; width: 100%; height: 300px; flex: 0 0 auto; transition: transform 0.5s cubic-bezier(.4,0,.2,1); transform-style: preserve-3d; display: block; }
 .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
 .flip-front, .flip-back { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 16px; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
 .flip-front .char-slot { width: 100%; height: 100%; aspect-ratio: auto; }
@@ -3559,10 +3600,13 @@ html, body {
 }
 .flip-back {
   transform: rotateY(180deg); background: var(--subject-100); border: 2px solid var(--subject-500);
-  flex-direction: column; gap: 10px; text-align: center; direction: rtl;
-  font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 400; color: #234a2c; line-height: 1.45;
+  flex-direction: column; text-align: right; direction: rtl;
 }
-.flip-back strong { font-size: 21px; font-weight: 800; color: var(--subject-500); display: block; }
+/* Back-face body: right-aligned, the FlipCardsReveal template's Assistant 22/29 #222. */
+.flip-back-text {
+  width: 100%; text-align: right;
+  font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 400; color: #222; line-height: 29px;
+}
 
 /* ═══════════════════════════════════════════════════════
    COMPONENT — Guess-question (no feedback, S21)
@@ -3667,7 +3711,15 @@ html, body {
 /* .meas-next went with the applet's own "המשך לשלב הבא" (QA 2026-08-29) — the bar's המשך carries
    the step-to-step move now, through advanceScreen(). */
 .meas-confirm { min-width: 120px; }
-/* #meas-reveal is a .companion-bubble in a .companion-say group, not a member of .meas-side. */
+/* #meas-reveal is a rectangular text popup pinned to the free left band, not a member of .meas-side
+   (QA 2026-10-12: replaced the mascot + speech bubble). */
+.meas-reveal-pop {
+  position: absolute; left: 40px; bottom: 100px; z-index: 10; width: 360px; margin: 0;
+  background: var(--pure-white); border: 3px solid var(--subject-500); border-radius: 12px;
+  padding: 14px 20px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400; color: #303030;
+  line-height: 1.35; direction: rtl; text-align: right;
+}
 
 /* ═══ Class task (Part 03) ═══ */
 .task-content {
@@ -3683,7 +3735,7 @@ html, body {
 .task-intro { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030; line-height: 1.5; text-align: right; }
 .task-list { list-style: decimal; padding-inline-start: 26px; display: flex; flex-direction: column; gap: 12px; }
 .task-list li { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: #303030; line-height: 1.5; }
-.task-note { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: var(--subject-700); background: var(--subject-100); border-radius: 12px; padding: 12px 18px; text-align: center; }
+.task-note { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 500; color: var(--subject-700); background: var(--subject-100); border-radius: 12px; padding: 12px 18px; text-align: right; }
 
 /* ═══ Multi-part question tag ═══
    The ValueInputQuestion rules (.viq-input-row / .viq-input / .viq-unit) lived here.
@@ -3725,7 +3777,7 @@ html, body {
 }
 .peak-scenario-list {
   direction: rtl; text-align: right; padding-right: 24px;
-  font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 400; color: #303030;
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030;   /* 24, Body / B-4 like the paragraph above it (QA 2026-10-12) */
   line-height: 1.5;
 }
 /* The reset at the top of this sheet zeroes list padding and would leave the markers outside the
@@ -3741,7 +3793,7 @@ html, body {
    block drift down as the window got taller — the taller the browser, the bigger the empty band
    above the question. A fixed 120px puts every sub-part in the same place at every window size.
    translateX only: translate(-50%, -50%) would pull it 50% of its own height back up. */
-.peak-question { position: absolute; left: 50%; top: 120px; transform: translateX(-50%); width: 820px; display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
+.peak-question { position: absolute; right: 40px; left: auto; top: 120px; transform: none; width: 820px; display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
 /* The sub-part title is no longer an element of its own. .peak-step — first a Subject/100 pill,
    then a plain bold line — is gone, because the storyboard writes the title INSIDE the stem:
    `סעיף א:` bold on its own line with the question beneath it in regular weight. That is exactly
@@ -3814,13 +3866,14 @@ html, body {
    this file still carries right:40px from the inherited mass-measure block.
    With a RTL containing block an over-constrained left/right/width resolves in
    favour of right, which was silently pushing every text-only question 160px
-   off centre. Clearing right lets left:50% + translateX(-50%) actually centre. */
-.scq-question--textonly,
-.scq-question--withimage { right: auto; }
+   off centre. Clearing right lets left:50% + translateX(-50%) actually centre.
+   2026-10-12 (producer, all questions): no question block is centred any more. Every question
+   container hangs from the Figma 40px right gutter (720 UI Templates 196:3307: block x 40..1240),
+   and a layout with an image spans both gutters so the photo sits large against the LEFT one. */
 
 .scq-question--withimage {
-  position: absolute; left: 50%; top: calc(50% - 20px); transform: translate(-50%, -50%);
-  width: 1140px; height: auto;
+  position: absolute; left: 40px; right: 40px; top: calc(50% - 20px); transform: translateY(-50%);
+  width: auto; height: auto;
   display: flex; flex-direction: row; align-items: center; justify-content: flex-end;
   gap: 28px; direction: ltr;
 }
@@ -3896,9 +3949,22 @@ html, body {
   overflow: hidden; background: #fff;
 }
 .scq-figure > img { width: 100%; height: auto; display: block; }
+/* Image-beside-question layouts: the photo is the large left column (560 of the 1200px block,
+   leaving the 604px answer column + gap on the right). An inline `width` still wins per screen. */
+.scq-question--withimage > .scq-figure,
+.dq-question--withimage > .scq-figure { width: 560px; }
 /* Fixed-ratio variant — the source is cropped to the frame (object-fit: cover) */
 .scq-figure--square { aspect-ratio: 1; }
 .scq-figure--square > img { height: 100%; object-fit: cover; }
+/* Photo in a flex row beside an options column (guess rows — part 01 s21, s29): a wide photo at its
+   natural ratio came out shorter than the four options (164–176 vs 220px). It now takes the row's
+   remaining width and stretches to the options' height; object-fit: cover trims the sides only by
+   what that width can't supply. A figure TALLER than the options (s23's crown) is not a sibling of
+   the options column, so it is untouched. (QA 2026-10-12) */
+:is(.guess-options, .scq-answers) ~ .scq-figure {
+  flex: 1 1 0; width: auto; min-width: 0; align-self: stretch; margin: 0;
+}
+:is(.guess-options, .scq-answers) ~ .scq-figure > img { height: 100%; object-fit: cover; }
 /* Caption pill — storyboard slide 99 labels its two photos */
 .scq-figure__label {
   position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
@@ -4022,14 +4088,17 @@ html, body {
 .dnd-question--columns .dnd-pill-img { width: 100%; height: 58px; object-fit: contain; }
 
 /* ── Image beside the cloze sentence (S19) ────────────────── */
+/* Large image on the left; every text line and the word menu share one right edge — the
+   title's — instead of being centred line by line (QA 2026-10-11). */
 .dq-question--withimage {
-  width: 1060px; flex-direction: row; align-items: center; justify-content: flex-end;
-  gap: 28px; direction: ltr;
+  left: 40px; width: auto; flex-direction: row; align-items: center; justify-content: flex-end;
+  gap: 40px; direction: ltr;
 }
 .dq-question--withimage > .dq-side {
   flex: 1 1 auto; min-width: 0; direction: rtl;
-  display: flex; flex-direction: column; align-items: center; gap: 18px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 18px; text-align: right;
 }
+.dq-question--withimage .dropdown--block { align-self: flex-start; }
 
 /* ── Image beside the peak-assessment intro (parts 05/06) ─── */
 .peak-intro--withimage {
@@ -4044,12 +4113,13 @@ html, body {
 /* Peak-assessment question with the scenario photo beside it (parts 05/06).
    .peak-question is a centred column; this flips it to the same ltr row +
    rtl inner column as .scq-question--withimage. */
-/* 1180px centred leaves 50px each side of the 1280 canvas, which is where the bubble's left edge
+/* (2026-10-12: now spans the 40px gutters on both sides instead of a centred 1180px.)
+   1180px centred leaves 50px each side of the 1280 canvas, which is where the bubble's left edge
    sits. Held at 1180 when the companion column shrank to 578: the freed 96px goes to the question
    column (478 → 574) rather than to the margins, so the bubble does not move and the stem gains
    room. align-items: flex-start so both columns hang from the same 120px top edge. */
 .peak-question--withimage {
-  width: 1180px; flex-direction: row; align-items: flex-start; justify-content: flex-end;
+  left: 40px; width: auto; flex-direction: row; align-items: flex-start; justify-content: flex-end;
   gap: 28px; direction: ltr;
 }
 .peak-question--withimage > .peak-side {
@@ -4100,7 +4170,7 @@ html, body {
 .steps-list {
   margin: 0; padding-inline-start: 26px; max-width: 520px;
   direction: rtl; text-align: right;
-  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400;
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400;   /* 24, Body / B-4 (QA 2026-10-12) */
   color: #303030; line-height: 1.5;
 }
 .steps-list li { margin-bottom: 10px; }
@@ -4165,6 +4235,10 @@ html, body {
      it, and white because every .screen behind a sprite is #fff. The 1px it covers is the sprite's
      own white margin, so no artwork is lost. */
   outline: 1px solid #fff; outline-offset: -1px;
+  /* Keys out the mp4s' baked-in white (and the white outline above with it), so a mascot overlapping
+     a photo shows no white box and no photo through his fur. Filter injected by injectMascotKey()
+     in 15-ui.js. Replaces the per-screen mix-blend-mode: multiply. */
+  filter: url(#mascot-white-key);
 }
 .companion--center { left: 50%; transform: translateX(-50%); }
 
@@ -4204,7 +4278,35 @@ html, body {
 /* The deck writes the division as "50 : 5 = 10". Digits are LTR but the colon and the
    equals sign are bidi-neutral, so inside this RTL paragraph they would resolve to the
    paragraph direction and the expression would read back to front. Isolate it. */
-.section-result-expr { unicode-bidi: isolate; direction: ltr; }
+/* A formula is one LTR unit that never breaks across lines (QA 2026-10-12). Every one in the unit is
+   short (≤ 22 characters), so nowrap cannot push a popup line past its box. */
+.section-result-expr { unicode-bidi: isolate; direction: ltr; white-space: nowrap; }
+
+/* Part 04's result body (QA 2026-10-12): one row per סעיף. The letter has its own column so
+   every continuation line starts under the text (hanging indent). The review button runs inline
+   at the end of the text, so it costs no line width and the forced breaks stay where they are. */
+.section-result-item {
+  display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: start;
+  margin: 0 0 14px;
+}
+.section-result-item:last-child { margin-bottom: 0; }
+.section-result-text { margin: 0; }
+.section-result-review {
+  margin-inline-start: 12px; padding: 0 14px; vertical-align: 2px;
+  border: 1.5px solid var(--subject-500); border-radius: 1000px;
+  background: #fff; color: var(--subject-500);
+  font-family: 'Assistant', sans-serif; font-size: 18px; line-height: 1.4;
+  cursor: pointer; white-space: nowrap;
+}
+.section-result-review:hover { background: var(--subject-500); color: #fff; }
+
+/* Review mode on סעיפים א-ג: the only action is back to the feedback; the companion's
+   "results only at the end" promise on s7 is spent by now, so he steps aside. */
+.scq-review-return { display: none; }
+.screen.is-review .scq-check:not(.scq-review-return),
+.screen.is-review .scq-bar .btn-back,
+.screen.is-review .companion-say { display: none; }
+.screen.is-review .scq-review-return { display: inline-block; }
 
 /* The peak components reuse the card on their end screens (storyboard 157/158, 170/171). No
    progress nav above it there, and four סעיפים of answer instead of three, so it starts higher
@@ -4260,7 +4362,7 @@ html, body {
    scenario text in the column beside it, where it read as a caption belonging to the paragraph
    rather than to the person (QA 2026-08-26). Absolutely positioned against .scq-figure, which is
    already position:relative; the coordinates and the width are tuned to the individual photo and
-   live with the screen that owns it (see #s10 in part 04's stylesheet).
+   live with the screen that owns it (see #s9 in part 04's stylesheet).
    The beak points RIGHT, at the speaker, since the photos put the figure-and-bubble pair with the
    person on the right. */
 .thought-bubble {
@@ -4270,7 +4372,7 @@ html, body {
   border-radius: 18px;
   padding: 14px 20px;
   font-family: 'Assistant', sans-serif;
-  font-size: 21px; font-weight: 400; color: #303030;
+  font-size: 20px;   /* Body / B-7, the character-bubble size (QA 2026-10-12) */ font-weight: 400; color: #303030;
   text-align: right; direction: rtl; line-height: 1.35;
 }
 .thought-bubble::before,
@@ -4368,10 +4470,17 @@ html, body {
   border-radius: 18px;
   padding: 14px 20px;
   font-family: 'Assistant', sans-serif;
-  font-size: 21px; font-weight: 400; color: #303030;
+  /* 20px, Body / B-7 — the size of every other speech bubble in the unit (QA 2026-10-12). The
+     comic route's guess bubbles on 01 s23/s26 keep 21px; see part 01's sheet. */
+  font-size: 20px; font-weight: 400; color: #303030;
   line-height: 1.35;
   direction: rtl; text-align: right;
 }
+/* No lone word on a bubble's last line (producer, 2026-10-13): `pretty` pulls a word down from the
+   line above when the last one would be a single word, e.g. part 06 s6's "בעתיד?". Covers every
+   speech bubble in the unit — the companion bubbles, the thought bubble, and parts 01/02's
+   .speech-bubble. A browser without support simply wraps as before. */
+.companion-bubble, .thought-bubble, .speech-bubble { text-wrap: pretty; }
 .companion-bubble p { margin: 4px 0; }
 /* The hook and story screens set his line in bold Subject/900 (storyboard 4, 6, 9). */
 .companion-bubble--strong { font-size: 22px; font-weight: 700; color: var(--subject-500); }
@@ -4402,11 +4511,17 @@ html, body {
 /* QA 2026-08-25 (slide 29): the התשובה-שלי / תשובה-נכונה switch inside a wrong-answer
    popup. Borrows .scq-hint-close's shape, as the note asks; only the spacing and a narrower
    box are added, since it sits in a 480px popup rather than a full-width overlay. */
-/* The line naming which board is on screen. Bold, as the storyboard has it; visible only while
-   the model answer is displayed — ddqSyncAnswerToggle hides it in the 'התשובה שלי' state. */
-.scq-popup-body p.ddq-answer-note { font-weight: 700; }   /* beats `.scq-popup-body p`, later in this sheet */
+/* The line naming which board is on screen is the popup TITLE's second line since 2026-10-10
+   (ddqWrongTitle, part 01) — bold by the title's own rule, so it needs none here. */
 .ddq-answer-toggle {
   width: auto; min-width: 160px; padding: 10px 26px;
   font-size: 20px; margin-top: 12px;
   border: 1px solid #303030;
 }
+
+/* 2026-10-12 (producer, all parts): one structure for every sub-part stem — the `סעיף X:` title
+   bold in Subject/500 on its own line, the question sentence bold in the stem's near-black, any
+   scenario/context line between them regular. Authoring: <b class="scq-qtext-part"> for the title,
+   plain <b> around the question. Lives at the end of the sheet for the same reason as the
+   --mixed block above: equal specificity, so source order decides. */
+.scq-qtext .scq-qtext-part { color: var(--subject-500); font-weight: 700; }

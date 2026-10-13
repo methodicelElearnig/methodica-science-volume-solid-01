@@ -28,6 +28,7 @@
   padding: 4px;
 }
 #s0 .option-card-img img,
+#s0 .option-card-img video,
 #s4 .option-card-img img {
   object-fit: contain;
 }
@@ -70,6 +71,11 @@
   transform: none;
   transition-delay: calc(var(--k, 0) * 180ms);
 }
+/* A panel that opens with a blue strip (caption / banner, always bubble 0) shows the strip
+   alone first; the rest of its bubbles follow half a second later (QA 2026-10-08). */
+.comic-panel.is-revealed:has(> .speech-bubble--caption, > .speech-bubble--banner) .speech-bubble:not(.speech-bubble--caption):not(.speech-bubble--banner) {
+  transition-delay: calc(500ms + (var(--k, 1) - 1) * 180ms);
+}
 
 /* Bubble frame: white bg + Subject/500 stroke. The drop shadow separates it
    from the dark photorealistic panel art underneath. */
@@ -85,12 +91,12 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
-/* Bubble text: RTL, 19px. #303030 on #fff = 12.6:1. */
+/* Bubble text: RTL, 20px across every comic bubble (QA 2026-10-08). #303030 on #fff = 12.6:1. */
 /* Regular weight, not 500: QA 2026-08-24 asked for the comic text unbolded, and 400 is the
    approved body weight (the ramp is 400/600/700 — 500 was never in it). */
 .speech-bubble__text {
   font-family: 'Assistant', sans-serif;
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 400;
   color: #303030;
   text-align: right;
@@ -102,7 +108,11 @@
      text through esc(), so markup cannot be used for this. pre-line still collapses runs of
      spaces, so bubbles without a \n render exactly as before. */
   white-space: pre-line;
+  /* No single word left alone on a bubble's last line, anywhere in the comic (QA 2026-10-08). */
+  text-wrap: pretty;
 }
+/* The deck's emphasis inside a bubble (**…** in COMIC_DATA, slide 15). */
+.speech-bubble__text strong { font-weight: 700; }
 
 /* Bubble tail: down-pointing beak with the same white fill + blue stroke.
    Two stacked CSS border-triangles: a blue one whose top edge sits flush on
@@ -190,45 +200,44 @@
 .speech-bubble--thought .speech-bubble__tail::after  { width: 10px; height: 10px; top: 22px; right: 20px; }
 .speech-bubble--thought.speech-bubble--tail-down-right .speech-bubble__tail,
 .speech-bubble--thought.speech-bubble--tail-down-left  .speech-bubble__tail { bottom: -30px; }
+/* Top-edge trail: scaleY(-1) (from the base up rule) puts the lead circle against the frame and
+   the small one above it; -30px mirrors the down variants' clearance. */
+.speech-bubble--thought.speech-bubble--tail-up-right .speech-bubble__tail,
+.speech-bubble--thought.speech-bubble--tail-up-left  .speech-bubble__tail { top: -38px; }
 /* Side beak, thought variant: the circles are round, so the 34×34 box is placed
    rather than rotated. The -9px is half the 18px lead circle, so --tail-y means the same thing
    here as on a speech beak: the centre of what touches the bubble. That is what --tail-right
    still does.
-   --tail-LEFT is the exception, and deliberately so. Its one user is S24, where the thinker
-   stands ABOVE-left of the bubble rather than level with it, so a trail leaving the left edge
-   sideways pointed at his shoulder. It leaves over the top-left shoulder of the ellipse instead:
-   `left` positive tucks the box inside the bubble's left edge (the ellipse curves away there, so
-   the circles still read as outside it), the larger --tail-y subtraction lifts it clear of the
-   top, and the rotation turns the trail to run up-left toward his head. Values set by hand
-   against the artwork — they are aimed at THIS panel, so re-aim them if the art changes. */
-.speech-bubble--thought.speech-bubble--tail-left  .speech-bubble__tail { left:   34px; right: auto; top: calc(var(--tail-y, 38px) - 69px); bottom: auto; transform: rotate(90deg); }
+   --tail-LEFT (one user, S24): the bubble floats ABOVE-right of the thinker, so the trail leaves
+   the bubble's left edge and runs DOWN-left to his head — the big circle against the bubble, the
+   small one by the head, i.e. the thought rises from him (QA 2026-10-08). transform: none (cancels the speech beak's rotate) — the base
+   circle layout (lead top-right, small one below-left) already points that way. */
+.speech-bubble--thought.speech-bubble--tail-left  .speech-bubble__tail { left: -30px; right: auto; top: calc(var(--tail-y, 38px) - 9px); bottom: auto; transform: none; }
 .speech-bubble--thought.speech-bubble--tail-right .speech-bubble__tail { right: -34px; left:  auto; top: calc(var(--tail-y, 38px) - 9px); bottom: auto; transform: scaleX(-1); }
 
 /* ── Variant: narration caption bar ──
-   Docked across the bottom of the panel; ignores --r/--t/--w.
-   White on the flattened worst case (≈#0a2049) ≈ 13:1. */
+   Hung ABOVE the frame, flush with its right edge, read before the panel (QA 2026-10-08 — it used
+   to dock across the bottom of the art). One semibold line, the band shrink-wrapped to the text
+   with a little extra length; a caption longer than the frame wraps inside it. Ignores
+   --r/--t/--w. .comic-bleed does not clip, and comicZoomApply() measures it, so it stays in view
+   when zoomed. White on ≈#0b2452 ≈ 13:1. */
 .speech-bubble--caption {
-  right: 3%;
-  left: 3%;
   top: auto;
-  bottom: 4%;
-  width: auto;
+  bottom: calc(100% + 18px);
+  right: 0;
+  left: auto;
+  width: max-content;
+  max-width: 100%;
+  z-index: 5;
 }
 .speech-bubble--caption .speech-bubble__frame {
   background: rgba(11, 36, 82, 0.9);
   border: none;
   border-radius: 12px;
-  padding: 10px 18px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+  padding: 10px 32px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
 }
-/* Only the colour differs from the ordinary bubble now — QA asked for the dark-blue caption band
-   to read as the same design as the bubbles, unbolded. Weight comes from .speech-bubble__text. */
-.speech-bubble--caption .speech-bubble__text { color: #fff; }
-/* Half-width captions for composite panels: the frame holds two scenes, and slide 12 gives each
-   its own band rather than one running under both. 50% minus the 3% edge inset and half the 2%
-   centre gap, so the two bands sit inside their own scene and clear the seam. */
-.speech-bubble--caption-right { left: 51%; right: 3%; }
-.speech-bubble--caption-left  { left: 3%;  right: 51%; }
+.speech-bubble--caption .speech-bubble__text { color: #fff; font-weight: 600; }
 
 /* ── Variant: banner ("זוהי שיטת …") — docked across the panel width; --t
    picks the band (default near the top, ~78% to sit low instead).
@@ -239,6 +248,12 @@
   top: var(--t, 5%);
   width: auto;
 }
+.speech-bubble--banner.speech-bubble--fit {
+  left: 0; right: 0;
+  width: fit-content;
+  margin-inline: auto;
+}
+.speech-bubble--banner.speech-bubble--fit .speech-bubble__frame { padding: 8px 40px; }
 .speech-bubble--banner .speech-bubble__frame {
   background: var(--subject-800);
   border-color: #fff;
@@ -249,16 +264,18 @@
    400 — "זוהי שיטת דחיקת המים!" and "זוהי שיטת ההצפה!" read as shouted. The white-on-blue pill
    already carries the emphasis; the weight does not need to. */
 .speech-bubble--banner .speech-bubble__text {
-  color: #fff; font-weight: 400; font-size: 22px; text-align: center;
+  color: #fff; font-weight: 400; font-size: 20px; text-align: center;
 }
 
-/* ── Variant: side note (caveats / footnotes inside a panel) ── */
+/* ── Variant: side note (caveats / footnotes inside a panel) ──
+   White with a light-blue (Subject/400) border, replacing the yellow; the border is an even 3px
+   all round like the speech bubbles, no thick side stripe (QA 2026-10-08). */
 .speech-bubble--note .speech-bubble__frame {
-  background: #fff8e6;
-  border: 2px solid #f0b400;
-  border-right-width: 6px;
+  background: #fff;
+  border: 3px solid var(--subject-400);
 }
-.speech-bubble--note .speech-bubble__text { font-size: 16px; font-weight: 400; color: #5a4600; }
+/* Black text, 20px like the rest of the comic (QA 2026-10-08). */
+.speech-bubble--note .speech-bubble__text { font-size: 20px; font-weight: 400; color: #000; }
 
 /* S14's `#s14 .scq-answers` override lived here. Every one of its four declarations is now supplied
    by unit-css: `position/right/top` by the shared in-flow block for .scq-question--withimage (which
@@ -294,15 +311,16 @@
    ═══════════════════════════════════════════════════════ */
 .comic {
   position: absolute; inset: 0;
-  /* 24px top: the toggle now sits inside the bottom bar, so the band it used to
-     occupy above the frame is content space again. */
-  padding: 24px 40px 90px;
+  /* 84px top: the band above the frame is where the caption hangs. Every comic screen keeps the
+     same padding AND the same content height (the dots row keeps its slot even when hidden), so
+     the frame sits at exactly the same place and size on every screen (QA 2026-10-08). */
+  padding: 84px 40px 90px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
 }
 /* prev (›) first in DOM = rightmost; next (‹) last = leftmost */
 .comic-row { display: flex; direction: rtl; align-items: center; gap: 18px; }
 .comic-frame {
-  --ratio: 1.7778;           /* per-screen inline override (2 for the slide-12 composite) */
+  --ratio: 1.7778;           /* one size for the whole comic — 12.jpg (2:1) is cropped to it */
   height: 480px; aspect-ratio: var(--ratio);
   max-width: 1040px; flex: none;
   position: relative;        /* anchors .comic-bleed. Still NO z-index — a stacking
@@ -355,19 +373,58 @@
 }
 
 /* Comic slider nav (arrows sit in .comic-row, dots below the frame) */
-.comic-nav { display: flex; align-items: center; justify-content: center; gap: 22px; }
-.comic-nav[hidden] { display: none; }
-.comic-arrow[hidden] { display: none; }
+.comic-nav { display: flex; align-items: center; justify-content: center; gap: 22px; min-height: 10px; }
+.comic-nav[hidden] { display: flex; visibility: hidden; }   /* keeps its slot: no frame shift */
 .comic-dot {
   width: 10px; height: 10px; padding: 0; border: none; border-radius: 50%;
   background: var(--subject-200); cursor: pointer;
 }
 .comic-dot.is-seen:not(.is-active) { background: var(--subject-400); }
 
+/* Carousel arrows (Figma 720-UI-Templates "Carousel", node 1118:13364): bare 22×40 chevrons in a
+   60×60 hit box, 40px in from the screen edges, Subject/800 when live and Natural/600 (#AEAEAE)
+   when there is nowhere to go. They page the whole comic — see comicArrowNext() in main.js.
+   Vertically centred on the frame: .comic is 84px top / 90px bottom padding around a 502px
+   block (480 frame + 12 gap + 10 dots), so the frame centre is 50% − 14px at any canvas height.
+   The guess-question screens use the same rule, so the arrows never move.
+   Physical left/right on purpose: next is ALWAYS on the left in this RTL unit. */
+.comic-side-arrow {
+  position: absolute;
+  top: calc(50% - 44px);
+  width: 60px; height: 60px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; border-radius: 50%;
+  color: var(--subject-800);
+  cursor: pointer;
+  z-index: 12;
+}
+.comic-side-arrow--next { left: 40px; }
+.comic-side-arrow--prev { right: 40px; }
+.comic-side-arrow--prev .comic-side-arrow__icon { transform: scaleX(-1); }
+.comic-side-arrow__icon { display: block; }
+.comic-side-arrow:disabled { color: #AEAEAE; cursor: default; }
+.comic-side-arrow:focus-visible { outline: 3px solid var(--subject-500); outline-offset: 2px; }
+/* The two guess-questions inside the comic carry the carousel arrows too: their content is pulled
+   in from the 40px edge to 120px (40 + the 60px arrow + 20 clear) so the option pills and the
+   mascot (inline right:120px on s23/s26) never sit under an arrow, at any canvas height. */
+#s23 .exp, #s26 .exp { padding-right: 120px; padding-left: 120px; }
+
+/* Comic zoom. The magnifier sits top-LEFT of the frame: top-right is where the captions hang
+   and the slide-12 bubble overhangs. z 5 keeps it above .comic-bleed (4). comicZoomApply() sets the transform — the
+   frame keeps its layout box and is scaled in place from its top-left corner, so the bubbles
+   (inside .comic-bleed, inside the frame) grow with the art. */
+.comic-zoom-btn { top: 12px; left: 12px; right: auto; z-index: 5; }
+.comic-frame { transform-origin: 0 0; transition: transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1); }
+.comic-frame.is-zoomed { z-index: 30; }   /* the one time the frame may stack — the toggle is covered anyway */
+.comic-zoom-backdrop { display: none; position: absolute; inset: 0; z-index: 29; background: rgba(255, 255, 255, 0.85); }
+.comic-zoom-open .comic-zoom-backdrop { display: block; }
+.comic-zoom-open .comic-side-arrow { visibility: hidden; }
+
 /* Repo's only reduced-motion block: kill the slide and the bubble lift, keep
    every state change instant but fully functional. */
 @media (prefers-reduced-motion: reduce) {
   .comic-track { transition: none; }
+  .comic-frame { transition: none; }
   .speech-bubble { transition: opacity 0.01s linear; transform: none; }
   .comic-panel.is-revealed .speech-bubble { transform: none; transition-delay: 0s; }
 }
@@ -407,8 +464,8 @@
 .disp-badge {
   position: absolute; right: 28px; top: 50%; transform: translate(100%, -50%);
   background: #fff; border: 2px solid var(--subject-500); color: #1e2a38;
-  font-family: 'Assistant', sans-serif; font-weight: 700; font-size: 15px;
-  padding: 3px 11px; border-radius: 999px; white-space: nowrap;
+  font-family: 'Assistant', sans-serif; font-weight: 700; font-size: 20px;
+  padding: 3px 12px; border-radius: 999px; white-space: nowrap;
   transition: top 1s cubic-bezier(.4,0,.2,1);
 }
 .disp-cylinder-wrap.risen .disp-badge { top: 41%; }
@@ -469,6 +526,18 @@
 #s12 .transition-title { font-size: 40px; }
 #s12 .transition-sub   { font-size: 24px; }
 
+/* QA 2026-10-08 (slide 6): S3's bubble needs more width so no word sits alone on a line, and
+   the mascot was enlarged. The narration column is 1120 - frame - 36 gap and holds bubble +
+   14 gap + sprite, so the room comes out of the image: 560 -> 500 gives a 584px column,
+   i.e. 330px for the bubble beside a 240px sprite. */
+#s3 .hook-img-frame { flex: 0 0 500px; width: 500px; }
+
+/* QA 2026-10-08 (S5): the title sits in the narration column. The column is top-aligned so the
+   title starts level with the image's top edge, and one blank line (30px = 24px x 1.25)
+   separates the title from the text. */
+#s5 .hook-narration { align-self: flex-start; }
+#s5 .hook-title { margin-bottom: 30px; }
+
 /* QA 2026-08-25 (slide 5): S6's image + narration move up 100px to close the empty band above
    them. .hook-content is centred with `top: calc(50% - 37px)`, so the offset goes on top
    rather than on the transform, which is already carrying the centring translate. */
@@ -497,15 +566,28 @@
    `position: static` is the whole mechanism: .companion is absolute by default, and as a static
    flex item it takes its width from --cw and lets the column measure it. */
 #s12 .companion { position: static; }
+/* QA 2026-10-13: title + mascot column lowered 40px to close the empty band above the title. */
+#s12 .transition-content { top: calc(50% + 3px); }
 
-/* S32 practice intro, storyboard slide 50 (QA 2026-08-25, slide 23). The count carries the
-   emphasis the deleted heading used to: its own line at 40px bold. The block also sits higher
-   than a plain .transition-content so the mascot and his bubble have the lower half. */
-#s32 .transition-content--intro { top: calc(50% - 150px); gap: 4px; }
-#s32 .transition-count {
-  font-family: 'Assistant', sans-serif; font-size: 40px; font-weight: 800;
-  color: #303030; line-height: 1.2; margin: 4px 0;
+/* S32 practice intro — Figma "TransitionScreen - A - Example" (720 UI Templates, node 4492:37696,
+   QA 2026-10-12). The text block is pinned to the top (y 70, 810 wide) instead of centred: a 28
+   SemiBold lead-in and the 64 Bold count line as one group (24 apart), then the 28 Regular rule 48
+   below. The Figma gaps are measured on trimmed text boxes (cap to baseline), so with
+   `line-height: 1` the CSS gaps are smaller by the glyph overhang. */
+#s32 .transition-content--intro {
+  top: 70px; transform: translateX(-50%); width: 810px; gap: 36px;
 }
+#s32 .transition-head { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+#s32 .transition-sub { line-height: 1.2; }
+#s32 .transition-lead-in { font-weight: 600; }
+#s32 .transition-count {
+  font-family: 'Assistant', sans-serif; font-size: 64px; font-weight: 700;
+  color: #303030; line-height: 1.1; margin: 0;
+}
+/* The mascot is centred on the canvas and stands on the bottom bar's top line (`bottom: 74px` is
+   the bar's height), as in the template; his bubble hangs to his left. `right` puts the sprite's
+   centre on the canvas centre: half of its 298px --cw. */
+#s32 > .companion-say { right: calc(50% - 149px); bottom: 74px; }
 
 /* ── Two-column content screen (S33, storyboard slide 29) ──────────────────────────────
    QA 2026-08-25 (slide 19). The deck puts the photo in the left half and stacks heading,
@@ -551,10 +633,21 @@
    same applet across two screens and the head would otherwise jump 40px between step 2 and step 3.
    `margin-top` on the head rather than padding on .exp, so it is obvious which element moved. */
 #s22 .exp-head, #s34 .exp-head { margin-top: 40px; }
+/* QA 2026-10-12: titles match the enlarged s11/s31 ones; the drag hint is 20px #303030 like s11's .flood-hint. */
+#s22 .exp-title, #s34 .exp-title { font-size: 36px; }
+#s22 .meas-obj-hint, #s34 .meas-obj-hint { font-size: 20px; color: #303030; }
+#s22 .meas-badge, #s34 .meas-badge { font-size: 20px; padding: 3px 12px; }
+#s22 .meas-vessel-label, #s34 .meas-vessel-label { font-size: 20px; color: #303030; max-width: none; white-space: nowrap; }
+/* QA 2026-10-12: the vessel labels were cut off under the cylinders. Step 3's two-line instruction
+   leaves the stage ~418px at the 710px canvas, and a 180px cylinder is 426px tall before its label.
+   150px (~355 tall) fits cylinder + label. Both screens, so the משורה keeps its size from s22 to s34;
+   the water overlays are percentages of the image and scale with it. */
+#s22 .meas-cyl-img, #s34 .meas-cyl-img { width: 150px; }
 /* s20 drops further, 80px: its flip-card row is the shortest content on any experiments screen,
    so the block sat high with a band of empty canvas under it. Scoped, like the 40px above --
    `.exp-head` is on every exp screen and most of them have no room to give. */
 #s20 .exp-head { margin-top: 80px; }
+#s20 .exp-title { font-size: 36px; }  /* QA 2026-10-12: matches the enlarged s11/s31 titles */
 
 /* S9 two-column stage, storyboard slide 26 (QA 2026-08-25, slide 17).
    `direction: ltr` on the row is what puts the applet physically LEFT and the explanation
@@ -562,6 +655,17 @@
    .split-stage use. .disp-stage's own `direction: rtl` in unit-css is overridden here
    because this sheet loads second. */
 #s9 .disp-applet { flex: 0 0 auto; display: flex; direction: rtl; align-items: center; gap: 46px; }
+/* QA 2026-10-11: the cylinder is the centre of the screen, the reset button sits directly under it,
+   and the marble parks to its left OUT of flow — so the marble zone no longer pulls the cylinder off
+   centre. The head drops to the 100px question-screen line (.exp--question), and the cylinder is
+   160px here (384 tall) so cylinder + reset still fit above the bar at the 710px minimum canvas:
+   196 → 626 leaves 430. s35's frozen copy keeps the shared 190px. */
+#s9 .exp { padding-top: 100px; }
+#s9 .exp-title { font-size: 30px; }
+#s9 .disp-vessel-col { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+#s9 .disp-cylinder-wrap { width: 160px; }
+#s9 .disp-marble-zone { position: absolute; right: calc(100% + 60px); top: 192px; transform: translateY(-50%); }
+#s9 .disp-reset { margin-top: 0; }
 /* `#s9 .disp-side` and `#s9 .companion-say` went with the 2026-08-29 split: the right-hand column
    they described — slide 26's explanation and the mascot's caveat — is s35 now. What is left on s9
    is the applet alone, so the stage just centres it. */
@@ -595,3 +699,272 @@
    no <strong> and were not in this QA round — changing the shared rule would silently unbold
    them. S14 and S16 use the same treatment via their own wrappers. */
 #s13 .scq-qtext, #s14 .scq-qtext, #s16 .scq-qtext { font-weight: 400; }
+/* S16 — the stem is the full slide-71 text since QA 2026-10-11 (seven lines at 24px, not four), and
+   the block centred at the shared 50% − 20px brought its first line onto the progress labels on every
+   canvas under ~770px tall (measured −1px at 1280×710). The block moves down 16px instead of the type
+   shrinking (see the .is-long note in unit-css): the options still end ≥ 48px above the bottom bar. */
+#s16 .scq-question--withimage { top: calc(50% - 4px); }
+/* S14 — QA 2026-10-13: at the 710 canvas floor the stem's first line sat 15px under the progress
+   labels and read as touching them. Down 24px: 39px clear above, options still end 57px above the bar. */
+#s14 .scq-question--withimage { top: calc(50% + 4px); }
+
+/* S26 — the stem + options block is centred vertically (justify-content) and the 100px question
+   top-padding drops back to .exp's 24px, since centring already clears the top edge. */
+#s26 .exp { justify-content: center; padding-top: 24px; }
+/* S23 (QA 2026-10-08) — back to the top: .exp--question's 100px inset, no centring. Under the title,
+   a row: stem + options (narrowed 604 → 520) on the right and the crown on their physical left,
+   stretched to the stem-plus-options height; its width follows the art's 240:190 ratio. */
+/* The comic route's guess bubbles keep the approved 21px; every other companion bubble is 20px now
+   (QA 2026-10-12). */
+#s23-guess-bubble, #s26-guess-bubble { font-size: 21px; }
+#s23 .s23-qblock { align-self: flex-start; display: flex; flex-direction: column; gap: 6px; }
+#s23 .s23-row { display: flex; align-items: stretch; gap: 64px; }
+#s23 .s23-main { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+#s23 .s23-main .exp-instruction { white-space: nowrap; }
+#s23 .s23-row .guess-options { width: 520px; align-self: auto; }
+#s23 .s23-row .guess-opt { width: 100%; }
+#s23 .s23-crown { position: relative; align-self: stretch; width: auto; aspect-ratio: 900 / 612; margin: 0; }
+#s23 .s23-crown > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }  /* absolute: the 900×612 raster must not set the row height */
+
+/* S15 (QA 2026-10-10). Two passes, both with text, fonts and the template's popup position unchanged.
+   1. The centred block started under the progress bar (48..100) at a 720px-high canvas.
+   2. In the final state the wrong-answer popup (left 2..482, bottom 84, 242 tall) covered bubble a
+      and the left child's ring whenever the canvas was under ~880px high — every 16:9 screen. With
+      the popup fixed, the free area on its side is only y 116..H-342 (368 at the 710 minimum), so the
+      photo and all four bubbles are re-laid out together:
+      - c and b take two lines (320px), the breaks slide 61 itself gives them; a takes two (480px);
+        d keeps four. Every bubble still sits against its child and its beak still lands on the face.
+      - The photo is 553px (88%) and starts at canvas x 465, so the popup can only ever cover a
+        17px strip of shelving at its left edge; ring a starts at 562, 22px clear of bubble a.
+      - Stage (stage x = canvas x − 60): c/b on row 1 (top 0, 82 tall), photo at top 22 so they
+        overlap its shelf band by 60px as before, a/d at top 92 with the beak at 55 → face y.
+      - Block = stem 67 + gap 12 + stage 323 = 402. It stays centred (50% − 16px) but never starts
+        above 116px (centre ≥ 317), and never so low that bubble a (block y 171..253) reaches the
+        popup: centre ≤ H − 342 − 253 + 201 = H − 394. Bubble a ends 15px above the popup at H 710,
+        16px at 720; from H ≈ 750 the block is simply centred.
+   Measured: two lines in a/b/c from 470/310/300px, so the widths keep ~10px of slack. */
+#s15 .hotspot-question { top: max(317px, min(calc(50% - 16px), calc(100% - 394px))); }
+#s15 .hotspot-stage { margin-top: -6px; height: 323px; }
+#s15 .hotspot-stage > .hotspot-photo { left: 405px; top: 22px; width: 553px; }
+#s15 .hotspot-bubble--above { top: 0; width: 320px; }
+#s15 .hotspot-bubble--side { top: 92px; }
+#s15 .hotspot-bubble--side::after { top: 55px; }
+#s15 .hotspot-bubble--left { left: 0; width: 480px; }
+#s15 .hotspot-bubble--right { left: 898px; }
+/* Bubble b now covers the photo's top-right corner, where the zoom trigger sits by default (it had
+   already been clipping b's border). Bottom-right is plain table edge; bottom-left is under the popup. */
+#s15 .hotspot-photo > .img-zoom-btn { top: auto; bottom: 10px; }
+
+/* S17 / S18 (2026-10-11). The feedback popup keeps its template position (left 2..482, bottom 84), so
+   the BOARD moves (720-templates: move the content, not the popup — the 04 s1 treatment). At the
+   shared centred width the popup covered the left landing column(s) in the final view and through
+   the התשובה שלי / solution toggle — on s17 the correct שיטת ההצפה column itself. The board is now a
+   722px column whose left edge is never closer than 16px to the popup (498), centred again only on
+   canvases wide enough (left = max(498, 50% − 361)). Vertically it stays centred (50% − 20px) but
+   never starts above 116px, 16px under the progress bar: --half-h is half the board's own height
+   (s17 427, s18 451 at 1280 wide), so `top` is its centre. */
+/* 2026-10-12: right-anchored at the 40px gutter like every question (left 518 at 1280 wide, still
+   20px clear of the popup's 498 line; on wider canvases it only moves further from the popup). */
+.dnd-question--beside-popup {
+  width: 722px; transform: translateY(-50%);
+  top: max(calc(116px + var(--half-h)), calc(50% - 20px));
+}
+#s17 .dnd-question--beside-popup { --half-h: 214px; }
+#s18 .dnd-question--beside-popup { --half-h: 258px; }  /* 20px type (QA 2026-10-11): board is 516 tall */
+/* Five columns in 722px are 136 wide, so s18's cards are 124 — still all the same size, which is the
+   QA 2026-08-24 rule; every task keeps its photo and at most two lines, nothing clips. */
+#s18 .dnd-question--columns .dnd-pill { width: 124px; }
+/* QA 2026-10-11 (s18): column headers and task captions at 20px. A dropped card fills its whole
+   cell and drops its own border, so the slot's border (occupied / correct / wrong) is the only
+   outline — no double frame. Bank cards are the slot's size, so nothing jumps on drop. */
+#s18 .dnd-question--columns .dnd-target-label { font-size: 20px; line-height: 1.1; min-height: 0; height: 76px; padding: 4px 6px; }
+#s18 .dnd-question--columns .dnd-pill { width: 132px; height: 144px; font-size: 20px; line-height: 1.1; padding: 6px 4px; }
+#s18 .dnd-question--columns .dnd-pill-img { height: 52px; flex: 0 0 auto; }
+#s18 .dnd-question--columns .dnd-source { gap: 10px; min-height: 0; }
+#s18 .dnd-question--columns .dnd-slot { flex: 0 0 148px; min-height: 0; }
+#s18 .dnd-question--columns .dnd-slot.occupied { padding: 0; }
+#s18 .dnd-slot.occupied > .dnd-pill { width: 100%; height: 100%; border: 0; box-shadow: none; background: transparent; }
+/* QA 2026-10-12 (s17): same treatment as s18 — 20px headers and captions, a dropped card fills its
+   cell with the slot's border as the only outline. Three 234px columns, so cards are 222×160 (three
+   fit the bank in one row); board grows to ~512 tall, hence --half-h 256. */
+#s17 .dnd-question--beside-popup { --half-h: 256px; }
+#s17 .dnd-question--columns .dnd-target-label { font-size: 20px; line-height: 1.1; }
+#s17 .dnd-question--columns .dnd-pill { width: 222px; height: 160px; font-size: 20px; line-height: 1.1; padding: 6px; }
+#s17 .dnd-question--columns .dnd-source { gap: 10px; min-height: 0; }
+#s17 .dnd-question--columns .dnd-slot { flex: 0 0 164px; min-height: 0; }
+#s17 .dnd-question--columns .dnd-slot.occupied { padding: 0; }
+#s17 .dnd-slot.occupied > .dnd-pill { width: 100%; height: 100%; border: 0; box-shadow: none; background: transparent; }
+/* QA 2026-10-12 (s17, s18): the photo takes every pixel the caption leaves, instead of a fixed
+   52–58px strip floating in the card. Still `contain`, so no object is cropped. */
+#s17 .dnd-question--columns .dnd-pill-img,
+#s18 .dnd-question--columns .dnd-pill-img { flex: 1 1 0; min-height: 0; width: 100%; height: auto; object-fit: contain; }
+
+/* QA 2026-10-11 (s1): the mascot and his bubble come down out of the narration column and stand
+   on the bottom bar's top line. The group is a direct child of the section (not of .hook-content,
+   whose transform would make it the containing block), so `bottom: 74px` is the bar's height and
+   holds the feet on the line at every canvas height. `right` matches the 1120px column's right
+   edge, so the sprite stays flush with the text above it. */
+#s1 > .companion-say { right: calc(50% - 560px); bottom: 74px; }
+/* With the group gone from the column the narration is shorter, and .hook-stage's
+   `align-items: center` would slide it ~90px down against the video. Pin it to the top instead so
+   the text stays where it was (aligned with the video's top edge). */
+#s1 .hook-narration { align-self: flex-start; }
+
+/* QA 2026-10-11: s1 and s6 stand their mascot ON the bottom bar's line, but each clip has a
+   different band of empty matte under the feet, so a box sitting on the line still leaves him
+   floating. Measured per file (last non-white row of a 0.5s frame, as a fraction of frame height):
+   orange-examine .283, turquoise-examine .061, orange-stretch .168, turquoise-stretch .124.
+   Keyed on the src renderCompanion() writes (it sets the attribute), so whichever mascot the
+   learner picked lands on the line. A negative margin in units of --cw (= the rendered height,
+   the clips are square) pulls the box down past the bar edge by exactly that band. */
+#s1 .companion[src*="orange-examine"]     { margin-bottom: calc(var(--cw) * -0.283); }
+#s1 .companion[src*="turquoise-examine"]  { margin-bottom: calc(var(--cw) * -0.061); }
+#s6 .companion[src*="orange-stretch"]     { margin-bottom: calc(var(--cw) * -0.168); }
+#s6 .companion[src*="turquoise-stretch"]  { margin-bottom: calc(var(--cw) * -0.124); }
+
+/* QA 2026-10-12 (s1): the orange clip draws him in only the middle ~45% of its square frame, so at
+   the turquoise's 162px he read as tiny. Width is per mascot (set here, not inline, so the src
+   selector can win), and the bubble drops and tucks in so the beak meets the mouth instead of
+   hanging at the top of an empty matte. Beak centre = bubble top + 41px (--tail-y 28 + 13);
+   orange mouth sits at 0.443 of the frame -> 0.443 * 270 - 41 = 79px. The tuck puts the beak tip
+   ~65px into the frame, just short of his raised finger (0.265 of the frame). */
+#s1 .companion[src*="orange-examine"]    { --cw: 270px; }
+#s1 .companion[src*="turquoise-examine"] { --cw: 162px; }
+#s1 .companion-bubble:has(+ .companion[src*="orange-examine"]) { margin-top: 79px; margin-right: -60px; }
+
+/* S29 (QA 2026-10-11) — the stem on one line (head widened past the 604px column), and under it a
+   row like S23's: options on the right, the photo on their physical left, as tall as the options
+   (global rule in unit-css, QA 2026-10-12; still well clear of the mascot's bubble in the bottom-left band). */
+#s29 .exp-head--question { width: auto; }
+#s29 .exp-instruction { white-space: nowrap; }
+#s29 .s29-row { align-self: stretch; display: flex; align-items: flex-start; gap: 48px; }
+#s29 .s29-row .guess-options { width: 560px; align-self: auto; }
+#s29 .s29-row .guess-opt { width: 100%; }
+/* z-index keeps the mascot (and his bubble) in front of the figure; his white background is keyed
+   out globally (.companion in unit-css). */
+#s29 > .companion-say { z-index: 5; }
+#s21 .s21-row { align-self: stretch; display: flex; align-items: flex-start; justify-content: space-between; gap: 48px; }
+#s21 .s21-row .guess-options { width: 560px; align-self: auto; }
+#s21 .s21-row .guess-opt { width: 100%; }
+
+/* QA 2026-10-11 (s11, flooding applet): the head drops to the same 100px line and 30px title as s9,
+   so the two applet screens match. The reset button lives inside .flood-scene now, directly under the
+   tray, and is hidden by VISIBILITY (not display) so revealing it does not re-centre the bowl.
+   The drag hint is 20px #303030 like s9's .disp-drag-hint. */
+#s11 .exp { padding-top: 100px; }
+#s11 .exp-title { font-size: 36px; }  /* QA 2026-10-11: enlarged past s9's 30px on request */
+#s11 .flood-scene .disp-reset { margin-top: 24px; }
+#s11 .flood-scene .disp-reset[hidden] { display: inline-block; visibility: hidden; }
+#s11 .flood-hint { font-size: 20px; font-weight: 600; color: #303030; white-space: nowrap; }
+
+/* S31 (QA 2026-10-11): larger title, steps up under the heading, a bigger photo pushed to the
+   physical left edge, and plain (non-bold) step numbers. */
+#s31 .exp-title { font-size: 36px; }
+#s31 .steps-row { align-items: flex-start; justify-content: space-between; }
+#s31 .steps-list li::marker { font-weight: 400; }
+/* At 24px (QA 2026-10-12) step 4 needs 600px to stay on one line — at the shared 520px cap "החפץ."
+   dropped to a line of its own. The photo column on the left leaves the room. */
+#s31 .steps-list { max-width: 600px; }
+/* QA 2026-10-11 (round 2): the 460px photo ran 544px tall and spilled under the bottom bar.
+   360px wide = 426px tall (524x620 source), which with the 40px heading gap still ends ~20px
+   above the 84px bottom band of the 710px canvas. */
+#s31 .exp { gap: 40px; }
+#s31 .steps-row .scq-figure { width: 360px !important; }
+/* QA 2026-10-11 (round 3): the photo's top lines up with the title's top (title box 50px + the
+   40px gap = 90px up) and it steps 40px in from the left edge. */
+#s31 .steps-row .scq-figure { margin-top: -90px; margin-left: 40px; }
+
+/* s34 step 4 — the pour (QA 2026-10-11). After the hammer overflows the bowl it was not clear the
+   next move is to carry the tray across, so the tray pulses and a curved arrow points from it to
+   the measuring vessel on its left. The caption under it carries the step's instruction. */
+@keyframes meas-tray-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px var(--subject-200); }
+  50%      { box-shadow: 0 0 0 7px var(--subject-400); }
+}
+#s34 .meas-tray.is-pourable { animation: meas-tray-pulse 1.1s ease-in-out infinite; }
+#s34 .meas-tray.is-pourable.dragging { animation: none; }
+@keyframes meas-arrow-nudge {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(-6px, -6px); }
+}
+.meas-pour-arrow {
+  position: absolute; left: -62px; bottom: 58px; width: 64px; height: auto;
+  color: var(--subject-500); pointer-events: none;
+  animation: meas-arrow-nudge 1.1s ease-in-out infinite;
+}
+/* נסו שוב (QA 2026-10-12), centred under the bowl's label. The pour hint used to sit there and the
+   button landed below it, under the bottom bar — so the hint moves up into the empty band above the
+   bowl (the cylinders stand taller). Both are out of flow, so the three vessel labels stay on one
+   baseline in every step. */
+#s34 .meas-reset { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 10px; white-space: nowrap; }
+/* The button is out of flow, so the centred stage does not know it is there and it sat 1px above the
+   path toggle. While it shows (step 4 — one-line instruction, so the stage has the room) the row
+   reserves space under itself and the centring lifts the vessels clear of the bar. */
+#s34 .meas-vessels:has(.meas-reset:not(.hidden)) { padding-bottom: 40px; }
+#s34 .meas-pour-hint { position: absolute; bottom: calc(100% + 16px); left: 50%; transform: translateX(-50%); width: 260px; font-size: 16px; font-weight: 700; color: var(--subject-900); line-height: 1.3; }
+
+/* S15 (2026-10-12) — centred, and the child is lifted out of the photo instead of ringed.
+   1. The block was right-anchored at the 40px gutter, so on any canvas wider than 1280 the photo and
+      its bubbles drifted right of centre. The stage's drawn extent is 0..1154 (bubble a .. bubble d),
+      so it is centred on that: left = 50% − 577px.
+   2. No visible ring. Each child has a .hotspot-pop: a copy of the photo masked to a feathered ellipse
+      around that child. On hover (of the child OR its bubble) and while selected it scales up from
+      the child's centre and glows; correct/wrong recolour the glow. The .hotspot-area stays as the
+      invisible click target. */
+#s15 .hotspot-question { right: auto; left: calc(50% - 577px); }
+#s15 .hotspot-area,
+#s15 .hotspot-area:hover:not(:disabled),
+#s15 .hotspot-area:focus-visible,
+#s15 .hotspot-area.selected,
+#s15 .hotspot-area.correct,
+#s15 .hotspot-area.wrong { border-color: transparent; background: transparent; box-shadow: none; z-index: 2; }
+#s15 .hotspot-pop {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  transform-origin: var(--x) var(--y);
+  opacity: 0; transform: scale(1);
+  transition: transform 0.22s ease, opacity 0.22s ease, filter 0.22s ease;
+  --glow: rgba(1, 157, 229, 0.95);
+}
+/* The mask lives on ::before because CSS applies `mask` AFTER `filter` — on one element the glow
+   would be masked away with everything else outside the ellipse. */
+#s15 .hotspot-pop::before {
+  content: ''; position: absolute; inset: 0;
+  background: url(../assets/img/s15-four-kids.jpg) center / 100% 100% no-repeat;
+  -webkit-mask-image: radial-gradient(var(--rw) var(--rh) at var(--x) var(--y), #000 80%, transparent 100%);
+          mask-image: radial-gradient(var(--rw) var(--rh) at var(--x) var(--y), #000 80%, transparent 100%);
+}
+#s15 .hotspot-area:hover:not(:disabled) + .hotspot-pop,
+#s15 .hotspot-area.selected + .hotspot-pop,
+#s15 .hotspot-area.correct + .hotspot-pop,
+#s15 .hotspot-area.wrong + .hotspot-pop,
+#s15 .hotspot-stage:has(.hotspot-bubble[data-id="a"]:hover:not(:disabled)) .hotspot-pop[data-id="a"],
+#s15 .hotspot-stage:has(.hotspot-bubble[data-id="b"]:hover:not(:disabled)) .hotspot-pop[data-id="b"],
+#s15 .hotspot-stage:has(.hotspot-bubble[data-id="c"]:hover:not(:disabled)) .hotspot-pop[data-id="c"],
+#s15 .hotspot-stage:has(.hotspot-bubble[data-id="d"]:hover:not(:disabled)) .hotspot-pop[data-id="d"],
+#s15 .hotspot-stage:has(.hotspot-bubble[data-id="a"]:focus-visible) .hotspot-pop[data-id="a"],
+#s15 .hotspot-stage:has(.hotspot-bubble[data-id="b"]:focus-visible) .hotspot-pop[data-id="b"],
+#s15 .hotspot-stage:has(.hotspot-bubble[data-id="c"]:focus-visible) .hotspot-pop[data-id="c"],
+#s15 .hotspot-stage:has(.hotspot-bubble[data-id="d"]:focus-visible) .hotspot-pop[data-id="d"] {
+  opacity: 1; transform: scale(1.12);
+  filter: drop-shadow(0 0 4px var(--glow)) drop-shadow(0 0 12px var(--glow)) drop-shadow(0 6px 14px rgba(0, 32, 96, 0.35));
+}
+#s15 .hotspot-area.correct + .hotspot-pop { --glow: rgba(46, 155, 87, 0.95); }
+#s15 .hotspot-area.wrong + .hotspot-pop   { --glow: rgba(214, 69, 80, 0.95); }
+#s15 .hotspot-photo > .img-zoom-btn { z-index: 3; }
+@media (prefers-reduced-motion: reduce) { #s15 .hotspot-pop { transition: none; } }
+
+/* ── S35 · QA 2026-10-12 ────────────────────────────────────────────────────────────────
+   Text column moved right of centre: the row spreads to its edges instead of centring, the text
+   column ends 30px short of the stage's right edge and the cylinder keeps 150px off its left. */
+#s35 .split-stage { justify-content: space-between; padding: 0 30px 0 150px; box-sizing: border-box; }
+/* The bubble's paragraph break was a <br><br> (a full empty line). */
+#s35 .s35-para-gap { display: block; height: 8px; }
+/* Slide 26 notes: "גיפ מופיע אחרי 5 שניות. מחזיק סבון מוצק קטן." — the soap-holding mascot and
+   his bubble fade in together 5s after entry. (Replaces a tray-pour animation that is not in the script.) */
+#s35 .s35-gif { opacity: 0; }
+#s35 .s35-gif.is-on { animation: s35-gif-show 0.5s ease 5s forwards; }
+@keyframes s35-gif-show { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { #s35 .s35-gif.is-on { animation-duration: 0.01s; } }
+/* QA 2026-10-12: the ping-pong clip fills more of its frame than the soap one did, so the shared
+   -30px tuck put the bubble's tail into his fur. S35 only: 20px further off him. */
+#s35 .split-say .companion-bubble { margin-right: -10px; }
