@@ -718,8 +718,8 @@
 #s23 .s23-main .exp-instruction { white-space: nowrap; }
 #s23 .s23-row .guess-options { width: 520px; align-self: auto; }
 #s23 .s23-row .guess-opt { width: 100%; }
-#s23 .s23-crown { align-self: stretch; width: auto; aspect-ratio: 240 / 190; margin: 0; }
-#s23 .s23-crown > img { width: 100%; height: 100%; object-fit: contain; }
+#s23 .s23-crown { position: relative; align-self: stretch; width: auto; aspect-ratio: 900 / 612; margin: 0; }
+#s23 .s23-crown > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }  /* absolute: the 900×612 raster must not set the row height */
 
 /* S15 (QA 2026-10-10). Two passes, both with text, fonts and the template's popup position unchanged.
    1. The centred block started under the progress bar (48..100) at a 720px-high canvas.
