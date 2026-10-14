@@ -1,6 +1,6 @@
 'use strict';
 /* ═══════════════════ Navigation ═══════════════════
-   Shared by all six components. DEFINITION-ONLY.
+   Shared by all seven components. DEFINITION-ONLY.
 
    currentScreen lives HERE, not in each main.js: goTo() writes it, and the report modal, the xAPI
    item scope and (from Stage 5) the resume payload all read it. A shared function writing a

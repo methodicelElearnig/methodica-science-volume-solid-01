@@ -20,7 +20,8 @@
    ── Why there is no partBoot() ──
    The sibling unit routes each component's own startup through a partBoot() hook called from here.
    This unit does not need one: every per-part side effect (the scq/ddq/practice registrations, the
-   keydown listeners, the dropdown-close delegation, part 03's first resetScreenState) still runs at
+   keydown listeners, the dropdown-close delegation, part 04's first resetScreenState — the class task, 03 before
+   2026-10-14) still runs at
    main.js top level, and main.js is loaded BEFORE this file. So the ordering guarantee partBoot
    exists to provide — a component's wiring in place before a resume can replay onto it — already
    holds. The hook is still called if a component ever defines one, so adding it later needs no

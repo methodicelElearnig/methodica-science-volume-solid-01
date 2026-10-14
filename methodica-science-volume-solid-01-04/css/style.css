@@ -1,65 +1,39 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   css/style.css — 720 Science · Volume of a Solid · component 04 (PART-LOCAL)
+   css/style.css — 720 Science · Volume of a Solid · component 03 (PART-LOCAL)
 
-   INTENTIONALLY EMPTY — this component needs no CSS of its own.
-
-   Everything it renders comes from ../unit-css/style.css, which index.html loads
-   before this file. What used to be here was dead weight inherited from the
-   mass-measure port: #sN rules for screens this component does not have, #sN-back
-   rules for ids that exist nowhere in the unit, and per-screen
-   `background: #fff` now stated once on .screen in the shared sheet.
-
-   The file is deliberately kept rather than deleted: index.html links it, and the
-   720 publish checklist expects a css/ directory in every component. Add a rule
-   here only if it is genuinely specific to THIS component — anything reusable
-   belongs in the shared sheet.
+   Only the opening transition (S0) needs anything of its own. Everything else —
+   including S1, the task screen — comes from ../unit-css/style.css, which index.html
+   loads before this file. Add a rule here only if it is genuinely specific to THIS
+   component — anything reusable belongs in the shared sheet.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* S0 — the intro's mascot is 600px wide and centred beneath the text (see CHARACTER_SLOTS in
-   js/main.js), which the shared centre position leaves no room for. Genuinely specific to this
-   component: it is the only .transition-content in it, and the shared rule stays right for every
-   transition screen that has no sprite under it.
-   Text block ~90px over a 337px sprite with a 20px gap = 447px; centred in the 646px above the nav
-   bar puts the text's own centre at 144. */
-/* QA 2026-10-12 (slide 113): the sprite now stands on the nav bar's rule (bottom 12 in the slot), and
-   the heading runs to two lines (~178px block). With the sprite 109px lower the text centres at 170,
-   so it clears the headphones instead of hugging the top edge. */
-#s0 .transition-content { top: 170px; }
-/* QA 2026-08-30: the heading drops the blue for the unit's near-black and goes to 48px, the line
-   under it to 24px. Scoped to #s0 because .transition-title / -sub are shared with parts 01 and 02.
-   The 144px above became 102: the sprite grew 600 -> 750 (+25%), so its 16:9 box is 422px rather
-   than 337, and text-block 110 + gap 20 + sprite 422 = 552 centred in the 646px above the bar puts
-   the text's own centre at 102 and the sprite's foot at 599 -- i.e. `bottom: 121` in the slot. Move
-   either number and the other has to follow, or they overlap. */
-#s0 .transition-title { font-size: 48px; color: #303030; }
+/* ── S0 · class-task opener — same column shape as part 03 s0 ──
+   The pair stays shrink-to-fit inside .transition-content's centred column, which is what centres
+   it (not .companion-say--inline, which packs the pair against one edge). The column spans the
+   band above the bar and the two auto margins split the free height above the copy and between
+   the copy and the pair, so the copy floats in the band while his feet stand on the bar's line. */
+#s0 .transition-content { top: 0; bottom: 74px; transform: translateX(-50%); }
+#s0 .transition-content > .transition-sub:first-child { margin-top: auto; }
+#s0 .companion-say { position: relative; margin-top: auto; }
+/* Type matches the unit's other transition screens (04 s0 title 48 / 01 s12 & 04 s0 sub 24);
+   the shared defaults (34 / 22) read small next to them. */
+#s0 .transition-title { font-size: 48px; }
 #s0 .transition-sub { font-size: 24px; }
+/* 420px box (was 300) — in line with the other transition mascots (02 s7 400, 04 s0 422).
+   Fits at the 710 canvas floor: ~170px of copy + ~350px of visible character in the 636px band.
+   the mp4's baked-in white is keyed out globally (.companion in unit-css). */
+#s0 .companion { width: 420px; }
+/* Empty matte under his feet, as a fraction of the square frame — measured on part 01 (see the
+   #s6 rule there): orange .168, turquoise .124. Keyed on the src renderCompanion() writes. */
+#s0 .companion[src*="orange-stretch"]    { margin-bottom: calc(420px * -0.168); }
+#s0 .companion[src*="turquoise-stretch"] { margin-bottom: calc(420px * -0.124); }
 
-/* S9 — Gili speaks from inside the photograph. His head starts about 275px into the 494px frame,
-   so the bubble ends just short of that and the beak lands beside his face. The width is what
-   forces the line onto two: at 21px the sentence runs ~350px on one, which would reach across him.
-   Coordinates are photo-specific, which is why they sit here and not in the shared .thought-bubble. */
-#s9 .thought-bubble { left: 24px; top: 40px; width: 240px; }
-/* The bubble having left the column, the scenario text is its only child and starts level with the
-   top of the frame rather than being centred against it. */
-#s9 .scq-side { align-self: flex-start; }
-
-/* S1 (QA 2026-10-10). The feedback popup keeps its default bottom-left position on every screen, so
-   the CONTENT moves (720-templates: "move the content, not the popup"). At the shared 760px centred
-   column the popup covered option d while it was still live (retry view) and the marked correct
-   answer in the final view. The column now hugs the 60px right gutter at 722px: options run
-   498..1220, clear of the popup's right edge (482) by 16px, and every option keeps its two lines.
-   Vertically it stays centred as before (50% − 20px, block 490 tall) but never starts above 116px —
-   16px under the progress bar, which the stem used to overlap at a 720px-high canvas. */
-#s1 .scq-question {
-  width: 722px; left: auto; right: 40px; transform: none;   /* 40px gutter, 2026-10-12 (was 60) */
-  top: max(116px, calc(50% - 20px - 245px));
-}
-
-/* S5 options (QA 2026-10-12): option d ("...מנפח המים החדש שהתקבל") runs ~606px at 22px, so in the
-   shared 612px side column it alone broke to two lines and stood taller than the other three pills.
-   The photo gives up 100px (560 → 460, natural ratio kept) so the side column is 712px and all four
-   pills sit on one line at the same width and height (682 × 46, left edge at 558).
-   This replaced the earlier 604px-wide feedback popup (nowrap equation): its right edge (606) ran over
-   the end of the correct answer in the final view. The popup is back to the shared width (right edge
-   482) and the equation wraps — producer's call, 2026-10-12. */
-#s5 .scq-question--withimage > .scq-figure { width: 460px; }
+/* Bubble tucked in to speak from his MOUTH (2026-10-12) instead of hanging ~115px off his box.
+   gap 0, then a negative margin pulls the bubble into his 420px box so the beak tip (19px past the
+   bubble) stops ~8px short of the fur; margin-top puts the beak's middle (--tail-y 28 + 13 = 41)
+   at mouth height. Measured on the 960 frame: orange body edge at mouth height ≈ .29, mouth ≈ .46;
+   turquoise body edge ≈ .25, mouth ≈ .44. The bubble precedes the sprite, so the variant is keyed
+   with :has() on the src renderCompanion() writes. */
+#s0 .companion-say { --say-gap: 0px; }
+#s0 .companion-bubble { margin-top: 152px; margin-right: -95px; }
+#s0 .companion-say:has(.companion[src*="turquoise"]) .companion-bubble { margin-top: 144px; margin-right: -78px; }

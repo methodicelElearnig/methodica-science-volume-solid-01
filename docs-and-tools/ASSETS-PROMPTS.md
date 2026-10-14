@@ -1,5 +1,7 @@
 # ASSETS-PROMPTS — image-generation prompts
 
+> ⚠️ Screen and part numbers in this file are **pre-2026-10-14**: parts 01 and 02 were renumbered on that date, and the unit was then split into seven components — standard practice left part 01 to become part 02, and the old parts 02–06 are now 03–07 (so "Part-02" below is today's part 03). See SCREENS.md for the current ids.
+
 Ready-to-paste prompts for every asset in `ASSETS-TODO.md`, derived from the
 storyboard art directions. Companion to that file. Generated 2026-07-16.
 

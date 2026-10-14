@@ -1,6 +1,6 @@
 # Sending metadata to the Kata catalog
 
-`send-metadata.ps1` pushes the `metadata/` folder (1 unit + 5 components + their
+`send-metadata.ps1` pushes the `metadata/` folder (1 unit + 7 components + their
 items) into the Katalog (Kata) catalog at `https://kata.cet.ac.il/api/v1`.
 It **upserts**: for each entity it does a `GET` by uniqueKey, then `PATCH` if it
 already exists or `POST` if it doesn't — so it's safe to run more than once.
@@ -64,9 +64,9 @@ this is controlled from the **CONFIG** block at the top of the file.
 
 | Field | Metadata value | Sent |
 |---|---|---|
-| `componentPurpose` | `assessment` (part 05) | `practice` (`isAssessment:true` already set) |
-| `contentType` | `ClassroomTask` (part 03 item) | `Project or Inquiry Task` |
-| `contentType` | `Assessment` (part 05 item) | `Practice` |
+| `componentPurpose` | `assessment` (peak parts 06/07) | `practice` (`isAssessment:true` already set) |
+| `contentType` | `ClassroomTask` (part 04 item, class task) | `Project or Inquiry Task` |
+| `contentType` | `Assessment` (peak items, parts 06/07) | `Practice` |
 
 Any other value outside the API enums makes the script **stop with an error** rather
 than send bad data — add it to the relevant map (or fix the metadata) and re-run.

@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=111">
-  <link rel="stylesheet" href="css/style.css?v=73">
+  <link rel="stylesheet" href="../unit-css/style.css?v=112">
+  <link rel="stylesheet" href="css/style.css?v=100">
 </head>
 <body data-subject-theme="science">
 
@@ -275,7 +275,7 @@
        ═══════════════════════════════════════════════════════════ -->
   <section class="screen" data-screen="6" id="s6">
     <!-- His remark leaves .hook-narration and joins him in a .companion-say group, same
-         pattern as S5/S21/S22/S23/S26/S29 — absolute (not --inline).
+         pattern as S5/S19/S23/S10/S12/S16 — absolute (not --inline).
          QA 2026-10-11: the pair moved to the LEFT (--left: sprite first, bubble to his right
          with its beak pointing left at him) and stands on the bottom bar's line — `bottom: 74px`
          is the bar's height. `left` matches the 1120px .hook-content's left edge (the image's
@@ -354,11 +354,11 @@
 
   <!-- ═══════════════════════════════════════════════════════════
        COMIC PATH — storyboard slides 12–18, one screen per slide:
-         S8 = 12 · S23 = 13 (guess) · S24 = 14 · S25 = 15 (slider)
-         S26 = 16 (guess) · S27 = 17 (slider) · S28 = 18 (slider)
-       S23–S28 are appended ids, not inserted ones: S9–S22 already exist
-       and are referenced by id in the CSS and in every routing branch.
-       The order is wired explicitly in COMIC_SCREENS (main.js).
+         S8 = 12 · S10 = 13 (guess) · S9 = 14 · S11 = 15 (slider)
+         S12 = 16 (guess) · S13 = 17 (slider) · S14 = 18 (slider)
+       S9 (the cube) comes before the S10 guess-Q — QA 2026-10-08. After S14
+       the comic path continues into the shared ending (S22–S26), like the
+       experiments path. The order is wired in COMIC_SCREENS (main.js).
 
        Panel art is a photo asset; ALL dialogue is live HTML overlaid on
        it and fades in ~800ms after the panel appears. Panels, bubbles and
@@ -368,7 +368,7 @@
   <!-- ═══ S8 — Storyboard slide 12 · single composite frame (no slider):
        (right) Archimedes addresses the learners, (left) he measures the box.
        Delivered as one 2:1 file, hence --ratio:2 and a hidden panel nav.
-       Flow: S7 path choice → S8 → S24. ═══ -->
+       Flow: S7 path choice → S8 → S9. ═══ -->
   <section class="screen" data-screen="8" id="s8">
     <div class="comic">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
@@ -412,10 +412,52 @@
   </section>
 
 
-  <!-- ═══ S23 — Storyboard slide 13 · Guess-question inside the comic.
+  <!-- ═══ S9 — Storyboard slide 14 · single composite frame (no slider):
+       (right) he measures the box and works out its volume, (left) key, acorn
+       and marble. Flow: S8 → S9 → S10 (moved before the guess-Q, QA 2026-10-08). ═══ -->
+  <section class="screen" data-screen="9" id="s9">
+    <div class="comic">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
+      </div>
+      <div class="comic-row">
+        <div class="comic-frame">
+          <div class="comic-viewport" id="s9-viewport" role="group" aria-roledescription="לוח קומיקס" aria-label="פאנלים של הסיפור">
+            <div class="comic-track" id="s9-track"><!-- built by comicBuild('s9') --></div>
+          </div>
+          <div class="comic-bleed">
+            <div class="comic-track" id="s9-bleed-track"><!-- built by comicBuild('s9') --></div>
+          </div>
+        </div>
+      </div>
+      <div class="comic-nav" id="s9-nav">
+        <div class="comic-dots" id="s9-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
+      </div>
+    </div>
+    <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
+         first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
+    <button class="comic-side-arrow comic-side-arrow--prev" id="s9-prev" type="button" onclick="comicArrowPrev('s9')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--next" id="s9-next" type="button" onclick="comicArrowNext('s9')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s9-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S10 — Storyboard slide 13 · Guess-question inside the comic.
        Per the storyboard there is NO correct/incorrect feedback — picking any
-       option is simply what lets the comic continue. Flow: S24 → S23 → S25. ═══ -->
-  <section class="screen" data-screen="23" id="s23">
+       option is simply what lets the comic continue. Flow: S9 → S10 → S11. ═══ -->
+  <section class="screen" data-screen="10" id="s10">
     <div class="exp exp--question">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
@@ -432,22 +474,22 @@
       <!-- Title at the top (back to the 100px question inset, QA 2026-10-08); under it a row:
            stem + options on the right, the crown on their physical left, as tall as stem + options.
            The stem breaks before "צורות שונות" on purpose (QA 2026-10-08). -->
-      <div class="s23-qblock">
+      <div class="s10-qblock">
       <div class="exp-head exp-head--question">
         <h1 class="exp-title">מדידת נפח של גוף שאינו הנדסי</h1>
       </div>
-      <div class="s23-row">
-      <div class="s23-main">
+      <div class="s10-row">
+      <div class="s10-main">
       <p class="exp-instruction">נחשו: איך נמדוד נפח של גופים שאינם הנדסיים בעלי<br>צורות שונות (למשל, כתר)?</p>
-      <div class="scq-answers guess-options" id="s23-guess" role="radiogroup" aria-label="נחשו: איך נמדוד נפח של גופים שאינם הנדסיים בעלי צורות שונות (למשל, כתר)?">
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s23', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s23', this)"><span class="scq-opt-text">נחתוך אותם לחלקים ונמדוד עם סרגל</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s23', this)"><span class="scq-opt-text">נכניס אותם למים</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s23', this)"><span class="scq-opt-text">נעריך אותם לפי העין</span><span class="scq-radio" aria-hidden="true"></span></button>
+      <div class="scq-answers guess-options" id="s10-guess" role="radiogroup" aria-label="נחשו: איך נמדוד נפח של גופים שאינם הנדסיים בעלי צורות שונות (למשל, כתר)?">
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s10', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s10', this)"><span class="scq-opt-text">נחתוך אותם לחלקים ונמדוד עם סרגל</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s10', this)"><span class="scq-opt-text">נכניס אותם למים</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s10', this)"><span class="scq-opt-text">נעריך אותם לפי העין</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
       </div>
-      <div class="scq-figure s23-crown">
-        <img src="assets/img/s23-crown.webp?v=2" alt="כתר זהב מעוטר באבני חן">
+      <div class="scq-figure s10-crown">
+        <img src="assets/img/s10-crown.webp?v=2" alt="כתר זהב מעוטר באבני חן">
       </div>
       </div>
       </div>
@@ -458,66 +500,24 @@
     <div class="companion-say companion-say--left" style="left: 120px; bottom: 88px;">
       <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
            data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 179px;"></video>
-      <p class="companion-bubble hidden" id="s23-guess-bubble" style="--bubble-w: 240px;">בהמשך נלמד בדיוק איך עושים את זה!</p>
+      <p class="companion-bubble hidden" id="s10-guess-bubble" style="--bubble-w: 240px;">בהמשך נלמד בדיוק איך עושים את זה!</p>
     </div>
     <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
          first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
-    <button class="comic-side-arrow comic-side-arrow--prev" id="s23-prev" type="button" onclick="comicArrowPrev('s23')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
-    <button class="comic-side-arrow comic-side-arrow--next" id="s23-next" type="button" onclick="comicArrowNext('s23')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--prev" id="s10-prev" type="button" onclick="comicArrowPrev('s10')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--next" id="s10-next" type="button" onclick="comicArrowNext('s10')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
     <div class="nav-bar">
-      <button class="btn-continue" id="s23-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s10-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
 
 
-  <!-- ═══ S24 — Storyboard slide 14 · single composite frame (no slider):
-       (right) he measures the box and works out its volume, (left) key, acorn
-       and marble. Flow: S8 → S24 → S23 (moved before the guess-Q, QA 2026-10-08). ═══ -->
-  <section class="screen" data-screen="24" id="s24">
-    <div class="comic">
-      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
-           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
-        <button class="path-toggle-opt" data-path="experiments" role="tab" aria-selected="false" onclick="switchLearningPath('experiments')">
-        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
-        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
-          <span>לערוך ניסויים</span></button>
-        <button class="path-toggle-opt is-active" data-path="comic" role="tab" aria-selected="true" onclick="switchLearningPath('comic')">
-        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
-        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
-          <span>לקרוא קומיקס</span></button>
-      </div>
-      <div class="comic-row">
-        <div class="comic-frame">
-          <div class="comic-viewport" id="s24-viewport" role="group" aria-roledescription="לוח קומיקס" aria-label="פאנלים של הסיפור">
-            <div class="comic-track" id="s24-track"><!-- built by comicBuild('s24') --></div>
-          </div>
-          <div class="comic-bleed">
-            <div class="comic-track" id="s24-bleed-track"><!-- built by comicBuild('s24') --></div>
-          </div>
-        </div>
-      </div>
-      <div class="comic-nav" id="s24-nav">
-        <div class="comic-dots" id="s24-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
-      </div>
-    </div>
-    <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
-         first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
-    <button class="comic-side-arrow comic-side-arrow--prev" id="s24-prev" type="button" onclick="comicArrowPrev('s24')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
-    <button class="comic-side-arrow comic-side-arrow--next" id="s24-next" type="button" onclick="comicArrowNext('s24')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
-    <div class="nav-bar">
-      <button class="btn-continue" id="s24-continue" disabled onclick="advanceScreen()">המשך</button>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-
-
-  <!-- ═══ S25 — Storyboard slide 15 · שיטת דחיקת המים · slider, 5 panels
+  <!-- ═══ S11 — Storyboard slide 15 · שיטת דחיקת המים · slider, 5 panels
        (15a–15e). Panels slide right-to-left: panel 1 is rightmost and the next
        panel enters from the left. "המשך" stays disabled until every panel has
-       been seen at least once (sticky on return). Flow: S23 → S25 → S26. ═══ -->
-  <section class="screen" data-screen="25" id="s25">
+       been seen at least once (sticky on return). Flow: S10 → S11 → S12. ═══ -->
+  <section class="screen" data-screen="11" id="s11">
     <div class="comic">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
@@ -533,32 +533,32 @@
       </div>
       <div class="comic-row">
         <div class="comic-frame">
-          <div class="comic-viewport" id="s25-viewport" role="group" aria-roledescription="קרוסלת קומיקס" aria-label="פאנלים של הסיפור">
-            <div class="comic-track" id="s25-track"><!-- built by comicBuild('s25') --></div>
+          <div class="comic-viewport" id="s11-viewport" role="group" aria-roledescription="קרוסלת קומיקס" aria-label="פאנלים של הסיפור">
+            <div class="comic-track" id="s11-track"><!-- built by comicBuild('s11') --></div>
           </div>
           <div class="comic-bleed">
-            <div class="comic-track" id="s25-bleed-track"><!-- built by comicBuild('s25') --></div>
+            <div class="comic-track" id="s11-bleed-track"><!-- built by comicBuild('s11') --></div>
           </div>
         </div>
       </div>
-      <div class="comic-nav" id="s25-nav">
-        <div class="comic-dots" id="s25-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
+      <div class="comic-nav" id="s11-nav">
+        <div class="comic-dots" id="s11-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
       </div>
     </div>
     <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
          first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
-    <button class="comic-side-arrow comic-side-arrow--prev" id="s25-prev" type="button" onclick="comicArrowPrev('s25')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
-    <button class="comic-side-arrow comic-side-arrow--next" id="s25-next" type="button" onclick="comicArrowNext('s25')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--prev" id="s11-prev" type="button" onclick="comicArrowPrev('s11')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--next" id="s11-next" type="button" onclick="comicArrowNext('s11')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
     <div class="nav-bar">
-      <button class="btn-continue" id="s25-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s11-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
 
 
-  <!-- ═══ S26 — Storyboard slide 16 · Guess-question (no feedback).
-       Flow: S25 → S26 → S27. ═══ -->
-  <section class="screen" data-screen="26" id="s26">
+  <!-- ═══ S12 — Storyboard slide 16 · Guess-question (no feedback).
+       Flow: S11 → S12 → S13. ═══ -->
+  <section class="screen" data-screen="12" id="s12">
     <div class="exp exp--question">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
@@ -576,11 +576,11 @@
         <h1 class="exp-title">מדידת נפח לגוף שאינו נכנס במשורה</h1>
         <p class="exp-instruction"><strong>נחשו: מה לגבי גופים גדולים שלא נכנסים במשורה?</strong></p>
       </div>
-      <div class="scq-answers guess-options" id="s26-guess" role="radiogroup" aria-label="נחשו: מה לגבי גופים גדולים שלא נכנסים במשורה?">
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s26', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s26', this)"><span class="scq-opt-text">נמדוד את האורך שלהם</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s26', this)"><span class="scq-opt-text">נכניס אותם לכלי מים גדול אחר</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s26', this)"><span class="scq-opt-text">לא ניתן למדוד נפח של גופים כאלה</span><span class="scq-radio" aria-hidden="true"></span></button>
+      <div class="scq-answers guess-options" id="s12-guess" role="radiogroup" aria-label="נחשו: מה לגבי גופים גדולים שלא נכנסים במשורה?">
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s12', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s12', this)"><span class="scq-opt-text">נמדוד את האורך שלהם</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s12', this)"><span class="scq-opt-text">נכניס אותם לכלי מים גדול אחר</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s12', this)"><span class="scq-opt-text">לא ניתן למדוד נפח של גופים כאלה</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
     <!-- Below the options, not on the storyboard's higher perch: the 560px option column
@@ -595,22 +595,22 @@
     <div class="companion-say companion-say--left" style="left: 120px; bottom: 74px;">
       <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
            data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 215px;"></video>
-      <p class="companion-bubble hidden" id="s26-guess-bubble" style="--bubble-w: 300px; margin-top: 60px;">בהמשך נלמד בדיוק איך מודדים את הנפח שלהם.</p>
+      <p class="companion-bubble hidden" id="s12-guess-bubble" style="--bubble-w: 300px; margin-top: 60px;">בהמשך נלמד בדיוק איך מודדים את הנפח שלהם.</p>
     </div>
     <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
          first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
-    <button class="comic-side-arrow comic-side-arrow--prev" id="s26-prev" type="button" onclick="comicArrowPrev('s26')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
-    <button class="comic-side-arrow comic-side-arrow--next" id="s26-next" type="button" onclick="comicArrowNext('s26')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--prev" id="s12-prev" type="button" onclick="comicArrowPrev('s12')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--next" id="s12-next" type="button" onclick="comicArrowNext('s12')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
     <div class="nav-bar">
-      <button class="btn-continue" id="s26-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s12-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
 
 
-  <!-- ═══ S27 — Storyboard slide 17 · שיטת ההצפה · slider, 7 panels (17a–17g).
-       Flow: S26 → S27 → S28. ═══ -->
-  <section class="screen" data-screen="27" id="s27">
+  <!-- ═══ S13 — Storyboard slide 17 · שיטת ההצפה · slider, 7 panels (17a–17g).
+       Flow: S12 → S13 → S14. ═══ -->
+  <section class="screen" data-screen="13" id="s13">
     <div class="comic">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
@@ -626,33 +626,33 @@
       </div>
       <div class="comic-row">
         <div class="comic-frame">
-          <div class="comic-viewport" id="s27-viewport" role="group" aria-roledescription="קרוסלת קומיקס" aria-label="פאנלים של הסיפור">
-            <div class="comic-track" id="s27-track"><!-- built by comicBuild('s27') --></div>
+          <div class="comic-viewport" id="s13-viewport" role="group" aria-roledescription="קרוסלת קומיקס" aria-label="פאנלים של הסיפור">
+            <div class="comic-track" id="s13-track"><!-- built by comicBuild('s13') --></div>
           </div>
           <div class="comic-bleed">
-            <div class="comic-track" id="s27-bleed-track"><!-- built by comicBuild('s27') --></div>
+            <div class="comic-track" id="s13-bleed-track"><!-- built by comicBuild('s13') --></div>
           </div>
         </div>
       </div>
-      <div class="comic-nav" id="s27-nav">
-        <div class="comic-dots" id="s27-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
+      <div class="comic-nav" id="s13-nav">
+        <div class="comic-dots" id="s13-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
       </div>
     </div>
     <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
          first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
-    <button class="comic-side-arrow comic-side-arrow--prev" id="s27-prev" type="button" onclick="comicArrowPrev('s27')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
-    <button class="comic-side-arrow comic-side-arrow--next" id="s27-next" type="button" onclick="comicArrowNext('s27')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--prev" id="s13-prev" type="button" onclick="comicArrowPrev('s13')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--next" id="s13-next" type="button" onclick="comicArrowNext('s13')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
     <div class="nav-bar">
-      <button class="btn-continue" id="s27-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s13-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
 
 
-  <!-- ═══ S28 — Storyboard slide 18 · מוצק שמתנהג כמו נוזל · slider, 3 panels.
-       Last comic screen — "המשך" exits to the merge point.
-       Flow: S27 → S28 → S12 (merge). ═══ -->
-  <section class="screen" data-screen="28" id="s28">
+  <!-- ═══ S14 — Storyboard slide 18 · מוצק שמתנהג כמו נוזל · slider, 3 panels.
+       Last comic screen — "המשך" continues into the shared ending.
+       Flow: S13 → S14 → flip-cards S22. ═══ -->
+  <section class="screen" data-screen="14" id="s14">
     <div class="comic">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
@@ -668,147 +668,31 @@
       </div>
       <div class="comic-row">
         <div class="comic-frame">
-          <div class="comic-viewport" id="s28-viewport" role="group" aria-roledescription="קרוסלת קומיקס" aria-label="פאנלים של הסיפור">
-            <div class="comic-track" id="s28-track"><!-- built by comicBuild('s28') --></div>
+          <div class="comic-viewport" id="s14-viewport" role="group" aria-roledescription="קרוסלת קומיקס" aria-label="פאנלים של הסיפור">
+            <div class="comic-track" id="s14-track"><!-- built by comicBuild('s14') --></div>
           </div>
           <div class="comic-bleed">
-            <div class="comic-track" id="s28-bleed-track"><!-- built by comicBuild('s28') --></div>
+            <div class="comic-track" id="s14-bleed-track"><!-- built by comicBuild('s14') --></div>
           </div>
         </div>
       </div>
-      <div class="comic-nav" id="s28-nav">
-        <div class="comic-dots" id="s28-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
+      <div class="comic-nav" id="s14-nav">
+        <div class="comic-dots" id="s14-dots" role="tablist" aria-label="מעבר בין פאנלים"></div>
       </div>
     </div>
     <!-- Carousel arrows (Figma 720-UI-Templates "Carousel"): they page the WHOLE comic — panels
          first, then across to the next/previous comic screen. RTL: prev on the right, next on the left. -->
-    <button class="comic-side-arrow comic-side-arrow--prev" id="s28-prev" type="button" onclick="comicArrowPrev('s28')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
-    <button class="comic-side-arrow comic-side-arrow--next" id="s28-next" type="button" onclick="comicArrowNext('s28')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--prev" id="s14-prev" type="button" onclick="comicArrowPrev('s14')" aria-label="הקודם"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
+    <button class="comic-side-arrow comic-side-arrow--next" id="s14-next" type="button" onclick="comicArrowNext('s14')" aria-label="הבא"><svg class="comic-side-arrow__icon" width="22" height="40" viewBox="0 0 22 40" aria-hidden="true"><path d="M20.2632 0C21.0298 0.0469 21.7407 0.5935 21.9325 1.3359C22.1186 1.9745 21.9068 2.6931 21.4209 3.1457C15.7569 8.7663 10.0854 14.3795 4.4214 20C10.0854 25.6206 15.7577 31.2338 21.4218 36.8536C21.9491 37.3457 22.1484 38.1499 21.8819 38.8215C21.6394 39.4881 20.9725 39.9523 20.264 39.9992H20.0888C19.5955 39.968 19.1312 39.7408 18.7916 39.3869C12.709 33.3581 6.6222 27.3309 0.5429 21.2988C-0.1796 20.6223 -0.1821 19.3778 0.5429 18.7029C6.623 12.6692 12.709 6.6429 18.7907 0.6132C19.1304 0.2585 19.5955 0.0313 20.0905 0H20.2632Z" fill="currentColor"/></svg></button>
     <div class="nav-bar">
-      <button class="btn-continue" id="s28-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s14-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
 
 
   <!-- ═══════════════════════════════════════════════════════════
-       S9 — Screens 25–26 · Water-displacement applet (experiments path)
-       Extends the App/ marble-in-cylinder prototype. Drag the marble
-       into the graduated cylinder → the water rises 50→62 mL, the
-       marble sinks, and the displacement explanation is revealed.
-       Uses the engine's scale-safe createPointerDnd for the drag.
-       ═══════════════════════════════════════════════════════════ -->
-  <section class="screen" data-screen="9" id="s9">
-    <!-- Storyboard slide 25 — the INTERACTION only: title, instruction, the applet. Everything the
-         deck puts on slide 26 (the "what happened here?" explanation, the rule, the mascot's
-         caveat) lives on s35 now. They were one screen until 2026-08-29, with slide 26's content
-         revealed in place 900ms after the drop; the deck draws two screens and the reveal made the
-         second one easy to miss. `המשך` still unlocks on the drop — dispDrop() enables it. -->
-    <div class="exp">
-      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
-           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
-        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
-        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
-          <span>לערוך ניסויים</span></button>
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
-        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
-        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
-          <span>לקרוא קומיקס</span></button>
-      </div>
-      <div class="exp-head">
-        <h1 class="exp-title">שיטת ארכימדס – "דחיקת מים"</h1>
-        <p class="exp-instruction" id="disp-instruction">הכניסו את הגולה אל תוך המשורה.</p>
-      </div>
-      <div class="disp-stage">
-        <div class="disp-applet">
-          <div class="disp-vessel-col">
-          <div class="disp-cylinder-wrap" id="disp-cylinder">
-            <img class="disp-cylinder-img" src="assets/img/s9-cylinder.svg?v=3" alt="משורה מדורגת עם מים עד קו 50 מ&quot;ל" draggable="false">
-            <div class="disp-water" id="disp-water"></div>
-            <img class="disp-sunk-marble" id="disp-sunk-marble" src="assets/img/s9-marble.svg?v=2" alt="" draggable="false">
-            <div class="disp-badge" id="disp-badge">50 מ"ל</div>
-          </div>
-          <div class="disp-marble-zone">
-            <img id="disp-marble" src="assets/img/s9-marble.svg?v=2" alt="גולת זכוכית ירוקה — נִתנת לגרירה" draggable="false">
-            <p class="disp-drag-hint" id="disp-drag-hint">גררו אותי למשורה</p>
-          </div>
-          <!-- `is-hidden` (visibility), not the `hidden` ATTRIBUTE: taking it out of flow and putting it
-               back on the drop shifted the applet by 29px. It reserves its space from the first paint.
-               It lives in the vessel column so it sits centred directly under the cylinder. -->
-          <button class="disp-reset is-hidden" id="disp-reset" type="button" onclick="dispReset()">מדידה מחדש</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="nav-bar">
-      <button class="btn-continue" id="s9-continue" disabled onclick="advanceScreen()">המשך</button>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-
-
-  <!-- ═══ S35 — Storyboard slide 26 · what the displacement showed ═══
-       The second half of the old s9. Same two-column shape as s33 (slide 29's result screen), so
-       the two applet conclusions read alike: the vessel on the left, and heading, paragraph, boxed
-       rule and the mascot down the right. The vessel is the applet's OWN markup frozen in its
-       finished state — `.risen` baked into the class list instead of added by dispDrop() — so the
-       learner sees exactly the picture they just made rather than a separate illustration of it.
-       It carries NO ids: every id in that block belongs to the live applet on s9. -->
-  <section class="screen" data-screen="35" id="s35">
-    <div class="exp exp--content exp--split">
-      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
-           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
-        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
-        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
-          <span>לערוך ניסויים</span></button>
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
-        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
-        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
-          <span>לקרוא קומיקס</span></button>
-      </div>
-      <div class="split-stage">
-        <div class="split-figure split-figure--vessel">
-          <div class="disp-cylinder-wrap risen" role="img" aria-label="משורה מדורגת ובתוכה הגולה; מפלס המים עלה מ-50 ל-62 מ&quot;ל">
-            <img class="disp-cylinder-img" src="assets/img/s9-cylinder.svg?v=3" alt="" draggable="false">
-            <div class="disp-water"></div>
-            <img class="disp-sunk-marble" src="assets/img/s9-marble.svg?v=2" alt="" draggable="false">
-            <div class="disp-badge">62 מ"ל</div>
-          </div>
-        </div>
-        <div class="split-side">
-          <!-- Copy is storyboard slide 26 verbatim: the principle is one sentence with the bold on
-               its closing clause rather than on a "עיקרון ארכימדס:" label the deck does not have,
-               and the conclusion is spelled out in words. -->
-          <h1 class="exp-title">מה קרה כאן?</h1>
-          <p class="exp-instruction">מפלס המים עלה ברגע שהגולה נכנסה למשורה.</p>
-          <p class="exp-instruction">עיקרון ארכימדס אומר שכשמכניסים גוף למים, מפלס המים עולה<br><strong>בכמות שווה לנפח הגוף בדיוק.</strong></p>
-          <p class="split-conclusion"><strong>נפח המים הסופי פחות נפח המים המקורי<br>=<br>נפח הגולה!</strong></p>
-          <div class="companion-say companion-say--inline companion-say--right split-say">
-            <p class="companion-bubble s35-gif" style="--bubble-w: 375px;">עיקרון זה תקף לגופים שלא<br>מתמוססים במים.<span class="s35-para-gap"></span>אפשר לעטוף גופים שרגישים למים<br>בשכבת מגן דקה לפני שמכניסים&nbsp;למשורה.</p>
-            <!-- Slide 26 notes: "גיפ מופיע אחרי 5 שניות." — he and his bubble
-                 fade in together at 5s (bubble: QA 2026-10-12). Classed per element, not on the
-                 .companion-say wrapper, which must not become a stacking context.
-                 2026-10-12: the soap clip was swapped for the ping-pong-ball one (orange_pingpong /
-                 blue_pingpong) at the designer's request. -->
-            <video class="companion s35-gif" id="s35-gif" src="assets/img/character-orange-pingpong-ball.mp4?v=4" alt="" aria-hidden="true"
-                 data-pose="pingpong-ball" draggable="false" autoplay loop muted playsinline style="--cw: 170px;"></video>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="nav-bar">
-      <button class="btn-continue" id="s35-continue" onclick="advanceScreen()">המשך</button>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════════════════════════════════════
-       S10 — Screens 19–23 · Aquarium ruler applet + SingleChoiceQuestion
+       S15 — Screens 19–23 · Aquarium ruler applet + SingleChoiceQuestion
        Experiments-path ENTRY (geometric method). Layout mirrors the
        SingleChoiceQuestionImage template's figure-left/side-right shape
        (720-templates skill): applet (cube + ruler) LEFT, question text +
@@ -818,7 +702,7 @@
        the SCQ's own attempts/feedback (below) gate the answer.
        The cube is a live SVG placeholder (final art to be produced).
        ═══════════════════════════════════════════════════════════ -->
-  <section class="screen" data-screen="10" id="s10">
+  <section class="screen" data-screen="15" id="s15">
     <div class="exp">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
@@ -893,46 +777,279 @@
         <div class="aq-side">
           <h1 class="exp-title">מדידת נפח של גוף הנדסי</h1>
           <p class="aq-qtext">לפניכם אקווריום בצורת קובייה. כמה מים צריך כדי למלא אותו עד הקצה?</p>
-          <div class="scq-answers" id="s10-answers" role="radiogroup" aria-label="כמה מים צריך כדי למלא את האקווריום עד הקצה?">
-            <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s10','a')"><span class="scq-opt-text">100 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-            <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s10','b')"><span class="scq-opt-text">40 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-            <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s10','c')"><span class="scq-opt-text">2,000 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-            <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s10','d')"><span class="scq-opt-text">1,000 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+          <div class="scq-answers" id="s15-answers" role="radiogroup" aria-label="כמה מים צריך כדי למלא את האקווריום עד הקצה?">
+            <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s15','a')"><span class="scq-opt-text">100 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+            <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s15','b')"><span class="scq-opt-text">40 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+            <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s15','c')"><span class="scq-opt-text">2,000 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+            <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s15','d')"><span class="scq-opt-text">1,000 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
           </div>
-          <p class="scq-locknote" id="s10-scq-locknote">קרבו את הסרגל לדופן הצהובה ובצעו את המדידה כדי לענות.</p>
+          <p class="scq-locknote" id="s15-scq-locknote">קרבו את הסרגל לדופן הצהובה ובצעו את המדידה כדי לענות.</p>
         </div>
       </div>
 
       <div class="scq-bar">
         <div class="scq-bar-main">
-          <button class="scq-check" id="s10-scq-check" type="button" disabled onclick="scqCheck('s10')">צדקתי?</button>
-          <button class="scq-hint" id="s10-scq-hint" type="button" onclick="scqHint('s10')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button>
+          <button class="scq-check" id="s15-scq-check" type="button" disabled onclick="scqCheck('s15')">צדקתי?</button>
+          <button class="scq-hint" id="s15-scq-hint" type="button" onclick="scqHint('s15')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button>
         </div>
         <button class="btn-back" onclick="goBack()">חזרה</button>
       </div>
     </div>
   </section>
 
-  <!-- S10 feedback popup + hint overlay — OUTSIDE .screen so a screen swap never
+  <!-- S15 feedback popup + hint overlay — OUTSIDE .screen so a screen swap never
        leaves them showing; goTo() closes them by id suffix. -->
-  <div class="scq-popup hidden" id="s10-scq-popup" role="status" aria-live="polite">
+  <div class="scq-popup hidden" id="s15-scq-popup" role="status" aria-live="polite">
     <div class="scq-popup-header">
-      <p class="scq-popup-title" id="s10-scq-popup-title"></p>
+      <p class="scq-popup-title" id="s15-scq-popup-title"></p>
     </div>
-    <div class="scq-popup-body" id="s10-scq-popup-body"></div>
+    <div class="scq-popup-body" id="s15-scq-popup-body"></div>
   </div>
-  <div class="scq-hint-overlay hidden" id="s10-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s10')">
-    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>נסו להיזכר</strong></p><p>קיימת נוסחה אותה למדתם בעבר לחישוב נפח של תיבה או קובייה.</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s10')">חזרה לשאלה</button></div>
+  <div class="scq-hint-overlay hidden" id="s15-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s15')">
+    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>נסו להיזכר</strong></p><p>קיימת נוסחה אותה למדתם בעבר לחישוב נפח של תיבה או קובייה.</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s15')">חזרה לשאלה</button></div>
   </div>
+
+
+  <!-- ═══ S16 — Storyboard slide 24 · Guess-question · experiments path ═══
+       The experiments-path twin of S10 (comic path, slide 13): predict how a
+       non-geometric body is measured, before the displacement applet shows it.
+       No correct/incorrect — any pick reveals the bubble and unlocks המשך.
+       Flow: aquarium S15 → S16 → displacement S17. -->
+  <section class="screen" data-screen="16" id="s16">
+    <div class="exp exp--question">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
+      </div>
+      <div class="exp-head exp-head--question">
+        <h1 class="exp-title">מדידת נפח לגוף שאינו הנדסי</h1>
+        <p class="exp-instruction">נחשו – איך נמדוד נפח של <strong>גופים שאינם הנדסיים</strong>, כמו אלה שבתמונה?</p>
+      </div>
+      <div class="s16-row">
+      <div class="scq-answers guess-options" id="s16-guess" role="radiogroup" aria-label="נחשו – איך נמדוד נפח של גופים שאינם הנדסיים, כמו אלה שבתמונה?">
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s16', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s16', this)"><span class="scq-opt-text">נחתוך אותם לחלקים ונמדוד עם סרגל</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s16', this)"><span class="scq-opt-text">נכניס אותם למים</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s16', this)"><span class="scq-opt-text">נעריך אותם לפי העין</span><span class="scq-radio" aria-hidden="true"></span></button>
+      </div>
+      <div class="scq-figure s16-figure">
+        <img src="assets/img/s16-nongeometric.jpg" alt="גולת זכוכית, אגוז, מפתח ישן וחייל צעצוע מונחים בשורה על משטח עץ">
+      </div>
+      </div>
+    </div>
+    <!-- S16 had a bubble but no mascot, so its beak pointed at nothing. It is the
+         experiments-path twin of S10, so it gets S19's left-band arrangement (this path
+         keeps the right side for the figure). -->
+    <!-- Same arrangement as S19, its comic-path twin: top-anchored in the band left of the
+         centred figure (460px wide here, so 410px of room). -->
+    <!-- QA 2026-08-29: down to the bottom band, above the nav bar, rather than top-anchored beside
+         the figure. `bottom`, not `top`: the canvas is 1280/aspect tall (15-ui.js), so a top offset
+         drifts away from the bar as the window widens. s19, the comic-path twin, carries a
+         byte-identical style attribute and is deliberately NOT changed — it was not in this QA. -->
+    <div class="companion-say companion-say--left" style="left: 14px; bottom: 88px;">
+      <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
+           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 252px;"></video>
+      <p class="companion-bubble hidden" id="s16-guess-bubble" style="--bubble-w: 240px;">אל תדאגו, לא תישארו סקרנים! עכשיו נלמד איך עושים את זה!</p>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s16-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
 
 
   <!-- ═══════════════════════════════════════════════════════════
-       S11 — Screens 28–29 · Flooding/overflow applet (experiments path)
+       S17 — Screens 25–26 · Water-displacement applet (experiments path)
+       Extends the App/ marble-in-cylinder prototype. Drag the marble
+       into the graduated cylinder → the water rises 50→62 mL, the
+       marble sinks, and the displacement explanation is revealed.
+       Uses the engine's scale-safe createPointerDnd for the drag.
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="17" id="s17">
+    <!-- Storyboard slide 25 — the INTERACTION only: title, instruction, the applet. Everything the
+         deck puts on slide 26 (the "what happened here?" explanation, the rule, the mascot's
+         caveat) lives on s18 now. They were one screen until 2026-08-29, with slide 26's content
+         revealed in place 900ms after the drop; the deck draws two screens and the reveal made the
+         second one easy to miss. `המשך` still unlocks on the drop — dispDrop() enables it. -->
+    <div class="exp">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
+      </div>
+      <div class="exp-head">
+        <h1 class="exp-title">שיטת ארכימדס – "דחיקת מים"</h1>
+        <p class="exp-instruction" id="disp-instruction">הכניסו את הגולה אל תוך המשורה.</p>
+      </div>
+      <div class="disp-stage">
+        <div class="disp-applet">
+          <div class="disp-vessel-col">
+          <div class="disp-cylinder-wrap" id="disp-cylinder">
+            <img class="disp-cylinder-img" src="assets/img/s17-cylinder.svg?v=3" alt="משורה מדורגת עם מים עד קו 50 מ&quot;ל" draggable="false">
+            <div class="disp-water" id="disp-water"></div>
+            <img class="disp-sunk-marble" id="disp-sunk-marble" src="assets/img/s17-marble.svg?v=2" alt="" draggable="false">
+            <div class="disp-badge" id="disp-badge">50 מ"ל</div>
+          </div>
+          <div class="disp-marble-zone">
+            <img id="disp-marble" src="assets/img/s17-marble.svg?v=2" alt="גולת זכוכית ירוקה — נִתנת לגרירה" draggable="false">
+            <p class="disp-drag-hint" id="disp-drag-hint">גררו אותי למשורה</p>
+          </div>
+          <!-- `is-hidden` (visibility), not the `hidden` ATTRIBUTE: taking it out of flow and putting it
+               back on the drop shifted the applet by 29px. It reserves its space from the first paint.
+               It lives in the vessel column so it sits centred directly under the cylinder. -->
+          <button class="disp-reset is-hidden" id="disp-reset" type="button" onclick="dispReset()">מדידה מחדש</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s17-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S18 — Storyboard slide 26 · what the displacement showed ═══
+       The second half of the old s17. Same two-column shape as s21 (slide 29's result screen), so
+       the two applet conclusions read alike: the vessel on the left, and heading, paragraph, boxed
+       rule and the mascot down the right. The vessel is the applet's OWN markup frozen in its
+       finished state — `.risen` baked into the class list instead of added by dispDrop() — so the
+       learner sees exactly the picture they just made rather than a separate illustration of it.
+       It carries NO ids: every id in that block belongs to the live applet on s17. -->
+  <section class="screen" data-screen="18" id="s18">
+    <div class="exp exp--content exp--split">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
+      </div>
+      <div class="split-stage">
+        <div class="split-figure split-figure--vessel">
+          <div class="disp-cylinder-wrap risen" role="img" aria-label="משורה מדורגת ובתוכה הגולה; מפלס המים עלה מ-50 ל-62 מ&quot;ל">
+            <img class="disp-cylinder-img" src="assets/img/s17-cylinder.svg?v=3" alt="" draggable="false">
+            <div class="disp-water"></div>
+            <img class="disp-sunk-marble" src="assets/img/s17-marble.svg?v=2" alt="" draggable="false">
+            <div class="disp-badge">62 מ"ל</div>
+          </div>
+        </div>
+        <div class="split-side">
+          <!-- Copy is storyboard slide 26 verbatim: the principle is one sentence with the bold on
+               its closing clause rather than on a "עיקרון ארכימדס:" label the deck does not have,
+               and the conclusion is spelled out in words. -->
+          <h1 class="exp-title">מה קרה כאן?</h1>
+          <p class="exp-instruction">מפלס המים עלה ברגע שהגולה נכנסה למשורה.</p>
+          <p class="exp-instruction">עיקרון ארכימדס אומר שכשמכניסים גוף למים, מפלס המים עולה<br><strong>בכמות שווה לנפח הגוף בדיוק.</strong></p>
+          <p class="split-conclusion"><strong>נפח המים הסופי פחות נפח המים המקורי<br>=<br>נפח הגולה!</strong></p>
+          <div class="companion-say companion-say--inline companion-say--right split-say">
+            <p class="companion-bubble s18-gif" style="--bubble-w: 375px;">עיקרון זה תקף לגופים שלא<br>מתמוססים במים.<span class="s18-para-gap"></span>אפשר לעטוף גופים שרגישים למים<br>בשכבת מגן דקה לפני שמכניסים&nbsp;למשורה.</p>
+            <!-- Slide 26 notes: "גיפ מופיע אחרי 5 שניות." — he and his bubble
+                 fade in together at 5s (bubble: QA 2026-10-12). Classed per element, not on the
+                 .companion-say wrapper, which must not become a stacking context.
+                 2026-10-12: the soap clip was swapped for the ping-pong-ball one (orange_pingpong /
+                 blue_pingpong) at the designer's request. -->
+            <video class="companion s18-gif" id="s18-gif" src="assets/img/character-orange-pingpong-ball.mp4?v=4" alt="" aria-hidden="true"
+                 data-pose="pingpong-ball" draggable="false" autoplay loop muted playsinline style="--cw: 170px;"></video>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s18-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S19 — Screen 27 · Guess-question (no feedback) · experiments path ═══
+       Pick any option → a companion bubble appears and Continue unlocks.
+       No correct/incorrect. Flow: displacement result S18 → S19 → flooding S20. -->
+  <section class="screen" data-screen="19" id="s19">
+    <div class="exp exp--question">
+      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
+      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
+           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
+        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
+          <span>לערוך ניסויים</span></button>
+        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
+        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
+        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
+          <span>לקרוא קומיקס</span></button>
+      </div>
+      <div class="exp-head exp-head--question">
+        <h1 class="exp-title">מדידת נפח לגוף שאינו נכנס במשורה</h1>
+        <p class="exp-instruction">נחשו – איך נמדוד נפח של גופים גדולים שלא נכנסים במשורה?</p>
+      </div>
+      <!-- 2026-10-11: options + photo share one row (options right, photo left — RTL DOM order),
+           so the options start right under the stem instead of below the photo. -->
+      <div class="s19-row">
+      <div class="scq-answers guess-options" id="s19-guess" role="radiogroup" aria-label="נחשו – איך נמדוד נפח של גופים גדולים שלא נכנסים במשורה?">
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s19', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s19', this)"><span class="scq-opt-text">נמדוד את האורך שלהם</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s19', this)"><span class="scq-opt-text">נכניס אותם לכלי מים גדול אחר</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s19', this)"><span class="scq-opt-text">לא ניתן למדוד נפח של גופים כאלה</span><span class="scq-radio" aria-hidden="true"></span></button>
+      </div>
+      <div class="scq-figure s19-figure">
+        <img src="assets/img/s19-large-bodies.jpg" alt="אבן גדולה מונחת ליד משורה קטנה שהיא לא נכנסת לתוכה">
+      </div>
+      </div>
+    </div>
+    <!-- The line is the companion's, so sprite and bubble are ONE authored .companion-say
+         group (unit-css): he stands in the free left band, the bubble sits to his right and
+         the beak points at him. guessPick()/guessEnter() only toggle .hidden on the id, so
+         living outside .exp is transparent to them — and .hidden collapses the bubble alone,
+         leaving him exactly where he was. -->
+    <!-- QA 2026-08-29: bottom-anchored in the free band left of the centred figure, with the bubble
+         pulled up and in over the sprite's shoulder. `bottom`, not the `top: 154px` this used to
+         carry: the canvas is 1280/aspect tall (15-ui.js), so a top offset drifts DOWN towards the
+         nav bar as the window widens, which is the direction that actually hurts here. The bubble's
+         negative margin-left is what tucks it in — .companion-say--left lays sprite then bubble
+         left-to-right, and 260px of bubble beside a 252px sprite would otherwise reach the options.
+         ⚠️ bottom is 88, not the 20 the QA set live: `bottom` measures from the CANVAS floor, not
+         from the bar, so 20 put the sprite's lower 54px behind the nav-bar divider and cut his legs
+         off. 88 = the bar's 74 plus 14 of air, which is what s16's twin group already uses. -->
+    <div class="companion-say companion-say--left" style="left: 14px; bottom: 88px;">
+      <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
+           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 252px;"></video>
+      <p class="companion-bubble hidden" id="s19-guess-bubble" style="--bubble-w: 260px; margin-left: -60px; margin-top: 20px;">בואו נלמד בדיוק איך לעשות את זה!</p>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s19-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       S20 — Screens 28–29 · Flooding/overflow applet (experiments path)
        Drag the rock into the brim-full bowl → water overflows into the
        tray below; spilled water = the rock's volume. CSS/SVG shapes
-       (final art to be produced). Experiments path: S10→S9→S11→merge.
+       (final art to be produced). Flow: guess S19 → S20 → flooding result S21.
        ═══════════════════════════════════════════════════════════ -->
-  <section class="screen" data-screen="11" id="s11">
+  <section class="screen" data-screen="20" id="s20">
     <div class="exp">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
@@ -955,7 +1072,7 @@
         <div class="flood-scene">
           <div class="flood-bowl" id="flood-bowl">
             <div class="flood-bowl-water"></div>
-            <img class="flood-sunk-rock" src="assets/img/s11-rock.png" alt="" aria-hidden="true" draggable="false">
+            <img class="flood-sunk-rock" src="assets/img/s20-rock.png" alt="" aria-hidden="true" draggable="false">
             <span class="flood-stream flood-stream--l"></span>
             <span class="flood-stream flood-stream--r"></span>
           </div>
@@ -964,7 +1081,7 @@
         </div>
 
         <div class="flood-rock-zone">
-          <img class="flood-rock" id="flood-rock" src="assets/img/s11-rock.png" alt="אבן — נִתנת לגרירה" draggable="false">
+          <img class="flood-rock" id="flood-rock" src="assets/img/s20-rock.png" alt="אבן — נִתנת לגרירה" draggable="false">
           <p class="flood-hint" id="flood-hint">גררו את האבן לקערה</p>
         </div>
 
@@ -972,18 +1089,18 @@
 
     </div>
     <div class="nav-bar">
-      <button class="btn-continue" id="s11-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s20-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
 
 
-  <!-- ═══ S33 — Storyboard slide 29 · what the flooding method measured ═══
-       Its own screen, not a panel inside the applet: slide 28 is the experiment (s11) and slide 29
+  <!-- ═══ S21 — Storyboard slide 29 · what the flooding method measured ═══
+       Its own screen, not a panel inside the applet: slide 28 is the experiment (s20) and slide 29
        is the result, and QA 2026-08-24 (slide 13) asked for them separated. The caveat about
        floating bodies is the mascot's line here, per the same note, and he holds the ping-pong
-       ball slide 29 gives him. Flow: flooding S11 → S33 → flip-cards S20. -->
-  <section class="screen" data-screen="33" id="s33">
+       ball slide 29 gives him. Flow: flooding S20 → S21 → shared ending S22. -->
+  <section class="screen" data-screen="21" id="s21">
     <!-- Two columns, as storyboard slide 29 lays it out (QA 2026-08-25, slide 19): the photo on
          the left, and on the right the heading, the paragraph, the boxed conclusion and then the
          mascot with his caveat. The previous single centred column stacked the bubble on top of
@@ -1005,7 +1122,7 @@
       <div class="split-stage">
         <div class="split-figure">
           <div class="scq-figure" style="width: 100%">
-            <img src="assets/img/s33-pour-to-cylinder.jpg" alt="מים נמזגים מקערת האיסוף אל תוך משורה מדורגת המסומנת עד 250 מ&quot;ל">
+            <img src="assets/img/s21-pour-to-cylinder.jpg" alt="מים נמזגים מקערת האיסוף אל תוך משורה מדורגת המסומנת עד 250 מ&quot;ל">
           </div>
         </div>
         <div class="split-side">
@@ -1021,327 +1138,17 @@
       </div>
     </div>
     <div class="nav-bar">
-      <button class="btn-continue" id="s33-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s21-continue" onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
 
 
-  <!-- ═══════════════════════════════════════════════════════════
-       S12 — Screen 50 · TransitionScreen (branch merge → practice)
-       Both learning paths (comic / experiments) continue here.
-       ═══════════════════════════════════════════════════════════ -->
-  <section class="screen" data-screen="12" id="s12">
-    <!-- id, because CHARACTER_SLOTS.s12 hands the mascot to this container with `into` and he is
-         laid out as the third row of the column, not floated over it. -->
-    <div class="transition-content" id="s12-content">
-      <h1 class="transition-title">מה נשאר לנו בראש?</h1>
-      <p class="transition-sub">שתי שאלות חימום קלילות לפני שנתקדם</p>
-    </div>
-    <div class="nav-bar">
-      <button class="btn-continue" id="s12-continue" onclick="advanceScreen()">שנמשיך?</button>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-
-  <!-- ═══ S13 — Standard practice Q1 (item 05) · stone displacement 73−50=23 ═══ -->
-  <section class="screen" data-screen="13" id="s13">
-    <nav class="progress-question" aria-label="ניווט שאלות">
-      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
-      <div class="progress-question__connector" data-connector="1"></div>
-      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
-      <div class="progress-question__connector" data-connector="2"></div>
-      <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
-      <div class="progress-question__connector" data-connector="3"></div>
-      <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
-      <div class="progress-question__connector" data-connector="4"></div>
-      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
-    </nav>
-    <div class="scq-question scq-question--textonly">
-      <p class="scq-qtext">בניסוי מעבדה הילה מילאה משורה במים עד לקו 50&nbsp;מ"ל, והכניסה פנימה אבן קטנה.<br>גובה המים במשורה עלה ל-73&nbsp;מ"ל.<br><strong>מה נפח האבן?</strong></p>
-      <div class="scq-answers" id="s13-answers" role="radiogroup" aria-label="מה נפח האבן?">
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s13','a')"><span class="scq-opt-text">73 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s13','b')"><span class="scq-opt-text">50 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s13','c')"><span class="scq-opt-text">23 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s13','d')"><span class="scq-opt-text">123 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-      </div>
-    </div>
-    <div class="scq-bar">
-      <div class="scq-bar-main">
-        <button class="scq-check" id="s13-scq-check" type="button" disabled onclick="scqCheck('s13')">צדקתי?</button>
-        <button class="scq-hint" id="s13-scq-hint" type="button" onclick="scqHint('s13')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button>
-      </div>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-  <div class="scq-popup hidden" id="s13-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s13-scq-popup-title"></p></div><div class="scq-popup-body" id="s13-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s13-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s13')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>בכמה עלה מפלס המים במשורה?</strong></p><p>נפח הגוף שווה להפרש בין הקריאה הסופית של מפלס המים במשורה לקריאה ההתחלתית</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s13')">חזרה לשאלה</button></div></div>
-
-  <!-- ═══ S14 — Standard practice Q2 (item 06) · bowling-ball flooding ═══ -->
-  <section class="screen" data-screen="14" id="s14">
-    <nav class="progress-question" aria-label="ניווט שאלות">
-      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
-      <div class="progress-question__connector" data-connector="1"></div>
-      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
-      <div class="progress-question__connector" data-connector="2"></div>
-      <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
-      <div class="progress-question__connector" data-connector="3"></div>
-      <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
-      <div class="progress-question__connector" data-connector="4"></div>
-      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
-    </nav>
-    <div class="scq-question scq-question--withimage">
-      <div class="scq-figure">
-        <img src="assets/img/s14-bowling-ball.jpg?v=2" alt="כדורי באולינג צבעוניים מונחים בשני טורים על מסילת החזרה">
-      </div>
-      <div class="scq-side">
-      <p class="scq-qtext">במפעל לייצור כדורי באולינג קרתה תקלה המשפיעה על נפח הכדורים ועלולה לפגום ביכולת לשחק עם הכדורים.<br><br>לאחר תיקון התקלה מנהל המפעל רצה לבדוק את הנפח של הכדור האחרון שיצא מפס הייצור כדי לוודא שהתקלה אכן נפתרה.<br><br><strong>איזו שיטה מתאימה למדידת נפח הכדור?</strong></p>
-      <div class="scq-answers" id="s14-answers" role="radiogroup" aria-label="איזו שיטה מתאימה למדידת נפח הכדור?">
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s14','a')"><span class="scq-opt-text">להכניס את הכדור לכלי עם מים ולמדוד כמה מים נשפכו</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s14','b')"><span class="scq-opt-text">להעריך את נפח הכדור לפי העין</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s14','c')"><span class="scq-opt-text">לשקול את הכדור במאזניים ולחלק את המסה ב-2</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s14','d')"><span class="scq-opt-text">למדוד את היקף וקוטר הכדור ולהכפיל זה בזה</span><span class="scq-radio" aria-hidden="true"></span></button>
-      </div>
-      </div>
-    </div>
-    <div class="scq-bar">
-      <div class="scq-bar-main">
-        <button class="scq-check" id="s14-scq-check" type="button" disabled onclick="scqCheck('s14')">צדקתי?</button>
-        <button class="scq-hint" id="s14-scq-hint" type="button" onclick="scqHint('s14')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button>
-      </div>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-  <div class="scq-popup hidden" id="s14-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s14-scq-popup-title"></p></div><div class="scq-popup-body" id="s14-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s14-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s14')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>הגוף נכנס למשורה?</strong></p><p>אם לא - כיצד אפשר להשתמש במים כדי למדוד את נפחו?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s14')">חזרה לשאלה</button></div></div>
-
-  <!-- ═══ S15 — Standard practice Q3 (item 07) · scientific-integrity argument ═══ -->
-  <section class="screen" data-screen="15" id="s15">
-    <nav class="progress-question" aria-label="ניווט שאלות">
-      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
-      <div class="progress-question__connector" data-connector="1"></div>
-      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
-      <div class="progress-question__connector" data-connector="2"></div>
-      <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
-      <div class="progress-question__connector" data-connector="3"></div>
-      <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
-      <div class="progress-question__connector" data-connector="4"></div>
-      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
-    </nav>
-    <!-- ImageHotspotQuestion (storyboard slide 61) — reuses the SCQ controller.
-         Each option is TWO controls sharing one data-id: the readable bubble
-         beside the photo (the real role="radio") and a ring drawn over the
-         child in the photograph (aria-hidden + tabindex -1, so it is a mouse
-         affordance that does not double-announce). Both carry .scq-opt, so
-         scqSelect()/scqMark() light them up together.
-         Ring --x/--y are % of the photo box, measured off the delivered art;
-         left-to-right the children are a (24%), c (39%), b (57%), d (82%).
-         The two RIGHTMOST children's bubbles go in the first (physically right,
-         under RTL) column so each bubble sits on the same side as its child. -->
-    <div class="hotspot-question hotspot-question--photo">
-      <p class="scq-qtext">הילדים במעבדה מנסים למדוד נפח של כפית עשויה ממתכת כדי לייצר סדרת כפיות זהות.<br>לחצו על הילד שהטיעון שלו הוא מדעי ומבוסס על ראיה.</p>
-      <!-- Each statement is placed AROUND the photo, not in two flanking columns: the two OUTER
-           children (a leftmost, d rightmost) keep a bubble on their own side with the beak aimed
-           inward, and the two INNER ones (c, b) take a bubble above the photo with the beak aimed
-           down at their face. --bx is the bubble's left edge and --tail the beak's offset along it,
-           both in stage coordinates, so a beak lands on its child's face without the bubble having
-           to be centred there. Photo-relative face x: a 151, c 245, b 358, d 515 of 628 (×0.88 since the
-           2026-10-10 re-layout that keeps bubble a clear of the final popup — see css/style.css).
-           DOM order is photo-then-bubbles so the bubbles paint over the photo edges, and the four
-           radios read right-to-left (d, b, c, a) to match the RTL visual order. -->
-      <div class="hotspot-stage" id="s15-answers" role="radiogroup" aria-label="איזה טיעון מדעי ומבוסס על ראיה?">
-        <div class="hotspot-photo">
-          <img src="assets/img/s15-four-kids.jpg" alt="ארבעה ילדים בחלוקי מעבדה ומשקפי מגן עומדים ליד שולחן במעבדה">
-          <button class="scq-opt hotspot-area" type="button" data-id="d" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','d')" style="--x:82%;--y:58%;--w:13%;--h:46%"></button>
-          <span class="hotspot-pop" data-id="d" aria-hidden="true" style="--x:80%;--y:56%;--rw:12.5%;--rh:34%"></span>
-          <button class="scq-opt hotspot-area" type="button" data-id="b" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','b')" style="--x:57%;--y:58%;--w:13%;--h:46%"></button>
-          <span class="hotspot-pop" data-id="b" aria-hidden="true" style="--x:57.6%;--y:55%;--rw:11.5%;--rh:34%"></span>
-          <button class="scq-opt hotspot-area" type="button" data-id="c" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','c')" style="--x:39%;--y:58%;--w:13%;--h:46%"></button>
-          <span class="hotspot-pop" data-id="c" aria-hidden="true" style="--x:39.9%;--y:57%;--rw:10.5%;--rh:33%"></span>
-          <button class="scq-opt hotspot-area" type="button" data-id="a" aria-hidden="true" tabindex="-1" onclick="scqSelect('s15','a')" style="--x:24%;--y:58%;--w:13%;--h:46%"></button>
-          <span class="hotspot-pop" data-id="a" aria-hidden="true" style="--x:21.8%;--y:57%;--rw:10.5%;--rh:33%"></span>
-        </div>
-        <button class="scq-opt hotspot-bubble hotspot-bubble--side hotspot-bubble--right" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s15','d')">
-          <span class="scq-opt-text">הכנסתי את הכפית למשורה עם מים. המים עלו מ-50 ל-<span class="nobr">70 מ"ל</span>, ולכן נפח הכפית הוא <span class="nobr">20 מ"ל</span>.</span>
-        </button>
-        <button class="scq-opt hotspot-bubble hotspot-bubble--above" style="--bx: 670px; --tail: 50px" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s15','b')">
-          <span class="scq-opt-text">הסתכלתי על הכפית והערכתי לפי העין שהנפח הוא בערך <span class="nobr">20 מ"ל</span>.</span>
-        </button>
-        <button class="scq-opt hotspot-bubble hotspot-bubble--above" style="--bx: 340px; --tail: 281px" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s15','c')">
-          <span class="scq-opt-text">הנחתי את הכפית על מאזניים וקיבלתי <span class="nobr">25 גרם</span>. לכן הנפח הוא 25.</span>
-        </button>
-        <button class="scq-opt hotspot-bubble hotspot-bubble--side hotspot-bubble--left" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s15','a')">
-          <span class="scq-opt-text">מדדתי את הכפית בסרגל, ובכל פעם יצא לי אורך אחר. החלטתי לקבוע שהנפח יהיה האורך · רוחב · גובה.</span>
-        </button>
-      </div>
-    </div>
-    <div class="scq-bar">
-      <div class="scq-bar-main">
-        <button class="scq-check" id="s15-scq-check" type="button" disabled onclick="scqCheck('s15')">צדקתי?</button>
-        <button class="scq-hint" id="s15-scq-hint" type="button" onclick="scqHint('s15')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button>
-      </div>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-  <div class="scq-popup hidden" id="s15-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s15-scq-popup-title"></p></div><div class="scq-popup-body" id="s15-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s15-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s15')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>מהו טיעון מדעי?</strong></p><p>טיעון מדעי נשען על משהו שנמדד או נצפה בפועל.</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s15')">חזרה לשאלה</button></div></div>
-
-  <!-- ═══ S16 — Standard practice Q4 (item 09) · crystals flooding conclusion ═══ -->
-  <section class="screen" data-screen="16" id="s16">
-    <nav class="progress-question" aria-label="ניווט שאלות">
-      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
-      <div class="progress-question__connector" data-connector="1"></div>
-      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
-      <div class="progress-question__connector" data-connector="2"></div>
-      <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
-      <div class="progress-question__connector" data-connector="3"></div>
-      <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
-      <div class="progress-question__connector" data-connector="4"></div>
-      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
-    </nav>
-    <div class="scq-question scq-question--withimage">
-      <div class="scq-figure">
-        <img src="assets/img/s16-crystals.jpg" alt="קריסטלים גדולים ושקופים מונחים על משטח">
-      </div>
-      <div class="scq-side">
-      <p class="scq-qtext">אופק ואחיו קיבלו במתנה מסבתא קריסטלים ענקיים.<br />הם רצו לדעת איזה קריסטל הוא בעל נפח גדול יותר.<br />הם מילאו כלי גדול במים עד הקצה, השקיעו את הקריסטל הראשון, אספו את המים שנשפכו ומדדו את נפחם בכלי מדידה.<br />אופק טוען: "בעזרת כמות המים שנשפכו אפשר לדעת את נפח&nbsp;הקריסטל."<br><strong>האם אופק צודק?</strong></p>
-      <div class="scq-answers" id="s16-answers" role="radiogroup" aria-label="האם אופק צודק?">
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s16','a')"><span class="scq-opt-text">לא, מים שנשפכים מכלי לא יכולים לשמש למדידת נפח</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s16','b')"><span class="scq-opt-text">לא, ניתן להשתמש בשיטה זו רק למדידת גופים הנדסיים</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s16','c')"><span class="scq-opt-text">כן, בגלל שנפח המים שנשפכו שווה למסת הקריסטל</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s16','d')"><span class="scq-opt-text">כן, בגלל שנפח המים שנשפכו שווה לנפח הקריסטל</span><span class="scq-radio" aria-hidden="true"></span></button>
-      </div>
-      </div>
-    </div>
-    <div class="scq-bar">
-      <div class="scq-bar-main">
-        <button class="scq-check" id="s16-scq-check" type="button" disabled onclick="scqCheck('s16')">צדקתי?</button>
-        <button class="scq-hint" id="s16-scq-hint" type="button" onclick="scqHint('s16')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button>
-      </div>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-  <div class="scq-popup hidden" id="s16-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s16-scq-popup-title"></p></div><div class="scq-popup-body" id="s16-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s16-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s16')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><!-- slide 73 says "הספינה": the deck's known ship/crystal slip in this question (WORKDOC 6.ה), corrected as s16's feedback is. --><p><strong>המים בקערה מלאים עד הקצה</strong></p><p>מה קרה כשאופק הכניס את הקריסטל פנימה?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s16')">חזרה לשאלה</button></div></div>
-
-
-  <!-- ═══ S17 — Standard practice Q4 (item 08) · DragAndDropQuestion (matching) ═══
-       Flow order: Q3 (S15) → Q4 (this, S17) → Q5 (S16). Board rendered by JS. -->
-  <section class="screen" data-screen="17" id="s17">
-    <nav class="progress-question" aria-label="ניווט שאלות">
-      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
-      <div class="progress-question__connector" data-connector="1"></div>
-      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
-      <div class="progress-question__connector" data-connector="2"></div>
-      <div class="progress-question__item" data-question="3"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 3</span></div>
-      <div class="progress-question__connector" data-connector="3"></div>
-      <div class="progress-question__item" data-question="4"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 4</span></div>
-      <div class="progress-question__connector" data-connector="4"></div>
-      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 5</span></div>
-    </nav>
-    <div class="dnd-question dnd-question--columns dnd-question--beside-popup">
-      <p class="scq-qtext">גררו כל גוף לשיטת מדידת הנפח המתאימה לו.</p>
-      <div class="dnd-board">
-        <div class="dnd-targets" id="s17-ddq-targets"></div>
-        <div class="dnd-source-wrap">
-          <p class="dnd-source-label">גופים למדידה:</p><!-- not on slide 66: an interface label for the bank, kept by QA decision (2026-10-11, docs-and-tools/TEXT-FIDELITY.md) -->
-          <div class="dnd-source" id="s17-ddq-source"></div>
-        </div>
-      </div>
-    </div>
-    <div class="scq-bar">
-      <div class="scq-bar-main">
-        <button class="scq-check" id="s17-ddq-check" type="button" disabled onclick="ddqCheck('s17')">בדיקה</button>
-        <button class="scq-hint" id="s17-ddq-hint" type="button" onclick="ddqHint('s17')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button>
-      </div>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-  <div class="scq-popup hidden" id="s17-ddq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s17-ddq-popup-title"></p></div><div class="scq-popup-body" id="s17-ddq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s17-ddq-hint-overlay" onclick="if(event.target===this)ddqCloseHint('s17')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>מה הצורה של כל גוף?</strong></p><p>האם הוא נכנס במשורה?<br />האם יש לו צלעות ישרות?</p></div></div></div><button class="scq-hint-close" type="button" onclick="ddqCloseHint('s17')">חזרה לשאלה</button></div></div>
-
-
-  <!-- ═══ S18 — Warm-up 1 (item 03) · DragAndDropQuestion (task → tool, 5-way) ═══ -->
-  <section class="screen" data-screen="18" id="s18">
-    <!-- Storyboard slides 42/46 both call for this in their notes ("שאלה 1 מתוך 2" /
-         "2 מתוך 2"). Same component as the five-question bar, two slots instead of five. -->
-    <nav class="progress-question" aria-label="ניווט שאלות חימום">
-      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
-      <div class="progress-question__connector" data-connector="1"></div>
-      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
-    </nav>
-    <div class="dnd-question dnd-question--warmup dnd-question--columns dnd-question--beside-popup">
-      <p class="scq-qtext">לקבוצת מדענים צעירים נתנו משימות מדידה שונות.<br>התאימו בין משימת המדידה לבין הכלי המתאים לה.</p>
-      <div class="dnd-board">
-        <div class="dnd-targets" id="s18-ddq-targets"></div>
-        <div class="dnd-source-wrap">
-          <p class="dnd-source-label">משימות המדידה:</p><!-- not on slide 42/44: an interface label for the bank, kept by QA decision (2026-10-11, docs-and-tools/TEXT-FIDELITY.md) -->
-          <div class="dnd-source" id="s18-ddq-source"></div>
-        </div>
-      </div>
-    </div>
-    <div class="scq-bar">
-      <div class="scq-bar-main">
-        <button class="scq-check" id="s18-ddq-check" type="button" disabled onclick="ddqCheck('s18')">בדיקה</button>
-        <button class="scq-hint" id="s18-ddq-hint" type="button" onclick="ddqHint('s18')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button>
-      </div>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-  <div class="scq-popup hidden" id="s18-ddq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s18-ddq-popup-title"></p></div><div class="scq-popup-body" id="s18-ddq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s18-ddq-hint-overlay" onclick="if(event.target===this)ddqCloseHint('s18')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p>תחילה חשבו — מה רוצים למדוד בכל משימה? אורך, מסה, נפח של נוזל, או נפח של גוף מוצק? אחר כך בחרו כלי מדידה מתאים.</p></div></div></div><button class="scq-hint-close" type="button" onclick="ddqCloseHint('s18')">חזרה לשאלה</button></div></div>
-
-  <!-- ═══ S19 — Warm-up 2 (item 04) · SingleChoiceQuestion (fill-in) ═══ -->
-  <section class="screen" data-screen="19" id="s19">
-    <!-- Storyboard slides 42/46 both call for this in their notes ("שאלה 1 מתוך 2" /
-         "2 מתוך 2"). Same component as the five-question bar, two slots instead of five. -->
-    <nav class="progress-question" aria-label="ניווט שאלות חימום">
-      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
-      <div class="progress-question__connector" data-connector="1"></div>
-      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
-    </nav>
-    <!-- DropdownQuestion — reuses the SCQ controller: dropdown options are
-         .scq-opt (dqPick → scqSelect); onFinish colours the trigger. -->
-    <div class="dq-question dq-question--withimage">
-      <div class="scq-figure">
-        <img src="assets/img/s19-sharpener.jpg" alt="מחדד עפרונות קטן">
-      </div>
-      <!-- Laid out as storyboard slide 46 lays it out: "עיקרון דחיקת המים" is its own blue
-           heading, the instruction and the cloze sentence are ordinary text beneath it, and the
-           word menu is a block of its own, centred BELOW the sentence rather than sitting inside
-           it mid-line (QA 2026-08-24, slide 20). -->
-      <div class="dq-side">
-      <h2 class="dq-title">עיקרון דחיקת המים</h2>
-      <p class="dq-instruction">השלימו את המשפט הבא בעזרת תפריט המילים.</p>
-      <p class="dq-sentence">כדי למדוד נפח של מחדד, נכניס אותו למים שבמשורה ונבדוק כמה הם:</p>
-      <span class="dropdown dropdown--block" id="s19-dropdown">
-        <button class="dropdown-trigger is-placeholder" id="s19-dropdown-trigger" type="button" onclick="dqToggle('s19')"><span class="dropdown-trigger-text">בחרו מילה</span><span class="dropdown-caret" aria-hidden="true">▾</span></button>
-        <span class="dropdown-list hidden" id="s19-answers" role="listbox">
-          <button class="scq-opt dropdown-opt" type="button" role="option" data-id="a" onclick="dqPick('s19','a','עלו')">עלו</button>
-          <button class="scq-opt dropdown-opt" type="button" role="option" data-id="b" onclick="dqPick('s19','b','ירדו')">ירדו</button>
-          <button class="scq-opt dropdown-opt" type="button" role="option" data-id="c" onclick="dqPick('s19','c','נעלמו')">נעלמו</button>
-          <button class="scq-opt dropdown-opt" type="button" role="option" data-id="d" onclick="dqPick('s19','d','התקררו')">התקררו</button>
-        </span>
-      </span>
-      </div>
-    </div>
-    <div class="scq-bar">
-      <div class="scq-bar-main">
-        <button class="scq-check" id="s19-scq-check" type="button" disabled onclick="scqCheck('s19')">צדקתי?</button>
-        <button class="scq-hint" id="s19-scq-hint" type="button" onclick="scqHint('s19')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button>
-      </div>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-  <div class="scq-popup hidden" id="s19-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s19-scq-popup-title"></p></div><div class="scq-popup-body" id="s19-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s19-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s19')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>לאן המים זזים?</strong></p><p>כשמכניסים גוף למים, הוא תופס מקום ודוחק את המים. לאיזה כיוון הם זזים?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s19')">חזרה לשאלה</button></div></div>
-
-
-  <!-- ═══ S20 — Screens 30–32 · FlipCardsReveal (real-world uses) · experiments path ═══
+  <!-- ═══ S22 — Screens 30–32 · FlipCardsReveal (real-world uses) · shared ending (both paths) ═══
        Carousel/grid of 3 cards; click each to flip (image front → fact back).
        Continue unlocks once all three are revealed. Card fronts are production
-       placeholders (stock art to be licensed). Flow: S11 flooding → S20 → merge. -->
-  <section class="screen" data-screen="20" id="s20">
+       placeholders (stock art to be licensed). Flow: S21 (experiments) or S14 (comic) → S22 → S23. -->
+  <section class="screen" data-screen="22" id="s22">
     <div class="exp">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
@@ -1359,24 +1166,24 @@
         <h1 class="exp-title">איך מדידת נפח של מוצק נראית בעולם האמיתי?</h1>
         <p class="exp-instruction">השיטה של ארכימדס חיה ופועלת עד היום! לחצו על הקלפים כדי לגלות היכן משתמשים בה בתעשייה, במסחר ובמדע.</p>
       </div>
-      <div class="flip-grid" id="s20-flip">
-        <button class="flip-card" type="button" data-card="metal" aria-pressed="false" onclick="flipCard('s20', this)">
+      <div class="flip-grid" id="s22-flip">
+        <button class="flip-card" type="button" data-card="metal" aria-pressed="false" onclick="flipCard('s22', this)">
           <span class="flip-inner">
-            <span class="flip-front"><img class="flip-front-img" src="assets/img/s20-card-metal.jpg" alt="ערימות חלקי מתכת מבריקים על רצפת מפעל"></span>
+            <span class="flip-front"><img class="flip-front-img" src="assets/img/s22-card-metal.jpg" alt="ערימות חלקי מתכת מבריקים על רצפת מפעל"></span>
             <span class="flip-back"><span class="flip-back-text">יצרנים מוודאים שחלקי מתכת עומדים בתקנים על ידי מדידת נפחם בשיטות דחיקת המים וההצפה.</span></span>
           </span>
           <span class="flip-caption">תעשיית המתכות</span>
         </button>
-        <button class="flip-card" type="button" data-card="jewelry" aria-pressed="false" onclick="flipCard('s20', this)">
+        <button class="flip-card" type="button" data-card="jewelry" aria-pressed="false" onclick="flipCard('s22', this)">
           <span class="flip-inner">
-            <span class="flip-front"><img class="flip-front-img" src="assets/img/s20-card-jewelry.jpg" alt="תכשיטי זהב ומטבעות זהב מונחים זה על זה"></span>
+            <span class="flip-front"><img class="flip-front-img" src="assets/img/s22-card-jewelry.jpg" alt="תכשיטי זהב ומטבעות זהב מונחים זה על זה"></span>
             <span class="flip-back"><span class="flip-back-text">בחנויות זהב שיטת דחיקת המים מאפשרת למדוד נפח של תכשיטים בעלי צורה מורכבת.</span></span>
           </span>
           <span class="flip-caption">זהב ותכשיטים</span>
         </button>
-        <button class="flip-card" type="button" data-card="archaeology" aria-pressed="false" onclick="flipCard('s20', this)">
+        <button class="flip-card" type="button" data-card="archaeology" aria-pressed="false" onclick="flipCard('s22', this)">
           <span class="flip-inner">
-            <span class="flip-front"><img class="flip-front-img" src="assets/img/s20-card-archaeology.jpg" alt="שרידי עמודים ואבני בנייה מסודרים באתר חפירות רומי"></span>
+            <span class="flip-front"><img class="flip-front-img" src="assets/img/s22-card-archaeology.jpg" alt="שרידי עמודים ואבני בנייה מסודרים באתר חפירות רומי"></span>
             <span class="flip-back"><span class="flip-back-text">ארכיאולוגים מודדים נפח של פסלים וחפצים עתיקים בשיטות דחיקת המים וההצפה, מבלי לפגוע בהם.</span></span>
           </span>
           <span class="flip-caption">ארכיאולוגיה</span>
@@ -1384,80 +1191,19 @@
       </div>
     </div>
     <div class="nav-bar">
-      <button class="btn-continue" id="s20-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s22-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
 
 
-  <!-- ═══ S21 — Screen 27 · Guess-question (no feedback) · experiments path ═══
-       Pick any option → a companion bubble appears and Continue unlocks.
-       No correct/incorrect. Flow: displacement S9 → S21 → flooding S11. -->
-  <section class="screen" data-screen="21" id="s21">
-    <div class="exp exp--question">
-      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
-           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
-        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
-        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
-          <span>לערוך ניסויים</span></button>
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
-        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
-        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
-          <span>לקרוא קומיקס</span></button>
-      </div>
-      <div class="exp-head exp-head--question">
-        <h1 class="exp-title">מדידת נפח לגוף שאינו נכנס במשורה</h1>
-        <p class="exp-instruction">נחשו – איך נמדוד נפח של גופים גדולים שלא נכנסים במשורה?</p>
-      </div>
-      <!-- 2026-10-11: options + photo share one row (options right, photo left — RTL DOM order),
-           so the options start right under the stem instead of below the photo. -->
-      <div class="s21-row">
-      <div class="scq-answers guess-options" id="s21-guess" role="radiogroup" aria-label="נחשו – איך נמדוד נפח של גופים גדולים שלא נכנסים במשורה?">
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s21', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s21', this)"><span class="scq-opt-text">נמדוד את האורך שלהם</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s21', this)"><span class="scq-opt-text">נכניס אותם לכלי מים גדול אחר</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s21', this)"><span class="scq-opt-text">לא ניתן למדוד נפח של גופים כאלה</span><span class="scq-radio" aria-hidden="true"></span></button>
-      </div>
-      <div class="scq-figure s21-figure">
-        <img src="assets/img/s21-large-bodies.jpg" alt="אבן גדולה מונחת ליד משורה קטנה שהיא לא נכנסת לתוכה">
-      </div>
-      </div>
-    </div>
-    <!-- The line is the companion's, so sprite and bubble are ONE authored .companion-say
-         group (unit-css): he stands in the free left band, the bubble sits to his right and
-         the beak points at him. guessPick()/guessEnter() only toggle .hidden on the id, so
-         living outside .exp is transparent to them — and .hidden collapses the bubble alone,
-         leaving him exactly where he was. -->
-    <!-- QA 2026-08-29: bottom-anchored in the free band left of the centred figure, with the bubble
-         pulled up and in over the sprite's shoulder. `bottom`, not the `top: 154px` this used to
-         carry: the canvas is 1280/aspect tall (15-ui.js), so a top offset drifts DOWN towards the
-         nav bar as the window widens, which is the direction that actually hurts here. The bubble's
-         negative margin-left is what tucks it in — .companion-say--left lays sprite then bubble
-         left-to-right, and 260px of bubble beside a 252px sprite would otherwise reach the options.
-         ⚠️ bottom is 88, not the 20 the QA set live: `bottom` measures from the CANVAS floor, not
-         from the bar, so 20 put the sprite's lower 54px behind the nav-bar divider and cut his legs
-         off. 88 = the bar's 74 plus 14 of air, which is what s29's twin group already uses. -->
-    <div class="companion-say companion-say--left" style="left: 14px; bottom: 88px;">
-      <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
-           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 252px;"></video>
-      <p class="companion-bubble hidden" id="s21-guess-bubble" style="--bubble-w: 260px; margin-left: -60px; margin-top: 20px;">בואו נלמד בדיוק איך לעשות את זה!</p>
-    </div>
-    <div class="nav-bar">
-      <button class="btn-continue" id="s21-continue" disabled onclick="advanceScreen()">המשך</button>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-
-
-  <!-- ═══ S22 — Screens 33–38 · Multi-step measurement applet · experiments path ═══
+  <!-- ═══ S23 — Screens 33–38 · Multi-step measurement applet · shared ending (both paths) ═══
        4 steps: (1) drag chess-king → correct vessel (cylinder, 50→65) →
        (2) type its volume → reveal 15 mL → (3) drag hammer → flooding bowl →
        (4) type its volume → reveal 250 mL. Wrong vessel bounces back with an
        error. Numeric inputs have no feedback (gate the step on any value).
-       Flow: flip-cards S20 → S22 → merge. CSS/emoji placeholders (art to produce). -->
-  <section class="screen" data-screen="22" id="s22">
+       Flow: flip-cards S22 → S23 → S24. CSS/emoji placeholders (art to produce). -->
+  <section class="screen" data-screen="23" id="s23">
     <div class="exp">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
@@ -1479,20 +1225,20 @@
       <div class="meas-stage">
         <div class="meas-vessels">
           <div class="meas-vessel" id="meas-cyl" data-vessel="cyl">
-            <!-- The משורה's water and the sunk king are overlays on the SVG, the same way s34's
+            <!-- The משורה's water and the sunk king are overlays on the SVG, the same way s24's
                  measuring vessel does it (.meas-mv-wrap). measRender() toggles `has-king` on the
                  VESSEL — it always did; there was simply nothing here for it to act on, so the
                  cylinder drew empty through both steps (QA 2026-08-29). -->
             <div class="meas-cyl-wrap">
-              <img class="meas-cyl-img" src="assets/img/s9-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
+              <img class="meas-cyl-img" src="assets/img/s17-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
               <div class="meas-cyl-water"></div>
-              <img class="meas-cyl-king" src="assets/img/s22-chess-king.svg" alt="" aria-hidden="true" draggable="false">
+              <img class="meas-cyl-king" src="assets/img/s23-chess-king.svg" alt="" aria-hidden="true" draggable="false">
             </div>
             <div class="meas-badge" id="meas-cyl-badge">50 מ"ל</div>
             <span class="meas-vessel-label">משורה</span>
           </div>
           <div class="meas-vessel" id="meas-bowl" data-vessel="bowl">
-            <div class="meas-bowl"><div class="meas-bowl-water" id="meas-bowl-water"></div><img class="meas-bowl-object" src="assets/img/s22-hammer.svg?v=2" alt="" aria-hidden="true" draggable="false"></div>
+            <div class="meas-bowl"><div class="meas-bowl-water" id="meas-bowl-water"></div><img class="meas-bowl-object" src="assets/img/s23-hammer.svg?v=2" alt="" aria-hidden="true" draggable="false"></div>
             <!-- Step 4 (storyboard slide 37) makes the tray itself the drag source: the learner
                  pours it into the משורה. It is a child of the bowl vessel, which is also a drop
                  target — harmless, because the drag ghost is pointer-events:none so the drop
@@ -1520,20 +1266,20 @@
          mascot was removed. measRender() only sets textContent and toggles .hidden on the id. -->
     <p class="meas-reveal-pop hidden" id="meas-reveal" role="status"></p>
     <div class="nav-bar">
-      <button class="btn-continue" id="s22-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s23-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
 
 
-  <!-- ═══ S34 — Storyboard slides 36-38 · measurement applet, steps 3-4 ═══
+  <!-- ═══ S24 — Storyboard slides 36-38 · measurement applet, steps 3-4 ═══
        The second half of the applet. QA 2026-08-24 (slide 15) asked for steps 1-2 and 3-4 to be
        separated, and the deck's own reason is legible once you read slides 36/38 together: the
        משורה still reads 65 here (slide 36) while the 250 belongs to a DIFFERENT vessel, "כלי
        המדידה" (slide 38). One screen cannot show a cylinder that is both.
        Every id carries the `meas2-` prefix; mEl() in main.js picks the prefix from MEAS[step].screen.
-       Flow: measurement steps 1-2 S22 → S34 → overflow can S30. -->
-  <section class="screen" data-screen="34" id="s34">
+       Flow: measurement steps 1-2 S23 → S24 → overflow can S25. -->
+  <section class="screen" data-screen="24" id="s24">
     <div class="exp">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
@@ -1562,14 +1308,14 @@
                  hinted it was not the place to drag the hammer. `has-king` still lifts the water
                  to 65. -->
             <div class="meas-cyl-wrap">
-              <img class="meas-cyl-img" src="assets/img/s9-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
+              <img class="meas-cyl-img" src="assets/img/s17-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
               <div class="meas-cyl-water"></div>
             </div>
             <div class="meas-badge" id="meas2-cyl-badge">65 מ"ל</div>
             <span class="meas-vessel-label">משורה</span>
           </div>
           <div class="meas-vessel" id="meas2-bowl" data-vessel="bowl">
-            <div class="meas-bowl"><div class="meas-bowl-water" id="meas2-bowl-water"></div><img class="meas-bowl-object" src="assets/img/s22-hammer.svg?v=2" alt="" aria-hidden="true" draggable="false"></div>
+            <div class="meas-bowl"><div class="meas-bowl-water" id="meas2-bowl-water"></div><img class="meas-bowl-object" src="assets/img/s23-hammer.svg?v=2" alt="" aria-hidden="true" draggable="false"></div>
             <div class="meas-tray" id="meas2-tray"><div class="meas-tray-water" id="meas2-tray-water"></div></div>
             <span class="meas-vessel-label">קערת הצפה + כלי איסוף</span>
             <svg class="meas-pour-arrow hidden" id="meas2-pour-arrow" viewBox="0 0 90 120" aria-hidden="true"><path d="M78 108 C 40 104, 22 70, 24 22" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M8 34 L24 12 L40 34" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1580,7 +1326,7 @@
                250 reading here. 0-250 scale, so the level is readable — the משורה's 0-100 one is not. -->
           <div class="meas-vessel" id="meas2-mv" data-vessel="mv">
             <div class="meas-mv-wrap">
-              <img class="meas-cyl-img" src="assets/img/s22-cylinder-250.svg" alt="כלי מדידה מדורג עד 250 מ&quot;ל" draggable="false">
+              <img class="meas-cyl-img" src="assets/img/s23-cylinder-250.svg" alt="כלי מדידה מדורג עד 250 מ&quot;ל" draggable="false">
               <div class="meas-mv-water"></div>
             </div>
             <div class="meas-badge" id="meas2-mv-badge">0 מ"ל</div>
@@ -1604,73 +1350,17 @@
     </div>
     <p class="meas-reveal-pop hidden" id="meas2-reveal" role="status"></p>
     <div class="nav-bar">
-      <button class="btn-continue" id="s34-continue" disabled onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s24-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
 
 
-  <!-- ═══ S29 — Storyboard slide 24 · Guess-question · experiments path ═══
-       The experiments-path twin of S23 (comic path, slide 13): predict how a
-       non-geometric body is measured, before the displacement applet shows it.
-       No correct/incorrect — any pick reveals the bubble and unlocks המשך.
-       Flow: aquarium S10 → S29 → displacement S9. -->
-  <section class="screen" data-screen="29" id="s29">
-    <div class="exp exp--question">
-      <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
-      <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
-           so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
-        <button class="path-toggle-opt is-active" data-path="experiments" role="tab" aria-selected="true" onclick="switchLearningPath('experiments')">
-        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-flask-on"/></svg>
-        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-flask-off"/></svg>
-          <span>לערוך ניסויים</span></button>
-        <button class="path-toggle-opt" data-path="comic" role="tab" aria-selected="false" onclick="switchLearningPath('comic')">
-        <svg class="pt-icon pt-icon-on" aria-hidden="true"><use href="#pt-icon-comic-on"/></svg>
-        <svg class="pt-icon pt-icon-off" aria-hidden="true"><use href="#pt-icon-comic-off"/></svg>
-          <span>לקרוא קומיקס</span></button>
-      </div>
-      <div class="exp-head exp-head--question">
-        <h1 class="exp-title">מדידת נפח לגוף שאינו הנדסי</h1>
-        <p class="exp-instruction">נחשו – איך נמדוד נפח של <strong>גופים שאינם הנדסיים</strong>, כמו אלה שבתמונה?</p>
-      </div>
-      <div class="s29-row">
-      <div class="scq-answers guess-options" id="s29-guess" role="radiogroup" aria-label="נחשו – איך נמדוד נפח של גופים שאינם הנדסיים, כמו אלה שבתמונה?">
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="guessPick('s29', this)"><span class="scq-opt-text">נשקול אותם</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="guessPick('s29', this)"><span class="scq-opt-text">נחתוך אותם לחלקים ונמדוד עם סרגל</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="guessPick('s29', this)"><span class="scq-opt-text">נכניס אותם למים</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s29', this)"><span class="scq-opt-text">נעריך אותם לפי העין</span><span class="scq-radio" aria-hidden="true"></span></button>
-      </div>
-      <div class="scq-figure s29-figure">
-        <img src="assets/img/s29-nongeometric.jpg" alt="גולת זכוכית, אגוז, מפתח ישן וחייל צעצוע מונחים בשורה על משטח עץ">
-      </div>
-      </div>
-    </div>
-    <!-- S29 had a bubble but no mascot, so its beak pointed at nothing. It is the
-         experiments-path twin of S23, so it gets S21's left-band arrangement (this path
-         keeps the right side for the figure). -->
-    <!-- Same arrangement as S21, its comic-path twin: top-anchored in the band left of the
-         centred figure (460px wide here, so 410px of room). -->
-    <!-- QA 2026-08-29: down to the bottom band, above the nav bar, rather than top-anchored beside
-         the figure. `bottom`, not `top`: the canvas is 1280/aspect tall (15-ui.js), so a top offset
-         drifts away from the bar as the window widens. s21, the comic-path twin, carries a
-         byte-identical style attribute and is deliberately NOT changed — it was not in this QA. -->
-    <div class="companion-say companion-say--left" style="left: 14px; bottom: 88px;">
-      <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
-           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 252px;"></video>
-      <p class="companion-bubble hidden" id="s29-guess-bubble" style="--bubble-w: 240px;">אל תדאגו, לא תישארו סקרנים! עכשיו נלמד איך עושים את זה!</p>
-    </div>
-    <div class="nav-bar">
-      <button class="btn-continue" id="s29-continue" disabled onclick="advanceScreen()">המשך</button>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-
-
-  <!-- ═══ S30 — Storyboard slide 39 · The laboratory overflow can (question) ═══
-       Closes the experiments path: the learner meets the real instrument that
-       does by design what the S11 bowl-and-tray applet improvised.
-       Flow: measurement applet S22 → S30 → S31 → merge S12. -->
-  <section class="screen" data-screen="30" id="s30">
+  <!-- ═══ S25 — Storyboard slide 39 · The laboratory overflow can (question) ═══
+       Closes the shared ending: the learner meets the real instrument that
+       does by design what the bowl-and-tray (S20 / comic S13) improvised.
+       Flow: measurement applet S24 → S25 → S26 → warm-up intro S27. -->
+  <section class="screen" data-screen="25" id="s25">
     <div class="exp exp--content">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
@@ -1689,7 +1379,7 @@
            over a figure (QA 2026-08-24, slide 16). The stage centres the figure vertically. -->
       <div class="exp-stage exp-stage--centered">
         <div class="scq-figure" style="width: 700px">
-          <img src="assets/img/s30-overflow-can.jpg?v=2" alt="כלי גלילי ממתכת עם צינורית יוצאת מדופנו, ולידו כוס מדידה מזכוכית עם סימוני מ&quot;ל">
+          <img src="assets/img/s25-overflow-can.jpg?v=2" alt="כלי גלילי ממתכת עם צינורית יוצאת מדופנו, ולידו כוס מדידה מזכוכית עם סימוני מ&quot;ל">
         </div>
       </div>
     </div>
@@ -1699,14 +1389,14 @@
       <p class="companion-bubble" style="--bubble-w: 280px;">במעבדות משתמשים בכלי ייעודי למדידת נפח של מוצק בשיטת ההצפה. בחנו אותו וחשבו: איך הוא עובד?</p>
     </div>
     <div class="nav-bar">
-      <button class="btn-continue" id="s30-continue" onclick="advanceScreen()">אז איך זה עובד?</button>
+      <button class="btn-continue" id="s25-continue" onclick="advanceScreen()">אז איך זה עובד?</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
 
 
-  <!-- ═══ S31 — Storyboard slide 40 · How the overflow can works (answer) ═══ -->
-  <section class="screen" data-screen="31" id="s31">
+  <!-- ═══ S26 — Storyboard slide 40 · How the overflow can works (answer) ═══ -->
+  <section class="screen" data-screen="26" id="s26">
     <div class="exp exp--content">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
@@ -1734,44 +1424,110 @@
           <li>מודדים! נפח המים שעבר לכלי המדידה הוא בדיוק נפח החפץ.</li>
         </ol>
         <div class="scq-figure" style="width: 325px">
-          <img src="assets/img/s31-overflow-can-steps.jpg" alt="מים זורמים מהצינורית של הכלי המתכתי אל תוך כוס המדידה שמתחתיה">
+          <img src="assets/img/s26-overflow-can-steps.jpg" alt="מים זורמים מהצינורית של הכלי המתכתי אל תוך כוס המדידה שמתחתיה">
         </div>
       </div>
     </div>
     <div class="nav-bar">
-      <button class="btn-continue" id="s31-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s26-continue" onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
 
 
-  <!-- ═══ S32 — Storyboard slide 50 · Practice rules ═══
-       States the count and the pass bar before the scored practice begins.
-       The 80% rule itself lives in goToNextPart(); this screen is what tells
-       the learner about it.  Flow: warm-up 2 S19 → S32 → practice Q1 S13. -->
-  <section class="screen" data-screen="32" id="s32">
-    <!-- Laid out as storyboard slide 50 lays it out (QA 2026-08-25, slide 23). There is no
-         heading here: "אפשר להתחיל!" is the deck's BUTTON label, and it was being drawn twice —
-         once as an <h1> and once on the continue button. The count is the emphasis instead:
-         "5 שאלות" on its own line at 40px. The closing line is the mascot's, so it moves into a
-         bubble beside him rather than floating under the text. -->
-    <div class="transition-content transition-content--intro transition-content--rules">
-      <div class="transition-head">
-        <p class="transition-sub transition-lead-in">סיימנו את שלב הלימוד, נעבור לתרגול הראשון</p>
-        <p class="transition-count">נענה על 5 שאלות</p>
-      </div>
-      <p class="transition-sub">צריך לענות נכון על 4 שאלות (80%) לפחות.</p>
-    </div>
-    <div class="companion-say companion-say--right">
-      <p class="companion-bubble" style="--bubble-w: 300px;">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</p>
-      <video class="companion" src="assets/img/character-orange-headband.mp4?v=4" aria-hidden="true"
-           data-pose="headband" draggable="false" autoplay loop muted playsinline style="--cw: 298px;"></video>
+  <!-- ═══════════════════════════════════════════════════════════
+       S27 — Slide 41 · TransitionScreen (warm-up intro)
+       Follows the shared ending S26; both learning paths arrive here.
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="screen" data-screen="27" id="s27">
+    <!-- id, because CHARACTER_SLOTS.s27 hands the mascot to this container with `into` and he is
+         laid out as the third row of the column, not floated over it. -->
+    <div class="transition-content" id="s27-content">
+      <h1 class="transition-title">מה נשאר לנו בראש?</h1>
+      <p class="transition-sub">שתי שאלות חימום קלילות לפני שנתקדם</p>
     </div>
     <div class="nav-bar">
-      <button class="btn-continue" id="s32-continue" onclick="advanceScreen()">שנמשיך?</button>
+      <button class="btn-continue" id="s27-continue" onclick="advanceScreen()">שנמשיך?</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
+
+
+  <!-- ═══ S28 — Warm-up 1 (item 03) · DragAndDropQuestion (task → tool, 5-way) ═══ -->
+  <section class="screen" data-screen="28" id="s28">
+    <!-- Storyboard slides 42/46 both call for this in their notes ("שאלה 1 מתוך 2" /
+         "2 מתוך 2"). Same component as the five-question bar, two slots instead of five. -->
+    <nav class="progress-question" aria-label="ניווט שאלות חימום">
+      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
+      <div class="progress-question__connector" data-connector="1"></div>
+      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
+    </nav>
+    <div class="dnd-question dnd-question--warmup dnd-question--columns dnd-question--beside-popup">
+      <p class="scq-qtext">לקבוצת מדענים צעירים נתנו משימות מדידה שונות.<br>התאימו בין משימת המדידה לבין הכלי המתאים לה.</p>
+      <div class="dnd-board">
+        <div class="dnd-targets" id="s28-ddq-targets"></div>
+        <div class="dnd-source-wrap">
+          <p class="dnd-source-label">משימות המדידה:</p><!-- not on slide 42/44: an interface label for the bank, kept by QA decision (2026-10-11, docs-and-tools/TEXT-FIDELITY.md) -->
+          <div class="dnd-source" id="s28-ddq-source"></div>
+        </div>
+      </div>
+    </div>
+    <div class="scq-bar">
+      <div class="scq-bar-main">
+        <button class="scq-check" id="s28-ddq-check" type="button" disabled onclick="ddqCheck('s28')">בדיקה</button>
+        <button class="scq-hint" id="s28-ddq-hint" type="button" onclick="ddqHint('s28')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button>
+      </div>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+  <div class="scq-popup hidden" id="s28-ddq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s28-ddq-popup-title"></p></div><div class="scq-popup-body" id="s28-ddq-popup-body"></div></div>
+  <div class="scq-hint-overlay hidden" id="s28-ddq-hint-overlay" onclick="if(event.target===this)ddqCloseHint('s28')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p>תחילה חשבו — מה רוצים למדוד בכל משימה? אורך, מסה, נפח של נוזל, או נפח של גוף מוצק? אחר כך בחרו כלי מדידה מתאים.</p></div></div></div><button class="scq-hint-close" type="button" onclick="ddqCloseHint('s28')">חזרה לשאלה</button></div></div>
+
+
+  <!-- ═══ S29 — Warm-up 2 (item 04) · SingleChoiceQuestion (fill-in) ═══ -->
+  <section class="screen" data-screen="29" id="s29">
+    <!-- Storyboard slides 42/46 both call for this in their notes ("שאלה 1 מתוך 2" /
+         "2 מתוך 2"). Same component as the five-question bar, two slots instead of five. -->
+    <nav class="progress-question" aria-label="ניווט שאלות חימום">
+      <div class="progress-question__item" data-question="1"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
+      <div class="progress-question__connector" data-connector="1"></div>
+      <div class="progress-question__item" data-question="2"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
+    </nav>
+    <!-- DropdownQuestion — reuses the SCQ controller: dropdown options are
+         .scq-opt (dqPick → scqSelect); onFinish colours the trigger. -->
+    <div class="dq-question dq-question--withimage">
+      <div class="scq-figure">
+        <img src="assets/img/s29-sharpener.jpg" alt="מחדד עפרונות קטן">
+      </div>
+      <!-- Laid out as storyboard slide 46 lays it out: "עיקרון דחיקת המים" is its own blue
+           heading, the instruction and the cloze sentence are ordinary text beneath it, and the
+           word menu is a block of its own, centred BELOW the sentence rather than sitting inside
+           it mid-line (QA 2026-08-24, slide 20). -->
+      <div class="dq-side">
+      <h2 class="dq-title">עיקרון דחיקת המים</h2>
+      <p class="dq-instruction">השלימו את המשפט הבא בעזרת תפריט המילים.</p>
+      <p class="dq-sentence">כדי למדוד נפח של מחדד, נכניס אותו למים שבמשורה ונבדוק כמה הם:</p>
+      <span class="dropdown dropdown--block" id="s29-dropdown">
+        <button class="dropdown-trigger is-placeholder" id="s29-dropdown-trigger" type="button" onclick="dqToggle('s29')"><span class="dropdown-trigger-text">בחרו מילה</span><span class="dropdown-caret" aria-hidden="true">▾</span></button>
+        <span class="dropdown-list hidden" id="s29-answers" role="listbox">
+          <button class="scq-opt dropdown-opt" type="button" role="option" data-id="a" onclick="dqPick('s29','a','עלו')">עלו</button>
+          <button class="scq-opt dropdown-opt" type="button" role="option" data-id="b" onclick="dqPick('s29','b','ירדו')">ירדו</button>
+          <button class="scq-opt dropdown-opt" type="button" role="option" data-id="c" onclick="dqPick('s29','c','נעלמו')">נעלמו</button>
+          <button class="scq-opt dropdown-opt" type="button" role="option" data-id="d" onclick="dqPick('s29','d','התקררו')">התקררו</button>
+        </span>
+      </span>
+      </div>
+    </div>
+    <div class="scq-bar">
+      <div class="scq-bar-main">
+        <button class="scq-check" id="s29-scq-check" type="button" disabled onclick="scqCheck('s29')">צדקתי?</button>
+        <button class="scq-hint" id="s29-scq-hint" type="button" onclick="scqHint('s29')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button>
+      </div>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+  <div class="scq-popup hidden" id="s29-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s29-scq-popup-title"></p></div><div class="scq-popup-body" id="s29-scq-popup-body"></div></div>
+  <div class="scq-hint-overlay hidden" id="s29-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s29')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>לאן המים זזים?</strong></p><p>כשמכניסים גוף למים, הוא תופס מקום ודוחק את המים. לאיזה כיוון הם זזים?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s29')">חזרה לשאלה</button></div></div>
 
 
   <!-- ═══════════════ Shared image-zoom modal (outside .screen) ═══════════════ -->
@@ -1831,10 +1587,10 @@
 <script src="../unit-js/20-xapi.js?v=5"></script>
 <script src="../unit-js/25-report.js?v=1"></script>
 <script src="../unit-js/30-nav.js?v=4"></script>
-<script src="../unit-js/40-resume.js?v=1"></script>
+<script src="../unit-js/40-resume.js?v=3"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=2"></script>
-<script src="js/main.js?v=91"></script>
+<script src="js/main.js?v=100"></script>
 <script src="../unit-js/90-boot.js?v=3"></script>
 </body>
 </html>

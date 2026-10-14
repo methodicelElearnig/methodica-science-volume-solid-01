@@ -1,6 +1,6 @@
 'use strict';
 /* ═══════════════════ Shared UI ═══════════════════
-   Shared by all six components. DEFINITION-ONLY — every listener registration and the first
+   Shared by all seven components. DEFINITION-ONLY — every listener registration and the first
    scaleApp() call live in 90-boot.js, the one file with top-level side effects.
 
    Nothing here reports to the LRS. */
@@ -11,7 +11,7 @@
    announcer region. The only aria-live attributes here sit on the SCQ feedback popups, which are
    a different thing: they announce a *result*, not a navigation.
 
-   So this early-returns unless #sr-announcer exists, which makes it a no-op in all six parts as
+   So this early-returns unless #sr-announcer exists, which makes it a no-op in all seven parts as
    they stand. That is intentional: it keeps behaviour byte-identical through the extraction while
    turning the a11y improvement into a one-line opt-in (add the region to a part's markup and that
    part starts announcing). Adding the region is NOT part of this reconstruction — it changes what
@@ -112,7 +112,7 @@ function provisionImgZoom() {
     (document.getElementById('app') || document.body).appendChild(modal);
   }
   document.querySelectorAll(IMG_ZOOM_FRAMES).forEach(function (frame) {
-    /* Opt-out for a frame the magnifier does not belong on. Added for 02/s5, where the deck
+    /* Opt-out for a frame the magnifier does not belong on. Added for 03/s6 (02/s6 before the 2026-10-14 split), where the deck
        (slides 99–103) draws the two photos bare and the answer is given by marking an area on
        one of them — a control in the corner of a photo that IS the answer surface is noise. */
     if (frame.hasAttribute('data-no-zoom')) return;
@@ -181,11 +181,11 @@ function closeImageZoom() {
 
 /* White key for the mascot sprites. Every character-*.mp4 has a baked-in white background, and
    the old per-screen fix, mix-blend-mode: multiply, only hid it over white: wherever a mascot
-   overlapped a photo, the photo showed through his fur too (01/s29, 06's big-body guess). This
+   overlapped a photo, the photo showed through his fur too (01/s16, 06's big-body guess). This
    filter makes only near-white pixels transparent (R+G+B above ~2.94 of 3) and leaves the artwork
    fully opaque, so he stands IN FRONT of whatever is behind him. The feComposite clips the result
    to the source alpha; without it the filter region's transparent margin keys to opaque black.
-   Injected rather than authored so all six parts share one copy; `.companion` in unit-css uses it.
+   Injected rather than authored so all seven parts share one copy; `.companion` in unit-css uses it.
    CSS `filter: url()` only resolves same-document ids in Chromium, hence not an external .svg. */
 function injectMascotKey() {
   if (document.getElementById('mascot-white-key')) return;
@@ -200,7 +200,7 @@ function injectMascotKey() {
 }
 
 /* Delegated open/close. Registered from 90-boot.js.
-   Escape IS handled here now: the zoom reaches all six parts, and only part 01 has a keydown
+   Escape IS handled here now: the zoom reaches all seven parts, and only part 01 has a keydown
    listener of its own. Part 01 closes the zoom before falling through to comic paging, so by the
    time this handler runs there the modal is already hidden and closeImageZoom() is a no-op. */
 function initImgZoom() {

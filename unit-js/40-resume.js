@@ -1,12 +1,12 @@
 'use strict';
 /* ═══════════════════════════════════════════════════════════════════
    RESUME — save / restore execution state to KATA (xAPI State API)
-   Shared by all six components. DEFINITION-ONLY; 90-boot.js calls initResumeLeaveHandlers() and
+   Shared by all seven components. DEFINITION-ONLY; 90-boot.js calls initResumeLeaveHandlers() and
    50-loader.js drives the restore. Full design: ../RESUME.md.
 
    ONE State document per unit, keyed by window.XAPI_UNIT_ID. Kata addresses state by ?registration
    alone, and the launch registration rides through every cross-part navigation on
-   window.location.search — which is what lets six components share one document.
+   window.location.search — which is what lets seven components share one document.
 
    Per-part seams, all read at CALL time:
      capturePartPayload()   this component's payload, including currentScreen
@@ -20,20 +20,27 @@
    re-report every 'completed' they had already earned. None of that applies here: this unit has never
    shipped resume, so no document of any version exists in the field. Its migration would also be
    actively WRONG for this unit — it seeds the ledger from position in a linear part chain, and this
-   unit is not linear. Reaching part 06 does not imply part 05 was passed (it implies the opposite),
-   and reaching part 03 does not imply part 02 was visited, because part 01 branches straight past it
-   at 4/5.
+   unit is not linear. Reaching part 07 does not imply part 06 was passed (it implies the opposite),
+   and reaching part 04 does not imply part 03 was visited, because part 02 branches straight past it
+   at 4/5. (Part numbers as of the seven-component split, 2026-10-14.)
 
    A document from an unknown version is therefore discarded outright. Keep the
-   "deploy all six folders atomically" rule regardless — it applies to any future version bump. */
-var RESUME_STATE_VERSION = 1;
+   "deploy all seven folders atomically" rule regardless — it applies to any future version bump.
+
+   Version 2 (2026-10-14): parts 01 and 02 (that 02 being basic practice, now part 03) were renumbered
+   into storyboard order, so a v1 document's currentScreen and its screen-keyed answers point at the
+   wrong screens. Still nothing in the field, so v1 is simply discarded like any other unknown version. */
+/* Version 3 (2026-10-14): the unit became seven components — standard practice split out of part 01
+   as part 02, and every later part moved up one folder. A v2 document names the old slugs and the old
+   part-01 screens, so it is discarded like any other unknown version. */
+var RESUME_STATE_VERSION = 3;
 var RESUME_STATE_ID      = 'execution-state';
 
 var _resumeReady       = false;
 var _restoring         = false;
 var _leavingToNextPart = false;
 
-/* The whole document, as last read or written. All six parts share ONE, because Kata addresses state
+/* The whole document, as last read or written. All seven parts share ONE, because Kata addresses state
    by ?registration and the registration rides through every cross-part navigation. Every part's
    payload is retained, not just the current one — the back button has to restore them. */
 var _unitState = null;
@@ -67,12 +74,12 @@ function readUnitState() {
        next. ?resetState starts from a clean document.
 
        It matters more in this unit than in the sibling: after a failed מועד א the document names
-       part 06, so every subsequent launch — including every QA launch through the root index.html —
+       part 07, so every subsequent launch — including every QA launch through the root index.html —
        hops straight to the retake, forever. This is the only way out. */
     if (/[?&]resetState(=|&|$)/.test(window.location.search)) {
       /* One-shot. Every cross-part navigation copies window.location.search verbatim, so left in
          place this would re-fire on arrival in the next component and wipe the document on every
-         hop — resume would never work at all. With six parts that is five chances to get it wrong.
+         hop — resume would never work at all. With seven parts that is six chances to get it wrong.
          Strip it before anything else reads the query. */
       try {
         var _q = window.location.search
@@ -143,7 +150,7 @@ function armLeaving() {
    that never actually left. The ledger is obeyed only when it positively says "already sent"; if the
    document is unavailable we send anyway, because every call site swallows exceptions and a silent
    drop is far worse than a duplicate. And the mark is persisted synchronously right here, because
-   several callers (parts 05 and 06's peakFinish) send without navigating afterwards, so nothing else
+   several callers (parts 06 and 07's peakFinish) send without navigating afterwards, so nothing else
    would ever write it. */
 function alreadySent(ledger, key) {
   return !!(_unitState && _unitState[ledger] && _unitState[ledger][key]);
@@ -163,7 +170,7 @@ function sendCompletedOnce(ledger, key, objectType, result, opts) {
   markSent(ledger, key);
 }
 
-/* Namespaced by part slug, and that is NOT cosmetic here: parts 05 and 06 both hold a single item
+/* Namespaced by part slug, and that is NOT cosmetic here: parts 06 and 07 both hold a single item
    with suffix '01', distinguished only by XAPI_COMP_ID. Without the slug, מועד א and מועד ב would
    share one ledger key and the second one's item 'completed' would be silently suppressed. */
 function itemLedgerKey(item) { return currentPartSlug() + '#' + item; }
@@ -171,15 +178,15 @@ function itemLedgerKey(item) { return currentPartSlug() + '#' + item; }
 /* ── The assessment re-answer guard ──────────────────────────────────
    NEW in this unit, and required by a decision the sibling never faced.
 
-   Part 06 offers "חזרה" back into part 05, so a learner who failed מועד א can walk back into it from
+   Part 07 offers "חזרה" back into part 06, so a learner who failed מועד א can walk back into it from
    the retake. The `done` ledger stops a second component 'completed', but 'answered.last' is NOT
    ledgered anywhere in the sibling's design — so the LRS would receive a second full round of GRADED
    ANSWERS for מועד א after מועד ב had already begun. That is data corruption in the one component of
    this unit with isAssessment: true.
 
    Two layers of defence, deliberately redundant:
-     1. part 05's payload restores peakAnswers, so the screens come back answered and locked and
-        peakContinue() early-returns — the learner cannot re-answer. A per-part correctness claim.
+     1. part 06's payload restores peakState, so a resolved סעיף comes back answered and locked and
+        peakCheck() cannot grade it again — the learner cannot re-answer. A per-part correctness claim.
      2. this ledger, a structural backstop that does not depend on any part getting layer 1 right.
 
    Used ONLY by the two assessment components. Ordinary practice questions are deliberately NOT
@@ -198,10 +205,10 @@ function sendAnsweredOnce(item, qKey, result, opts) {
 }
 
 /* ── Cross-part back ─────────────────────────────────────────────────
-   The first screen of parts 02–06 offers "חזרה" back into the component the learner actually came
+   The first screen of parts 02–07 offers "חזרה" back into the component the learner actually came
    from. `prev` is a map of back-edges, not a stack: forward navigation writes prev[dest], back
-   navigation only reads it. There is no invariant a partial write can break, and part 03 — reachable
-   from both 01 and 02 — resolves correctly because whichever router navigated is the one that wrote
+   navigation only reads it. There is no invariant a partial write can break, and part 04 — reachable
+   from both 02 and 03 — resolves correctly because whichever router navigated is the one that wrote
    the edge. */
 function previousPartSlug() {
   return (_unitState && _unitState.prev && _unitState.prev[currentPartSlug()]) || null;

@@ -33,7 +33,7 @@ resolves to the string `"01"`, which collides with every other unit numbered 01 
 already unique because the prefix carries subject and topic. The warning in the sibling's docs is a
 *catalog and reporting* warning, not a state one — worth saying out loud so nobody blocks resume on it.
 
-**The fix, when it happens:** change `id` in `_unit.json` and `learningUnitId` in all six component
+**The fix, when it happens:** change `id` in `_unit.json` and `learningUnitId` in all seven component
 files to `<prefix>methodica-science-volume-solid-01/`, and update `window.XAPI_UNIT_ID` in
 `unit-js/10-identity.js` to match.
 
@@ -52,19 +52,25 @@ This repo's script is 340 lines; the sibling's is 551. Missing:
 
 - **the `uniqueKey` degradation guard** that throws when an id's last segment degrades to something like
   `"01"` — the exact fault above, which the sibling added *after* hitting it;
-- **`masteryLevel` forwarding.** None of the six component files declares `masteryLevel` at all, and the
+- **`masteryLevel` forwarding.** None of the seven component files declares `masteryLevel` at all, and the
   sibling discovered it was being silently dropped on push.
 
 Porting both is cheap and prevents a silent recurrence.
 
 ---
 
-## 3. Part 05's `recommendedAfterFail` is empty — **deliberate, documented**
+## 3. Part 06's `recommendedAfterFail` is empty — **deliberate, documented**
 
-`[]`, while the code routes 05 → 06 itself via `peakGoRetake()`. This is a decision, not an omission:
-declaring both would make part 06 reachable two ways, one of which brings a fresh Kata registration and
+`[]`, while the code routes 06 → 07 itself via `peakGoRetake()`. This is a decision, not an omission:
+declaring both would make part 07 reachable two ways, one of which brings a fresh Kata registration and
 therefore a different state document. Full reasoning in
 [ROUTING-AND-RETAKE.md](ROUTING-AND-RETAKE.md).
+
+(Until the 2026-10-14 split this was part 05, routing 05 → 06.)
+
+For contrast, the one non-empty `recommendedAfterFail` in the unit is part 02's (standard practice):
+it names part 03 (basic practice), backing the 4-of-5 gate. Part 01 carried it until the split and
+now declares `[]` — it has no gate and always continues to part 02.
 
 ---
 
@@ -82,7 +88,7 @@ therefore a different state document. Full reasoning in
 
 Part 01's displacement, flooding and measurement applets, its two guess screens and the hook's
 free-text screen are substantial interactions with **no metadata question**, so they can only be
-reported as `interacted`. Item 02 (`הקנייה`) spans ~19 screens and holds exactly one question, on s10.
+reported as `interacted`. Item 02 (`הקנייה`) spans ~19 screens and holds exactly one question, on s15.
 
 If any of these should be *measurable*, they need item questions in the metadata — which is a content
 decision with a metadata push attached. Until then, reporting them as `answered` would be
@@ -93,7 +99,7 @@ non-conformant: v2.4 makes `parent` mandatory on `answered` and there is no item
 ## Verification available today
 
 `node _test/checks.mjs` gate 4 runs the **real** `xapiItemId`/`xapiQ` from `unit-js/20-xapi.js` against
-all seven metadata files and asserts every item id, question id and `parent` matches byte-for-byte:
+all eight metadata files (unit + seven components) and asserts every item id, question id and `parent` matches byte-for-byte:
 
 ```
 4. metadata id resolution (real xapiItemId/xapiQ vs metadata/*.json)

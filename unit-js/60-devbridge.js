@@ -1,9 +1,9 @@
 'use strict';
 /* ═══════════════════ Dev bridge ═══════════════════
-   Shared by all six components. DEFINITION-ONLY; 90-boot.js calls initDevBridge().
+   Shared by all seven components. DEFINITION-ONLY; 90-boot.js calls initDevBridge().
 
    Lets each part's index_dev.html — an iframe wrapper with a screen-jump bar — drive navigation
-   without touching the shipped index.html. Five parts carried byte-identical copies; part 03 had
+   without touching the shipped index.html. Five parts carried byte-identical copies; part 03 (now 04, the class task) had
    none, and gains one (it has an index_dev.html, whose jump bar simply did nothing before).
 
    ⚠️ Unlike the sibling unit, where this file is described as "not deployed", it IS deployed here:

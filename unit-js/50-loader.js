@@ -1,13 +1,14 @@
 'use strict';
 /* ═══════════════════ xAPI — loader / init ═══════════════════
-   Shared by all six components. DEFINITION-ONLY; 90-boot.js calls bootXAPI() LAST, because from
+   Shared by all seven components. DEFINITION-ONLY; 90-boot.js calls bootXAPI() LAST, because from
    Stage 5 this is the step that may window.location.replace() to another component.
 
    Per-part seams:
      XAPI_METADATA_FILE   required — '../metadata/<component>.json'
      onXapiReady()        optional — runs after the component 'initialized' and the landing screen's
-                          item init. Components 01 and 02 use it to open the unit; 03–06 do not
-                          define it. (Whether that split is CORRECT is a Stage 4 question — see
+                          item init. Components 01, 02 and 03 use it to open the unit; 04–07 do
+                          not define it. (01 and 02 before the 2026-10-14 split; 02 then is today's
+                          03, and the new 02 inherited part 01's.) (Whether that split is CORRECT is a Stage 4 question — see
                           REPORT-XAPI.md. This stage only preserves it.) */
 
 function bootXAPI() {

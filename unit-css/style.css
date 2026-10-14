@@ -3246,9 +3246,9 @@ html, body {
   background: #edf8ed; border-radius: 16px; box-shadow: 0 8px 26px rgba(0,32,96,0.22);
   direction: rtl; text-align: right; overflow: hidden;
 }
-/* s19: "לנפח הגוף." used to drop to a line of its own; at 560px the explanation's second sentence
+/* s29: "לנפח הגוף." used to drop to a line of its own; at 560px the explanation's second sentence
    fits on one line and the popup is a line shorter (QA 2026-10-12). Still under the 46% cap. */
-#s19-scq-popup { width: 560px; }
+#s29-scq-popup { width: 560px; }
 .scq-popup-header { display: flex; align-items: flex-start; gap: 8px; padding: 12px 16px 4px; cursor: grab; touch-action: none; }
 .scq-popup-header:active { cursor: grabbing; }
 /* The ✕ that used to sit here is gone from the markup in all 19 places (QA 2026-08-25, slide 26:
@@ -3383,7 +3383,7 @@ html, body {
 }
 .transition-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: #303030; }
 .transition-sub { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 400; color: #303030; line-height: 1.5; }
-/* Rules screens (01 s32, 02 s0 — 2026-10-10). Their lead-in and closing lines take the TransitionScreen
+/* Rules screens (02 s0 and 03 s0; 01 s30 and 02 s0 when written — 2026-10-10). Their lead-in and closing lines take the TransitionScreen
    role token Body / B-1, 28 Regular, which every centred variant (A, B, C) shares; 22 was the generic
    default above. The count lines keep the sizes QA set on each screen (40 / 48). */
 .transition-content--rules .transition-sub { font-size: 28px; }
@@ -3504,10 +3504,10 @@ html, body {
 .dnd-question--columns .dnd-source { min-height: 128px; padding: 10px; justify-content: center; }
 
 /* ═══════════════════════════════════════════════════════
-   TEMPLATE — ImageHotspotQuestion (S15). Reuses SCQ controller.
+   TEMPLATE — ImageHotspotQuestion (02 S3; 01 S15 originally). Reuses SCQ controller.
    S15 was rebuilt around .hotspot-bubble; the original 2×2 card grid
    (.hotspot-grid / .hotspot-avatar / .hotspot-card) went with it and its
-   rules are gone. The rest of the family is live in parts 01 and 02.
+   rules are gone. The rest of the family is live in part 02 (S3) — parts 01 and 02 when written.
    ═══════════════════════════════════════════════════════ */
 .hotspot-question {
   position: absolute; right: 40px; left: auto; top: calc(50% - 16px); transform: translateY(-50%);
@@ -3721,7 +3721,7 @@ html, body {
   line-height: 1.35; direction: rtl; text-align: right;
 }
 
-/* ═══ Class task (Part 03) ═══ */
+/* ═══ Class task (Part 04) ═══ */
 .task-content {
   position: absolute; left: 50%; top: calc(50% - 37px); transform: translate(-50%, -50%);
   width: 860px; display: flex; flex-direction: column; gap: 16px; direction: rtl; text-align: right;
@@ -3739,17 +3739,17 @@ html, body {
 
 /* ═══ Multi-part question tag ═══
    The ValueInputQuestion rules (.viq-input-row / .viq-input / .viq-unit) lived here.
-   Part 04's s7 was the unit's only numeric-input question and became a multiple choice
+   Part 05's (then 04's) s7 was the unit's only numeric-input question and became a multiple choice
    in 840d587, so the template has no users left and its CSS and controller are gone. */
 .scq-part-tag { display: block; font-family: 'Assistant', sans-serif; font-size: 15px; font-weight: 700; color: var(--subject-500); margin-bottom: 6px; }
 .scq-qsub { display: block; font-size: 18px; font-weight: 500; color: #303030; margin-top: 6px; }
 
-/* ═══ PeakAssessment (Parts 05/06) ═══ */
+/* ═══ PeakAssessment (Parts 06/07) ═══ */
 
 /* Transition INTO the peak question — storyboard slide 147. Three text levels stacked over a large
    centred companion, which is the shape the sibling unit mass-measure-01 gives the same moment
    (its .s10-* block); the sizes below are that block's. Distinct from .peak-intro, which is the
-   badge/title/scenario card and is still what part 06 uses.
+   badge/title/scenario card and is still what part 07 (then 06) uses.
    `inset: 0 0 74px 0` rather than a centred fixed width: the group centres itself in whatever is
    left above the nav bar, so the text and the video stay balanced without hand-tuned offsets. */
 .peak-transition {
@@ -3769,7 +3769,7 @@ html, body {
 .peak-transition-video .companion { position: static; width: 100%; height: 100%; }
 
 /* Scenario screen preceding the sub-parts (storyboard slide 148). It reuses the
-   .scq-question--withimage shell that part 04's scenario screens use, so only the two things the
+   .scq-question--withimage shell that part 05's scenario screens use, so only the two things the
    deck adds on top of that shell live here: the blue heading and the bulleted measurements. */
 .peak-scenario-title {
   font-family: 'Assistant', sans-serif; font-size: 28px; font-weight: 800;
@@ -3797,8 +3797,8 @@ html, body {
 /* The sub-part title is no longer an element of its own. .peak-step — first a Subject/100 pill,
    then a plain bold line — is gone, because the storyboard writes the title INSIDE the stem:
    `סעיף א:` bold on its own line with the question beneath it in regular weight. That is exactly
-   what part 04 already does (`<b>סעיף ב:</b><br />` in a .scq-qtext--mixed paragraph), so parts
-   05/06 now carry the same markup and one rule serves both families. The `· 1 מתוך 4` counter went
+   what part 05 already does (`<b>סעיף ב:</b><br />` in a .scq-qtext--mixed paragraph), so parts
+   06/07 now carry the same markup and one rule serves both families. The `· 1 מתוך 4` counter went
    with it — the deck's title format has no counter, and these screens have no progress nav. */
 /* width: 100% — the base .scq-qtext is 792px wide for the absolute layout it was written for.
    In flow that overflows .peak-side (572px) and very nearly fills .peak-question (820px).
@@ -3839,8 +3839,8 @@ html, body {
    would take it out of the flow and collapse the gap above it. Square, because the `success` pose
    is a 960x960 pair — width/height here override --cw and the aspect-ratio, so the slot's `w` is
    documentation rather than the thing that sizes it. */
-/* QA 2026-08-29: +50% (320 -> 480). Keep this in step with `w` in the s8/s9 CHARACTER_SLOTS of
-   parts 05 and 06 — the sprite inside is `width: 100%`, so this box is what actually sizes him and
+/* QA 2026-08-29: +50% (320 -> 480). Keep this in step with `w` in the end-screen CHARACTER_SLOTS of
+   parts 06 and 07 (s6/s7 since 2026-10-14; s8/s9 of parts 05/06 when written) — the sprite inside is `width: 100%`, so this box is what actually sizes him and
    a stale `w` would read as the truth without being it. The column now measures 630 of the 646
    above the bar at H=720; anything that grows here has to come out of the gap or the leading. */
 .peak-end-video { position: relative; width: 480px; height: 480px; flex-shrink: 0; }
@@ -3906,7 +3906,7 @@ html, body {
    Both modifiers lay their children out in flow, so the children have to be
    put back in flow — otherwise they escape the flex column entirely: the
    options would overlap the photo, the parent would measure zero height, and
-   a long option list would run past the 74px bottom bar (part 02 S3 did). */
+   a long option list would run past the 74px bottom bar (part 03 S3 — then 02 — did). */
 .scq-question--textonly > .scq-qtext,
 .scq-question--textonly > .scq-answers,
 .scq-question--withimage .scq-qtext,
@@ -3937,9 +3937,9 @@ html, body {
    sizes the parent's MAIN axis, so it meant "500 wide" inside the row layouts
    (--withimage, .hotspot-pair, .steps-row) but "500 TALL" inside the column layout
    (.exp) — where it stretched the frame to 500px and left up to 373px of dead white
-   under a wide photo, pushing the answer options off the canvas on s21/s29. It also
+   under a wide photo, pushing the answer options off the canvas on s19/s16. It also
    silently beat an author's inline `width` in a row, because flex-basis wins over width
-   on the main axis (s31 asked for 260px and rendered 500px).
+   on the main axis (s26 asked for 260px and rendered 500px).
    Override per instance with `width`, never `flex-basis`; deviate from natural
    proportion only via an explicit variant such as .scq-figure--square below. */
 .scq-figure {
@@ -3956,10 +3956,10 @@ html, body {
 /* Fixed-ratio variant — the source is cropped to the frame (object-fit: cover) */
 .scq-figure--square { aspect-ratio: 1; }
 .scq-figure--square > img { height: 100%; object-fit: cover; }
-/* Photo in a flex row beside an options column (guess rows — part 01 s21, s29): a wide photo at its
+/* Photo in a flex row beside an options column (guess rows — part 01 s19, s16): a wide photo at its
    natural ratio came out shorter than the four options (164–176 vs 220px). It now takes the row's
    remaining width and stretches to the options' height; object-fit: cover trims the sides only by
-   what that width can't supply. A figure TALLER than the options (s23's crown) is not a sibling of
+   what that width can't supply. A figure TALLER than the options (s10's crown) is not a sibling of
    the options column, so it is untouched. (QA 2026-10-12) */
 :is(.guess-options, .scq-answers) ~ .scq-figure {
   flex: 1 1 0; width: auto; min-width: 0; align-self: stretch; margin: 0;
@@ -4100,7 +4100,7 @@ html, body {
 }
 .dq-question--withimage .dropdown--block { align-self: flex-start; }
 
-/* ── Image beside the peak-assessment intro (parts 05/06) ─── */
+/* ── Image beside the peak-assessment intro (parts 06/07) ─── */
 .peak-intro--withimage {
   width: 1080px; flex-direction: row; align-items: center; justify-content: flex-end;
   gap: 28px; direction: ltr; text-align: right;
@@ -4110,7 +4110,7 @@ html, body {
   display: flex; flex-direction: column; align-items: flex-start; gap: 14px; text-align: right;
 }
 
-/* Peak-assessment question with the scenario photo beside it (parts 05/06).
+/* Peak-assessment question with the scenario photo beside it (parts 06/07).
    .peak-question is a centred column; this flips it to the same ltr row +
    rtl inner column as .scq-question--withimage. */
 /* (2026-10-12: now spans the 40px gutters on both sides instead of a centred 1180px.)
@@ -4176,7 +4176,7 @@ html, body {
 .steps-list li { margin-bottom: 10px; }
 .steps-list li::marker { color: var(--subject-500); font-weight: 800; }
 
-/* Secondary line under a transition sub-heading (S32 practice rules) */
+/* Secondary line under a transition sub-heading (02 S0 practice rules; 01 S32 originally) */
 .transition-note {
   font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 400;
   color: #6a7683; line-height: 1.5;
@@ -4253,7 +4253,7 @@ html, body {
 .section-result {
   position: absolute;
   /* 120, not 104 — the card is short next to the space it sits in, and the extra 16px stops it
-     reading as pinned to the top. Only part 04's result screen takes this: the four peak cards
+     reading as pinned to the top. Only part 05's (then 04's) result screen takes this: the four peak cards
      carry --peak, which sets its own top. */
   top: 120px; right: 60px; left: 480px;
   border: 3px solid var(--subject-500);
@@ -4263,7 +4263,7 @@ html, body {
   direction: rtl; text-align: right;
   font-family: 'Assistant', sans-serif;
   /* QA 2026-08-29: 24px, matching the title above it — one size for the whole verdict card.
-     Part 04's card only. The peak cards are 24px too now, but they get there through --peak
+     Part 05's card only. The peak cards are 24px too now, but they get there through --peak
      below, which has to buy the height back from its width and leading — see the note there. */
   font-size: 24px; font-weight: 400; color: #303030; line-height: 1.5;
 }
@@ -4282,7 +4282,7 @@ html, body {
    short (≤ 22 characters), so nowrap cannot push a popup line past its box. */
 .section-result-expr { unicode-bidi: isolate; direction: ltr; white-space: nowrap; }
 
-/* Part 04's result body (QA 2026-10-12): one row per סעיף. The letter has its own column so
+/* Part 05's (then 04's) result body (QA 2026-10-12): one row per סעיף. The letter has its own column so
    every continuation line starts under the text (hanging indent). The review button runs inline
    at the end of the text, so it costs no line width and the forced breaks stay where they are. */
 .section-result-item {
@@ -4310,15 +4310,15 @@ html, body {
 
 /* The peak components reuse the card on their end screens (storyboard 157/158, 170/171). No
    progress nav above it there, and four סעיפים of answer instead of three, so it starts higher
-   and sets its own geometry: part 06's answer is the longest text in the unit and has to clear
+   and sets its own geometry: part 07's (then 06's) answer is the longest text in the unit and has to clear
    the 74px bar on a 720px canvas.
    QA 2026-08-29: the body goes to 24px with the rest of the unit's feedback, which is 200px more
-   card than the old 18px drew — part 06's ran 43px THROUGH the bar at the old width. Three levers
+   card than the old 18px drew — part 07's ran 43px THROUGH the bar at the old width. Three levers
    bought it back, and all three are needed: the card widens left to 550 (20px clear of the
    companion group, whose right edge is 530 on the widest of the four screens), starts 12px
-   higher, and takes 1.35 leading instead of 1.45. Part 06 now ends at 607 against a bar at 646.
-   Re-measure PART 06, not part 05, if any of these move: part 05's card is 70px shorter and will
-   fit long after part 06 has stopped fitting. */
+   higher, and takes 1.35 leading instead of 1.45. Part 07 now ends at 607 against a bar at 646.
+   Re-measure PART 07, not part 06, if any of these move: part 06's card is 70px shorter and will
+   fit long after part 07 has stopped fitting. (Parts 06/07 were 05/06 when this was measured.) */
 .section-result--peak {
   top: 92px; left: 550px; right: 44px;
   padding: 16px 22px;
@@ -4341,7 +4341,7 @@ html, body {
 .scq-qtext.scq-qtext--mixed { font-weight: 400; }
 .scq-qtext.scq-qtext--mixed b,
 .scq-qtext.scq-qtext--mixed strong { font-weight: 700; }
-/* Parts 05/06 want the regular half at 500 (Assistant Medium ships as its own face, so this is a
+/* Parts 06/07 want the regular half at 500 (Assistant Medium ships as its own face, so this is a
    real weight, not a synthesised one), not the 400 above. It has to live HERE rather than with the
    other .peak-question rules: both selectors are (0,2,0), so only source order separates them.
    The bold `סעיף א:` line is unaffected — the rule above matches the <b> element directly, and a
@@ -4354,7 +4354,7 @@ html, body {
    pointing at the illustration, so the line reads as coming from the person in the
    photo rather than floating in the margin. The beak is two stacked CSS triangles —
    a blue one and a white one inset by the border width — which is the same trick the
-   part-01/02 .speech-bubble tails use, so the outline stays continuous around the point.
+   part-01/03 .speech-bubble tails use, so the outline stays continuous around the point.
    `left` is physical and therefore bidi-immune; never use inset-inline here.
    Text weight is REGULAR, matching the deck (storyboard slide 140 sets no bold on it).
    ═══════════════════════════════════════════════════════ */
@@ -4362,7 +4362,7 @@ html, body {
    scenario text in the column beside it, where it read as a caption belonging to the paragraph
    rather than to the person (QA 2026-08-26). Absolutely positioned against .scq-figure, which is
    already position:relative; the coordinates and the width are tuned to the individual photo and
-   live with the screen that owns it (see #s9 in part 04's stylesheet).
+   live with the screen that owns it (see #s9 in part 05's stylesheet).
    The beak points RIGHT, at the speaker, since the photos put the figure-and-bubble pair with the
    person on the right. */
 .thought-bubble {
@@ -4461,7 +4461,7 @@ html, body {
   /* The beak runs `--tail-y` .. `--tail-y + 26` down the bubble's edge, but that edge is only
      STRAIGHT between `border-radius` and `height - border-radius`. Any bubble shorter than
      tailY + 26 + radius -- 72px at the defaults -- has its white inner triangle cut into the
-     rounded corner, and the outline reads as BROKEN. That is what part 02's one-line s7 bubble
+     rounded corner, and the outline reads as BROKEN. That is what part 02's one-line s5 bubble
      did at 62px. 76 leaves 4px of margin. Every other bubble in the unit is already >= 90px, so
      this floors exactly the ones that would break. */
   min-height: 76px;
@@ -4471,14 +4471,14 @@ html, body {
   padding: 14px 20px;
   font-family: 'Assistant', sans-serif;
   /* 20px, Body / B-7 — the size of every other speech bubble in the unit (QA 2026-10-12). The
-     comic route's guess bubbles on 01 s23/s26 keep 21px; see part 01's sheet. */
+     comic route's guess bubbles on 01 s10/s12 keep 21px; see part 01's sheet. */
   font-size: 20px; font-weight: 400; color: #303030;
   line-height: 1.35;
   direction: rtl; text-align: right;
 }
 /* No lone word on a bubble's last line (producer, 2026-10-13): `pretty` pulls a word down from the
    line above when the last one would be a single word, e.g. part 06 s6's "בעתיד?". Covers every
-   speech bubble in the unit — the companion bubbles, the thought bubble, and parts 01/02's
+   speech bubble in the unit — the companion bubbles, the thought bubble, and parts 01/03's
    .speech-bubble. A browser without support simply wraps as before. */
 .companion-bubble, .thought-bubble, .speech-bubble { text-wrap: pretty; }
 .companion-bubble p { margin: 4px 0; }
@@ -4487,7 +4487,7 @@ html, body {
 
 /* Beak: two stacked triangles — the outline one, then a white one inset by the 3px
    border — so the outline stays continuous around the point. Same trick as
-   .thought-bubble and the part-01/02 .speech-bubble tails. `--tail-y` is the only
+   .thought-bubble and the part-01/03 .speech-bubble tails. `--tail-y` is the only
    per-instance number left, and only when the default head height is wrong. */
 .companion-bubble::before,
 .companion-bubble::after {
@@ -4500,7 +4500,7 @@ html, body {
 .companion-say--left  .companion-bubble::after  { left: -15px;  border-right: 19px solid var(--pure-white); }
 .companion-say--right .companion-bubble::before { right: -19px; border-left: 19px solid var(--subject-500); }
 .companion-say--right .companion-bubble::after  { right: -15px; border-left: 19px solid var(--pure-white); }
-/* If a bubble ever grows TALLER than the sprite (its copy comes from JS on part 04 s11), the
+/* If a bubble ever grows TALLER than the sprite (its copy comes from JS on part 05 s10, then 04 s11), the
    default 28px would aim the beak above his head: raise `--tail-y` on that instance until it
    is back inside his silhouette. No extra rule needed — the group is bottom-aligned, so the
    sprite always occupies the bottom of the bubble's own height range. */

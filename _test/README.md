@@ -6,7 +6,9 @@ reporting and resume layers can be exercised on a dev server, where there is no 
 | File | What it is |
 |---|---|
 | `xapi-720-j.js` | stand-in for the CDN library — statements, State API, console helpers, the sweep oracle |
-| `checks.mjs` | three static gates: identifier collisions, `?v=` equality, `TOTAL_SCREENS` vs markup |
+| `checks.mjs` | six static gates: identifier collisions, `?v=` equality, `TOTAL_SCREENS` vs markup, metadata id resolution, `SCREEN_TO_SUBCONTENT` coverage, markup structure — over all seven parts |
+| `verify-resume.js` | headless (jsdom) check of the resume painters — see below |
+| `viewer.html` | local QA viewer: jump to any screen of any of the seven components. Not shipped |
 | `baselines/` | sweep output captured at each stage; the acceptance gate for the extraction |
 | `REPORTING-ADDING.superseded.md` | archived — it documents `mass-measure`, not this unit. See its banner |
 
@@ -69,20 +71,20 @@ stale-timer race that the cross-part handoff guards against is reproducible here
 
 `__dupes()` deliberately ignores `initialized`: 720 v2.4 §1 **requires** it again on every
 re-entry, so a repeat there is conformance, not a defect. It *does* cover `answered.last`, which
-the reference's version did not — part 06's back edge into a failed מועד א makes a re-sent graded
+the reference's version did not — part 07's back edge into a failed מועד א makes a re-sent graded
 answer a live hazard in this unit. See `ROUTING-AND-RETAKE.md`.
 
 ## The sweep oracle
 
 `__sweep()` walks every `data-screen` value **present in the markup**, not `0..TOTAL_SCREENS-1`.
-That distinction matters here: screen ids are neither DOM order nor flow order (part 01's practice
-questions run 13, 14, 15, **17**, 16; part 04's scenario screens s9/s10 sit outside the numeric
-flow), so a positional loop would both miss screens and visit ones that do not exist.
+That distinction matters here: screen ids are neither DOM order nor flow order (part 05's scenario screens s10/s9 sit outside the numeric flow, and parts 06/07 read
+their scenario s5 between s0 and s1; before the 2026-10-14 renumbering part 01's practice questions
+ran 13, 14, 15, **17**, 16), so a positional loop would both miss screens and visit ones that do not exist.
 
-`__sweep()` is **async and must stay async.** Parts 05 and 06 send through `xapiSend()`, which is
+`__sweep()` is **async and must stay async.** The peak parts (06 and 07; 05 and 06 before 2026-10-14) send through `xapiSend()`, which is
 `setTimeout(…, 0)` — a synchronous read of the log returns *before* those macrotasks run and reports
-zero statements for exactly the screens most likely to over-report. That is how the part-05 defect
-was nearly missed. It is the same deferral that defeats the resume stub (risk R1 in `RESUME.md`).
+zero statements for exactly the screens most likely to over-report. That is how the part-05 (now
+06, מועד א) defect was nearly missed. It is the same deferral that defeats the resume stub (risk R1 in `RESUME.md`).
 
 Its output is the **acceptance gate for the shared-layer extraction**: a pure move must leave
 `visited` and `statements` unchanged. Baselines live in `_test/baselines/`.
@@ -112,14 +114,14 @@ Injecting post-load gives the handlers a sender. From Stage 2 on, prefer `?xapiL
 node _test/checks.mjs
 ```
 
-Three checks, all of which exist because the failure they catch is silent:
+Six checks, all of which exist because the failure they catch is silent:
 
 1. **Identifier collisions** between `unit-js/*.js` and each part's `js/main.js`. A `let`/`const`
    collision is a loud `SyntaxError`, but a **`var`/`function` collision is a silent last-wins
    overwrite** — and `main.js` loads *after* the shared files, so a leftover part-local copy wins
    and the extraction looks successful while shipping the old code. Hook names are the expected
    exceptions.
-2. **`?v=` equality** across all six `index.html` for every shared URL. All six reference the same
+2. **`?v=` equality** across all seven `index.html` for every shared URL. All seven reference the same
    files, so a mismatch means one part fetches a second copy under a different URL and two parts
    can execute different versions of the same logic inside one learner session.
 3. **`TOTAL_SCREENS` vs the markup** — the constant and the `.screen` count must agree, or `goTo()`
@@ -129,10 +131,14 @@ Three checks, all of which exist because the failure they catch is silent:
    against every `metadata/*.json`, asserting that each item id, question id and `parent` matches
    byte-for-byte. A second copy of the id logic here would be free to drift from the one that ships,
    which is the whole class of bug the check exists to catch.
+5. **`SCREEN_TO_SUBCONTENT` completeness** — every screen `0..TOTAL_SCREENS-1` mapped, every item
+   suffix present in that part's metadata. An unmapped screen reports no item, silently.
+6. **Markup structure** — unique ids and balanced `<div>` nesting, file-wide and per screen.
 
 > ⚠️ Every check here derives the part list from the filesystem, never a hard-coded array. The
 > equivalents in `methodica-math-scale-01` iterate `['01'…'05']`; copying one of those verbatim
-> would **silently skip part 06** — the retake, and the least-exercised component in the unit.
+> would **silently skip parts 06 and 07** — both peak attempts, including the retake (07), the
+> least-exercised component in the unit.
 
 ## What no check can catch: the cache
 
@@ -143,7 +149,7 @@ procedure:
 | After editing | Bump |
 |---|---|
 | a part's `js/main.js` | that part's `js/main.js?v=` |
-| a shared `unit-js/*.js` | that file's `?v=` in **all six** `index.html` (gate 2 enforces they agree, not that you bumped) |
+| a shared `unit-js/*.js` | that file's `?v=` in **all seven** `index.html` (gate 2 enforces they agree, not that you bumped) |
 | `_test/xapi-720-j.js` | the `?v=` inside the `?xapiLib` value |
 
 The failure mode is the nastiest one in this codebase: `main.js` loads *after* the shared layer, so a
@@ -154,7 +160,10 @@ extraction looks successful while shipping the old code.
 
 Loads each part's real `index.html`, `js/main.js` and `unit-js/*.js` in jsdom, answers every question,
 walks away and back through `goTo()`, and asserts that the answered look — marks, feedback popup and
-the matching screens' answer toggle — comes back. Four of the assertions are genuine reloads: the
+the matching screens' answer toggle — comes back. It covers the SCQ screens of parts 01, 02, 03 and
+05, both matching boards (02 s4 and 01 s28), the retry between attempts on 02 s4, and the peak
+סעיפים of parts 06 and 07 — 530 assertions at the 2026-10-14 split. Some of the assertions are
+genuine reloads: the
 state document is copied out of one window and seeded into the next before its scripts run.
 
 **jsdom is not in the repo and must not be installed into it** — the project lives in a synced

@@ -1,0 +1,22 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   css/style.css — 720 Science · Volume of a Solid · component 06 (PART-LOCAL)
+
+   INTENTIONALLY EMPTY — this component needs no CSS of its own.
+
+   Everything it renders comes from ../unit-css/style.css, which index.html loads
+   before this file. What used to be here was dead weight inherited from the
+   mass-measure port: #sN rules for screens this component does not have, #sN-back
+   rules for ids that exist nowhere in the unit, and per-screen
+   `background: #fff` now stated once on .screen in the shared sheet.
+
+   The file is deliberately kept rather than deleted: index.html links it, and the
+   720 publish checklist expects a css/ directory in every component. Add a rule
+   here only if it is genuinely specific to THIS component — anything reusable
+   belongs in the shared sheet.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Per-סעיף feedback (2026-10-14). The popup keeps the shared bottom-left position but is 400px
+   instead of 480, so its right edge (402) clears the 820px question column (options start at 420).
+   Narrowing the column instead would break the QA'd one-line options onto two lines. */
+.scq-popup { width: 400px; }
+.scq-popup-body p { text-wrap: pretty; }

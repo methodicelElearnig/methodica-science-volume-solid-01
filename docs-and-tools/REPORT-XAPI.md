@@ -48,7 +48,7 @@ the "שאלה לא נמצאה" the platform reported for the sibling unit.
 Ids are never hand-assembled now. `xapiQ(itemSuffix, qKey)` resolves them from `window.METADATA` and
 returns `{questionId, parentId}` in one lookup, so the catalog is the single source of truth and
 re-syncing metadata can change the prefix without touching code. `_test/checks.mjs` gate 4 runs the
-**real** `xapiItemId`/`xapiQ` against all seven metadata files: **23 items / 31 questions, zero
+**real** `xapiItemId`/`xapiQ` against all eight metadata files (unit + seven components): **23 items / 31 questions, zero
 mismatches**.
 
 > **Resolve at SEND time, not at registration time.** `xapiQ()` reads `window.METADATA`, which the
@@ -62,12 +62,12 @@ mismatches**.
 | Statement | Fires |
 |---|---|
 | `initialized` (component) | `50-loader.js`, once per page load — deliberately **not** deduped |
-| `initialized` (unit, `scope:'unit'`) | `onXapiReady()` in parts 01 and 02 — see open items |
+| `initialized` (unit, `scope:'unit'`) | `onXapiReady()` in parts 01, 02 and 03 — see open items |
 | `initialized` / `completed` (item) | `xapiOnScreen()`, when the learner crosses into a different item |
-| `answered` / `answered.last` | each check/submit. Only `.last` feeds the component score. Two-attempt questions (the practice SCQs; 01 s17's matching board since 2026-10-11) send a wrong first try as `answered` and the closing try as `.last`; one-attempt ones (s18, the peaks) send `.last` only |
+| `answered` / `answered.last` | each check/submit. Only `.last` feeds the component score. Two-attempt questions (the practice SCQs; 02 s4's matching board — 01 s34 until 2026-10-14 — since 2026-10-11; each peak סעיף since 2026-10-14) send a wrong first try as `answered` and the closing try as `.last`; one-attempt ones (01 s28) send `.last` only |
 | `requested.1` | on hint **open** only |
 | `completed` (component) | the routing function that leaves the component, via the ledger |
-| `completed` (unit) | part 05 on pass; part 06 on **both** paths |
+| `completed` (unit) | part 06 on pass; part 07 on **both** paths |
 | `selected` | exactly one site — the part 01 learning-path choice |
 | `played` / `paused` | `xapiWireVideos()`, part 01's `<video>` |
 | `interacted` | applets, guesses, the hook's free text, the companion picker |
@@ -79,7 +79,7 @@ changed by the deletion of a single word (`אין` → `יש`). Only `completed`
 **Item scope is driven from `goTo()`.** Paging inside one item emits nothing; the item closes when the
 learner enters a screen belonging to a *different* item. That is why `SCREEN_TO_SUBCONTENT` must cover
 **every** screen — an unmapped screen reports no item, in the statements and in the bug report alike.
-Gate 5 enforces `TOTAL_SCREENS` entries per part: **68/68 screens mapped**.
+Gate 5 enforces `TOTAL_SCREENS` entries per part: **72/72 screens mapped** across the seven parts.
 
 ---
 
@@ -95,31 +95,37 @@ to send matched nothing.
 
 **Always supply an explicit `result` on `completed`.** The library's own aggregate is an all-correct
 AND, which reports `success: false` for any partial pass. `XAPI_ITEM_RESULT` supplies an item's result
-where it spans several questions (part 04's items 04/05, parts 05/06's single item); items holding one
+where it spans several questions (part 05's items 04/05, parts 06/07's single item); items holding one
 question omit it, because the AND is already right.
 
 ### Denominators — what the learner was promised
 
 | component | denominator | why |
 |---|---|---|
-| 01 | **5** | eight questions are graded in code, but the learner is shown five progress dots and told `4 מתוך 5` |
-| 02 | 6 | six exercises, six dots |
-| 03 | *no score* | an off-computer inquiry task with no answer UI at all |
-| 04 | 8 | eight dots, which here also matches the metadata count |
-| 05 / 06 | 4 | four sub-parts |
+| 01 | 3 | its graded questions: item 02's q1 and the two warm-ups (no progress dots, no gate) |
+| 02 | **5** | five questions, five progress dots, and the learner is told `4 מתוך 5` |
+| 03 | 6 | six exercises, six dots |
+| 04 | *no score* | an off-computer inquiry task with no answer UI at all |
+| 05 | 8 | eight dots, which here also matches the metadata count |
+| 06 / 07 | 4 | four sub-parts |
+
+Until 2026-10-14 the standard practice was the end of part 01, whose denominator was then 5 although
+eight questions were graded in code; the split gave the five questions their own component.
 
 ### `success` — reported only where a gate exists
 
-- **Part 01** reports the real threshold: `practiceScore() >= 4`. That gate exists in the content and
-  the metadata's `recommendedAfterFail` names Part 02, so it is reported, not invented.
-- **Parts 02 and 04** report `success: true` unconditionally. They have **no** pass threshold anywhere
+- **Part 02** reports the real threshold: `practiceScore() >= 4`. That gate exists in the content and
+  the metadata's `recommendedAfterFail` names Part 03, so it is reported, not invented. (Until
+  2026-10-14 this gate ended part 01.)
+- **Parts 01, 03 and 05** report `success: true` unconditionally. They have **no** pass threshold anywhere
   and always advance, so with no gate to clear, completing the component *is* the success condition and
   `score.scaled` carries the performance. Confirmed with the content owner.
-- **Parts 05 and 06** report the ≥3/4 assessment rule, on both pass and fail paths.
+- **Parts 06 and 07** report their assessment rule (≥3/4 in מועד א, 4/4 in מועד ב), on both pass and
+  fail paths.
 
 **Report `completed` on failure paths too.** A component the learner does not clear must still be
 reported, or the whole attempt goes unrecorded — the platform cannot distinguish it from a learner who
-never started. Part 05's failure path used to send nothing at all.
+never started. מועד א's failure path (then part 05, now 06) used to send nothing at all.
 
 ---
 
@@ -144,8 +150,9 @@ to parent to, those statements were unmatchable as well as non-conformant. All a
 
 `?slxapi` and `?registration` enter through the root `index.html` and **every** cross-part jump must
 append `window.location.search`. Miss one and both the LRS configuration and the learner's resume
-document are lost from that point on. Six sites: the root redirect, the four forward routers,
-`peakGoRetake()`, and `goBackToPrevPart()`.
+document are lost from that point on. The sites: the root redirect, the forward routers
+(`goToNextPart()` in 01, 02, 03, 05 and `classTaskDone()` in 04), `peakGoRetake()` in 06,
+`goBackToPrevPart()`, and the loader's resume hop. See ROUTING-AND-RETAKE.md.
 
 ## Regression gate
 
@@ -164,7 +171,8 @@ the bug-report form posts real ids without any stubbing.
 2. **Should the applets be catalog items?** The displacement, flooding and measurement applets are
    substantial interactions with no metadata question, so they can only be `interacted`. Making them
    measurable needs item questions in the metadata — and a metadata push.
-3. **The unit-scope `initialized` fires from parts 01 and 02**, preserved from the original code.
+3. **The unit-scope `initialized` fires from parts 01, 02 and 03**, preserved from the original code
+   (originally parts 01 and 02; the 2026-10-14 split copied part 01's hook into the new part 02).
    Whether exactly one component should open the unit is a platform-semantics question; the sibling unit
    left the same one open.
 4. **An item `initialized` after that item's `completed`** is unavoidable given v2.4's deliberate

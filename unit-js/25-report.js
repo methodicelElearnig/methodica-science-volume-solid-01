@@ -1,6 +1,10 @@
 'use strict';
 /* ═══════════════════ "מצאתם בעיה?" — learner problem reports ═══════════════════
-   Shared by all six components. DEFINITION-ONLY; 90-boot.js calls initReportModal().
+   Shared by all seven components. DEFINITION-ONLY; 90-boot.js calls initReportModal().
+
+   Part numbers in the history notes below are those of the six-component unit at the extraction,
+   before the 2026-10-14 split: their 02–06 are today's 03–07, and today's 02 (standard practice)
+   was then the tail of part 01.
 
    Independent of xAPI — this posts to a Google Form, not the LRS — but it shares window.METADATA,
    which the xAPI library publishes after the metadata load. Before that arrives, meta is {} and the
@@ -42,12 +46,13 @@ function _reportItemInfo(screen) {
     var m = SCREEN_TO_SUBCONTENT[screen];
     return m ? { suffix: m[0], page: String(m[1]) } : { suffix: null, page: String(screen) };
   }
-  if (typeof SCREEN_TO_SUB !== 'undefined') {           // part 04's string-valued map
+  if (typeof SCREEN_TO_SUB !== 'undefined') {           // old part 04's (now 05) string-valued map
     var s = SCREEN_TO_SUB[screen];
     return s ? { suffix: s, page: String(screen) } : { suffix: null, page: String(screen) };
   }
-  /* Single-item components. Part 03 reported page '1' because it has exactly one screen; parts 05
-     and 06 reported the live screen number. Preserved as-is. */
+  /* Single-item components. Part 03 (now 04) reported page '1' because it had exactly one screen;
+     parts 05 and 06 (now 06 and 07) reported the live screen number. Preserved as-is. Today every
+     part defines SCREEN_TO_SUBCONTENT, so this branch and the one above are not reached. */
   var single = (typeof TOTAL_SCREENS !== 'undefined' && TOTAL_SCREENS === 1);
   return { suffix: '01', page: single ? '1' : String(screen) };
 }

@@ -1,23 +1,51 @@
 'use strict';
 /* ═══════════════════════════════════════════════════════════
-   js/main.js — 720 Science · Volume of a Solid · Part 05 (peak א)
-   PeakAssessment: intro + 4 single-attempt sub-parts (NO per-part
-   feedback) → score. ≥3/4 → success (unit done); <3 → Part 06 (peak ב).
+   js/main.js — 720 Science · Volume of a Solid · Part 05 (advanced)
+   S0 intro + 8 SingleChoice questions with progress dots and two scenario
+   screens. On completion → Part 06 (peak א). Engine + SCQ + progress +
+   report + xAPI.
    ═══════════════════════════════════════════════════════════ */
 
-const TOTAL_SCREENS = 9;               // S0 intro, S7 scenario, S1–S4 sub-parts, S5 success, S6 failure
-/* The scenario (storyboard 148) took the next free id rather than renumbering four sub-parts,
-   their options, hints and SCREEN_TO_SUBCONTENT rows. The reading order lives in peakStart()
-   and goBack(), not in the ids — the same approach part 04 takes with its SCENARIOS table. */
-const SCENARIO_SCREEN = 7;
-const PART_06_URL = '../methodica-science-volume-solid-01-06/index.html';
-const PEAK_CORRECT = { 1: 'b', 2: 'a', 3: 'a', 4: 'b' };
-const PEAK_PARTS = 4, PEAK_PASS = 3;
-let peakAnswers = {};
-/* Which sub-parts have been COMMITTED, as distinct from merely picked. peakAnswers[idx] is written
-   the moment an option is clicked; this is written when peakContinue() reports it. The two must stay
-   separate, or a learner would find their options locked the instant they touched one. */
-let peakCommitted = {};
+/* 2026-10-14: the combined result for the marbles סעיפים (old S10) was removed, and Liyan's scenario
+   moved from S11 into the freed id so the ids stay contiguous (_test/checks.mjs gate 3). */
+const TOTAL_SCREENS = 11;  // S0 intro + S1–S8 + scenario S9 + scenario S10 (sb129 split back out of s4, 2026-10-12)
+
+/* The marbles סעיפים (s6–s8) give feedback after EACH סעיף, like every other question here —
+   producer decision 2026-10-14, the same one taken in יעד 4 and יעד 9. The deck (141/144/145) still
+   withholds the verdict until a combined result slide; that slide is gone, and its per-סעיף answer
+   text is now each סעיף's own feedback popup. They keep the deck's "no hints". */
+
+/* Scenario screens: storyboard pages that set up a question but ask nothing. They take
+   the next free ids so no existing screen / popup / hint-overlay id and no progress-nav
+   index had to shift; the flow order lives in this table instead of in the numbering.
+   `after`/`before` are the question screens they sit between. */
+const SCENARIOS = [
+  { screen: 10, after: 3, before: 4 },   // slide 129 — Liyan's slime, before סעיף א
+  { screen: 9, after: 5, before: 6 },    // slide 140 — Gili's marbles, before סעיף א
+];
+const scenarioAt     = n => SCENARIOS.find(s => s.screen === n);
+const scenarioBefore = n => SCENARIOS.find(s => s.before === n);
+/* Flow order for index_dev.html's jump bar (sent by ../unit-js/60-devbridge.js). Without it the
+   arrows walk by screen number, so the out-of-order scenario ids land in the wrong place: S9
+   (marbles) right after the slime questions and S10 (slime) last. Derived
+   from SCENARIOS so it follows any change to that table. */
+var DEV_FLOW_ORDER = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+  .reduce((o, n) => { const pre = scenarioBefore(n); return o.concat(pre ? [pre.screen, n] : [n]); }, []);
+const NEXT_PART_URL = '../methodica-science-volume-solid-01-06/index.html';
+window.lomdaState = window.lomdaState || {};
+
+/* Build the empty progress navs from data-count (avoids repeating markup). */
+function buildProgressNav() {
+  document.querySelectorAll('.progress-question[data-count]').forEach(function (nav) {
+    const count = parseInt(nav.dataset.count, 10) || 0; let h = '';
+    for (let i = 1; i <= count; i++) {
+      h += '<div class="progress-question__item" data-question="' + i + '"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה ' + i + '</span></div>';
+      if (i < count) h += '<div class="progress-question__connector" data-connector="' + i + '"></div>';
+    }
+    nav.innerHTML = h;
+  });
+}
+buildProgressNav();
 
 /* ═══════════════════════════════════════════════════════════
    COMPONENT — Companion character
@@ -42,23 +70,16 @@ function getCharacter() {
    <img onerror> fallback: onerror would fire a real 404 on nearly every
    screen and this unit's QA gate checks the network log for zero 404s.
    Landing a produced GIF is one line here plus the file. */
-/* '2num' keeps the delivered filename (Copmpanion/Orange_2num.mp4, turquoise_2num.mp4) so the
-   pose maps 1:1 to the source and nobody has to guess which clip it is. 960x960, 4.06s — square,
-   unlike the 1280x720 clips around it, so its slot must NOT declare `ca`. */
-const CHARACTER_ASSETS = { selection: 'png', run: 'mp4', think: 'mp4', challenge: 'mp4', '2num': 'mp4', success: 'mp4' };
+const CHARACTER_ASSETS = { selection: 'png', dumbbells: 'mp4', ask: 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
      (their near-white matte lifted to pure #FFFFFF) under their existing names, so a
      browser holding the old copy would keep showing the grey box on the white canvas.
      Bump it whenever a character asset is re-exported. Over file:// the query is ignored
-     rather than breaking the load, so it is safe there too.
-     ?v=4 here, still ?v=2 in parts 01-04, because THIS part's sprites were replaced IN PLACE twice
-     on 2026-08-27 — the confetti re-export of turquoise-success, then the matte lift below — and a
-     browser holding an old copy would keep playing it under the same filename. Parts 01-04 need no
-     bump: all 44 of their sprites were already on pure #FFFFFF and none of them changed. */
+     rather than breaking the load, so it is safe there too. */
   return 'assets/img/character-' + getCharacter() + '-' +
-         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=4';
+         (ext ? pose : 'selection') + '.' + (ext || 'png') + '?v=3';
 }
 /* Restarts a freshly-sourced <video> companion; no-op for <img> ones. */
 function startCompanionMedia(el) {
@@ -67,54 +88,51 @@ function startCompanionMedia(el) {
   const p = el.play();
   if (p && p.catch) p.catch(function () {});
 }
-/* s5 is the SUCCESS end screen and s6 the RETRY one — not the other way round. */
+/* s7 and s10 are NOT here: they author their sprite in index.html inside a .companion-say
+   group, because the position only makes sense next to a bubble that also lives in the
+   markup. Keeping a slot for them too would mean two sources of truth for the same
+   offsets — and now the group, not a number, is what holds the pair together. */
+/* The intro sprite is the screen's only illustration, so it carries it rather than decorating a
+   corner: 600px wide (3× the old 200) and centred under the text instead of tucked bottom-right.
+   `center: true` is the shared slot flag — see part 01's s12. At 16:9 that is 337px tall, so the
+   text moves up to make room; `#s0 .transition-content` in this part's stylesheet holds the pair
+   balanced in the 646px above the nav bar. */
 const CHARACTER_SLOTS = {
-  /* sb147: the transition screen carries the sprite as its illustration, 640x360 in the middle of
-     the column, not a 210px corner decoration. `into` drops it in the box the markup reserves. */
-  s0: { pose: 'challenge', w: 640, into: 's0-video', ca: '16 / 9' },        /* sb147 */
-  /* 248px = 75% of the 330 this was briefly set to, which read as oversized beside the question.
-     No `ca`: the old value carried `ca: '16 / 9'` on a 960x960 source, so the box came out 132x74
-     and object-fit: contain drew the mascot at 74px — the square default is correct here.
-     The 248 is load-bearing for .peak-question--withimage > .companion-say, whose 578px width is
-     330 (bubble) + 0 (gap) + 248; change one and the other has to follow. */
-  s1: { pose: 'think', w: 248, into: 's1-say' },                            /* sb149 */
-  /* The SUCCESS screen's own clip. It used to be `cheer`, and in TURQUOISE that resolved to the
-     very same file as `challenge` — the mountain-and-flag climb that opens the part (md5
-     8f00601d… for challenge, party AND cheer). So a learner who finished every sub-part correctly
-     was shown the intro animation again. `2num` is a distinct clip, delivered for exactly this
-     screen. No `ca`: it is 960x960, and the 16:9 ratio the old slot declared would have letterboxed
-     it to 210x118, drawing the mascot at 118px. 210 in both parts so the twin screens match. */
-  s5: { pose: '2num', w: 196, into: 's5-say' },                             /* sb157 */
-  s6: { pose: 'think', w: 190, into: 's6-say' },                             /* sb158 */
-  /* The closing screen. `w` is documentation only — .peak-end-video sizes the sprite at 100%
-     of its own 320px box. No `ca`: the success pair is 960x960 in both colours (the turquoise
-     source was 1936x1080 and was re-framed to match; see DEPLOY.md). */
-  s8: { pose: 'success', w: 480, into: 's8-video' }                          /* sb173 */
+  /* bottom 12 (QA 2026-10-12, was 121): the mp4 frame carries ~62px of white under the feet at this
+     width, so 74 (the nav bar's top rule) − 62 stands him on the line, as on the slide. */
+  s0: { pose: 'dumbbells', w: 750, center: true, bottom: 12, ca: '16 / 9' }     /* sb113 */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
   if (!screen) return;
-  // Lets a screen's CSS place things per variant where the two poses' artwork differs (s6's think clip).
-  screen.dataset.character = getCharacter();
   const slot = CHARACTER_SLOTS['s' + n];
-  // Lets a template reserve room for the sprite instead of being drawn over.
-  screen.classList.toggle('has-companion', !!slot);
-  /* `into` hands the sprite to a .companion-say group so the group's own bottom-alignment
-     aims the bubble's beak at him — see the peak result screens. */
-  const host = slot && slot.into ? (document.getElementById(slot.into) || screen) : screen;
+  /* NOT `:scope > .companion`: a sprite authored inside a .companion-say group is nested,
+     and missing it would leave the orange src baked into the markup in front of a learner
+     who chose turquoise. */
   let el = screen.querySelector('.companion');
-  if (!slot) { if (el) el.remove(); return; }
+  /* An AUTHORED sprite (data-pose in the markup, no slot) must survive this function —
+     only which character it shows is refreshed. Removing every sprite on a slot-less
+     screen deleted s10's. An INJECTED one is still cleaned up when its slot goes away. */
+  if (!slot) {
+    if (el && el.dataset.injected === '1') { el.remove(); el = null; }
+    else if (el) { el.src = characterAsset(el.dataset.pose || 'selection'); startCompanionMedia(el); }
+    screen.classList.toggle('has-companion', !!el);
+    return;
+  }
   const tag = CHARACTER_ASSETS[slot.pose] === 'mp4' ? 'video' : 'img';
-  if (el && el.tagName.toLowerCase() !== tag) { el.remove(); el = null; }
+  if (el && el.dataset.injected === '1' && el.tagName.toLowerCase() !== tag) { el.remove(); el = null; }
   if (!el) {
     el = document.createElement(tag);
     el.className = 'companion';
     el.alt = '';                                   // decorative, carries no information
     el.setAttribute('aria-hidden', 'true');
     el.draggable = false;
+    el.dataset.injected = '1';
     if (tag === 'video') { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
+    screen.appendChild(el);
   }
-  if (el.parentElement !== host) host.appendChild(el);
+  // Lets a template reserve room for the sprite instead of being drawn over.
+  screen.classList.add('has-companion');
   el.src = characterAsset(slot.pose);
   startCompanionMedia(el);
   el.style.setProperty('--cw', slot.w + 'px');
@@ -122,317 +140,320 @@ function renderCompanion(n) {
      first paint instead of after the mp4 header lands. */
   el.style.setProperty('--ca', slot.ca || '');
   el.classList.toggle('companion--center', slot.center === true);
-  ['left', 'right', 'top', 'bottom'].forEach(function (k) {
-    el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
-  });
-}
-
-/* ═══ Peak result — storyboard 157 (all four right) / 158 (not all) ═══
-   Both slides carry the SAME body — the model answer to each סעיף — and differ only in title and
-   in the companion's reflective prompt, so the body is written once. Same shape as part 04's
-   SECTION_RESULT, which the deck gives its silent סעיפים group.
-   Departures from the deck: it bolds the "א." / "ב." markers but not "ג." / "ד."; all four are
-   bold here. */
-const PEAK_RESULT = {
-  correct: { title: 'כל התשובות נכונות! כל הכבוד!',
-             bubble: 'קחו שנייה לחגוג את ההצלחה. מה הניצחון הקטן שלכם בתרגיל הזה?' },
-  partial: { title: 'התשובה אינה נכונה במלואה.<br />הנה התשובות הנכונות.',
-             bubble: 'אם תפגשו מחר שאלה דומה, מה יהיה הדבר הראשון שתעשו כדי להצליח?' },
-  /* One row per סעיף, as part 04's SECTION_RESULT: the letter in its own column so every
-     continuation line starts under the text (hanging indent), and a review button inline at the end. */
-  body: [
-    { letter: 'א.', text: 'נפח הפסלון = נפח המים הסופי פחות נפח המים המקורי = <b>60\u00A0סמ"ק</b>.' },
-    { letter: 'ב.', text: 'בוצעו 3 מדידות כדי <b>לצמצם טעויות מקריות ולקבל קריאה מהימנה</b>.<br />כדאי <b>לדווח על הממוצע</b> = 60\u00A0סמ"ק.' },
-    { letter: 'ג.', text: 'איריס צודקת: שלוש תוצאות המדידה קרובות מאוד זו לזו,<br />מה שמוכיח שהתוצאות יציבות ואינן מקריות.' },
-    /* QA 2026-10-12: forced break after "טעות." */
-    { letter: 'ד.', text: 'המדידה חריגה מאוד וסביר שנפלה בה טעות.<br /><b>יש למדוד מחדש ולא להכליל את הערך 80 בחישוב הסופי</b>.' }
-  ]
-};
-/* The title follows the DECK's split (all four right), the screen follows the pass threshold. */
-function renderPeakResult(n) {
-  const card = document.getElementById('s' + n + '-result');
-  if (!card) return;
-  const allRight = peakScore() === PEAK_PARTS;
-  const v = allRight ? PEAK_RESULT.correct : PEAK_RESULT.partial;
-  card.classList.toggle('section-result--retry', !allRight);
-  document.getElementById('s' + n + '-result-title').innerHTML = v.title;
-  document.getElementById('s' + n + '-result-body').innerHTML =
-    PEAK_RESULT.body.map((x, i) =>
-      '<div class="section-result-item">' +
-        '<span class="section-result-letter">' + x.letter + '</span>' +
-        '<p class="section-result-text">' + x.text +
-          '<button class="section-result-review" type="button" onclick="reviewPeakPart(' + (i + 1) + ')"' +
-            ' aria-label="צפייה בשאלה ובתשובה שלי, סעיף ' + x.letter.charAt(0) + '">לתשובה שלי</button></p>' +
-      '</div>').join('');
-  document.getElementById('s' + n + '-result-bubble').textContent = v.bubble;
-}
-
-/* ⚠️ NOTHING HERE MAY REPORT. resetScreenState() runs on every navigation, every back-navigation
-   and (from Stage 5) every resume replay, so a statement sent from here repeats.
-
-   It used to send the component 'completed' when the learner landed on screen 5 — via xapiSend,
-   which defers by a macrotask. Three separate faults in one line: it fired on mere navigation (so
-   the dev bridge or a back-button produced a completed assessment), it hard-coded success:true so a
-   learner who answered nothing was reported as having PASSED, and being deferred it would have
-   escaped both of resume's guards — the sender stub and the _restoring flag are both gone by the
-   time a macrotask runs. See RESUME.md risk R1. It now lives in peakFinish(), synchronously. */
-/* ═══ Review mode — a סעיף revisited from the result screen ═══
-   Same contract as part 04's: opens the sub-part with the learner's own (locked) pick painted with
-   its verdict, and swaps the bar for one action, back to the feedback. Remembers WHICH result screen
-   it came from (s5 pass / s6 fail). Not resume state — a reload lands on the plain locked screen. */
-var reviewFrom = null;
-function reviewPeakPart(idx) { reviewFrom = currentScreen; goTo(idx); }
-function backToResult() { const r = reviewFrom; reviewFrom = null; goTo(r || 5); }
-function syncReviewMode(n) {
-  if (!(n >= 1 && n <= PEAK_PARTS)) reviewFrom = null;
-  for (let i = 1; i <= PEAK_PARTS; i++)
-    document.getElementById('s' + i)?.classList.toggle('is-review', reviewFrom !== null && i === n);
-  if (reviewFrom === null || !(n >= 1 && n <= PEAK_PARTS)) return;
-  const picked = peakAnswers[n];
-  document.querySelectorAll('#s' + n + '-opts .peak-opt').forEach(o => {
-    o.classList.remove('correct', 'wrong');
-    if (o.dataset.id === picked) {
-      o.classList.remove('selected');
-      o.classList.add(picked === PEAK_CORRECT[n] ? 'correct' : 'wrong');
-    }
-  });
+  /* A grouped sprite is positioned BY the group, so writing slot offsets onto it would be
+     a second, conflicting source of truth. (Reachable only if a screen ever has both.) */
+  if (!el.closest('.companion-say')) {
+    ['left', 'right', 'top', 'bottom'].forEach(function (k) {
+      el.style[k] = slot[k] != null ? slot[k] + 'px' : '';
+    });
+  }
 }
 
 function resetScreenState(n) {
   renderCompanion(n);
-  if (n >= 1 && n <= PEAK_PARTS) {
-    document.querySelectorAll('#s' + n + '-opts .peak-opt').forEach(o => o.classList.remove('correct', 'wrong'));
-    peakEnter(n);
-  }
-  syncReviewMode(n);
-  if (n === 5 || n === 6) {
-    renderPeakResult(n);
-    const el = document.getElementById('s' + n + '-score');
-    if (el) el.textContent = 'ענית נכון על ' + peakScore() + ' מתוך ' + PEAK_PARTS + ' סעיפים.';
+  if (n >= 1 && n <= 8) practiceEnter(n - 1, 's' + n);
+  /* The scenario screen carries the same progress nav as the question screens.
+     buildProgressNav() fills in its dots from data-count, but without this the nav
+     renders with no state at all — nothing answered, nothing current. Mark the question
+     it introduces (סעיף א) as current, since this is that question's opening screen, and
+     sync. No answer state is touched: practiceEnter() re-runs on the question itself. */
+  const sc = scenarioAt(n);
+  if (sc) {
+    const q = practiceProgress.questions[sc.before - 1];
+    q.visited = true;
+    if (q.state === 'not-answered') q.state = 'current';
+    syncPracticeNav('s' + n);
   }
 }
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') document.querySelectorAll('[id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
-  if (e.key === 'ArrowLeft')  { if (currentScreen >= 1 && currentScreen <= PEAK_PARTS) return; }
+  if (e.key === 'ArrowLeft')  advanceScreen();
   if (e.key === 'ArrowRight') goBack();
+  if (e.key === 'Escape') document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
 });
-/* The end screens were unreachable in reverse: this only ever handled 1-4, the scenario and 0, so
-   every `חזרה` added to them would have been a dead button. Named edges, not `currentScreen - 1` —
-   ROUTING-AND-RETAKE.md forbids assuming the numeric order anywhere in this unit, and it is wrong
-   here twice over (the scenario is screen 7, the endings are 8/9). Walking back into an answered
-   sub-part is already safe: the doneQ ledger is what stops a graded answer being reported twice. */
 function goBack() {
-  if (reviewFrom !== null) { backToResult(); return; }
-  if (currentScreen === 8) { goTo(5); return; }                    // ending -> the review it came from
-  if (currentScreen === 5 || currentScreen === 6) { goTo(PEAK_PARTS); return; }   // review -> last sub-part
-  if (currentScreen >= 2 && currentScreen <= PEAK_PARTS) { goTo(currentScreen - 1); return; }
-  if (currentScreen === 1) { goTo(SCENARIO_SCREEN); return; }
-  if (currentScreen === SCENARIO_SCREEN) { goTo(0); return; }
+  const sc = scenarioAt(currentScreen);
+  if (sc) { goTo(sc.after); return; }
+  const pIdx = practiceProgress.questions.findIndex(q => q.screen === currentScreen);
+  if (pIdx !== -1) {
+    const pre = scenarioBefore(currentScreen);   // step back through the scenario, not past it
+    if (pre) { goTo(pre.screen); return; }
+    goTo(pIdx > 0 ? practiceProgress.questions[pIdx - 1].screen : 0); return;
+  }
+  goTo(currentScreen - 1);
 }
-function advanceScreen() { if (currentScreen === 0) peakStart(); }
-
-/* ─── Peak hints (storyboard gives every sub-part its own hint slide) ───
-   Not the scq* hint machinery: that is keyed on SCQ_REG, which the peak
-   components do not use. The overlay id ends in -hint-overlay so goTo()
-   closes it on navigation, the same convention as the other parts. */
-function peakHint(idx) {
-  const ov = document.getElementById('s' + idx + '-hint-overlay');
-  if (!ov) return;
-  ov.classList.remove('hidden');
-  /* Reported on open. No parentId: v2.4 mandates it for answered/evaluated only. */
-  xapiSend('requested.1', 'question', null, { questionId: xapiQ(PEAK_ITEM, 'q' + idx).questionId });
-}
-function peakCloseHint(idx) {
-  document.getElementById('s' + idx + '-hint-overlay')?.classList.add('hidden');
+function advanceScreen() {
+  if (currentScreen === 0) { goTo(1); return; }
+  const sc = scenarioAt(currentScreen);
+  if (sc) { goTo(sc.before); return; }
+  if (practiceProgress.questions.some(q => q.screen === currentScreen)) return;
+  goTo(currentScreen + 1);
 }
 
-/* ─── Peak assessment ─────────────────────────────────────── */
-/* s0 (transition, slide 147) -> s7 (scenario, slide 148) -> s1 (סעיף א, slide 149). */
-function peakStart() { goTo(SCENARIO_SCREEN); }
-/* The options are template .scq-opt pills, so the picked state is `.selected` — the class
-   .scq-opt.selected .scq-radio keys on to fill the radio — and aria-checked follows it. */
-function peakSelect(idx, id, btn) {
-  if (peakCommitted[idx]) return;          // locked; see peakEnter
-  peakAnswers[idx] = id;
-  document.querySelectorAll('#s' + idx + '-opts .peak-opt').forEach(o => {
-    o.classList.remove('selected');
-    o.setAttribute('aria-checked', 'false');
-  });
-  btn.classList.add('selected');
-  btn.setAttribute('aria-checked', 'true');
-  const cont = document.getElementById('s' + idx + '-continue'); if (cont) cont.disabled = false;
+/* ═══ Feedback popup renderer ═══ */
+function renderFeedbackPopup(screen, type, popups) {
+  const popup = document.getElementById(screen + '-scq-popup'); if (!popup) return;
+  const cfg = popups[type];
+  popup.style.background = (type === 'correct') ? '#edf8ed' : '#ffdbdc';
+  popup.style.left = '2px'; popup.style.top = 'auto'; popup.style.bottom = '84px';
+  /* innerHTML, not textContent: the deck's wrong-final title is two bold lines.
+     Every title is a literal in this file, same as s10-result-title. */
+  document.getElementById(screen + '-scq-popup-title').innerHTML = cfg.title;
+  document.getElementById(screen + '-scq-popup-body').innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
+  popup.classList.remove('hidden');
+  /* s7's companion line stands where the popup opens; it steps aside while a popup is up. */
+  document.getElementById(screen)?.classList.add('fb-shown');
 }
-function peakEnter(idx) {
-  const picked = peakAnswers[idx];
-  /* A committed sub-part is locked. One attempt each, peakContinue() is the only way forward, and
-     the doneQ ledger refuses a second graded send — so an editable pick could only ever drift away
-     from what the LRS already holds. */
-  const locked = !!peakCommitted[idx];
-  document.querySelectorAll('#s' + idx + '-opts .peak-opt').forEach(o => {
-    const sel = o.dataset.id === picked;
-    o.classList.toggle('selected', sel);
-    o.setAttribute('aria-checked', sel ? 'true' : 'false');
-    o.disabled = locked;
-  });
-  const cont = document.getElementById('s' + idx + '-continue'); if (cont) cont.disabled = (picked === undefined);
+function scqClosePopup(screen) {
+  document.getElementById(screen + '-scq-popup')?.classList.add('hidden');
+  document.getElementById(screen)?.classList.remove('fb-shown');
 }
-function peakContinue(idx) {
-  if (peakAnswers[idx] === undefined) return;
-  const correct = peakAnswers[idx] === PEAK_CORRECT[idx];
 
-  /* xAPI: one attempt per sub-part and no per-part feedback, so every answer is 'answered.last'.
+/* ═══ SingleChoiceQuestion ═══ */
+const SCQ_REG = {};
+/* `phase` records WHAT THE LEARNER WAS LAST SHOWN — one of the three keys in cfg.popups, or null
+   for a screen never checked (or whose marks a re-pick cleared). Single source for both halves of
+   the answered look: which marks, and which feedback popup. Same field as part 01's. */
+function scqRegister(cfg) { cfg.maxAttempts = cfg.maxAttempts || 2; SCQ_REG[cfg.screen] = { cfg: cfg, sel: null, attempts: 0, answered: false, done: false, phase: null, lastWrong: null }; }
+function scqOpts(screen) { return document.querySelectorAll('#' + screen + ' .scq-opt'); }
+function scqSelect(screen, id) {
+  const s = SCQ_REG[screen]; if (!s || s.answered) return;
+  /* Retry gate (720-templates "Retry gate", QA 2026-10-11): after a non-final wrong check the option
+     just judged wrong cannot be submitted again. Clicking it again changes nothing — marks, popup and
+     the locked button stay — and צדקתי? opens only for a different option. */
+  if (s.phase === 'retry' && id === s.sel) return;
+  s.sel = id;
+  /* A re-pick after a wrong attempt wipes the marks and the popup, so the screen is back to
+     "chosen but unchecked" — and `phase` has to say so, or the painter would repaint the retry
+     verdict over an answer the learner never submitted. `attempts` stays put: it is the
+     attempt LEDGER, not the display state. */
+  if (s.attempts > 0) { s.phase = null; scqClosePopup(screen); scqOpts(screen).forEach(o => o.classList.remove('wrong', 'correct')); }
+  scqOpts(screen).forEach(o => { const sel = o.dataset.id === id; o.classList.toggle('selected', sel); o.setAttribute('aria-checked', sel ? 'true' : 'false'); });
+  const chk = document.getElementById(screen + '-scq-check'); if (chk) chk.disabled = (id === s.lastWrong);
+}
+function scqCheck(screen) {
+  const s = SCQ_REG[screen], cfg = s.cfg;
+  if (s.answered) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
+  if (!s.sel || s.sel === s.lastWrong) return;   // the retry gate, also against a programmatic or keyboard submit
+  s.attempts++;
+  const correct = s.sel === cfg.correctId;
 
-     response is the option's VISIBLE TEXT, not the 'a'/'b' data-id it used to send. The metadata's
-     `answers` for these four questions are the full option strings, and v2.4 requires the reported
-     response to match them — an id matched nothing.
+  /* xAPI: ids resolved HERE, not at registration — xapiQ() reads window.METADATA, which the library
+     fetches asynchronously while registerPractice() runs during parse. parentId is the containing
+     item, mandatory per v2.4 §2. `response` is the option's visible text, which was missing entirely. */
+  const q = xapiQ(cfg.item, cfg.qKey);
+  xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question',
+    { response: xapiAnswerText(document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]')),
+      success: !!correct,
+      score: { scaled: correct ? 1 : 0 } },
+    { questionId: q.questionId, parentId: q.parentId });
 
-     success and score were missing entirely: the send carried only { response }. */
-  /* SYNCHRONOUS, not xapiSend. On the last sub-part this call and peakFinish() happen in the SAME
-     click, and peakFinish must be synchronous (risk R1) — so a deferred answer would be overtaken by
-     the item, component and unit 'completed' and arrive after all three. Observed exactly that: q4's
-     answer landed last in the log. Four sends in an assessment do not need deferring. */
-  const q = xapiQ(PEAK_ITEM, 'q' + idx);
-  try {
-    /* Through the doneQ ledger, not sendStatement720 directly. This is an isAssessment component and
-       part 06's back edge makes מועד א re-enterable, so a graded answer must never be reported twice.
-       See sendAnsweredOnce() in unit-js/40-resume.js. Falls through to a plain send while
-       RESUME_ENABLED is false. */
-    sendAnsweredOnce(PEAK_ITEM, 'q' + idx,
-      { response: xapiAnswerText(document.querySelector('#s' + idx + '-opts .peak-opt[data-id="' + peakAnswers[idx] + '"]')),
-        success: correct,
-        score: { scaled: correct ? 1 : 0 } },
-      { questionId: q.questionId, parentId: q.parentId });
-  } catch (e) { console.error('[xAPI] answered q' + idx, e); }
+  /* Outside the send: xapiSend swallows exceptions and the score must not depend on reporting.
+     Recorded only on the closing attempt. */
+  if (correct || s.attempts >= cfg.maxAttempts) {
+    XAPI_Q_RESULTS[cfg.item + '/' + cfg.qKey] = !!correct;
+  }
+  if (correct) { s.phase = 'correct'; scqMark(screen, cfg.correctId, 'correct'); renderFeedbackPopup(screen, 'correct', cfg.popups); scqFinish(screen, true); }
+  else if (s.attempts >= cfg.maxAttempts) { s.phase = 'wrong2'; scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'wrong2', cfg.popups); scqFinish(screen, false); }
+  else { s.phase = 'retry'; s.lastWrong = s.sel; const gate = document.getElementById(screen + '-scq-check'); if (gate) gate.disabled = true; scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'retry', cfg.popups); scqSyncHint(screen); }
 
-  /* Outside the send — see the note in part 02's scqCheck. */
-  XAPI_Q_RESULTS[PEAK_ITEM + '/q' + idx] = correct;
-
-  /* Commit, lock, and save synchronously — before either exit path navigates. A debounced save alone
-     would lose an answer given by a learner who then closes the tab. */
-  peakCommitted[idx] = true;
-  peakEnter(idx);
+  /* Synchronous, after all painting. An answer given and then abandoned without navigating would
+     otherwise rest entirely on the page-leave handlers, which Chrome may drop. */
   try { flushResumeSave(); } catch (e) {}
-
-  if (idx < PEAK_PARTS) { goTo(idx + 1); return; }
-
-  /* Last sub-part: report the attempt, then show the verdict. */
-  /* Navigate FIRST, then report. Both orders show the same screen, but reporting first emitted a
-     spurious item 'initialized' AFTER the item's own 'completed': xapiFinishItems() clears the
-     current-item latch, and the score screen belongs to the same item, so the next goTo() re-opened
-     it. Navigating first keeps the latch on item 01 across the move (xapiOnScreen emits nothing when
-     the item is unchanged) and peakFinish() then closes it exactly once, last.
-     Safe in this order because peakFinish() catches everything internally and cannot throw. */
-  const passed = peakScore() >= PEAK_PASS;
-  goTo(passed ? 5 : 6);
-  peakFinish(passed);
+}
+function scqLabel(cfg, done) { return done ? 'שנמשיך?' : 'צדקתי?'; }
+function scqMark(screen, id, cls) { const o = document.querySelector('#' + screen + ' .scq-opt[data-id="' + id + '"]'); if (o) { o.classList.remove('selected'); o.classList.add(cls); } }
+function scqFinish(screen, ok) {
+  const s = SCQ_REG[screen]; s.answered = true; s.done = true;
+  scqOpts(screen).forEach(o => { o.disabled = true; });
+  const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = scqLabel(s.cfg, true); chk.disabled = false; }
+  scqSyncHint(screen);
+  if (s.cfg.onFinish) s.cfg.onFinish(ok);
+}
+function scqHint(screen) {
+  const s = SCQ_REG[screen]; if (!s || s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) return;
+  /* Reported on open. No parentId: v2.4 mandates it for answered/evaluated only. */
+  xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey).questionId });
+  document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
+}
+function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
+/* Hint availability in one place (720-templates "Hint policy": hidden, not disabled, while
+   unavailable): hidden once the question resolves, and on a `hintAfterWrong` question also until the
+   first wrong check. Reads `attempts`, which resume already carries. (2026-10-11, deck notes: s1-s5 "רמז אחרי שגיאה ראשונה" on slides 116/121/126/132/137) */
+function scqSyncHint(screen) {
+  const s = SCQ_REG[screen]; const hint = document.getElementById(screen + '-scq-hint');
+  if (!s || !hint) return;
+  hint.style.visibility = (s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) ? 'hidden' : '';
+}
+function scqEnter(screen) {
+  const s = SCQ_REG[screen]; if (!s) return;
+  document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); scqClosePopup(screen);
+  if (s.done) { scqOpts(screen).forEach(o => { o.disabled = true; }); const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = scqLabel(s.cfg, true); chk.disabled = false; } scqSyncHint(screen); }
+  else { scqReset(screen); }
+}
+function scqReset(screen) {
+  const s = SCQ_REG[screen]; s.sel = null; s.attempts = 0; s.answered = false; s.phase = null; s.lastWrong = null;
+  scqOpts(screen).forEach(o => { o.classList.remove('selected', 'correct', 'wrong'); o.setAttribute('aria-checked', 'false'); o.disabled = false; });
+  const chk = document.getElementById(screen + '-scq-check'); if (chk) { chk.textContent = scqLabel(s.cfg, false); chk.disabled = true; }
+  const hint = document.getElementById(screen + '-scq-hint'); if (hint) hint.disabled = false;
+  scqSyncHint(screen);
 }
 
-function peakScore() { let s = 0; for (let i = 1; i <= PEAK_PARTS; i++) if (peakAnswers[i] === PEAK_CORRECT[i]) s++; return s; }
+/* ═══ Progress dots + practice wiring (8 questions → Part 06) ═══ */
+var practiceProgress = { questions: [] };
+for (let i = 1; i <= 8; i++) practiceProgress.questions.push({ number: i, visited: i === 1, state: i === 1 ? 'current' : 'not-answered', screen: i });
+/* Correct answers out of the eight, read from XAPI_Q_RESULTS so the number reported and the number
+   scored cannot drift from each other. */
+function practiceScore() {
+  return xapiCorrectCount();
+}
 
-/* Reports the end of מועד א. Called from peakContinue() only — once, at the moment the learner
-   commits their last answer — never from a screen-entry hook.
-
-   SYNCHRONOUS on purpose (sendStatement720, not xapiSend): the pass path navigates nowhere but the
-   fail path leads to peakGoRetake(), and a deferred send would be racing an unload. It is also the
-   standing rule from RESUME.md risk R1 — a 'completed' must never be deferred, because the deferral
-   outlives resume's sender stub. */
-function peakFinish(passed) {
-  /* Close item 01 (all four questions live in it) before the component. */
+function goToNextPart() {
+  /* Closes item 05 — the last one open. */
   try { xapiFinishItems(); } catch (e) {}
 
-  /* The component is reported on BOTH paths. Previously only the pass path reported anything, so a
-     learner who failed מועד א produced no component 'completed' at all and their whole attempt went
-     unrecorded — the platform could not tell them apart from a learner who never started.
-     Routing a failed learner onward is the content's job here (see ROUTING-AND-RETAKE.md); the
-     report just has to be truthful about the outcome. */
+  /* Explicit result: the library's aggregate is an all-correct AND, which would report failure for
+     any partial pass. Denominator is 8 — the eight questions the learner was promised (and the eight
+     progress dots), which here also matches the metadata count.
+
+     success:true unconditionally, on the same reading confirmed for part 03: this component has no
+     pass threshold anywhere in its code and always proceeds to Part 06, so completing it IS the
+     success condition and score.scaled carries the performance. */
   try {
     sendCompletedOnce('done', currentPartSlug(), 'onlinelesson',
-      { success: passed, score: { scaled: peakScore() / PEAK_PARTS } });
+      { success: true, score: { scaled: practiceScore() / 8 } });
   } catch (e) { console.error('[xAPI] completed component 05', e); }
 
-  /* The UNIT closes here only when the learner PASSES מועד א — that is the end of the lomda for
-     them. A learner who fails goes on to מועד ב (part 06), which owns the unit 'completed' for
-     every path through it. Nobody sent this before, at any point in the unit. */
-  if (passed) {
-    try {
-      sendCompletedOnce('done', 'unit', 'onlinelesson',
-        { success: true, score: { scaled: peakScore() / PEAK_PARTS } }, { scope: 'unit' });
-    } catch (e) { console.error('[xAPI] completed unit (via 05)', e); }
-  }
-}
-
-
-/* ─── סיימתי ───────────────────────────────────────────────
-   ⚠️ THIS MUST NOT REPORT. peakFinish() already sent the item, the component and (on the paths that
-   own it) the unit `completed`, synchronously, when the learner committed their last answer — long
-   before they could reach this screen. sendCompletedOnce() would dedupe a second call, but sending
-   one would still be wrong: this button is an exit affordance, not an outcome.
-
-   The unit has no documented host-exit contract — 60-devbridge.js's postMessage is the dev
-   wrapper's jump bar, not a production channel — so this is a seam, deliberately small. It disables
-   the button so a second press cannot double-fire, and announces the finish to a framing host that
-   may or may not be listening. Drop the real handshake in here once the platform partner confirms
-   it; nothing else in the unit needs to change. */
-function unitFinish() {
-  document.querySelectorAll('.btn-continue[id$="-finish"]').forEach(b => { b.disabled = true; });
-  if (window.parent !== window) {
-    try { window.parent.postMessage({ type: '720:unit-finished' }, '*'); } catch (e) {}
-  }
-}
-
-function peakGoRetake() {
-  /* The retake edge. Unlike a normal forward hop this leads to a component the learner reaches by
-     FAILING, and writeForwardState records prev['…-06'] = '…-05' — so מועד ב offers "חזרה" back into
-     the failed מועד א. That is a deliberate product decision, not an oversight, and it is why the
-     doneQ ledger exists: walking back must not let a graded answer be reported twice.
-     See ROUTING-AND-RETAKE.md. */
   if (RESUME_ENABLED) writeForwardState('methodica-science-volume-solid-01-06');
-  window.location.href = PART_06_URL + window.location.search;
+  window.location.href = NEXT_PART_URL + window.location.search;
 }
+function visibleState(q) { return q.state; }
+function updateProgressQuestion(container, state) {
+  if (!container) return; const qs = state.questions;
+  qs.forEach((q, i) => {
+    const n = i + 1; const item = container.querySelector('[data-question="' + n + '"]'); if (!item) return;
+    const icon = item.querySelector('.progress-question__icon'), label = item.querySelector('.progress-question__label');
+    const vs = visibleState(q);
+    icon.classList.remove('progress-question__icon--current', 'progress-question__icon--correct', 'progress-question__icon--incorrect');
+    if (vs !== 'not-answered') icon.classList.add('progress-question__icon--' + vs);
+    label.classList.toggle('progress-question__label--visited', q.visited);
+    const nav = q.visited && q.screen != null && q.screen !== currentScreen;
+    item.style.cursor = nav ? 'pointer' : ''; item.onclick = nav ? (function (s) { return function () { goTo(s); }; })(q.screen) : null;
+  });
+  for (let n = 1; n < qs.length; n++) { const conn = container.querySelector('[data-connector="' + n + '"]'); if (!conn) continue; const st = visibleState(qs[n - 1]); conn.classList.toggle('progress-question__connector--visited', st === 'correct' || st === 'incorrect'); }
+}
+function syncPracticeNav(screen) { updateProgressQuestion(document.querySelector('#' + screen + ' .progress-question'), practiceProgress); }
+function practiceEnter(idx, screen) { const q = practiceProgress.questions[idx]; q.visited = true; if (q.state === 'not-answered') q.state = 'current'; syncPracticeNav(screen); scqEnter(screen); }
+function _practiceOnFinish(idx, screen) { return function (ok) { const q = practiceProgress.questions[idx]; q.state = ok ? 'correct' : 'incorrect'; q.visited = true; syncPracticeNav(screen); }; }
+function _practiceOnContinue(idx) {
+  return function () {
+    const nx = idx + 1;
+    if (nx >= practiceProgress.questions.length) { goToNextPart(); return; }
+    practiceProgress.questions[nx].visited = true;
+    const target = practiceProgress.questions[nx].screen;
+    const pre = scenarioBefore(target);          // a question with a scenario page opens on it
+    goTo(pre ? pre.screen : target);
+  };
+}
+function registerPractice(idx, cfg) { cfg.screen = 's' + practiceProgress.questions[idx].screen; cfg.onFinish = _practiceOnFinish(idx, cfg.screen); cfg.onContinue = _practiceOnContinue(idx); scqRegister(cfg); attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup')); }
+
+/* ═══ Feedback copy — storyboard slides 115-139 ═══
+   The deck gives every question a five-slide block: question, retry, hint, correct,
+   wrong-final. Three things follow from that and were wrong before:
+     - RETRY says nothing about the content. It is the same two bold lines on every
+       retry slide (115/120/125/131/136); the deck puts the thinking prompt on the HINT
+       slide, which is where the unit's invented nudges have moved to.
+     - the WRONG-FINAL body is the SAME text as correct, differing only in the bold
+       prefix. Each question declares its explanation once and both variants share the
+       array, so they cannot drift apart.
+     - the correct title is `נכון מאוד!`, not `נכון!`.
+   Slides 128 and 134 write `התשובה הנכונה מוצגת.` where 118/123/139 write `מסומנת.`;
+   the unit marks the correct option, so FB_WRONG2 keeps `מסומנת` everywhere
+   (docs-and-tools/TEXT-FIDELITY.md §Deck defects). */
+const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['שננסה שוב?'] };
+const FB_WRONG2 = 'התשובה אינה נכונה.<br />התשובה הנכונה מסומנת.';
+const fbPopups = explanation => ({
+  retry:   FB_RETRY,
+  correct: { title: 'נכון מאוד!', body: explanation },
+  wrong2:  { title: FB_WRONG2,    body: explanation }
+});
+
+registerPractice(0, { correctId: 'a', item: '01', qKey: 'q1', hintAfterWrong: true, popups: fbPopups([   /* sb117/118 */
+  'הטבעת העלתה את מפלס המים במשורה.',
+  'העלייה בגובה המים היא הרמז שאפשר למדוד באמצעותו את נפח הטבעת, משום שנפח המים שנדחקו שווה לנפח החלק השקוע של הטבעת.']) });
+registerPractice(1, { correctId: 'b', item: '02', qKey: 'q1', hintAfterWrong: true, popups: fbPopups([   /* sb122/123 */
+  'עדשים הם מוצק גרגרי וניתן למדוד את נפחם<br />באמצעות כוס מדידה:',
+  'ממלאים את הכוס בעדשים וקוראים את הנפח לפי השנתות שעליה.']) });
+registerPractice(2, { correctId: 'a', item: '03', qKey: 'q1', hintAfterWrong: true, popups: fbPopups([   /* sb127/128 */
+  'המדידות מהימנות משום שהתוצאות החוזרות קרובות מאוד זו לזו.']) });
+registerPractice(3, { correctId: 'b', item: '04', qKey: 'q1', hintAfterWrong: true, popups: fbPopups([   /* sb133/134 */
+  'אם ליאן תעטוף משקולת קטנה בסליים ותכניס למשורה – הסליים ישקע והיא תוכל למדוד את הנפח שלו.']) });
+registerPractice(4, { correctId: 'd', item: '04', qKey: 'q2', hintAfterWrong: true, popups: fbPopups([   /* sb138/139 */
+  '<span class="fb-equation">נפח המים הסופי במשורה = נפח מים התחלתי + נפח משקולת + נפח סליים.</span>',
+  'צריך להוריד מהנפח שהתקבל את הנפח ההתחלתי ואת נפח המשקולת כדי לקבל את נפח הסליים.']) });
+
+/* סעיפים א-ג of the marbles question (s6–s8): per-סעיף feedback, 2 attempts, no hints (slide 141).
+   The explanations are the deck's combined answer slide (144/145), one row per סעיף.
+     - the deck writes `כל הגלות` (missing vav) — kept as `הגולות`, per the agreed policy
+       in docs-and-tools/TEXT-FIDELITY.md §Deck defects
+     - the division is wrapped in .section-result-expr; its colon and equals sign are
+       bidi-neutral and would otherwise be reordered inside this RTL paragraph */
+registerPractice(5, { correctId: 'a', item: '05', qKey: 'q1', popups: fbPopups([   /* sb141 / sb144 א */
+  'גילי צודק רק אם כל הגולות זהות.',
+  'אם הגולות זהות אז הנפח הכולל שלהן חלקי מספר הגולות שווה לנפח של גולה אחת.']) });
+registerPractice(6, { correctId: 'a', item: '05', qKey: 'q2', popups: fbPopups([   /* sb142 / sb144 ב */
+  'כל הגולות זהות ולכן ניתן לחלק את הנפח הכולל ב-5',
+  '<span class="section-result-expr">50 : 5 = 10</span>']) });
+registerPractice(7, { correctId: 'b', item: '05', qKey: 'q3', popups: fbPopups([   /* sb143 / sb144 ג */
+  'עבור גולות בגדלים שונים <b>השיטה של גילי לא תעבוד</b>.',
+  'אם הגולות שונות, נדע את הנפח הכולל אבל לא נפח של גולה ספציפית.']) });
 
 /* ═══════════════════════════════════════════════════════════
    xAPI (720) — per-part seams
    ═══════════════════════════════════════════════════════════ */
 
-/* All four sub-parts are questions q1–q4 of ONE catalog item, so the item stays open across screens
-   1–4 and the result screen; xapiOnScreen() emits nothing while the suffix is unchanged, and
-   peakFinish() closes it. Screens 5 and 6 stay on the item so a problem report filed from the score
-   screen still attributes to it. */
+/* Replaces the legacy SCREEN_TO_SUB, which was string-valued (no page number), under a name nothing
+   shared reads, and covered only screens 1–8 — so a problem report filed from the intro, either
+   scenario screen or the result screen went out with an EMPTY item.
+
+   Flow order here is not screen order: 0 → 1 → 2 → 3 → 11 → 4 → 5 → 9 → 6 → 7 → 8 → 10. Liyan's
+   scenario (sb129) was split back out of s4 on 2026-10-12 and took the next free id, 11. A
+   scenario screen sets up a question without asking one, so it belongs INSIDE the item it
+   introduces — screen 11 is page 1 of item 04, screen 9 is page 1 of item 05. Keeping it inside is what makes the item lifecycle
+   come out right: item 04 closes and 05 opens at screen 9 (by which point both of item 04's
+   questions are answered), and item 05 stays open across its three סעיפים, closing only in
+   goToNextPart(). */
 var SCREEN_TO_SUBCONTENT = {
-  /* The intro is page 0 OF THE ITEM, not a no-item screen. Mapping it to null made the item close
-     the moment a learner navigated back to the intro (goBack allows 2->1->0), emitting a premature
-     item 'completed' carrying a partial score — which, once the Stage 5a ledger lands, would mark
-     the item done and SUPPRESS the real one from peakFinish(). Keeping the intro inside the item
-     means the item opens on entry and closes only in peakFinish(), whatever route the learner takes. */
-  0: ['01', 0],       // intro
-  1: ['01', 1],       // sub-part 1
-  2: ['01', 2],       // sub-part 2
-  3: ['01', 3],       // sub-part 3
-  4: ['01', 4],       // sub-part 4
-  5: ['01', 5],       // score — passed
-  6: ['01', 5],       // score — failed (same page of the same item)
-  8: ['01', 5],       // unit complete, success ending (terminal)
-  /* The scenario belongs to the same item and the same page as the intro: it asks nothing, and
-     mapping it anywhere else would open or close the item on a screen that carries no answer. */
-  7: ['01', 0]        // scenario
+  0:  null,           // intro
+  1:  ['01', 1],      // Q1 — the ring
+  2:  ['02', 1],      // Q2 — lentils
+  3:  ['03', 1],      // Q3 — reliability
+  10: ['04', 1],      // sb129 Liyan's slime — narrative opening of item 04
+  4:  ['04', 2],      // Q4 = item 04 / q1
+  5:  ['04', 3],      // Q5 = item 04 / q2
+  9:  ['05', 1],      // sb140 Gili's marbles — narrative opening of item 05
+  6:  ['05', 2],      // Q6 = item 05 / q1
+  7:  ['05', 3],      // Q7 = item 05 / q2
+  8:  ['05', 4]       // Q8 = item 05 / q3
 };
 
 var XAPI_COMP_SLUG = 'methodica-science-volume-solid-01-05';
 var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
 
-/* The single item, referenced by every send in this component. Replaces the old PEAK_QID constant,
-   which hand-built the IRI and omitted the component segment. */
-var PEAK_ITEM = '01';
+var XAPI_EVAL_ITEMS = { '01': 1, '02': 1, '03': 1, '04': 1, '05': 1 };
 
-var XAPI_EVAL_ITEMS = { '01': 1 };
+/* Items 04 and 05 span several questions (2 and 3), so their own 'completed' needs an explicit
+   result — the library's all-correct AND would report success:false for a partial pass without
+   saying how partial. Items 01–03 hold one question each, where the AND is already exactly right,
+   so they are deliberately absent from this map.
 
-/* The item's own 'completed' needs an explicit result, because the library's aggregate is an
-   all-correct AND: a learner who scores 3 of 4 — which PASSES here — would otherwise be reported as
-   success:false on the item while the component said success:true. */
+   Item 05 succeeds only when all three of its סעיפים are right. */
+function _itemScore(item, qKeys) {
+  const n = qKeys.filter(k => XAPI_Q_RESULTS[item + '/' + k]).length;
+  return { success: n === qKeys.length, score: { scaled: n / qKeys.length } };
+}
 var XAPI_ITEM_RESULT = {
-  '01': function () {
-    return { success: peakScore() >= PEAK_PASS, score: { scaled: peakScore() / PEAK_PARTS } };
-  }
+  '04': function () { return _itemScore('04', ['q1', 'q2']); },
+  '05': function () { return _itemScore('05', ['q1', 'q2', 'q3']); }
 };
 
 /* Per-part seam read by unit-js/50-loader.js. */
@@ -440,53 +461,135 @@ var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-05.json'
 
 /* ═══════════════════════════════════════════════════════════
    RESUME — this component's payload
-   The assessment. peakAnswers is the whole of it, and restoring it is LAYER 1 of the re-answer guard:
-   with the answers back, peakEnter() re-marks the picked option and peakContinue() cannot be reached
-   for a sub-part the learner already committed, so no graded answer can be sent twice. Layer 2 is the
-   doneQ ledger in unit-js/40-resume.js, which does not depend on this working.
-   That matters here specifically because part 06 offers "חזרה" back into part 05 — see
-   ROUTING-AND-RETAKE.md.
+   Eight SCQ questions, all with per-question feedback.
    ═══════════════════════════════════════════════════════════ */
 
-/* peakAnswers is an OBJECT, so it cannot travel through RESUME_PLAIN_VARS' verbatim copy — that
-   would store a live reference that mutates along with the original, and the snapshot goTo() takes
-   before resetScreenState() would already contain the change it exists to undo. It is cloned
-   explicitly below instead. Nothing else in this component holds answer state at file scope. */
 var RESUME_PLAIN_VARS = [];
 var RESUME_INPUT_IDS  = [];
 var RESUME_TEXT_IDS   = [];
 
-function capturePartPayload() {
-  return {
-    currentScreen: currentScreen,
-    qResults: Object.assign({}, XAPI_Q_RESULTS),
-    peakAnswers: Object.assign({}, peakAnswers),      // clone, not reference
-    peakCommitted: Object.assign({}, peakCommitted),
-    vars: {}
-  };
+/* Mutable half of SCQ_REG only — cfg holds functions and popup copy. */
+function captureScqState() {
+  return Object.keys(SCQ_REG).reduce(function (o, k) {
+    var s = SCQ_REG[k];
+    o[k] = { sel: s.sel, attempts: s.attempts, answered: !!s.answered, done: !!s.done,
+             phase: s.phase || null, lastWrong: s.lastWrong || null };
+    return o;
+  }, {});
 }
 
-/* The parameter MUST stay named `st` — see unit-js/README.md. */
+function applyScqState(scq) {
+  if (!scq) return;
+  Object.keys(scq).forEach(function (k) {
+    var s = SCQ_REG[k];
+    if (!s) return;
+    s.sel = scq[k].sel; s.attempts = scq[k].attempts;
+    s.answered = !!scq[k].answered; s.done = !!scq[k].done;
+    s.phase = scq[k].phase || null;
+    /* Retry gate (2026-10-11). A document written before it has no lastWrong: in the retry phase the
+       judged option is still `sel`; otherwise the gate starts open. No version bump. */
+    s.lastWrong = scq[k].lastWrong !== undefined ? scq[k].lastWrong : (s.phase === 'retry' ? s.sel : null);
+  });
+}
+
+/* Positional, WITHOUT `screen` — that is a static table entry and a stale document must not override
+   a later renumber. `number` is likewise static. */
+function capturePracticeState() {
+  return practiceProgress.questions.map(function (q) {
+    return { visited: !!q.visited, state: q.state };
+  });
+}
+
+function applyPracticeState(practice) {
+  if (!practice) return;
+  practice.forEach(function (p, i) {
+    var q = practiceProgress.questions[i];
+    if (!q) return;
+    q.visited = !!p.visited; q.state = p.state;
+  });
+}
+
+/* ⚠️ Every object here is COPIED, never referenced. practiceEnter() mutates practiceProgress
+   (`q.visited = true`, `q.state = 'current'`), so a payload holding a live reference would mutate
+   along with it — and the snapshot the shared goTo() takes BEFORE resetScreenState() would already
+   contain the change it exists to undo. That failure is silent and total. */
+function capturePartPayload() {
+  var st = {
+    currentScreen: currentScreen,
+    qResults: Object.assign({}, XAPI_Q_RESULTS),
+    scq: captureScqState(),
+    practice: capturePracticeState(),
+    vars: {}
+  };
+  /* eval keeps this list-driven: these are file-scope let/var bindings, so they are not reachable as
+     window properties. */
+  RESUME_PLAIN_VARS.forEach(function (k) {
+    try { st.vars[k] = eval(k); } catch (e) {}
+  });
+  return st;
+}
+
+/* The parameter MUST stay named `st` — the eval below assigns through that name, and renaming it
+   fails SILENTLY: the assignment throws, the caller's try/catch swallows it, and the learner's
+   answers vanish with nothing in the console. See unit-js/README.md. */
 function applyResumeVars(st) {
   if (st.qResults) XAPI_Q_RESULTS = Object.assign({}, st.qResults);
-  if (st.peakAnswers) peakAnswers = Object.assign({}, st.peakAnswers);
-  if (st.peakCommitted) peakCommitted = Object.assign({}, st.peakCommitted);
+  applyScqState(st.scq);
+  applyPracticeState(st.practice);
+  if (st.vars) {
+    Object.keys(st.vars).forEach(function (k) {
+      if (RESUME_PLAIN_VARS.indexOf(k) === -1) return;   // never assign an unlisted name
+      try { eval(k + ' = st.vars[k];'); } catch (e) {}
+    });
+  }
 }
 
 function applyResumeDom(st) {}
 
-/* peakEnter() already repaints a sub-part completely from peakAnswers — it re-marks the picked option
-   and re-enables the continue button — and resetScreenState() calls it for screens 1-4. The score
-   screens likewise rebuild their text from peakScore(), which reads the restored peakAnswers. So
-   there is genuinely nothing left to paint here, and saying so explicitly is better than an empty
-   function that reads like an oversight.
+/* Repaints the answered look. Mirrors scqCheck's DOM writes and nothing else — no state mutation, no
+   statements, no progress bookkeeping: all of that happened when the answer was first given, and
+   repeating it here would report a second answer.
 
-   NOTE what this deliberately does NOT do: it does not disable the options on an answered sub-part.
-   The assessment allows one attempt per sub-part and peakContinue() is the only path forward, so a
-   learner returning to an answered screen can change their pick but cannot re-submit it — and the
-   doneQ ledger refuses a second graded answer even if that ever changed. */
-function restoreScreenUI(n) {}
+   The FEEDBACK POPUP is one of those DOM writes. It used to be excluded on the grounds that
+   reopening one is "new UI, not a restore" — but it carries the explanation, so a returning learner
+   was left with marks and no reason for them. `phase` says which popup scqCheck last opened. */
+function restoreScreenUI(n) {
+  try {
+    var screen = 's' + n;
+    var s = SCQ_REG[screen];
+    if (!s) return;
+    if (!s.done && !s.phase && !s.sel) return;      // pristine — do not touch it
 
+    var markSel = function () {
+      if (!s.sel) return;
+      var o = document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]');
+      if (o) { o.classList.add('selected'); o.setAttribute('aria-checked', 'true'); }
+    };
+
+    /* An answered screen already carries the enabled button scqEnter relabelled, so only the unsolved
+       case is computed here — a painter that leaves a full screen with a dead button strands the
+       learner. */
+    var syncCheck = function () {
+      if (s.done) return;
+      var chk = document.getElementById(screen + '-scq-check');
+      if (chk) chk.disabled = !s.sel || s.sel === s.lastWrong;
+    };
+
+    if (s.phase === 'correct' || s.phase === 'wrong2') {
+      scqMark(screen, s.cfg.correctId, 'correct');
+      if (s.phase === 'wrong2' && s.sel && s.sel !== s.cfg.correctId) scqMark(screen, s.sel, 'wrong');
+    } else if (s.phase === 'retry') {
+      if (s.sel) scqMark(screen, s.sel, 'wrong');
+    } else {
+      markSel();
+    }
+
+    if (s.phase) renderFeedbackPopup(screen, s.phase, s.cfg.popups);
+
+    syncCheck();
+    scqSyncHint(screen);
+  } catch (e) { console.error('[resume] restoreScreenUI', e); }
+}
 
 /* ── xAPI ready hook ──
    Loads the unit metadata but reports NO unit-scope 'initialized' — this component is not the one
