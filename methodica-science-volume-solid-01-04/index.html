@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · תרגול מתקדם</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=111">
-  <link rel="stylesheet" href="css/style.css?v=12">
+  <link rel="stylesheet" href="../unit-css/style.css?v=112">
+  <link rel="stylesheet" href="css/style.css?v=13">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -98,12 +98,12 @@
   <div class="scq-popup hidden" id="s3-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s3-scq-popup-title"></p></div><div class="scq-popup-body" id="s3-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s3-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s3')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>מהו טווח הערכים שנמדדו?</strong></p><p>במהימנות גבוהה הערכים קרובים זה לזה.</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s3')">חזרה לשאלה</button></div></div>
 
-  <!-- ═══ S11 — Liyan slime scenario (storyboard slide 129) ═══
+  <!-- ═══ S10 — Liyan slime scenario (storyboard slide 129) ═══
        Sits between s3 and s4; id is the next free one and the order lives in the
        SCENARIOS table in main.js. Scenario only — no question, but it carries the same
        progress nav as the questions, in the state of the one it introduces (סעיף א).
        Split back out of s4 on 2026-10-12 (producer): the scenario gets its own page, as in the deck. -->
-  <section class="screen" data-screen="11" id="s11">
+  <section class="screen" data-screen="10" id="s10">
     <nav class="progress-question" data-count="8"></nav>
     <div class="scq-question scq-question--withimage">
       <div class="scq-figure">
@@ -116,7 +116,7 @@
       </div>
     </div>
     <div class="nav-bar">
-      <button class="btn-continue" id="s11-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s10-continue" onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
@@ -128,7 +128,7 @@
         <img src="assets/img/s4-slime.jpg" alt="ליאן מכינה סליים במטבח ומודדת אותו במשורה, לידה קופסאות וצנצנות סליים">
       </div>
       <div class="scq-side">
-        <!-- Storyboard slide 130. Liyan's scenario (sb129) is the preceding screen, s11. -->
+        <!-- Storyboard slide 130. Liyan's scenario (sb129) is the preceding screen, s10. -->
         <p class="scq-qtext scq-qtext--mixed">
           <b class="scq-qtext-part">סעיף א:</b><br />
           איך ליאן יכולה להכניס את הסליים לתוך המים?</p>
@@ -218,8 +218,9 @@
         </div>
       </div>
     </div>
-    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s6-scq-check" type="button" disabled onclick="scqCheck('s6')">המשך</button><button class="scq-check scq-review-return" type="button" onclick="backToResult()">חזרה למשוב</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s6-scq-check" type="button" disabled onclick="scqCheck('s6')">צדקתי?</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
+  <div class="scq-popup hidden" id="s6-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s6-scq-popup-title"></p></div><div class="scq-popup-body" id="s6-scq-popup-body"></div></div>
 
   <!-- Q7 — numeric (ValueInputQuestion) -->
   <section class="screen" data-screen="7" id="s7">
@@ -243,8 +244,8 @@
         </div>
       </div>
     </div>
-    <!-- Storyboard slide 141: the companion announces that this group runs without hints
-         and reveals results only at the end. The deck stands him bottom-right, but the four
+    <!-- Storyboard slide 141: the companion announces that this group runs without hints.
+         (2026-10-14: the deck's "ונדע אם צדקנו רק בסוף" is dropped — feedback now follows each סעיף.) The deck stands him bottom-right, but the four
          options occupy that column here (the deck's own options sit off-canvas), so he goes
          bottom-left under the photo with the bubble to his right, beak pointing at him.
          The pair is authored here rather than left to renderCompanion(): a screen-specific
@@ -256,12 +257,12 @@
       <video class="companion" src="assets/img/character-orange-ask.mp4?v=3" aria-hidden="true"
            data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 132px;"></video>
       <p class="companion-bubble" style="--bubble-w: 330px;">
-        סקרנים לדעת אם צדקתם?<br />
-        בגלל שכל כך התקדמנו, נענה בלי רמזים ונדע אם צדקנו רק בסוף!<br />
-        איזה מתח....</p>
+        בגלל שכל כך התקדמנו,<br />
+        נענה בלי רמזים!</p>
     </div>
-    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s7-scq-check" type="button" disabled onclick="scqCheck('s7')">המשך</button><button class="scq-check scq-review-return" type="button" onclick="backToResult()">חזרה למשוב</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s7-scq-check" type="button" disabled onclick="scqCheck('s7')">צדקתי?</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
+  <div class="scq-popup hidden" id="s7-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s7-scq-popup-title"></p></div><div class="scq-popup-body" id="s7-scq-popup-body"></div></div>
 
   <section class="screen" data-screen="8" id="s8">
     <nav class="progress-question" data-count="8"></nav>
@@ -281,33 +282,9 @@
         </div>
       </div>
     </div>
-    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s8-scq-check" type="button" disabled onclick="scqCheck('s8')">המשך</button><button class="scq-check scq-review-return" type="button" onclick="backToResult()">חזרה למשוב</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
+    <div class="scq-bar"><div class="scq-bar-main"><button class="scq-check" id="s8-scq-check" type="button" disabled onclick="scqCheck('s8')">צדקתי?</button></div><button class="btn-back" onclick="goBack()">חזרה</button></div>
   </section>
-
-  <!-- ═══════════════ S10 — combined result for סעיפים א-ג (storyboard 144/145) ═══════════════
-       The three marbles סעיפים run without per-question feedback: the companion on slide 141
-       promises no hints and results only at the end, and the deck backs that up by giving
-       141/142/143 no feedback slides of their own and 144/145 one verdict for all three.
-       Title and tone switch on whether all three were right; the body — the correct answer
-       for each סעיף — is identical in both, so renderSectionResult() fills it in rather than
-       the markup carrying two copies. His reflective line is the .companion-say group down the
-       left, so the verdict card keeps the right-hand half to itself. -->
-  <section class="screen" data-screen="10" id="s10">
-    <nav class="progress-question" data-count="8"></nav>
-    <div class="section-result" id="s10-result">
-      <p class="section-result-title" id="s10-result-title"></p>
-      <div class="section-result-body" id="s10-result-body"></div>
-    </div>
-    <div class="companion-say companion-say--left" style="left: 40px; bottom: 84px;">
-      <video class="companion" src="assets/img/character-orange-ask.mp4?v=3" aria-hidden="true"
-           data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 150px;"></video>
-      <p class="companion-bubble" id="s10-result-bubble" style="--bubble-w: 240px;"></p>
-    </div>
-    <div class="nav-bar">
-      <button class="btn-continue" id="s10-continue" onclick="advanceScreen()">המשך</button>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
+  <div class="scq-popup hidden" id="s8-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s8-scq-popup-title"></p></div><div class="scq-popup-body" id="s8-scq-popup-body"></div></div>
 
   <!-- ═══════════════ REPORT MODAL ═══════════════ -->
   <div id="report-modal" class="report-modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
@@ -343,10 +320,10 @@
 <script src="../unit-js/20-xapi.js?v=5"></script>
 <script src="../unit-js/25-report.js?v=1"></script>
 <script src="../unit-js/30-nav.js?v=4"></script>
-<script src="../unit-js/40-resume.js?v=1"></script>
+<script src="../unit-js/40-resume.js?v=2"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=2"></script>
-<script src="js/main.js?v=40"></script>
+<script src="js/main.js?v=41"></script>
 <script src="../unit-js/90-boot.js?v=3"></script>
 </body>
 </html>

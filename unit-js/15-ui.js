@@ -112,7 +112,7 @@ function provisionImgZoom() {
     (document.getElementById('app') || document.body).appendChild(modal);
   }
   document.querySelectorAll(IMG_ZOOM_FRAMES).forEach(function (frame) {
-    /* Opt-out for a frame the magnifier does not belong on. Added for 02/s5, where the deck
+    /* Opt-out for a frame the magnifier does not belong on. Added for 02/s6, where the deck
        (slides 99–103) draws the two photos bare and the answer is given by marking an area on
        one of them — a control in the corner of a photo that IS the answer surface is noise. */
     if (frame.hasAttribute('data-no-zoom')) return;
@@ -181,7 +181,7 @@ function closeImageZoom() {
 
 /* White key for the mascot sprites. Every character-*.mp4 has a baked-in white background, and
    the old per-screen fix, mix-blend-mode: multiply, only hid it over white: wherever a mascot
-   overlapped a photo, the photo showed through his fur too (01/s29, 06's big-body guess). This
+   overlapped a photo, the photo showed through his fur too (01/s16, 06's big-body guess). This
    filter makes only near-white pixels transparent (R+G+B above ~2.94 of 3) and leaves the artwork
    fully opaque, so he stands IN FRONT of whatever is behind him. The feComposite clips the result
    to the source alpha; without it the filter region's transparent margin keys to opaque black.

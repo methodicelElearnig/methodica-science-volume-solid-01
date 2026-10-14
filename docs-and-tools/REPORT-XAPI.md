@@ -64,7 +64,7 @@ mismatches**.
 | `initialized` (component) | `50-loader.js`, once per page load — deliberately **not** deduped |
 | `initialized` (unit, `scope:'unit'`) | `onXapiReady()` in parts 01 and 02 — see open items |
 | `initialized` / `completed` (item) | `xapiOnScreen()`, when the learner crosses into a different item |
-| `answered` / `answered.last` | each check/submit. Only `.last` feeds the component score. Two-attempt questions (the practice SCQs; 01 s17's matching board since 2026-10-11) send a wrong first try as `answered` and the closing try as `.last`; one-attempt ones (s18, the peaks) send `.last` only |
+| `answered` / `answered.last` | each check/submit. Only `.last` feeds the component score. Two-attempt questions (the practice SCQs; 01 s34's matching board since 2026-10-11) send a wrong first try as `answered` and the closing try as `.last`; one-attempt ones (s28, the peaks) send `.last` only |
 | `requested.1` | on hint **open** only |
 | `completed` (component) | the routing function that leaves the component, via the ledger |
 | `completed` (unit) | part 05 on pass; part 06 on **both** paths |

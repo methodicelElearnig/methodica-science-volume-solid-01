@@ -15,46 +15,8 @@
    belongs in the shared sheet.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* s1 (storyboard 162): the companion stands at the canvas's bottom-left with his line to his
-   right (QA 2026-10-12). renderCompanion appends the sprite after the bubble; order: -1 puts it
-   physically first, as .companion-say--left expects. bottom: 52px keeps his feet clear of the
-   74px bottom bar (the frame has ~16% empty space under them). */
-#s1-say { left: 40px; bottom: 52px; }
-#s1-say > .companion { order: -1; }
-
-/* ═══ End screens s5/s6 — same treatment as part 05 (QA 2026-10-12) ═══ */
-/* The סעיף letters stay bold now that they sit in their own column. */
-.section-result--peak .section-result-letter { font-weight: 700; }
-.section-result--peak .section-result-item { margin-bottom: 10px; }
-/* fit-content: the card hugs its longest line plus padding instead of stretching with a wide
-   window; max-width keeps its left edge at 488, clear of the companion bubble (right edge ≤ 478). */
-.section-result--peak { left: auto; right: 20px; width: fit-content; max-width: calc(100% - 508px); padding-left: 14px; }
-/* Slimmer review pill on these cards. */
-.section-result--peak .section-result-review { margin-inline-start: 8px; padding: 0 10px; font-size: 16px; }
-
-/* Review mode on סעיפים א-ד (opened from the card's "לתשובה שלי"): the only action is back to
-   the feedback; hint, continue, back and the companion step aside. */
-.peak-review-return { display: none; }
-.screen.is-review .btn-continue:not(.peak-review-return),
-.screen.is-review .btn-back,
-.screen.is-review .peak-hint,
-.screen.is-review .companion-say { display: none; }
-.screen.is-review .peak-review-return { display: inline-block; }
-
-/* Mascot on the left, bubble to his right, feet on the nav bar's line. The bottoms on
-   #s5-say/#s6-say (index.html) are 74px minus the white margin under each clip's feet; the margin
-   dips behind the bar's white band. The clips' baked-in white is keyed out globally
-   (.companion in unit-css), so it cannot paint a box over the card.
-   2num 960x960 at 196px: 155/960 empty = 32 -> bottom 42.
-   panting 1280x720 at 360px (202.5 tall), enlarged from 200 (QA 2026-10-13). The two colours are
-   framed differently: turquoise's feet end at ~605/720 (115 empty = 32 -> bottom 42), orange's at
-   ~620/720 (100 empty = 28 -> bottom 46). data-character is set by renderCompanion(). */
-#s5-say > .companion, #s6-say > .companion { order: -1; }
-#s6-say { bottom: 46px; --say-gap: 0px; }
-#s6[data-character="turquoise"] #s6-say { bottom: 42px; }
-/* The clip's empty sides: the mascot (with the turquoise barbell, the wider of the two) spans
-   ~215-1100 of 1280, i.e. 60px | 249px | 51px at 360. Trimming them keeps him at the canvas's left
-   edge and the bubble (narrowed to 240 in index.html) ending at ~511. The answers card is
-   right-anchored and hugs its content (743 wide), and the canvas is never narrower than 1280, so its
-   left edge stays at ~516. Re-measure if the card's text or the bubble changes. */
-#s6-say > .companion { margin-left: -60px; margin-right: -35px; }
+/* Per-סעיף feedback (2026-10-14). The popup keeps the shared bottom-left position but is 400px
+   instead of 480, so its right edge (402) clears the 820px question column (options start at 420).
+   Narrowing the column instead would break the QA'd one-line options onto two lines. */
+.scq-popup { width: 400px; }
+.scq-popup-body p { text-wrap: pretty; }

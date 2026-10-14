@@ -63,3 +63,10 @@
    the end of the correct answer in the final view. The popup is back to the shared width (right edge
    482) and the equation wraps — producer's call, 2026-10-12. */
 #s5 .scq-question--withimage > .scq-figure { width: 460px; }
+
+/* s7: the companion's line ("נענה בלי רמזים") stands where the feedback popup opens, so it steps
+   aside while a popup is up (2026-10-14, per-סעיף feedback on the marbles group). The class is
+   toggled by renderFeedbackPopup()/scqClosePopup() in js/main.js. */
+.screen.fb-shown .companion-say { visibility: hidden; }
+/* No lone word on a popup's last line. */
+.scq-popup-body p { text-wrap: pretty; }

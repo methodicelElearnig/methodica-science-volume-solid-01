@@ -3246,9 +3246,9 @@ html, body {
   background: #edf8ed; border-radius: 16px; box-shadow: 0 8px 26px rgba(0,32,96,0.22);
   direction: rtl; text-align: right; overflow: hidden;
 }
-/* s19: "לנפח הגוף." used to drop to a line of its own; at 560px the explanation's second sentence
+/* s29: "לנפח הגוף." used to drop to a line of its own; at 560px the explanation's second sentence
    fits on one line and the popup is a line shorter (QA 2026-10-12). Still under the 46% cap. */
-#s19-scq-popup { width: 560px; }
+#s29-scq-popup { width: 560px; }
 .scq-popup-header { display: flex; align-items: flex-start; gap: 8px; padding: 12px 16px 4px; cursor: grab; touch-action: none; }
 .scq-popup-header:active { cursor: grabbing; }
 /* The ✕ that used to sit here is gone from the markup in all 19 places (QA 2026-08-25, slide 26:
@@ -3383,7 +3383,7 @@ html, body {
 }
 .transition-title { font-family: 'Assistant', sans-serif; font-size: 34px; font-weight: 800; color: #303030; }
 .transition-sub { font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 400; color: #303030; line-height: 1.5; }
-/* Rules screens (01 s32, 02 s0 — 2026-10-10). Their lead-in and closing lines take the TransitionScreen
+/* Rules screens (01 s30, 02 s0 — 2026-10-10). Their lead-in and closing lines take the TransitionScreen
    role token Body / B-1, 28 Regular, which every centred variant (A, B, C) shares; 22 was the generic
    default above. The count lines keep the sizes QA set on each screen (40 / 48). */
 .transition-content--rules .transition-sub { font-size: 28px; }
@@ -3937,9 +3937,9 @@ html, body {
    sizes the parent's MAIN axis, so it meant "500 wide" inside the row layouts
    (--withimage, .hotspot-pair, .steps-row) but "500 TALL" inside the column layout
    (.exp) — where it stretched the frame to 500px and left up to 373px of dead white
-   under a wide photo, pushing the answer options off the canvas on s21/s29. It also
+   under a wide photo, pushing the answer options off the canvas on s19/s16. It also
    silently beat an author's inline `width` in a row, because flex-basis wins over width
-   on the main axis (s31 asked for 260px and rendered 500px).
+   on the main axis (s26 asked for 260px and rendered 500px).
    Override per instance with `width`, never `flex-basis`; deviate from natural
    proportion only via an explicit variant such as .scq-figure--square below. */
 .scq-figure {
@@ -3956,10 +3956,10 @@ html, body {
 /* Fixed-ratio variant — the source is cropped to the frame (object-fit: cover) */
 .scq-figure--square { aspect-ratio: 1; }
 .scq-figure--square > img { height: 100%; object-fit: cover; }
-/* Photo in a flex row beside an options column (guess rows — part 01 s21, s29): a wide photo at its
+/* Photo in a flex row beside an options column (guess rows — part 01 s19, s16): a wide photo at its
    natural ratio came out shorter than the four options (164–176 vs 220px). It now takes the row's
    remaining width and stretches to the options' height; object-fit: cover trims the sides only by
-   what that width can't supply. A figure TALLER than the options (s23's crown) is not a sibling of
+   what that width can't supply. A figure TALLER than the options (s10's crown) is not a sibling of
    the options column, so it is untouched. (QA 2026-10-12) */
 :is(.guess-options, .scq-answers) ~ .scq-figure {
   flex: 1 1 0; width: auto; min-width: 0; align-self: stretch; margin: 0;
@@ -4461,7 +4461,7 @@ html, body {
   /* The beak runs `--tail-y` .. `--tail-y + 26` down the bubble's edge, but that edge is only
      STRAIGHT between `border-radius` and `height - border-radius`. Any bubble shorter than
      tailY + 26 + radius -- 72px at the defaults -- has its white inner triangle cut into the
-     rounded corner, and the outline reads as BROKEN. That is what part 02's one-line s7 bubble
+     rounded corner, and the outline reads as BROKEN. That is what part 02's one-line s5 bubble
      did at 62px. 76 leaves 4px of margin. Every other bubble in the unit is already >= 90px, so
      this floors exactly the ones that would break. */
   min-height: 76px;
@@ -4471,7 +4471,7 @@ html, body {
   padding: 14px 20px;
   font-family: 'Assistant', sans-serif;
   /* 20px, Body / B-7 — the size of every other speech bubble in the unit (QA 2026-10-12). The
-     comic route's guess bubbles on 01 s23/s26 keep 21px; see part 01's sheet. */
+     comic route's guess bubbles on 01 s10/s12 keep 21px; see part 01's sheet. */
   font-size: 20px; font-weight: 400; color: #303030;
   line-height: 1.35;
   direction: rtl; text-align: right;

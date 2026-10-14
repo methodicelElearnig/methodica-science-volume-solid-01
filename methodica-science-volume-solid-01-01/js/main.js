@@ -7,7 +7,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 /* ─── Constants ─────────────────────────────────────────── */
-const TOTAL_SCREENS = 36;  // …S9 disp, S21 guess-Q, S11 flooding, S20 flip-cards, S22 measurement applet, S12 transition, warm-ups, practice, S23–S28 comic slides 13–18, S29 guess-Q (sb24), S30/S31 overflow can (sb39/40), S32 practice rules (sb50), S33 flooding result (sb29), S34 measurement steps 3-4 (sb36-38), S35 displacement result (sb26). Bump as screens are added.
+const TOTAL_SCREENS = 36;  // S0–S35, numbered in storyboard order (2026-10-14): hook 0–4 · acquisition 5–7 · comic 8–14 · experiments 15–21 · shared ending 22–26 · warm-ups 27–29 · practice 30–35.
                            // Must equal the live `.screen` count — index_dev.html derives its jump range from that,
                            // while goTo() rejects n >= TOTAL_SCREENS. The two silently disagree if only one is edited.
 
@@ -212,10 +212,10 @@ const CHARACTER_ASSETS = {
   stretch: 'mp4', ask: 'mp4', 'wet-object': 'mp4',
   /* 2026-10-12: S6's Archimedes remark — finger raised, "thinking" (orange_think / blue_think). */
   think: 'mp4',
-  /* 2026-10-12: S32's practice-rules screen — hand on the headband (orange_headband / blue_headband). */
+  /* 2026-10-12: S30's practice-rules screen — hand on the headband (orange_headband / blue_headband). */
   headband: 'mp4',
-  /* 2026-10-12: S35's marble screen — holding a ping-pong ball (orange_pingpong / blue_pingpong).
-     Replaces `soap` there at the designer's request; `pingpong` (finger raised) stays on s33. */
+  /* 2026-10-12: S18's marble screen — holding a ping-pong ball (orange_pingpong / blue_pingpong).
+     Replaces `soap` there at the designer's request; `pingpong` (finger raised) stays on s21. */
   'pingpong-ball': 'mp4'
 };
 function characterAsset(pose) {
@@ -226,7 +226,7 @@ function characterAsset(pose) {
      Bump it whenever a character asset is re-exported. Over file:// the query is ignored
      rather than breaking the load, so it is safe there too.
      ?v=3 on 2026-08-27: `stretch` changed extension, .png -> .mp4, and `towel` was retired onto it.
-     The extension change alone would defeat a stale cache, but s12's slot and s6's markup both
+     The extension change alone would defeat a stale cache, but s27's slot and s6's markup both
      resolve through here and the tag differs now, so the bump keeps the pair unambiguous.
      ?v=4 on 2026-08-29: `ask` was cropped to its content (960 -> 514).
      ⚠️ THIS is the token that matters, not the ones in index.html: renderCompanion() rewrites an
@@ -242,20 +242,20 @@ function startCompanionMedia(el) {
   const p = el.play();
   if (p && p.catch) p.catch(function () {});
 }
-/* Screens where the mascot SPEAKS are not here: s1, s3, s6, s21, s22, s23, s26 and s29
+/* Screens where the mascot SPEAKS are not here: s1, s3, s6, s19, s23, s10, s12 and s16
    author their sprite in index.html inside a .companion-say group, because its position
    only makes sense next to a bubble that also lives in the markup — a slot as well would
    be two sources of truth for one offset. renderCompanion() adopts those sprites and
    refreshes only which character they show. */
 /* The prop the mascot holds is the caveat's illustration, so it must match the bubble beside
-   it: sb26 (S9) warns about bodies that DISSOLVE — he holds a bar of soap; sb29 (S11) warns
+   it: sb26 (S17) warns about bodies that DISSOLVE — he holds a bar of soap; sb29 (S20) warns
    about bodies that FLOAT — he holds a ping-pong ball. These two were transposed until
    2026-08-24, which put each prop on the screen arguing the other case. */
 const CHARACTER_SLOTS = {
-  /* s9 has no slot any more: slide 26 gives its mascot a LINE (the caveat about bodies that do
+  /* s17 has no slot any more: slide 26 gives its mascot a LINE (the caveat about bodies that do
      not dissolve), so he is authored in the markup inside a .companion-say group and revealed
      with the explanation — a silent CHARACTER_SLOTS sprite cannot carry a bubble. */
-  /* s11 has no slot: its slide-29 companion (the ping-pong ball) moved to s33 with the
+  /* s20 has no slot: its slide-29 companion (the ping-pong ball) moved to s21 with the
      rest of that slide, and is authored there inside a .companion-say group. */
   /* QA 2026-08-25 (slide 20): bigger, and centred under the two lines of text rather than tucked
      into the right corner — done then with `center`, which is gone now that he is in the flow. */
@@ -266,7 +266,7 @@ const CHARACTER_SLOTS = {
      and becomes the third row of the centred column via `into` — title, line, sprite, balanced
      together at any canvas height. That is also why `bottom`, `center` and the -127px text lift
      in css/style.css are all gone: there is nothing left to keep apart. */
-  s12: { pose: 'stretch',          w: 390, into: 's12-content' }         /* sb41 */
+  s27: { pose: 'stretch',          w: 390, into: 's27-content' }         /* sb41 */
 };
 /* S7's two path cards are the mascot in two poses. Not a CHARACTER_SLOTS entry:
    these sit inside the option cards as content, not as a floating sprite. */
@@ -379,39 +379,39 @@ function resetScreenState(n) {
     if (COMIC_DATA[cid].kind === 'guess') guessEnter(cid);   // guessEnter() calls syncPathToggle() itself
     else                                  comicSliderEnter(cid);
   }
-  if (n === 9) {
+  if (n === 17) {
     // Displacement applet.
     dispEnter();
   }
-  if (n === 10) {
+  if (n === 15) {
     // Aquarium ruler applet + SingleChoiceQuestion.
     aqEnter();
   }
-  if (n === 33) { syncPathToggle(); }
-  if (n === 35) {
+  if (n === 21) { syncPathToggle(); }
+  if (n === 18) {
     // Slide 26: the mascot "GIF" and his bubble appear 5s after entry — restart so the delay counts from this visit.
-    document.querySelectorAll('#s35 .s35-gif').forEach(el => {   // the mascot and his bubble
+    document.querySelectorAll('#s18 .s18-gif').forEach(el => {   // the mascot and his bubble
       el.classList.remove('is-on'); void el.offsetWidth; el.classList.add('is-on');
     });
-    const gif = document.getElementById('s35-gif');
+    const gif = document.getElementById('s18-gif');
     if (gif) gif.currentTime = 0;
   }
-  if (n === 11) {
+  if (n === 20) {
     // Flooding / overflow applet.
     floodEnter();
   }
-  if (n === 20) { flipEnter('s20'); }              // real-world uses (flip cards)
-  if (n === 21) { guessEnter('s21'); }             // guess-question (no feedback)
-  if (n === 29) { guessEnter('s29'); }             // guess-question sb24 (no feedback)
-  if (n === 30 || n === 31) { syncPathToggle(); }  // overflow-can info screens
-  if (n === 22 || n === 34) { measEnter(); }                   // multi-step measurement applet
-  if (n === 18) { warmupEnter(0, 's18', ddqEnter); }   // warm-up 1 (matching)
-  if (n === 19) { warmupEnter(1, 's19', dqEnter); }    // warm-up 2 (dropdown)
-  if (n === 13) { practiceEnter(0, 's13'); }
-  if (n === 14) { practiceEnter(1, 's14'); }
-  if (n === 15) { practiceEnter(2, 's15'); }
-  if (n === 17) { practiceEnterDnD(3, 's17'); }   // Q4 — matching (DnD)
-  if (n === 16) { practiceEnter(4, 's16'); }       // Q5 — SCQ (item 09)
+  if (n === 22) { flipEnter('s22'); }              // real-world uses (flip cards)
+  if (n === 19) { guessEnter('s19'); }             // guess-question (no feedback)
+  if (n === 16) { guessEnter('s16'); }             // guess-question sb24 (no feedback)
+  if (n === 25 || n === 26) { syncPathToggle(); }  // overflow-can info screens
+  if (n === 23 || n === 24) { measEnter(); }                   // multi-step measurement applet
+  if (n === 28) { warmupEnter(0, 's28', ddqEnter); }   // warm-up 1 (matching)
+  if (n === 29) { warmupEnter(1, 's29', dqEnter); }    // warm-up 2 (dropdown)
+  if (n === 31) { practiceEnter(0, 's31'); }
+  if (n === 32) { practiceEnter(1, 's32'); }
+  if (n === 33) { practiceEnter(2, 's33'); }
+  if (n === 34) { practiceEnterDnD(3, 's34'); }   // Q4 — matching (DnD)
+  if (n === 35) { practiceEnter(4, 's35'); }       // Q5 — SCQ (item 09)
 }
 
 /* ─── Keyboard Navigation ──────────────────────────────────
@@ -451,24 +451,26 @@ function goBack() {
   // Comic path — purely screen-level; in-slider back-paging is the arrows' job.
   const cb = COMIC_SCREENS.indexOf(currentScreen);
   if (cb !== -1) { goTo(cb === 0 ? 7 : COMIC_SCREENS[cb - 1]); return; }
-  if (currentScreen === 29) { goTo(10); return; }       // guess-Q (sb24) → back to aquarium
-  if (currentScreen === 9)  { goTo(29); return; }       // displacement → back to guess-Q (sb24)
-  if (currentScreen === 10) { goTo(7); return; }        // aquarium (experiments entry) → back to path choice
-  if (currentScreen === 35) { goTo(9); return; }        // displacement result → back to the applet
-  if (currentScreen === 21) { goTo(35); return; }       // guess-Q → back to the displacement result
-  if (currentScreen === 11) { goTo(21); return; }       // flooding → back to guess-Q
-  if (currentScreen === 33) { goTo(11); return; }       // flooding result → back to the applet
-  if (currentScreen === 20) { goTo(33); return; }       // flip-cards → back to the flooding result
-  if (currentScreen === 22) { goTo(20); return; }       // measurement applet → back to flip-cards
-  if (currentScreen === 34) { goTo(22); return; }       // steps 3-4 → back to steps 1-2
-  if (currentScreen === 30) { goTo(34); return; }       // overflow can → back to measurement applet
-  if (currentScreen === 31) { goTo(30); return; }       // overflow can (how) → back to the question
-  if (currentScreen === 12) { goTo(7); return; }        // practice transition → back to path choice
-  if (currentScreen === 18) { goTo(12); return; }       // warm-up 1 → transition
-  if (currentScreen === 19) { goTo(18); return; }       // warm-up 2 → warm-up 1
-  if (currentScreen === 32) { goTo(19); return; }       // practice rules → back to warm-up 2
+  if (currentScreen === 16) { goTo(15); return; }       // guess-Q (sb24) → back to aquarium
+  if (currentScreen === 17)  { goTo(16); return; }       // displacement → back to guess-Q (sb24)
+  if (currentScreen === 15) { goTo(7); return; }        // aquarium (experiments entry) → back to path choice
+  if (currentScreen === 18) { goTo(17); return; }        // displacement result → back to the applet
+  if (currentScreen === 19) { goTo(18); return; }       // guess-Q → back to the displacement result
+  if (currentScreen === 20) { goTo(19); return; }       // flooding → back to guess-Q
+  if (currentScreen === 21) { goTo(20); return; }       // flooding result → back to the applet
+  if (currentScreen === SHARED_END_ENTRY) {             // flip-cards → back to the end of whichever path led here
+    goTo(window.lomdaState.learningPath === 'comic' ? COMIC_SCREENS[COMIC_SCREENS.length - 1] : 21); return;
+  }
+  if (currentScreen === 23) { goTo(22); return; }       // measurement applet → back to flip-cards
+  if (currentScreen === 24) { goTo(23); return; }       // steps 3-4 → back to steps 1-2
+  if (currentScreen === 25) { goTo(24); return; }       // overflow can → back to measurement applet
+  if (currentScreen === 26) { goTo(25); return; }       // overflow can (how) → back to the question
+  if (currentScreen === 27) { goTo(26); return; }       // warm-up intro → back to the end of the shared ending
+  if (currentScreen === 28) { goTo(27); return; }       // warm-up 1 → transition
+  if (currentScreen === 29) { goTo(28); return; }       // warm-up 2 → warm-up 1
+  if (currentScreen === 30) { goTo(29); return; }       // practice rules → back to warm-up 2
   const pIdx = practiceProgress.questions.findIndex(q => q.screen === currentScreen);
-  if (pIdx !== -1) { goTo(pIdx > 0 ? practiceProgress.questions[pIdx - 1].screen : 32); return; }  // Q1 back → practice rules
+  if (pIdx !== -1) { goTo(pIdx > 0 ? practiceProgress.questions[pIdx - 1].screen : 30); return; }  // Q1 back → practice rules
   goTo(currentScreen - 1);
 }
 
@@ -481,33 +483,33 @@ function advanceScreen() {
   if (ci !== -1) {
     const cid = 's' + currentScreen;
     if (!comicCanAdvance(cid)) return;                                     // slider: every panel seen · guess: an option picked
-    if (ci === COMIC_SCREENS.length - 1) {                                 // last comic screen → merge point
-      goTo(MERGE_SCREEN); return;
+    if (ci === COMIC_SCREENS.length - 1) {                                 // last comic screen → the shared ending
+      goTo(SHARED_END_ENTRY); return;
     }
     goTo(COMIC_SCREENS[ci + 1]); return;
   }
-  if (currentScreen === 10) return;                                        // aquarium advances via its check button
-  if (currentScreen === 29) { if (!guessPicked['s29']) return; goTo(9); return; }        // guess-Q (sb24) → displacement
-  if (currentScreen === 9)  { if (!dispPlaced) return; goTo(35); return; } // displacement applet (sb25) → its result (sb26)
-  if (currentScreen === 35) { goTo(21); return; }                         // displacement result → guess-Q
-  if (currentScreen === 21) { if (!guessPicked['s21']) return; goTo(11); return; }       // guess-Q → flooding
-  if (currentScreen === 11) { if (!floodPlaced) return; goTo(33); return; }             // flooding → its result (sb29)
-  if (currentScreen === 33) { goTo(20); return; }                                       // flooding result → flip-cards
-  if (currentScreen === 20) { const c = document.getElementById('s20-continue'); if (c && c.disabled) return; goTo(22); return; } // flip-cards → measurement applet
+  if (currentScreen === 15) return;                                        // aquarium advances via its check button
+  if (currentScreen === 16) { if (!guessPicked['s16']) return; goTo(17); return; }        // guess-Q (sb24) → displacement
+  if (currentScreen === 17)  { if (!dispPlaced) return; goTo(18); return; } // displacement applet (sb25) → its result (sb26)
+  if (currentScreen === 18) { goTo(19); return; }                         // displacement result → guess-Q
+  if (currentScreen === 19) { if (!guessPicked['s19']) return; goTo(20); return; }       // guess-Q → flooding
+  if (currentScreen === 20) { if (!floodPlaced) return; goTo(21); return; }             // flooding → its result (sb29)
+  if (currentScreen === 21) { goTo(SHARED_END_ENTRY); return; }                         // flooding result → the shared ending (flip-cards)
+  if (currentScreen === 22) { const c = document.getElementById('s22-continue'); if (c && c.disabled) return; goTo(23); return; } // flip-cards → measurement applet
   /* The measurement applet used to carry its own "המשך לשלב הבא" for the one step that crosses a
      screen (2 → 3). It was redundant next to the bar's המשך — worse, the bar's button was ENABLED
      on a revealed step and did nothing, because the guards below returned early. measNext() is the
      bar's job now, and the guards stay for the states where there is no reveal to advance past. */
-  if (currentScreen === 22 || currentScreen === 34) {
+  if (currentScreen === 23 || currentScreen === 24) {
     if (measRevealed && !MEAS[measStep].last) { measNext(); return; }
   }
-  if (currentScreen === 22) { if (measStep <= 2) return; goTo(34); return; }   // steps 1-2 done → steps 3-4
-  if (currentScreen === 34) { if (!measDone) return; goTo(30); return; }       // applet complete → overflow can
-  if (currentScreen === 30) { goTo(31); return; }                                        // overflow can: question → how it works
-  if (currentScreen === 31) { goTo(MERGE_SCREEN); return; }                              // overflow can → merge
-  if (currentScreen === 12) { goTo(18); return; }                                       // transition → warm-up 1
-  if (currentScreen === 18 || currentScreen === 19) return;                             // warm-ups advance via their own check button
-  if (currentScreen === 32) { goTo(13); return; }                                        // practice rules → practice Q1
+  if (currentScreen === 23) { if (measStep <= 2) return; goTo(24); return; }   // steps 1-2 done → steps 3-4
+  if (currentScreen === 24) { if (!measDone) return; goTo(25); return; }       // applet complete → overflow can
+  if (currentScreen === 25) { goTo(26); return; }                                        // overflow can: question → how it works
+  if (currentScreen === 26) { goTo(MERGE_SCREEN); return; }                              // overflow can → warm-up intro
+  if (currentScreen === 27) { goTo(28); return; }                                       // transition → warm-up 1
+  if (currentScreen === 28 || currentScreen === 29) return;                             // warm-ups advance via their own check button
+  if (currentScreen === 30) { goTo(31); return; }                                        // practice rules → practice Q1
   if (practiceProgress.questions.some(q => q.screen === currentScreen)) return;         // practice Qs advance via their own check button
   goTo(currentScreen + 1);
 }
@@ -573,7 +575,7 @@ function hookOpenReveal() {
   if (ta && ta.value.trim().length === 0) return; // hint gated on input
   /* 'interacted', not 'answered'. v2.4 reserves 'answered' for a question the component measures,
      and requires context.contextActivities.parent = the containing ITEM on every one. This applet is
-     not a catalog question — the metadata gives item 02 exactly one question (q1, on s10) — so there
+     not a catalog question — the metadata gives item 02 exactly one question (q1, on s15) — so there
      is no item question to parent to, and an 'answered' here would both be unmatchable and violate
      §2. Recording it as an interaction keeps the learning-analytics value honestly.
      See _test/baselines/stage-4-pattern.md for the open question about whether these SHOULD become
@@ -619,26 +621,24 @@ function imgqEnter() {
    Comic vs. experiments. Both paths teach the same content and
    merge afterward. Choice stored in window.lomdaState.learningPath.
    ═══════════════════════════════════════════════════════════ */
-// Comic path (pedagogical order ≠ screen-number order, wired explicitly).
-// One screen per storyboard slide: 12→S8, 13→S23, 14→S24, 15→S25, 16→S26, 17→S27, 18→S28.
-// S23–S28 are appended rather than inserted so S9–S22 keep their ids, which
-// index.html / style.css / every routing branch already reference.
+/* Screen ids follow the storyboard (2026-10-14), so flow order is screen order except at the
+   fork: both paths start after S7 and both continue into the shared ending (section "סיום הקניה
+   (בשתי הדרכים)", slides 30–40), which then runs on to the warm-ups.
+     comic        8 → 14   (slides 12–18; S9, the cube, before the S10 guess-Q — QA 2026-10-08)
+     experiments 15 → 21   (slides 19–29)
+     shared      22 → 26   (slides 30–40)
+     warm-ups    27 → 29 · practice 30 → 35 */
 const COMIC_ENTRY   = 8;
 const COMIC_SCREEN  = COMIC_ENTRY;                     // alias kept for advanceFromPathChoice()
-const COMIC_SCREENS = [8, 24, 23, 25, 26, 27, 28];   // s24 (the cube) before the s23 guess-Q — QA 2026-10-08
-// Experiments path (pedagogical order ≠ screen-number order, wired explicitly):
-//   entry = S10 aquarium (geometric) → S9 displacement → (flooding, tbd)
-const EXPERIMENTS_ENTRY = 10;
-const EXPERIMENTS_SCREENS = [9, 10, 11, 20, 21, 22, 29, 30, 31, 33, 34, 35];   // membership list for the path toggle, NOT the order
-                                                                    // (runtime order is 10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31)
-const MERGE_SCREEN = 12;                       // both paths (comic end / flip-cards end) continue here
-/* Flow order for index_dev.html's jump bar (sent by ../unit-js/60-devbridge.js): the arrows walk
-   the lesson as the learner meets it, not by screen number. Both branches are listed — comic first,
-   then experiments — and must be kept in step with advanceScreen() below. */
-var DEV_FLOW_ORDER = [0, 1, 2, 3, 4, 5, 6, 7]
-  .concat(COMIC_SCREENS)
-  .concat([EXPERIMENTS_ENTRY, 29, 9, 35, 21, 11, 33, 20, 22, 34, 30, 31])
-  .concat([MERGE_SCREEN, 18, 19, 32, 13, 14, 15, 17, 16]);
+const COMIC_SCREENS = [8, 9, 10, 11, 12, 13, 14];
+const EXPERIMENTS_ENTRY = 15;
+const EXPERIMENTS_SCREENS = [15, 16, 17, 18, 19, 20, 21];   // experiments-only screens
+const SHARED_END_ENTRY   = 22;
+const SHARED_END_SCREENS = [22, 23, 24, 25, 26];            // both paths; the toggle shows the learner's own path
+const MERGE_SCREEN = 27;                       // the shared ending continues here (warm-up intro)
+/* Flow order for index_dev.html's jump bar (sent by ../unit-js/60-devbridge.js). With the ids in
+   storyboard order this is simply 0 … TOTAL_SCREENS-1: comic, then experiments, then the rest. */
+var DEV_FLOW_ORDER = Array.from({ length: TOTAL_SCREENS }, (_, i) => i);
 function selectPathOption(cardEl) {
   document.querySelectorAll('#s7 .option-card').forEach(c => {
     c.classList.remove('selected'); c.setAttribute('aria-checked', 'false');
@@ -658,15 +658,21 @@ function advanceFromPathChoice() {
   if (!path) return;
   goTo(path === 'experiments' ? EXPERIMENTS_ENTRY : COMIC_SCREEN);
 }
-/* Learning-path toggle (inside the comic / experiments screens). Position-locked. */
+/* Learning-path toggle (comic, experiments and shared-ending screens). Position-locked.
+   Picking the path already shown is a no-op; picking the other one starts that path. */
 function switchLearningPath(path) {
+  if (path === activeLearningPath()) { syncPathToggle(); return; }
   window.lomdaState.learningPath = path;
-  if (path === 'experiments' && EXPERIMENTS_SCREENS.indexOf(currentScreen) === -1) goTo(EXPERIMENTS_ENTRY);
-  if (path === 'comic'       && COMIC_SCREENS.indexOf(currentScreen) === -1)       goTo(COMIC_ENTRY);
+  goTo(path === 'experiments' ? EXPERIMENTS_ENTRY : COMIC_ENTRY);
   syncPathToggle();
 }
+function activeLearningPath() {
+  if (COMIC_SCREENS.indexOf(currentScreen) !== -1)       return 'comic';
+  if (EXPERIMENTS_SCREENS.indexOf(currentScreen) !== -1) return 'experiments';
+  return window.lomdaState.learningPath === 'comic' ? 'comic' : 'experiments';   // shared ending
+}
 function syncPathToggle() {
-  const active = (COMIC_SCREENS.indexOf(currentScreen) !== -1) ? 'comic' : 'experiments';
+  const active = activeLearningPath();
   const scope = document.querySelector('.screen.active');
   if (!scope) return;
   scope.querySelectorAll('.path-toggle-opt').forEach(btn => {
@@ -686,8 +692,8 @@ document.addEventListener('keydown', e => {
 
 /* ═══════════════════════════════════════════════════════════
    COMPONENT — Comic panels (comic learning path)
-   One screen per storyboard slide: S8=12, S23=13(guess), S24=14,
-   S25=15, S26=16(guess), S27=17, S28=18.
+   One screen per storyboard slide: S8=12, S10=13(guess), S9=14,
+   S11=15, S12=16(guess), S13=17, S14=18.
 
    Slides 12 and 14 were delivered as single composite frames (two
    scenes in one file) and show as one static panel. Slides 15/17/18
@@ -736,13 +742,13 @@ const COMIC_DATA = {
     }]
   },
 
-  /* ── S23 · slide 13 · guess-question. No correct/incorrect feedback —
+  /* ── S10 · slide 13 · guess-question. No correct/incorrect feedback —
         picking any option is what lets the comic continue. ── */
-  s23: { slide: 13, kind: 'guess' },
+  s10: { slide: 13, kind: 'guess' },
 
-  /* ── S24 · slide 14 · composite: (right) he measures the box and works the
+  /* ── S9 · slide 14 · composite: (right) he measures the box and works the
         volume out in his head · (left) key, acorn and marble on the bench ── */
-  s24: {
+  s9: {
     slide: 14, kind: 'panels',
     panels: [{
       src: 'assets/img/comic/14.jpg',
@@ -771,8 +777,8 @@ const COMIC_DATA = {
     }]
   },
 
-  /* ── S25 · slide 15 · שיטת דחיקת המים · slider, 5 panels (15a–15e) ── */
-  s25: {
+  /* ── S11 · slide 15 · שיטת דחיקת המים · slider, 5 panels (15a–15e) ── */
+  s11: {
     slide: 15, kind: 'panels',
     panels: [
       { src: 'assets/img/comic/15a.jpg',
@@ -826,17 +832,17 @@ const COMIC_DATA = {
     ]
   },
 
-  /* ── S26 · slide 16 · guess-question (no feedback) ── */
-  s26: { slide: 16, kind: 'guess' },
+  /* ── S12 · slide 16 · guess-question (no feedback) ── */
+  s12: { slide: 16, kind: 'guess' },
 
-  /* ── S27 · slide 17 · שיטת ההצפה · slider, 7 panels (17a–17g) ── */
-  s27: {
+  /* ── S13 · slide 17 · שיטת ההצפה · slider, 7 panels (17a–17g) ── */
+  s13: {
     slide: 17, kind: 'panels',
     panels: [
       { src: 'assets/img/comic/17a.jpg',
         alt: 'ארכימדס מחזיק אבטיח.',
         bubbles: [
-          /* s27 rule: every bubble sits to the character's LEFT, beak on its right edge pointing
+          /* s13 rule: every bubble sits to the character's LEFT, beak on its right edge pointing
              back at him (QA 2026-10-08). */
           { type: 'speech', tail: 'right', r: 44, t: 10, w: 31, ty: 50,
             text: 'או! אני שמח ששאלתם מה לגבי\nגופים שלא נכנסים במשורה.' }
@@ -878,7 +884,7 @@ const COMIC_DATA = {
         alt: 'זום על כלי המדידה: המים מגיעים ל-6.4 ליטר.',
         bubbles: [
           { type: 'caption', text: 'מה קרה כאן?' },
-          { type: 'speech', tail: 'left', r: 4, t: 5, w: 33,   // side beak, toward the vessel (QA 2026-10-08, as s25 15d); wider for 20px text
+          { type: 'speech', tail: 'left', r: 4, t: 5, w: 33,   // side beak, toward the vessel (QA 2026-10-08, as s11 15d); wider for 20px text
             text: 'כשמכניסים גוף מוצק לקערת מים, המים שנשפכים החוצה שווים לנפח הגוף במדויק!' },
           { type: 'note', r: 64, t: 42, w: 32,   // moved to the left of the frame (QA 2026-10-08)
             text: 'זה נכון רק אם הכלי מלא במים\nממש עד הסוף.' }
@@ -897,8 +903,8 @@ const COMIC_DATA = {
     ]
   },
 
-  /* ── S28 · slide 18 · מוצק שמתנהג כמו נוזל · slider, 3 panels ── */
-  s28: {
+  /* ── S14 · slide 18 · מוצק שמתנהג כמו נוזל · slider, 3 panels ── */
+  s14: {
     slide: 18, kind: 'panels',
     panels: [
       { src: 'assets/img/comic/18a.jpg',
@@ -932,7 +938,7 @@ const COMIC_DATA = {
   }
 };
 
-/* 's25' -> { i, seen[], done, built, timer, token, reported } */
+/* 's11' -> { i, seen[], done, built, timer, token, reported } */
 const comicState = {};
 
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -1344,10 +1350,10 @@ function comicAttachDrag(screenId) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   APPLET — Water displacement (S9, experiments path)
+   APPLET — Water displacement (S17, experiments path)
    Ported/extended from the App/ marble-in-cylinder prototype.
    Drag the marble into the cylinder (scale-safe via createPointerDnd)
-   → water rises 50→62 mL and the marble sinks. The explanation is s35 (slide 26).
+   → water rises 50→62 mL and the marble sinks. The explanation is s18 (slide 26).
    ═══════════════════════════════════════════════════════════ */
 let dispPlaced = false;
 let dispDnd = null;
@@ -1374,10 +1380,10 @@ function dispDrop() {
   if (inst) inst.textContent = 'הגולה שקעה והמים עלו — בואו נבין למה.';
   /* The 900ms wait is the water animation, not a dramatic pause: revealing the reset and the
      continue while the level is still climbing invites a click mid-transition. What it used to
-     reveal as well — slide 26's explanation and the mascot's caveat — is s35 now. */
+     reveal as well — slide 26's explanation and the mascot's caveat — is s18 now. */
   setTimeout(function () {
     const rs = document.getElementById('disp-reset');    if (rs) rs.classList.remove('is-hidden');
-    const cont = document.getElementById('s9-continue');  if (cont) cont.disabled = false;
+    const cont = document.getElementById('s17-continue');  if (cont) cont.disabled = false;
   }, 900);
   xapiSend('interacted', 'question', { response: '62' }, { category: 'displacement-applet' });
 }
@@ -1390,7 +1396,7 @@ function dispReset() {
   document.getElementById('disp-badge').textContent = '50 מ"ל';
   document.getElementById('disp-instruction').textContent = 'הכניסו את הגולה אל תוך המשורה.';
   document.getElementById('disp-reset').classList.add('is-hidden');
-  document.getElementById('s9-continue').disabled = true;
+  document.getElementById('s17-continue').disabled = true;
 }
 function dispEnter() {
   dispInitDnd();
@@ -1402,7 +1408,7 @@ function dispEnter() {
     document.getElementById('disp-cylinder').classList.add('risen');
     document.getElementById('disp-badge').textContent = '62 מ"ל';
     document.getElementById('disp-reset').classList.remove('is-hidden');
-    document.getElementById('s9-continue').disabled = false;
+    document.getElementById('s17-continue').disabled = false;
   } else {
     dispReset();
   }
@@ -1462,7 +1468,7 @@ function scqSelect(screen, id) {
 }
 /* The element whose text IS the answer. An image-hotspot option is two controls sharing a data-id —
    a ring over the photo (aria-hidden, no text) and the readable bubble, the real role="radio" — and
-   the ring comes first in the DOM, so a plain querySelector reported "" for every s15 answer
+   the ring comes first in the DOM, so a plain querySelector reported "" for every s33 answer
    (2026-10-11). Prefer the role="radio" control; a one-element option is found either way. */
 function scqAnswerEl(screen, id) {
   return document.querySelector('#' + screen + ' .scq-opt[data-id="' + id + '"][role="radio"]') ||
@@ -1544,7 +1550,7 @@ function scqHint(screen) {
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
 /* Hint availability, in one place (720-templates "Hint policy": hidden, not disabled, while
    unavailable). Hidden once the question resolves; on a `hintAfterWrong` question also until the
-   first wrong check — the practice questions s13-s16, whose hint slides (53/58/63/73) all say
+   first wrong check — the practice questions s31-s16, whose hint slides (53/58/63/73) all say
    "רמז זמין אחרי מענה שגוי 1" (2026-10-11). Reads `attempts`, which resume already carries. */
 function scqSyncHint(screen) {
   const s = SCQ_REG[screen]; const hint = document.getElementById(screen + '-scq-hint');
@@ -1579,7 +1585,7 @@ function scqReset(screen) {
    (handled in scqShowPopup). Drag is app-scale aware. Attached once per popup. */
 
 /* ═══════════════════════════════════════════════════════════
-   APPLET — Aquarium ruler measurement (S10, experiments path)
+   APPLET — Aquarium ruler measurement (S15, experiments path)
    Drag the ruler onto the cube's highlighted wall to unlock the volume
    question (10³ = 1,000).
    ═══════════════════════════════════════════════════════════ */
@@ -1609,9 +1615,9 @@ function aqMeasure() {
   if (aqMeasured) return;
   aqMeasured = true;
   aqHintSpent(true);
-  scqSetLocked('s10', false);   // unlock the volume question
+  scqSetLocked('s15', false);   // unlock the volume question
   xapiSend('interacted', 'question', { response: '10cm' }, { category: 'aquarium-ruler' });
-  /* Flushed, unlike the other applets': measuring here is what UNLOCKS s10's graded question, so
+  /* Flushed, unlike the other applets': measuring here is what UNLOCKS s15's graded question, so
      losing it would leave a learner staring at a question they can no longer answer. The purely
      revealing flags — dispPlaced, floodPlaced, measPoured, measRevealed — stay on the debounce on
      purpose: losing one costs a drag, not an answer. */
@@ -1629,12 +1635,12 @@ function aqEnter() {
   syncPathToggle();
   if (aqMeasured) {
     aqHintSpent(true);
-    scqSetLocked('s10', false);
+    scqSetLocked('s15', false);
   } else {
     aqReset();
-    scqSetLocked('s10', !SCQ_REG['s10'].done);
+    scqSetLocked('s15', !SCQ_REG['s15'].done);
   }
-  scqEnter('s10');
+  scqEnter('s15');
 }
 
 /* ═══ Feedback copy — the storyboard's, per docs-and-tools/TEXT-FIDELITY.md §Agreed policy ═══
@@ -1651,7 +1657,7 @@ function aqEnter() {
        bidi-neutral and reorder inside an RTL paragraph without it. */
 const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['שננסה שוב?'] };
 const FB_WRONG2 = 'התשובה אינה נכונה.<br />התשובה הנכונה מסומנת.';
-/* `wrong2Extra`: a line the deck adds to the wrong-final popup only. Slide 55 (s13) closes with the
+/* `wrong2Extra`: a line the deck adds to the wrong-final popup only. Slide 55 (s31) closes with the
    encouragement "לא נורא אם טעית…", which its note gives to the mascot's GIF and bubble; that pose
    (`encourage`) was never produced, so the line sits in the popup until it is (ASSETS-TODO.md). */
 const fbPopups = (correctTitle, explanation, wrong2Extra) => ({
@@ -1662,7 +1668,7 @@ const fbPopups = (correctTitle, explanation, wrong2Extra) => ({
 
 /* Register the aquarium SCQ instance */
 scqRegister({
-  screen: 's10',
+  screen: 's15',
   correctId: 'd',
   startLocked: true,
   item: '02',
@@ -1670,16 +1676,15 @@ scqRegister({
     'למדידת נפח של תיבה משתמשים בסרגל: מודדים את אחת מצלעות הקובייה ומכפילים אותו בעצמו שלוש פעמים — פעם אחת לאורך, פעם אחת לרוחב ופעם אחת לגובה.',
     'אורך הצלע במקרה זה הוא 10\u00A0ס"מ וכיוון שכל הצלעות בקובייה זהות:',
     '<span class="section-result-expr">10 × 10 × 10 = 1,000</span>']),
-  /* ⚠️ goTo(29), NOT goTo(9). This screen advances through its own check button rather than
-     advanceScreen(), so the flow edge lives here — and it read `goTo(9)` while goBack() and
-     SCREEN_TO_SUBCONTENT both said 10 → 29 → 9. The disagreement made s29 (sb24, the guess before
-     the displacement applet) unreachable going FORWARD: only the back button ever landed on it. */
-  onContinue: function () { goTo(29); }   // aquarium → guess-Q (sb24)
+  /* ⚠️ goTo(16), NOT goTo(17). This screen advances through its own check button rather than
+     advanceScreen(), so the flow edge lives here. Skipping to 17 once made s16 (sb24, the guess
+     before the displacement applet) unreachable going FORWARD. */
+  onContinue: function () { goTo(16); }   // aquarium → guess-Q (sb24)
 });
-attachPopupDrag(document.getElementById('s10-scq-popup'));
+attachPopupDrag(document.getElementById('s15-scq-popup'));
 
 /* ═══════════════════════════════════════════════════════════
-   APPLET — Flooding / overflow (S11, experiments path)
+   APPLET — Flooding / overflow (S20, experiments path)
    Drag the rock into the brim-full bowl → water overflows into the
    tray; spilled water = the rock's volume (qualitative demo).
    ═══════════════════════════════════════════════════════════ */
@@ -1708,8 +1713,8 @@ function floodDrop() {
      the lines should disappear once the flow stops). */
   setTimeout(function () {
     const rs = document.getElementById('flood-reset');    if (rs) rs.hidden = false;
-    const cont = document.getElementById('s11-continue');  if (cont) cont.disabled = false;
-    document.querySelector('#s11 .flood-scene')?.classList.add('drained');
+    const cont = document.getElementById('s20-continue');  if (cont) cont.disabled = false;
+    document.querySelector('#s20 .flood-scene')?.classList.add('drained');
   }, 900);
   xapiSend('interacted', 'question', { response: 'overflow' }, { category: 'flooding-applet' });
 }
@@ -1719,10 +1724,10 @@ function floodReset() {
   rock.classList.remove('placed'); rock.style.transform = '';
   document.getElementById('flood-hint').textContent = 'גררו את האבן לקערה';
   document.getElementById('flood-bowl').classList.remove('flooded');
-  document.querySelector('#s11 .flood-scene')?.classList.remove('drained');
+  document.querySelector('#s20 .flood-scene')?.classList.remove('drained');
   document.getElementById('flood-instruction').textContent = 'הכניסו את האבן לתוך הקערה הגדולה המלאה במים.';
   document.getElementById('flood-reset').hidden = true;
-  document.getElementById('s11-continue').disabled = true;
+  document.getElementById('s20-continue').disabled = true;
 }
 function floodEnter() {
   floodInitDnd();
@@ -1731,9 +1736,9 @@ function floodEnter() {
     document.getElementById('flood-rock').classList.add('placed');
     document.getElementById('flood-hint').textContent = '';
     document.getElementById('flood-bowl').classList.add('flooded');
-    document.querySelector('#s11 .flood-scene')?.classList.add('drained');
+    document.querySelector('#s20 .flood-scene')?.classList.add('drained');
     document.getElementById('flood-reset').hidden = false;
-    document.getElementById('s11-continue').disabled = false;
+    document.getElementById('s20-continue').disabled = false;
   } else {
     floodReset();
   }
@@ -1741,7 +1746,7 @@ function floodEnter() {
 
 /* ═══════════════════════════════════════════════════════════
    COMPONENT — Standard-practice progress dots + score branch
-   Shared across the practice question screens (S13–S16). One state
+   Shared across the practice question screens (S31–S35). One state
    object + one generic renderer. (SP4 matching, metadata item 08,
    is a pending 5th slot — added when the DnD template is ported.)
    ═══════════════════════════════════════════════════════════ */
@@ -1750,21 +1755,21 @@ const PART_03_SLUG = 'methodica-science-volume-solid-01-03';
 const PART_02_URL = '../' + PART_02_SLUG + '/index.html';
 const PART_03_URL = '../' + PART_03_SLUG + '/index.html';
 // Standard practice = 5 questions (metadata items 05,06,07,08,09).
-// Screen order ≠ number order: Q4 (matching, item 08) lives on S17, Q5 (item 09) on S16.
+// Q1–Q5 live on S31–S35, in order.
 var practiceProgress = {
   questions: [
-    { number: 1, visited: true,  state: 'current',      screen: 13 },  // item 05 — SCQ
-    { number: 2, visited: false, state: 'not-answered', screen: 14 },  // item 06 — SCQ
-    { number: 3, visited: false, state: 'not-answered', screen: 15 },  // item 07 — SCQ
-    { number: 4, visited: false, state: 'not-answered', screen: 17 },  // item 08 — DnD matching
-    { number: 5, visited: false, state: 'not-answered', screen: 16 }   // item 09 — SCQ
+    { number: 1, visited: true,  state: 'current',      screen: 31 },  // item 05 — SCQ
+    { number: 2, visited: false, state: 'not-answered', screen: 32 },  // item 06 — SCQ
+    { number: 3, visited: false, state: 'not-answered', screen: 33 },  // item 07 — SCQ
+    { number: 4, visited: false, state: 'not-answered', screen: 34 },  // item 08 — DnD matching
+    { number: 5, visited: false, state: 'not-answered', screen: 35 }   // item 09 — SCQ
   ]
 };
 function practiceScore() {
   return practiceProgress.questions.filter(q => q.state === 'correct').length;
 }
 function goToNextPart() {
-  /* Closes the practice item the learner is standing on (item 09, or 08 if they came via S17) before
+  /* Closes the practice item the learner is standing on (item 09, or 08 if they came via S34) before
      the component is reported, so the two arrive in order. */
   try { xapiFinishItems(); } catch (e) {}
 
@@ -1821,7 +1826,7 @@ function syncPracticeNav(screen) {
   updateProgressQuestion(document.querySelector('#' + screen + ' .progress-question'), practiceProgress);
 }
 
-/* The warm-up pair (s18 matching, s19 dropdown) gets its own bar. Storyboard slides 42 and 46 ask
+/* The warm-up pair (s28 matching, s29 dropdown) gets its own bar. Storyboard slides 42 and 46 ask
    for it in as many words — "מקטע זה מלווה בסרגל שאלה, שאלה 1 מתוך 2" and "…2 מתוך 2" — and QA
    2026-08-24 (slide 20) asked for the same design and behaviour as the five-question bar.
 
@@ -1830,8 +1835,8 @@ function syncPracticeNav(screen) {
    a second one beside practiceProgress rather than a second renderer. */
 var warmupProgress = {
   questions: [
-    { number: 1, visited: true,  state: 'current',      screen: 18 },  // item 03 — matching (DnD)
-    { number: 2, visited: false, state: 'not-answered', screen: 19 }   // item 04 — dropdown
+    { number: 1, visited: true,  state: 'current',      screen: 28 },  // item 03 — matching (DnD)
+    { number: 2, visited: false, state: 'not-answered', screen: 29 }   // item 04 — dropdown
   ]
 };
 function syncWarmupNav(screen) {
@@ -1862,8 +1867,8 @@ function practiceEnter(idx, screen) {
 /* Register one standard-practice SingleChoiceQuestion (idx = 0-based position). */
 function registerPractice(idx, cfg) {
   cfg.screen = 's' + practiceProgress.questions[idx].screen;
-  /* Slides 53/58/63/73: "רמז זמין אחרי מענה שגוי 1" — all four practice SCQs. The warm-up (s19,
-     slide 47 "זמין תמיד") and s10 register directly and keep their hint from the start. */
+  /* Slides 53/58/63/73: "רמז זמין אחרי מענה שגוי 1" — all four practice SCQs. The warm-up (s29,
+     slide 47 "זמין תמיד") and s15 register directly and keep their hint from the start. */
   cfg.hintAfterWrong = true;
   cfg.onFinish = function (isCorrect) {
     const q = practiceProgress.questions[idx];
@@ -1926,7 +1931,7 @@ registerPractice(4, {
      #S-ddq-check, #S-ddq-popup (+ -title/-body).
    ═══════════════════════════════════════════════════════════ */
 const DDQ_REG = {};
-/* Two attempts (opt-in, `maxAttempts: 2` — s17 only, per storyboard slides 66-70; s18 keeps one, per
+/* Two attempts (opt-in, `maxAttempts: 2` — s34 only, per storyboard slides 66-70; s28 keeps one, per
    42-45). A wrong non-final check is not a resolution: the board stays live, every slot still holding
    the item it was judged with shows that verdict, and `lastWrong` (the judged board) both drives those
    marks and gates בדיקה until the board differs from it (720-templates: "Retry gate", "Per-answer
@@ -2194,21 +2199,21 @@ function practiceEnterDnD(idx, screen) {
 /* Standard practice Q4 (item 08) — match each body to its measurement method */
 registerPracticeDnD(3, {
   item: '08',
-  /* ⚠️ The three PNGs were rotated against their own filenames — s17-metal-cube.png held the
-     trophy, s17-shell.png the cube, s17-trophy.png the shell — so every pill on this board, and
-     the שדף pill on S18 that borrows s17-shell.png, drew the wrong object beside a correct label.
+  /* ⚠️ The three PNGs were rotated against their own filenames — s34-metal-cube.png held the
+     trophy, s34-shell.png the cube, s34-trophy.png the shell — so every pill on this board, and
+     the שדף pill on S28 that borrows s34-shell.png, drew the wrong object beside a correct label.
      Fixed by renaming the FILES to match their contents (2026-08-26), not by remapping these
      paths: a path that points at a lying filename only moves the trap. The mapping below is the
      obvious one and should stay obvious — check the picture, not the name, if it ever looks off. */
-  /* QA 2026-08-29: DELIBERATELY out of order, for the same reason S18's bank is (see its note).
+  /* QA 2026-08-29: DELIBERATELY out of order, for the same reason S28's bank is (see its note).
      These three used to sit in `targets` order, so the nth pill was always the answer to the nth
      target and the board could be solved by position without reading a word. Rotated one step —
      shell, goblet, cube — which is the order asked for and, checked against correctMap, leaves no
      pill at the index of its own target. */
   items: [
-    { id: 'shell',      label: 'צדפה',        img: 'assets/img/s17-shell.png',      w: 92 },
-    { id: 'goblet',     label: 'גביע גדול',   img: 'assets/img/s17-trophy.png',     w: 86 },
-    { id: 'metal-cube', label: 'קוביית מתכת', img: 'assets/img/s17-metal-cube.png', w: 96 }
+    { id: 'shell',      label: 'צדפה',        img: 'assets/img/s34-shell.png',      w: 92 },
+    { id: 'goblet',     label: 'גביע גדול',   img: 'assets/img/s34-trophy.png',     w: 86 },
+    { id: 'metal-cube', label: 'קוביית מתכת', img: 'assets/img/s34-metal-cube.png', w: 96 }
   ],
   targets: [
     { id: 't-ruler',    label: 'מדידה הנדסית בעזרת סרגל' },
@@ -2232,25 +2237,25 @@ registerPracticeDnD(3, {
 
 /* ═══════════════════════════════════════════════════════════
    WARM-UPS (metadata items 03–04) — precede standard practice.
-   Standalone (no progress-dots). S18 matching (DnD), S19 choice (SCQ).
+   Standalone (no progress-dots). S28 matching (DnD), S29 choice (SCQ).
    ═══════════════════════════════════════════════════════════ */
 ddqRegister({
-  screen: 's18',
+  screen: 's28',
   item: '03',
   items: [
     // Storyboard slide 42 puts a small photo inside each task card. The שדף photo
-    // is the one from S17 (slide 42 illustrates this task with a בלוט, which the
-    // script later renamed to צדף — reusing S17's shell keeps art and copy agreed).
+    // is the one from S34 (slide 42 illustrates this task with a בלוט, which the
+    // script later renamed to צדף — reusing S34's shell keeps art and copy agreed).
     /* QA 2026-08-25 (slide 21): DELIBERATELY out of order. These five used to sit in the same
        sequence as `targets` below, so the nth pill was always the answer to the nth target and the
        matching could be done by position without reading anything. The order asked for is melon
        first, cube second-to-last, cup last; the other two fill the middle. Checked against
        correctMap: no pill now sits at the index of its own target. */
-    { id: 'wu-melon', label: 'מה המסה של האבטיח?',                  img: 'assets/img/s18-task-watermelon.jpg', w: 64 },
-    { id: 'wu-doll',  label: 'מהו הנפח של בובת הפלסטיק הגדולה?',    img: 'assets/img/s18-task-doll.jpg',       w: 90 },
-    { id: 'wu-shell', label: 'מהו הנפח של הצדף הקטן?',              img: 'assets/img/s17-shell.png',           w: 68 },
-    { id: 'wu-cube',  label: 'מה אורך הצלע של הקובייה?',            img: 'assets/img/s18-task-rubik.jpg',      w: 66 },
-    { id: 'wu-cup',   label: 'כמה מים יש בכוס?',                    img: 'assets/img/s18-task-water-cup.jpg',  w: 72 }
+    { id: 'wu-melon', label: 'מה המסה של האבטיח?',                  img: 'assets/img/s28-task-watermelon.jpg', w: 64 },
+    { id: 'wu-doll',  label: 'מהו הנפח של בובת הפלסטיק הגדולה?',    img: 'assets/img/s28-task-doll.jpg',       w: 90 },
+    { id: 'wu-shell', label: 'מהו הנפח של הצדף הקטן?',              img: 'assets/img/s34-shell.png',           w: 68 },
+    { id: 'wu-cube',  label: 'מה אורך הצלע של הקובייה?',            img: 'assets/img/s28-task-rubik.jpg',      w: 66 },
+    { id: 'wu-cup',   label: 'כמה מים יש בכוס?',                    img: 'assets/img/s28-task-water-cup.jpg',  w: 72 }
   ],
   targets: [
     { id: 'wt-pour',     label: 'מזיגה למשורה' },
@@ -2269,25 +2274,25 @@ ddqRegister({
     correct:   { title: 'התאמה מושלמת!', body: ['כל כלי ושיטת מדידה מתאימים למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] },
     incorrect: { title: 'התשובה אינה נכונה.', body: ['כל כלי ושיטת מדידה מתאימה למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] }
   },
-  onFinish: function (ok) { warmupFinish(0, 's18', ok); },
-  onContinue: function () { goTo(19); }
+  onFinish: function (ok) { warmupFinish(0, 's28', ok); },
+  onContinue: function () { goTo(29); }
 });
-attachPopupDrag(document.getElementById('s18-ddq-popup'));
+attachPopupDrag(document.getElementById('s28-ddq-popup'));
 
 scqRegister({
-  screen: 's19',
+  screen: 's29',
   correctId: 'a',
   item: '04',
   popups: fbPopups('נכון מאוד!', [   /* sb48/49 */
     'כשמכניסים גוף מוצק למים, הגוף תופס מקום בתוך המשורה ולכן מפלס המים עולה.',
     'ההפרש בין קריאת הנפח לפני הכנסת הגוף ולאחריה שווה לנפח הגוף.']),
   onFinish: function (ok) {   // reflect result on the dropdown trigger, and on the warm-up bar
-    dqSyncView('s19');
-    warmupFinish(1, 's19', ok);
+    dqSyncView('s29');
+    warmupFinish(1, 's29', ok);
   },
-  onContinue: function () { goTo(32); }   // → practice rules (sb50) → Q1
+  onContinue: function () { goTo(30); }   // → practice rules (sb50) → Q1
 });
-attachPopupDrag(document.getElementById('s19-scq-popup'));
+attachPopupDrag(document.getElementById('s29-scq-popup'));
 
 /* ═══════════════════════════════════════════════════════════
    TEMPLATE — DropdownQuestion (thin UI over the SCQ controller)
@@ -2364,7 +2369,7 @@ document.addEventListener('click', function (e) {
 });
 
 /* ═══════════════════════════════════════════════════════════
-   TEMPLATE — FlipCardsReveal (S20)
+   TEMPLATE — FlipCardsReveal (S22)
    N cards; click each to flip (image front → fact back). Continue
    unlocks once every card has been revealed at least once.
    ═══════════════════════════════════════════════════════════ */
@@ -2442,31 +2447,31 @@ function guessEnter(screen) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   APPLET — Multi-step measurement (S22, experiments path)
+   APPLET — Multi-step measurement (S23, experiments path)
    4 steps: drag king→cylinder → type volume (reveal 15) → drag
    hammer→bowl → type volume (reveal 250). Wrong vessel bounces back.
    Numeric inputs have no feedback (any value proceeds).
    ═══════════════════════════════════════════════════════════ */
 const MEAS = {
-  1: { screen: 22, obj: true, objImg: 's22-chess-king.svg', objLabel: 'כלי שח-מט', correct: 'cyl',
+  1: { screen: 23, obj: true, objImg: 's23-chess-king.svg', objLabel: 'כלי שח-מט', correct: 'cyl',
        instruction: 'שלב 1: גררו את כלי השח-מט אל כלי המדידה המתאים.' },
-  2: { screen: 22, input: true, instruction: 'שלב 2: מדדו את מפלס המים במשורה כעת והקלידו את נפחו של כלי השח-מט.',
+  2: { screen: 23, input: true, instruction: 'שלב 2: מדדו את מפלס המים במשורה כעת והקלידו את נפחו של כלי השח-מט.',
        inputLabel: 'נפח כלי השח-מט (מ"ל):',
        /* The formula is an LRI…PDI isolate with no-break spaces — the same one-line LTR unit as
           .section-result-expr, which textContent cannot carry (QA 2026-10-12). */
        reveal: 'נפח כלי השח-מט הוא 15\u00A0מ"ל. מפלס המים המקורי במשורה היה 50\u00A0מ"ל והוא עלה ל-65\u00A0מ"ל, ולכן: \u206665\u00A0−\u00A050\u00A0=\u00A015\u2069.' },
   /* Deck slide 36 states the instruction without explaining WHY the cylinder is wrong — naming
      "too big for the cylinder" here would hand over the judgement this step exists to test. */
-  3: { screen: 34, obj: true, /* ?v=2 — the file was re-exported under the same name (upright -> lying down), and this
+  3: { screen: 24, obj: true, /* ?v=2 — the file was re-exported under the same name (upright -> lying down), and this
         path is written from JS, so it needs the buster the markup copies carry. */
-       objImg: 's22-hammer.svg?v=2', objClass: 'meas-obj-img--hammer', objLabel: 'פטיש', correct: 'bowl',
+       objImg: 's23-hammer.svg?v=2', objClass: 'meas-obj-img--hammer', objLabel: 'פטיש', correct: 'bowl',
        /* Two lines (QA 2026-10-11): the question naming both methods, then the action in bold. */
        instructionHtml: 'איך נמדוד נפח של פטיש – בדחיקת מים (במשורה) או בהצפת מים (בקערת הצפה)?<br><strong>גררו את הפטיש אל כלי המדידה המתאים.</strong>' },
   /* `pour` gates the input behind a real action: slide 37 says the level reaches 250 מ"ל "לאחר
      שהלומד שופך את המים לתוך כלי המדידה" — after the LEARNER pours. The target is the graduated
      MEASURING VESSEL (`mv`), not the משורה: slide 36 is explicit that the משורה still reads 65,
      and slide 38 puts the 250 in "כלי המדידה". Those are two different vessels. */
-  4: { screen: 34, input: true, last: true, pour: true, correct: 'mv',
+  4: { screen: 24, input: true, last: true, pour: true, correct: 'mv',
        instruction: 'שלב 4: שפכו את המים מכלי האיסוף אל תוך כלי המדידה והקלידו את נפח הפטיש.',
        inputLabel: 'נפח הפטיש (מ"ל):',
        reveal: 'המים שנשפכו היו בנפח 250\u00A0מ"ל — כלומר נפח הפטיש הוא 250\u00A0מ"ל, כי הוא הציף החוצה כמות מים השווה לנפחו!' }
@@ -2474,11 +2479,11 @@ const MEAS = {
 let measStep = 1, measDone = false, measRevealed = false, measPoured = false;
 const measDnd = {};
 
-/* The four steps run across TWO screens (QA 2026-08-24, slide 15): steps 1-2 on s22, steps 3-4 on
-   s34. Each screen owns its own copy of the stage, so every element id is prefixed — `meas-` on
-   s22, `meas2-` on s34 — and every lookup goes through mEl(). MEAS[step].screen is the single
+/* The four steps run across TWO screens (QA 2026-08-24, slide 15): steps 1-2 on s23, steps 3-4 on
+   s24. Each screen owns its own copy of the stage, so every element id is prefixed — `meas-` on
+   s23, `meas2-` on s24 — and every lookup goes through mEl(). MEAS[step].screen is the single
    source of truth for which half a step belongs to. */
-function measPrefix(step) { return MEAS[step || measStep].screen === 22 ? 'meas' : 'meas2'; }
+function measPrefix(step) { return MEAS[step || measStep].screen === 23 ? 'meas' : 'meas2'; }
 function mEl(name, step) { return document.getElementById(measPrefix(step) + '-' + name); }
 function measScreenId(step) { return 's' + MEAS[step || measStep].screen; }
 
@@ -2552,10 +2557,10 @@ function measNext() {
   if (MEAS[measStep] && MEAS[measStep].screen !== wasScreen) { goTo(MEAS[measStep].screen); return; }
   measRender();
 }
-/* s34's נסו שוב (QA 2026-10-12): back to step 3 — hammer out of the bowl, tray and measuring vessel
-   empty, answer cleared. Only s34 has the button; steps 1-2 on s22 are not touched. */
+/* s24's נסו שוב (QA 2026-10-12): back to step 3 — hammer out of the bowl, tray and measuring vessel
+   empty, answer cleared. Only s24 has the button; steps 1-2 on s23 are not touched. */
 function measReset() {
-  if (MEAS[measStep].screen !== 34) return;
+  if (MEAS[measStep].screen !== 24) return;
   measStep = 3; measDone = false; measRevealed = false; measPoured = false;
   const inp = mEl('input');
   if (inp) inp.value = '';
@@ -2588,7 +2593,7 @@ function measRender() {
   if (el('pour-hint')) el('pour-hint').classList.toggle('hidden', !awaitingPourFlag(cfg));
   if (el('pour-arrow')) el('pour-arrow').classList.toggle('hidden', !awaitingPourFlag(cfg));
   /* The משורה reads 50 before the king goes in and 65 after — and STAYS at 65 through steps 3-4
-     (slide 36 says so). The 250 belongs to the measuring vessel, which only exists on s34. */
+     (slide 36 says so). The 250 belongs to the measuring vessel, which only exists on s24. */
   el('cyl-badge').textContent = (step >= 2) ? '65 מ"ל' : '50 מ"ל';
   el('cyl').classList.toggle('has-king', step >= 2);
   if (el('mv')) {
@@ -2604,7 +2609,7 @@ function measRender() {
   /* Offered once the hammer is in the bowl — before that there is nothing to undo. */
   if (el('reset')) el('reset').classList.toggle('hidden', step < 4);
   const cont = document.getElementById(measScreenId() + '-continue');
-  if (cont) cont.disabled = (cfg.screen === 34) ? !measDone : !(step > 2 || measRevealed);
+  if (cont) cont.disabled = (cfg.screen === 24) ? !measDone : !(step > 2 || measRevealed);
 }
 function awaitingPourFlag(cfg) { return !!cfg.pour && !measPoured; }
 function measEnter() {
@@ -2635,14 +2640,13 @@ function measEnter() {
 
    Item 02 is deliberately large: its title names the playlist, so BOTH branches of the path choice
    belong to it, and it closes only when the learner leaves the merge screen for warm-up 1. That is
-   also why it holds exactly one catalog question (q1, on s10) despite spanning ~19 screens.
+   also why it holds exactly one catalog question (q1, on s15) despite spanning ~19 screens.
 
-   Flow order is neither screen order nor DOM order:
+   Screen ids, DOM order and flow order all follow the storyboard (renumbered 2026-10-14):
      hook          0 → 1 → 2 → 3 → 4
-     acquisition   5 → 6 → 7 ─┬─ comic:       8 → 24 → 23 → 25 → 26 → 27 → 28 ─┐
-                              └─ experiments: 10 → 29 → 9 → 21 → 11 → 20 → 22 → 30 → 31 ─┤
-                                                                          merge 12 ←──────┘
-     practice      12 → 18 → 19 → 32 → 13 → 14 → 15 → 17 → 16 → (Part 02 or 03)
+     acquisition   5 → 6 → 7 ─┬─ comic:        8 → 14 ──┐
+                              └─ experiments: 15 → 21 ──┴─ shared ending 22 → 26
+     warm-ups      27 → 28 → 29 · practice 30 → 31 … 35 → (Part 02 or 03)
 
    Page numbers run in that flow order and are unique within an item, so a bug report identifies the
    screen even where two branches cover the same item. */
@@ -2663,48 +2667,45 @@ var SCREEN_TO_SUBCONTENT = {
 
   /* item 02 — comic branch */
   8:  ['02', 4],
-  24: ['02', 5],      // the cube — moved before the guess-Q (QA 2026-10-08); pages follow flow order
-  23: ['02', 6],
-  25: ['02', 7],
-  26: ['02', 8],
-  27: ['02', 9],
-  28: ['02', 10],
+  9:  ['02', 5],      // the cube — moved before the guess-Q (QA 2026-10-08); pages follow flow order
+  10: ['02', 6],
+  11: ['02', 7],
+  12: ['02', 8],
+  13: ['02', 9],
+  14: ['02', 10],
 
-  /* item 02 — experiments branch, in flow order
-     (10 → 29 → 9 → 35 → 21 → 11 → 33 → 20 → 22 → 34 → 30 → 31) */
-  10: ['02', 11],     // aquarium ruler + the item's ONLY catalog question (q1)
-  29: ['02', 12],     // guess (sb24)
-  9:  ['02', 13],     // displacement applet (sb25)
-  35: ['02', 14],     // displacement result (sb26) — split out of the applet 2026-08-29
-  21: ['02', 15],     // guess
-  11: ['02', 16],     // flooding applet (sb28)
-  33: ['02', 17],     // flooding result (sb29) — split out of the applet
-  20: ['02', 18],     // flip cards — real-world uses
-  22: ['02', 19],     // measurement applet — steps 1-2 (sb33-35)
-  34: ['02', 20],     // measurement applet — steps 3-4 (sb36-38)
-  30: ['02', 21],     // overflow can — the question
-  31: ['02', 22],     // overflow can — how it works
+  /* item 02 — experiments branch */
+  15: ['02', 11],     // aquarium ruler + the item's ONLY catalog question (q1)
+  16: ['02', 12],     // guess (sb24)
+  17: ['02', 13],     // displacement applet (sb25)
+  18: ['02', 14],     // displacement result (sb26) — split out of the applet 2026-08-29
+  19: ['02', 15],     // guess
+  20: ['02', 16],     // flooding applet (sb28)
+  21: ['02', 17],     // flooding result (sb29) — split out of the applet
 
-  /* item 02 — where both branches merge and the item ends */
-  /* 23, not 20. Inserting s35 renumbered the tail of the branch anyway, and this line read
-     ['02', 20] — the same page as s30 — so a problem report filed from the merge screen and one
-     filed from the overflow-can question went out indistinguishable. */
-  12: ['02', 23],     // כל הכבוד! סיימתם את שלב הלימוד
+  /* item 02 — the shared ending, walked by both paths (section "סיום הקניה (בשתי הדרכים)") */
+  22: ['02', 18],     // flip cards — real-world uses
+  23: ['02', 19],     // measurement applet — steps 1-2 (sb33-35)
+  24: ['02', 20],     // measurement applet — steps 3-4 (sb36-38)
+  25: ['02', 21],     // overflow can — the question
+  26: ['02', 22],     // overflow can — how it works
+
+  /* item 02 ends on the warm-up intro. Page 23, so it never shares a page with s25. */
+  27: ['02', 23],     // מה נשאר לנו בראש? — warm-up intro
 
   /* items 03, 04 — the warm-ups */
-  18: ['03', 1],      // חימום 1 — matching (DnD)
-  19: ['04', 1],      // חימום 2 — dropdown
+  28: ['03', 1],      // חימום 1 — matching (DnD)
+  29: ['04', 1],      // חימום 2 — dropdown
 
   /* bridge */
-  32: null,           // אפשר להתחיל! — practice rules; belongs to no catalog item
+  30: null,           // אפשר להתחיל! — practice rules; belongs to no catalog item
 
-  /* items 05-09 — the five practice questions. NOTE screen order != question order:
-     Q4 (item 08) is on s17 and Q5 (item 09) on s16. */
-  13: ['05', 1],      // סטנדרטי 1
-  14: ['06', 1],      // סטנדרטי 2
-  15: ['07', 1],      // סטנדרטי 3
-  17: ['08', 1],      // סטנדרטי 4
-  16: ['09', 1]       // סטנדרטי 5
+  /* items 05-09 — the five practice questions, Q1–Q5 on s31–s35 */
+  31: ['05', 1],      // סטנדרטי 1
+  32: ['06', 1],      // סטנדרטי 2
+  33: ['07', 1],      // סטנדרטי 3
+  34: ['08', 1],      // סטנדרטי 4
+  35: ['09', 1]       // סטנדרטי 5
 };
 
 var XAPI_COMP_SLUG = 'methodica-science-volume-solid-01-01';
@@ -2775,7 +2776,7 @@ function captureComicState() {
 
 /* A reload builds only the screen it resumes onto. The saved records of every OTHER comic screen
    wait here until comicBuild() first seeds that screen, which adopts them (QA 2026-10-09: walking
-   back from a resumed s25/s26 found s24/s8/s25 fresh — panels unseen, and 'experienced' re-sent). */
+   back from a resumed s11/s12 found s9/s8/s11 fresh — panels unseen, and 'experienced' re-sent). */
 var comicPendingRestore = {};
 
 function comicCopyRecord(cur, src) {
@@ -2795,8 +2796,8 @@ function applyComicState(comic) {
   });
 }
 
-/* SCQ: mutable subset. `locked` matters — s10's options start locked until the aquarium ruler has
-   been dragged, and a restored answered s10 must not come back locked. */
+/* SCQ: mutable subset. `locked` matters — s15's options start locked until the aquarium ruler has
+   been dragged, and a restored answered s15 must not come back locked. */
 function captureScqState() {
   return Object.keys(SCQ_REG).reduce(function (o, k) {
     var s = SCQ_REG[k];
@@ -2948,8 +2949,8 @@ function applyResumeDom(st) {
    measEnter→measRender rebuilds entirely from measStep / measDone / measRevealed / measPoured; flipEnter repaints
    from flipState; guessEnter from guessPicked; imgqEnter from imgqRevealed. Adding redundant
    painters here would be dead code that drifts. */
-var SCQ_RESTORE_SCREENS = [10, 13, 14, 15, 16, 19];
-var DDQ_RESTORE_SCREENS = [17, 18];
+var SCQ_RESTORE_SCREENS = [15, 29, 31, 32, 33, 35];
+var DDQ_RESTORE_SCREENS = [28, 34];
 
 function restoreScreenUI(n) {
   try {
@@ -2966,10 +2967,10 @@ function restoreScreenUI(n) {
            answer toggle is not theirs to reopen. */
     if (DDQ_RESTORE_SCREENS.indexOf(n) !== -1) ddqRestoreUI('s' + n);
 
-    /* 3. s22/s34 — measRender() recomputes everything from measStep/measDone/measRevealed/measPoured
+    /* 3. s23/s24 — measRender() recomputes everything from measStep/measDone/measRevealed/measPoured
            EXCEPT the confirm button, which it derives from #meas-input's live value; that value is
            restored after measRender has already run. */
-    if ((n === 22 || n === 34) && typeof measInputChange === 'function') measInputChange();
+    if ((n === 23 || n === 24) && typeof measInputChange === 'function') measInputChange();
 
     /* 4. the comic sliders — comicSliderEnter() runs comicBuild(), which seeds a FRESH record when
            comicState[sid] is absent (as it is after a reload) and then pages to i:0. The second
@@ -3011,7 +3012,7 @@ function scqRestoreUI(screen) {
     });
   }
 
-  /* s19 is a dropdown: its trigger carries the verdict (and the word) rather than the options.
+  /* s29 is a dropdown: its trigger carries the verdict (and the word) rather than the options.
      A returning learner arrives on the model answer, as on the matching screens. */
   if (s.done && document.getElementById(screen + '-dropdown-trigger')) {
     s.answerView = 'correct';
@@ -3020,7 +3021,7 @@ function scqRestoreUI(screen) {
 
   if (s.phase) scqShowPopup(screen, s.phase);
 
-  /* Mirror the live enablement predicate, including s10's lock. An answered screen's button is the
+  /* Mirror the live enablement predicate, including s15's lock. An answered screen's button is the
      'שנמשיך?' one scqEnter already relabelled and enabled, so only the unsolved case is computed
      here — a painter that leaves a full screen with a dead button strands the learner. */
   if (!s.done) {

@@ -22,40 +22,17 @@
 #s1-say { left: 40px; bottom: 74px; --say-gap: 0px; }
 #s1-say > .companion { order: -1; }
 
-/* QA 2026-10-12: review mode on סעיפים א-ד (opened from the result card's "לתשובה שלי").
-   The only action is back to the feedback; hint, continue, back and the companion step aside. */
-.peak-review-return { display: none; }
-.screen.is-review .btn-continue:not(.peak-review-return),
-.screen.is-review .btn-back,
-.screen.is-review .peak-hint,
-.screen.is-review .companion-say { display: none; }
-.screen.is-review .peak-review-return { display: inline-block; }
-/* The סעיף letters stay bold now that they sit in their own column. */
-.section-result--peak .section-result-letter { font-weight: 700; }
-.section-result--peak .section-result-item { margin-bottom: 10px; }
-/* QA 2026-10-12: card geometry for this part. Wide enough that סעיף א's "לתשובה שלי" stays on its text
-   line (with the slimmer pill below), and its left edge (488) clears the companion bubble beside the
-   mascot (bubble right edge 478 on s5, 472 on s6). Re-measure both if the bubble or the sprite moves. */
-/* fit-content: the card hugs its longest line (סעיף א + its pill) plus padding instead of stretching
-   with a wide window; max-width keeps the old left edge as the limit on a narrow one. */
-.section-result--peak { left: auto; right: 20px; width: fit-content; max-width: calc(100% - 508px); padding-left: 14px; }
-/* Slimmer review pill on these cards, so סעיף א still fits on one line in the narrower card. */
-.section-result--peak .section-result-review { margin-inline-start: 8px; padding: 0 10px; font-size: 16px; }
+/* Per-סעיף feedback (2026-10-14). The popup keeps the shared bottom-left position but is 400px
+   instead of 480, so its right edge (402) clears the 820px question column (options start at 420).
+   Narrowing the column instead would break the QA'd one-line options onto two lines. */
+.scq-popup { width: 400px; }
+/* No lone word on a popup's last line. */
+.scq-popup-body p { text-wrap: pretty; }
+/* s1's companion line stands where the popup opens; it steps aside while a popup is up. The class
+   is toggled by renderFeedbackPopup()/peakClosePopup() in js/main.js. */
+.screen.fb-shown .companion-say { visibility: hidden; }
 
 /* 2026-10-12 (producer): סעיף ג's speaker options — no icons, every pill one line, all four the
    same width (the column's full width, not max-content) and the speaker name in bold. */
 #s3-opts { width: 100%; }
 #s3-opts .scq-opt-text b { font-weight: 700; }
-
-/* QA 2026-10-12: the end-screen mascots stand on the nav bar's line. The bottoms on #s5-say/#s6-say
-   (index.html) are 74px minus the white margin under each clip's feet: 2num 155/960 of 196px = 32,
-   think 181/960 of 190px = 36. That margin dips behind the bar's white band. The clips'
-   baked-in white is keyed out globally (.companion in unit-css), so it cannot paint a box over the
-   wider card above on short windows. */
-#s5-say > .companion, #s6-say > .companion { order: -1; }
-/* The two colours' think clips are NOT framed alike: orange's feet end at ~776/960 (181 empty at
-   190px = 36 -> bottom 38), turquoise's at ~870/960 (90 empty = 18 -> bottom 56). One shared 38 sank
-   the turquoise mascot's feet behind the bar's band. data-character is set by renderCompanion(). */
-#s6-say { bottom: 38px; }
-#s6[data-character="turquoise"] #s6-say { bottom: 56px; }
-/* Mascot on the left, bubble to his right (QA 2026-10-12), as on s1. */

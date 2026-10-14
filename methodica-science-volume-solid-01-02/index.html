@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · תרגול בסיסי</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=111">
-  <link rel="stylesheet" href="css/style.css?v=18">
+  <link rel="stylesheet" href="../unit-css/style.css?v=112">
+  <link rel="stylesheet" href="css/style.css?v=19">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -40,6 +40,7 @@
       <button class="btn-continue" id="s0-continue" onclick="advanceScreen()">שנמשיך?</button>
     </div>
   </section>
+
 
   <!-- ═══ S1 — Basic 1 (item 02-01) · identify non-geometric body ═══ -->
   <section class="screen" data-screen="1" id="s1">
@@ -76,6 +77,7 @@
   </section>
   <div class="scq-popup hidden" id="s1-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s1-scq-popup-title"></p></div><div class="scq-popup-body" id="s1-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s1-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s1')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>מהי צורה הנדסית מוגדרת?</strong></p><p>צורה שאפשר למדוד אותה ולחשב את נפחה.</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s1')">חזרה לשאלה</button></div></div>
+
 
   <!-- ═══ S2 — Basic 2 (item 02-02) · who is right (true/false) ═══ -->
   <section class="screen" data-screen="2" id="s2">
@@ -126,6 +128,7 @@
   <div class="scq-popup hidden" id="s2-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s2-scq-popup-title"></p></div><div class="scq-popup-body" id="s2-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s2-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s2')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>גוף שאין לו צורה הנדסית מוגדרת</strong></p><p>הצורה שלה לא אחידה, לא בנויה מקווים ישרים או מעגלים, ואי-אפשר לחשב את נפחה בעזרת נוסחה.</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s2')">חזרה לשאלה</button></div></div>
 
+
   <!-- ═══ S3 — Basic 3 (item 02-03) · which tool for displacement ═══ -->
   <section class="screen" data-screen="3" id="s3">
     <nav class="progress-question" aria-label="ניווט שאלות">
@@ -162,6 +165,7 @@
   </section>
   <div class="scq-popup hidden" id="s3-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s3-scq-popup-title"></p></div><div class="scq-popup-body" id="s3-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s3-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s3')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>כלי עם מים</strong></p><p>איזה מבין הכלים בתשובות יכול להכיל מים?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s3')">חזרה לשאלה</button></div></div>
+
 
   <!-- ═══ S4 — Basic 4 (item 02-04) · flooding volume = 760 ═══ -->
   <section class="screen" data-screen="4" id="s4">
@@ -210,8 +214,35 @@
   <div class="scq-popup hidden" id="s4-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s4-scq-popup-title"></p></div><div class="scq-popup-body" id="s4-scq-popup-body"></div></div>
   <div class="scq-hint-overlay hidden" id="s4-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s4')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>כמה מים גלשו?</strong></p><p>בשיטת ההצפה מודדים את כמות המים שגלשה מהכלי שהיה מלא במים כדי לגלות את נפח הגוף.</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s4')">חזרה לשאלה</button></div></div>
 
-  <!-- ═══ S5 — Standard-ב 1 (item 02-05) · identify the rise area ═══ -->
+
+  <!-- ═══ S5 — Storyboard slide 98 · mid-section transition ═══
+       רכיב 2 is 4 basic questions then 2 harder ones, and the deck marks the
+       shift with its own screen. Sits between Q4 (S4) and Q5 (S6), which is why
+       it is the last section in the file but not the last in the flow. -->
   <section class="screen" data-screen="5" id="s5">
+    <!-- QA 2026-08-30, to the slide: the greeting drops to body size and body colour, the
+         sentence that carries the news takes the emphasis, and the closing line moves into the
+         mascot's bubble. The clip is the one the deck names on this slide
+         (מרים כתום משקולות.mp4 / Character-2-Sporty.mp4 = the `start-line` pair). -->
+    <div class="transition-content">
+      <h1 class="transition-title">יופי של עבודה!</h1>
+      <p class="transition-sub">נחזור ל-2 תרגילים ברמת קושי גבוהה יותר.</p>
+      <div class="companion-say companion-say--right">
+        <p class="companion-bubble" style="--bubble-w: 240px;">ברור לי שתצליחו!</p>
+        <video class="companion" src="assets/img/character-orange-start-line.mp4?v=3" aria-hidden="true"
+             data-pose="start-line" draggable="false" autoplay loop muted playsinline
+             style="--ca: 700 / 640;"></video>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn-continue" id="s5-continue" onclick="advanceScreen()">שנמשיך?</button>
+      <button class="btn-back" onclick="goBack()">חזרה</button>
+    </div>
+  </section>
+
+
+  <!-- ═══ S6 — Standard-ב 1 (item 02-05) · identify the rise area ═══ -->
+  <section class="screen" data-screen="6" id="s6">
     <nav class="progress-question" aria-label="ניווט שאלות">
       <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
       <div class="progress-question__connector" data-connector="5"></div>
@@ -243,45 +274,16 @@
       <p class="scq-qtext scq-qtext--mixed">בתמונה א' ניתן לראות את נפח המים במשורה <b>לפני</b> שהכניסו אליה את בובת המפלצת.<br />בתמונה ב' ניתן לראות את נפח המים במשורה <b>אחרי</b> שהכניסו אליה את בובת המפלצת.<br />סמנו בתמונה ב' את האזור בו ניתן לראות שגובה המים במשורה עלה.</p>
       <div class="hotspot-pair" role="radiogroup" aria-label="סמנו בתמונה ב' את האזור שבו גובה המים עלה">
         <div class="scq-figure scq-figure--square" style="width: 359px">
-          <img src="assets/img/s5-cylinder-before.jpg" alt="משורה עם מים על שולחן, ולידה בובת מפלצת ירוקה קטנה">
+          <img src="assets/img/s6-cylinder-before.jpg" alt="משורה עם מים על שולחן, ולידה בובת מפלצת ירוקה קטנה">
           <span class="scq-figure__label">תמונה א'</span>
         </div>
         <div class="hotspot-photo hotspot-photo--square" style="width: 359px">
-          <img src="assets/img/s5-cylinder-after.jpg" alt="אותה משורה לאחר שבובת המפלצת הוכנסה למים">
+          <img src="assets/img/s6-cylinder-after.jpg" alt="אותה משורה לאחר שבובת המפלצת הוכנסה למים">
           <span class="scq-figure__label">תמונה ב'</span>
-          <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s5','c')" aria-label="האזור הריק שמעל מפלס המים" style="--x:50%;--y:31%;--w:19%;--h:8%"></button>
-          <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s5','b')" aria-label="אזור העלייה — התוספת שמעל המפלס המקורי" style="--x:50%;--y:42%;--w:19%;--h:8%"></button>
-          <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s5','a')" aria-label="אזור המים ההתחלתי" style="--x:50%;--y:73%;--w:19%;--h:8%"></button>
+          <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s6','c')" aria-label="האזור הריק שמעל מפלס המים" style="--x:50%;--y:31%;--w:19%;--h:8%"></button>
+          <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s6','b')" aria-label="אזור העלייה — התוספת שמעל המפלס המקורי" style="--x:50%;--y:42%;--w:19%;--h:8%"></button>
+          <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s6','a')" aria-label="אזור המים ההתחלתי" style="--x:50%;--y:73%;--w:19%;--h:8%"></button>
         </div>
-      </div>
-    </div>
-    <div class="scq-bar">
-      <div class="scq-bar-main">
-        <button class="scq-check" id="s5-scq-check" type="button" disabled onclick="scqCheck('s5')">צדקתי?</button>
-        <button class="scq-hint" id="s5-scq-hint" type="button" onclick="scqHint('s5')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button>
-      </div>
-      <button class="btn-back" onclick="goBack()">חזרה</button>
-    </div>
-  </section>
-  <div class="scq-popup hidden" id="s5-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s5-scq-popup-title"></p></div><div class="scq-popup-body" id="s5-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s5-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s5')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>מה ההבדל?</strong></p><p>איפה בתמונות ניתן לראות את ההבדל שהתרחש כשהכניסו את המפלצת למים?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s5')">חזרה לשאלה</button></div></div>
-
-  <!-- ═══ S6 — Standard-ב 2 (item 02-06) · single-bead volume = 10 ═══ -->
-  <section class="screen" data-screen="6" id="s6">
-    <nav class="progress-question" aria-label="ניווט שאלות">
-      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
-      <div class="progress-question__connector" data-connector="5"></div>
-      <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
-    </nav>
-    <div class="scq-question scq-question--textonly">
-      <!-- Same shape as s4 (QA 2026-08-30): only the QUESTION is bold, the two data lines are
-           regular. `scq-qtext--mixed` + `<b>`, not `<strong>` — see the note on s4. -->
-      <p class="scq-qtext scq-qtext--mixed">מעצבת תכשיטים צריכה לדעת מה נפחו של חרוז קטן.<br />מכיוון שקשה למדוד חרוז אחד במדויק, היא הכניסה למשורה 3 חרוזים זהים.<span class="s6-para-gap"></span>נפח המים לפני המדידה: 100&nbsp;מ"ל. נפח המים לאחר הכנסת החרוזים: 130&nbsp;מ"ל.<br /><b>מהו נפחו של חרוז אחד?</b></p>
-      <div class="scq-answers" id="s6-answers" role="radiogroup" aria-label="מהו נפח חרוז אחד?">
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s6','a')"><span class="scq-opt-text">10 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s6','b')"><span class="scq-opt-text">30 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s6','c')"><span class="scq-opt-text">אי אפשר לדעת</span><span class="scq-radio" aria-hidden="true"></span></button>
-        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s6','d')"><span class="scq-opt-text">130 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
     <div class="scq-bar">
@@ -293,32 +295,39 @@
     </div>
   </section>
   <div class="scq-popup hidden" id="s6-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s6-scq-popup-title"></p></div><div class="scq-popup-body" id="s6-scq-popup-body"></div></div>
-  <div class="scq-hint-overlay hidden" id="s6-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s6')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>מה נפח 3 החרוזים ביחד?</strong></p><p>מה התרגיל שצריך לעשות כדי לחשב<br />נפח של חרוז אחד?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s6')">חזרה לשאלה</button></div></div>
+  <div class="scq-hint-overlay hidden" id="s6-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s6')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>מה ההבדל?</strong></p><p>איפה בתמונות ניתן לראות את ההבדל שהתרחש כשהכניסו את המפלצת למים?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s6')">חזרה לשאלה</button></div></div>
 
-  <!-- ═══ S7 — Storyboard slide 98 · mid-section transition ═══
-       רכיב 2 is 4 basic questions then 2 harder ones, and the deck marks the
-       shift with its own screen. Sits between Q4 (S4) and Q5 (S5), which is why
-       it is the last section in the file but not the last in the flow. -->
+
+  <!-- ═══ S7 — Standard-ב 2 (item 02-06) · single-bead volume = 10 ═══ -->
   <section class="screen" data-screen="7" id="s7">
-    <!-- QA 2026-08-30, to the slide: the greeting drops to body size and body colour, the
-         sentence that carries the news takes the emphasis, and the closing line moves into the
-         mascot's bubble. The clip is the one the deck names on this slide
-         (מרים כתום משקולות.mp4 / Character-2-Sporty.mp4 = the `start-line` pair). -->
-    <div class="transition-content">
-      <h1 class="transition-title">יופי של עבודה!</h1>
-      <p class="transition-sub">נחזור ל-2 תרגילים ברמת קושי גבוהה יותר.</p>
-      <div class="companion-say companion-say--right">
-        <p class="companion-bubble" style="--bubble-w: 240px;">ברור לי שתצליחו!</p>
-        <video class="companion" src="assets/img/character-orange-start-line.mp4?v=3" aria-hidden="true"
-             data-pose="start-line" draggable="false" autoplay loop muted playsinline
-             style="--ca: 700 / 640;"></video>
+    <nav class="progress-question" aria-label="ניווט שאלות">
+      <div class="progress-question__item" data-question="5"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 1</span></div>
+      <div class="progress-question__connector" data-connector="5"></div>
+      <div class="progress-question__item" data-question="6"><div class="progress-question__icon"></div><span class="progress-question__label">שאלה 2</span></div>
+    </nav>
+    <div class="scq-question scq-question--textonly">
+      <!-- Same shape as s4 (QA 2026-08-30): only the QUESTION is bold, the two data lines are
+           regular. `scq-qtext--mixed` + `<b>`, not `<strong>` — see the note on s4. -->
+      <p class="scq-qtext scq-qtext--mixed">מעצבת תכשיטים צריכה לדעת מה נפחו של חרוז קטן.<br />מכיוון שקשה למדוד חרוז אחד במדויק, היא הכניסה למשורה 3 חרוזים זהים.<span class="s7-para-gap"></span>נפח המים לפני המדידה: 100&nbsp;מ"ל. נפח המים לאחר הכנסת החרוזים: 130&nbsp;מ"ל.<br /><b>מהו נפחו של חרוז אחד?</b></p>
+      <div class="scq-answers" id="s7-answers" role="radiogroup" aria-label="מהו נפח חרוז אחד?">
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s7','a')"><span class="scq-opt-text">10 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s7','b')"><span class="scq-opt-text">30 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s7','c')"><span class="scq-opt-text">אי אפשר לדעת</span><span class="scq-radio" aria-hidden="true"></span></button>
+        <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="scqSelect('s7','d')"><span class="scq-opt-text">130 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
     </div>
-    <div class="nav-bar">
-      <button class="btn-continue" id="s7-continue" onclick="advanceScreen()">שנמשיך?</button>
+    <div class="scq-bar">
+      <div class="scq-bar-main">
+        <button class="scq-check" id="s7-scq-check" type="button" disabled onclick="scqCheck('s7')">צדקתי?</button>
+        <button class="scq-hint" id="s7-scq-hint" type="button" onclick="scqHint('s7')"><span>אפשר רמז?</span><img class="scq-hint-ico" src="../unit-assets/img/icon-idea-blue.svg" alt=""></button>
+      </div>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
+  <div class="scq-popup hidden" id="s7-scq-popup" role="status" aria-live="polite"><div class="scq-popup-header"><p class="scq-popup-title" id="s7-scq-popup-title"></p></div><div class="scq-popup-body" id="s7-scq-popup-body"></div></div>
+  <div class="scq-hint-overlay hidden" id="s7-scq-hint-overlay" onclick="if(event.target===this)scqCloseHint('s7')"><div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז"><div class="scq-hint-content"><div class="scq-hint-text"><h2 class="scq-hint-title">חישבו:</h2><div class="scq-hint-body"><p><strong>מה נפח 3 החרוזים ביחד?</strong></p><p>מה התרגיל שצריך לעשות כדי לחשב<br />נפח של חרוז אחד?</p></div></div></div><button class="scq-hint-close" type="button" onclick="scqCloseHint('s7')">חזרה לשאלה</button></div></div>
+
+
 
   <!-- ═══════════════ REPORT MODAL ═══════════════ -->
   <div id="report-modal" class="report-modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
@@ -368,10 +377,10 @@
 <script src="../unit-js/20-xapi.js?v=5"></script>
 <script src="../unit-js/25-report.js?v=1"></script>
 <script src="../unit-js/30-nav.js?v=4"></script>
-<script src="../unit-js/40-resume.js?v=1"></script>
+<script src="../unit-js/40-resume.js?v=2"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=2"></script>
-<script src="js/main.js?v=31"></script>
+<script src="js/main.js?v=32"></script>
 <script src="../unit-js/90-boot.js?v=3"></script>
 </body>
 </html>

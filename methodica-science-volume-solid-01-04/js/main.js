@@ -1,44 +1,36 @@
 'use strict';
 /* ═══════════════════════════════════════════════════════════
    js/main.js — 720 Science · Volume of a Solid · Part 04 (advanced)
-   S0 intro + 8 SingleChoice questions with progress dots, one scenario
-   screen, and one combined result for the last three. On completion →
-   Part 05 (peak א). Engine + SCQ + progress + report + xAPI.
+   S0 intro + 8 SingleChoice questions with progress dots and two scenario
+   screens. On completion → Part 05 (peak א). Engine + SCQ + progress +
+   report + xAPI.
    ═══════════════════════════════════════════════════════════ */
 
-const TOTAL_SCREENS = 12;  // S0 intro + S1–S8 + scenario S9 + result S10 + scenario S11 (sb129 split back out of s4, 2026-10-12)
+/* 2026-10-14: the combined result for the marbles סעיפים (old S10) was removed, and Liyan's scenario
+   moved from S11 into the freed id so the ids stay contiguous (_test/checks.mjs gate 3). */
+const TOTAL_SCREENS = 11;  // S0 intro + S1–S8 + scenario S9 + scenario S10 (sb129 split back out of s4, 2026-10-12)
 
-/* ── The סעיפים that run WITHOUT per-question feedback ────────────────────
-   Storyboard 141 has the companion promise "נענה בלי רמזים ונדע אם צדקנו רק בסוף",
-   and the deck backs that up: 141/142/143 carry no hint button and no feedback
-   slides of their own, and 144/145 give one verdict covering all three. So these
-   three grade silently — no popup, no right/wrong marking on the options — and
-   RESULT_SCREEN reports them together.
-   The progress dots must not leak the verdict either. Each answer is recorded the
-   moment it is given (so the result screen and xAPI both have it); only the
-   correct/incorrect *rendering* is withheld, and revealed on the result screen. */
-const SILENT_SCREENS = [6, 7, 8];
-const RESULT_SCREEN = 10;
-let resultRevealed = false;
-const isSilent = n => SILENT_SCREENS.indexOf(n) !== -1;
+/* The marbles סעיפים (s6–s8) give feedback after EACH סעיף, like every other question here —
+   producer decision 2026-10-14, the same one taken in יעד 4 and יעד 9. The deck (141/144/145) still
+   withholds the verdict until a combined result slide; that slide is gone, and its per-סעיף answer
+   text is now each סעיף's own feedback popup. They keep the deck's "no hints". */
 
 /* Scenario screens: storyboard pages that set up a question but ask nothing. They take
    the next free ids so no existing screen / popup / hint-overlay id and no progress-nav
    index had to shift; the flow order lives in this table instead of in the numbering.
    `after`/`before` are the question screens they sit between. */
 const SCENARIOS = [
-  { screen: 11, after: 3, before: 4 },   // slide 129 — Liyan's slime, before סעיף א
+  { screen: 10, after: 3, before: 4 },   // slide 129 — Liyan's slime, before סעיף א
   { screen: 9, after: 5, before: 6 },    // slide 140 — Gili's marbles, before סעיף א
 ];
 const scenarioAt     = n => SCENARIOS.find(s => s.screen === n);
 const scenarioBefore = n => SCENARIOS.find(s => s.before === n);
 /* Flow order for index_dev.html's jump bar (sent by ../unit-js/60-devbridge.js). Without it the
    arrows walk by screen number, so the out-of-order scenario ids land in the wrong place: S9
-   (marbles) right after the slime questions, S10 (result) after it, and S11 (slime) last. Derived
+   (marbles) right after the slime questions and S10 (slime) last. Derived
    from SCENARIOS so it follows any change to that table. */
 var DEV_FLOW_ORDER = [0, 1, 2, 3, 4, 5, 6, 7, 8]
-  .reduce((o, n) => { const pre = scenarioBefore(n); return o.concat(pre ? [pre.screen, n] : [n]); }, [])
-  .concat([RESULT_SCREEN]);
+  .reduce((o, n) => { const pre = scenarioBefore(n); return o.concat(pre ? [pre.screen, n] : [n]); }, []);
 const PART_05_URL = '../methodica-science-volume-solid-01-05/index.html';
 window.lomdaState = window.lomdaState || {};
 
@@ -159,15 +151,7 @@ function renderCompanion(n) {
 
 function resetScreenState(n) {
   renderCompanion(n);
-  syncReviewMode(n);
-  /* Reaching the result screen is what unseals the three withheld verdicts. Set the
-     flag before syncing any nav so this screen's own dots render revealed. */
-  if (n === RESULT_SCREEN) { resultRevealed = true; renderSectionResult(); syncPracticeNav('s' + n); }
-  if (n >= 1 && n <= 8) {
-    const idx = n - 1;
-    practiceEnter(idx, 's' + n);
-    paintReview(n);
-  }
+  if (n >= 1 && n <= 8) practiceEnter(n - 1, 's' + n);
   /* The scenario screen carries the same progress nav as the question screens.
      buildProgressNav() fills in its dots from data-count, but without this the nav
      renders with no state at all — nothing answered, nothing current. Mark the question
@@ -187,9 +171,6 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
 });
 function goBack() {
-  if (reviewing) { backToResult(); return; }
-  /* The result screen follows the last question, not screen 9. */
-  if (currentScreen === RESULT_SCREEN) { goTo(practiceProgress.questions[practiceProgress.questions.length - 1].screen); return; }
   const sc = scenarioAt(currentScreen);
   if (sc) { goTo(sc.after); return; }
   const pIdx = practiceProgress.questions.findIndex(q => q.screen === currentScreen);
@@ -202,7 +183,6 @@ function goBack() {
 }
 function advanceScreen() {
   if (currentScreen === 0) { goTo(1); return; }
-  if (currentScreen === RESULT_SCREEN) { goToNextPart(); return; }   // last screen of the part
   const sc = scenarioAt(currentScreen);
   if (sc) { goTo(sc.before); return; }
   if (practiceProgress.questions.some(q => q.screen === currentScreen)) return;
@@ -220,8 +200,13 @@ function renderFeedbackPopup(screen, type, popups) {
   document.getElementById(screen + '-scq-popup-title').innerHTML = cfg.title;
   document.getElementById(screen + '-scq-popup-body').innerHTML = cfg.body.map(p => '<p>' + p + '</p>').join('');
   popup.classList.remove('hidden');
+  /* s7's companion line stands where the popup opens; it steps aside while a popup is up. */
+  document.getElementById(screen)?.classList.add('fb-shown');
 }
-function scqClosePopup(screen) { document.getElementById(screen + '-scq-popup')?.classList.add('hidden'); }
+function scqClosePopup(screen) {
+  document.getElementById(screen + '-scq-popup')?.classList.add('hidden');
+  document.getElementById(screen)?.classList.remove('fb-shown');
+}
 
 /* ═══ SingleChoiceQuestion ═══ */
 const SCQ_REG = {};
@@ -254,8 +239,7 @@ function scqCheck(screen) {
 
   /* xAPI: ids resolved HERE, not at registration — xapiQ() reads window.METADATA, which the library
      fetches asynchronously while registerPractice() runs during parse. parentId is the containing
-     item, mandatory per v2.4 §2. `response` is the option's visible text, which was missing entirely.
-     A silent question (maxAttempts 1) always closes on its single attempt. */
+     item, mandatory per v2.4 §2. `response` is the option's visible text, which was missing entirely. */
   const q = xapiQ(cfg.item, cfg.qKey);
   xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question',
     { response: xapiAnswerText(document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]')),
@@ -268,17 +252,6 @@ function scqCheck(screen) {
   if (correct || s.attempts >= cfg.maxAttempts) {
     XAPI_Q_RESULTS[cfg.item + '/' + cfg.qKey] = !!correct;
   }
-  /* Silent question (cfg.silent, maxAttempts 1): record the answer and move on without
-     revealing anything — no popup, no correct/wrong marking on the options. The verdict
-     surfaces once, on RESULT_SCREEN. */
-  if (cfg.silent) {
-    scqFinish(screen, correct);
-    /* This branch returns before the tail flush, so it carries its own — and it has to come BEFORE
-       the navigation, which only arms a debounced save. */
-    try { flushResumeSave(); } catch (e) {}
-    if (cfg.onContinue) cfg.onContinue(); else advanceScreen();
-    return;
-  }
   if (correct) { s.phase = 'correct'; scqMark(screen, cfg.correctId, 'correct'); renderFeedbackPopup(screen, 'correct', cfg.popups); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) { s.phase = 'wrong2'; scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'wrong2', cfg.popups); scqFinish(screen, false); }
   else { s.phase = 'retry'; s.lastWrong = s.sel; const gate = document.getElementById(screen + '-scq-check'); if (gate) gate.disabled = true; scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'retry', cfg.popups); scqSyncHint(screen); }
@@ -287,9 +260,7 @@ function scqCheck(screen) {
      otherwise rest entirely on the page-leave handlers, which Chrome may drop. */
   try { flushResumeSave(); } catch (e) {}
 }
-/* A silent question never shows a verdict, so "צדקתי?" ("was I right?") would promise
-   one it does not deliver — those screens just continue. */
-function scqLabel(cfg, done) { return cfg.silent ? 'המשך' : (done ? 'שנמשיך?' : 'צדקתי?'); }
+function scqLabel(cfg, done) { return done ? 'שנמשיך?' : 'צדקתי?'; }
 function scqMark(screen, id, cls) { const o = document.querySelector('#' + screen + ' .scq-opt[data-id="' + id + '"]'); if (o) { o.classList.remove('selected'); o.classList.add(cls); } }
 function scqFinish(screen, ok) {
   const s = SCQ_REG[screen]; s.answered = true; s.done = true;
@@ -337,7 +308,7 @@ function practiceScore() {
 }
 
 function goToNextPart() {
-  /* Closes item 05 — the last one open, since the result screen still belongs to it. */
+  /* Closes item 05 — the last one open. */
   try { xapiFinishItems(); } catch (e) {}
 
   /* Explicit result: the library's aggregate is an all-correct AND, which would report failure for
@@ -355,13 +326,7 @@ function goToNextPart() {
   if (RESUME_ENABLED) writeForwardState('methodica-science-volume-solid-01-05');
   window.location.href = PART_05_URL + window.location.search;
 }
-/* What the nav is allowed to SHOW, as opposed to what has been recorded. A silent
-   question that has been answered still reads as 'current' — visited, verdict withheld —
-   until the result screen unseals it. */
-function visibleState(q) {
-  if (!resultRevealed && isSilent(q.screen) && (q.state === 'correct' || q.state === 'incorrect')) return 'current';
-  return q.state;
-}
+function visibleState(q) { return q.state; }
 function updateProgressQuestion(container, state) {
   if (!container) return; const qs = state.questions;
   qs.forEach((q, i) => {
@@ -382,7 +347,7 @@ function _practiceOnFinish(idx, screen) { return function (ok) { const q = pract
 function _practiceOnContinue(idx) {
   return function () {
     const nx = idx + 1;
-    if (nx >= practiceProgress.questions.length) { goTo(RESULT_SCREEN); return; }
+    if (nx >= practiceProgress.questions.length) { goToNextPart(); return; }
     practiceProgress.questions[nx].visited = true;
     const target = practiceProgress.questions[nx].screen;
     const pre = scenarioBefore(target);          // a question with a scenario page opens on it
@@ -426,76 +391,21 @@ registerPractice(4, { correctId: 'd', item: '04', qKey: 'q2', hintAfterWrong: tr
   '<span class="fb-equation">נפח המים הסופי במשורה = נפח מים התחלתי + נפח משקולת + נפח סליים.</span>',
   'צריך להוריד מהנפח שהתקבל את הנפח ההתחלתי ואת נפח המשקולת כדי לקבל את נפח הסליים.']) });
 
-/* סעיפים א-ג of the marbles question run silent: one attempt, no popup, no marking.
-   See SILENT_SCREENS at the top — storyboard 141 promises results only at the end and
-   144/145 deliver them for all three at once, so there is nothing to show per question. */
-registerPractice(5, { correctId: 'a', silent: true, maxAttempts: 1, item: '05', qKey: 'q1' });
-registerPractice(6, { correctId: 'a', silent: true, maxAttempts: 1, item: '05', qKey: 'q2' });
-registerPractice(7, { correctId: 'b', silent: true, maxAttempts: 1, item: '05', qKey: 'q3' });
-
-/* ═══ Combined result for סעיפים א-ג — storyboard 144/145 ═══
-   Both slides carry the SAME body (the correct answer for each סעיף); only the title and
-   the companion's reflective prompt differ, so the body is written once.
-   QA 2026-10-12: no bold in סעיפים א/ב (ג keeps its one bold run); each סעיף is a hanging
-   indent — the letter in its own column, so continuation lines start under the text, not
-   under the letter; forced breaks before `של גולה אחת` (א) and `שונות,` (ג); `ב-5` with no spaces.
+/* סעיפים א-ג of the marbles question (s6–s8): per-סעיף feedback, 2 attempts, no hints (slide 141).
+   The explanations are the deck's combined answer slide (144/145), one row per סעיף.
      - the deck writes `כל הגלות` (missing vav) — kept as `הגולות`, per the agreed policy
        in docs-and-tools/TEXT-FIDELITY.md §Deck defects
      - the division is wrapped in .section-result-expr; its colon and equals sign are
-       bidi-neutral and would otherwise be reordered inside this RTL paragraph
-   Each סעיף carries a review button: it opens that question in REVIEW MODE (see
-   reviewSection) showing the learner's own pick, with a single "back to feedback" action. */
-const SECTION_RESULT = {
-  correct: { title: 'צדקת בכל הסעיפים! כל הכבוד!',
-             bubble: 'איזה סעיף דרש ממך הכי הרבה מחשבה?' },
-  partial: { title: 'התשובה אינה נכונה במלואה.<br />הנה התשובות הנכונות.',
-             bubble: 'מה הפתיע אתכם בפתרון הנכון לעומת מה שחשבתם בהתחלה?' },
-  body: [
-    { letter: 'א.', screen: 6,
-      text: 'גילי צודק רק אם כל הגולות זהות.<br />אם הגולות זהות אז הנפח הכולל שלהן חלקי מספר הגולות שווה לנפח<br />של גולה אחת.' },
-    { letter: 'ב.', screen: 7,
-      text: 'כל הגולות זהות ולכן ניתן לחלק את הנפח הכולל ב-5<br /><span class="section-result-expr">50 : 5 = 10</span>' },
-    { letter: 'ג.', screen: 8,
-      text: 'עבור גולות בגדלים שונים <b>השיטה של גילי לא תעבוד</b>. אם הגולות שונות,<br />נדע את הנפח הכולל אבל לא נפח של גולה ספציפית.' }
-  ]
-};
-function renderSectionResult() {
-  const allRight = SILENT_SCREENS.every(n => practiceProgress.questions[n - 1].state === 'correct');
-  const v = allRight ? SECTION_RESULT.correct : SECTION_RESULT.partial;
-  document.getElementById('s10-result').classList.toggle('section-result--retry', !allRight);
-  document.getElementById('s10-result-title').innerHTML = v.title;
-  document.getElementById('s10-result-body').innerHTML =
-    SECTION_RESULT.body.map(x =>
-      '<div class="section-result-item">' +
-        '<span class="section-result-letter">' + x.letter + '</span>' +
-        '<p class="section-result-text">' + x.text +
-          '<button class="section-result-review" type="button" onclick="reviewSection(' + x.screen + ')"' +
-            ' aria-label="צפייה בשאלה ובתשובה שלי, סעיף ' + x.letter.charAt(0) + '">לשאלה</button></p>' +
-      '</div>').join('');
-  document.getElementById('s10-result-bubble').textContent = v.bubble;
-}
-
-/* ═══ Review mode — a סעיף revisited from the result screen ═══
-   Opens the question showing the learner's own pick, now with its verdict (the result screen
-   has already unsealed it), and swaps the bar for one action: back to the feedback. Not resume
-   state — a reload lands on the plain answered screen, which is the safe fallback. Leaving for
-   any non-silent screen ends it. */
-var reviewing = false;
-function reviewSection(n) { reviewing = true; goTo(n); }
-function backToResult() { reviewing = false; goTo(RESULT_SCREEN); }
-function syncReviewMode(n) {
-  if (!isSilent(n)) reviewing = false;
-  SILENT_SCREENS.forEach(k => document.getElementById('s' + k).classList.toggle('is-review', reviewing && k === n));
-}
-/* Paints the pick with its verdict. Returns false when this is not a review, so callers fall back
-   to the plain silent look. `reviewing` alone is the gate: it is only ever set from the result
-   screen, i.e. after the verdicts were shown. */
-function paintReview(n) {
-  const screen = 's' + n, s = SCQ_REG[screen];
-  if (!reviewing || !isSilent(n) || !s || !s.sel) return false;
-  scqMark(screen, s.sel, s.sel === s.cfg.correctId ? 'correct' : 'wrong');
-  return true;
-}
+       bidi-neutral and would otherwise be reordered inside this RTL paragraph */
+registerPractice(5, { correctId: 'a', item: '05', qKey: 'q1', popups: fbPopups([   /* sb141 / sb144 א */
+  'גילי צודק רק אם כל הגולות זהות.',
+  'אם הגולות זהות אז הנפח הכולל שלהן חלקי מספר הגולות שווה לנפח של גולה אחת.']) });
+registerPractice(6, { correctId: 'a', item: '05', qKey: 'q2', popups: fbPopups([   /* sb142 / sb144 ב */
+  'כל הגולות זהות ולכן ניתן לחלק את הנפח הכולל ב-5',
+  '<span class="section-result-expr">50 : 5 = 10</span>']) });
+registerPractice(7, { correctId: 'b', item: '05', qKey: 'q3', popups: fbPopups([   /* sb143 / sb144 ג */
+  'עבור גולות בגדלים שונים <b>השיטה של גילי לא תעבוד</b>.',
+  'אם הגולות שונות, נדע את הנפח הכולל אבל לא נפח של גולה ספציפית.']) });
 
 /* ═══════════════════════════════════════════════════════════
    xAPI (720) — per-part seams
@@ -510,21 +420,20 @@ function paintReview(n) {
    scenario screen sets up a question without asking one, so it belongs INSIDE the item it
    introduces — screen 11 is page 1 of item 04, screen 9 is page 1 of item 05. Keeping it inside is what makes the item lifecycle
    come out right: item 04 closes and 05 opens at screen 9 (by which point both of item 04's
-   questions are answered), and item 05 stays open across its three silent questions AND the combined
-   result screen, closing only in goToNextPart(). */
+   questions are answered), and item 05 stays open across its three סעיפים, closing only in
+   goToNextPart(). */
 var SCREEN_TO_SUBCONTENT = {
   0:  null,           // intro
   1:  ['01', 1],      // Q1 — the ring
   2:  ['02', 1],      // Q2 — lentils
   3:  ['03', 1],      // Q3 — reliability
-  11: ['04', 1],      // sb129 Liyan's slime — narrative opening of item 04
+  10: ['04', 1],      // sb129 Liyan's slime — narrative opening of item 04
   4:  ['04', 2],      // Q4 = item 04 / q1
   5:  ['04', 3],      // Q5 = item 04 / q2
   9:  ['05', 1],      // sb140 Gili's marbles — narrative opening of item 05
-  6:  ['05', 2],      // Q6 = item 05 / q1   (silent)
-  7:  ['05', 3],      // Q7 = item 05 / q2   (silent)
-  8:  ['05', 4],      // Q8 = item 05 / q3   (silent)
-  10: ['05', 5]       // sb144/145 combined verdict for סעיפים א-ג
+  6:  ['05', 2],      // Q6 = item 05 / q1
+  7:  ['05', 3],      // Q7 = item 05 / q2
+  8:  ['05', 4]       // Q8 = item 05 / q3
 };
 
 var XAPI_COMP_SLUG = 'methodica-science-volume-solid-01-04';
@@ -537,8 +446,7 @@ var XAPI_EVAL_ITEMS = { '01': 1, '02': 1, '03': 1, '04': 1, '05': 1 };
    saying how partial. Items 01–03 hold one question each, where the AND is already exactly right,
    so they are deliberately absent from this map.
 
-   Item 05's all-or-nothing success mirrors what the learner is actually shown: SECTION_RESULT has
-   exactly two states, 'צדקת בכל הסעיפים' and 'התשובה אינה נכונה במלואה'. */
+   Item 05 succeeds only when all three of its סעיפים are right. */
 function _itemScore(item, qKeys) {
   const n = qKeys.filter(k => XAPI_Q_RESULTS[item + '/' + k]).length;
   return { success: n === qKeys.length, score: { scaled: n / qKeys.length } };
@@ -553,17 +461,10 @@ var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-04.json'
 
 /* ═══════════════════════════════════════════════════════════
    RESUME — this component's payload
-   Eight SCQ questions, three of which grade SILENTLY, plus one revealed-once result screen. The
-   silent trio is what makes this part's restore distinctive: their verdicts are recorded but
-   deliberately not shown until screen 10, so the payload must carry BOTH the answer and whether the
-   reveal has happened, or a resumed learner sees the wrong one of the two.
+   Eight SCQ questions, all with per-question feedback.
    ═══════════════════════════════════════════════════════════ */
 
-/* resultRevealed is a plain boolean at file scope, so it travels verbatim. It has to travel: it is
-   the difference between "answered, verdict withheld" and "answered, verdict shown", and
-   visibleState() reads it for every dot. Restoring the answers without it would leak the three
-   withheld verdicts to a learner who has not reached the result screen yet. */
-var RESUME_PLAIN_VARS = ['resultRevealed'];
+var RESUME_PLAIN_VARS = [];
 var RESUME_INPUT_IDS  = [];
 var RESUME_TEXT_IDS   = [];
 
@@ -651,21 +552,9 @@ function applyResumeDom(st) {}
 
    The FEEDBACK POPUP is one of those DOM writes. It used to be excluded on the grounds that
    reopening one is "new UI, not a restore" — but it carries the explanation, so a returning learner
-   was left with marks and no reason for them. `phase` says which popup scqCheck last opened.
-
-   A SILENT question keeps its contract: no verdict, no marks, no popup until the result screen. What
-   it DOES get back is the learner's own pick, as a plain selection — withholding the verdict is the
-   contract; withholding the fact that they answered at all just made the screen look untouched. */
+   was left with marks and no reason for them. `phase` says which popup scqCheck last opened. */
 function restoreScreenUI(n) {
   try {
-    if (n === RESULT_SCREEN) {
-      /* Rebuilt from the restored practice states, and only reachable once resultRevealed is true —
-         which resetScreenState() sets on entry anyway. */
-      renderSectionResult();
-      syncPracticeNav('s' + n);
-      return;
-    }
-
     var screen = 's' + n;
     var s = SCQ_REG[screen];
     if (!s) return;
@@ -679,17 +568,12 @@ function restoreScreenUI(n) {
 
     /* An answered screen already carries the enabled button scqEnter relabelled, so only the unsolved
        case is computed here — a painter that leaves a full screen with a dead button strands the
-       learner. Silent screens need it too (QA 2026-10-12): a pick made and left via "חזרה" before
-       "המשך" came back shown but with the button still locked by scqReset, so it had to be re-picked. */
+       learner. */
     var syncCheck = function () {
       if (s.done) return;
       var chk = document.getElementById(screen + '-scq-check');
       if (chk) chk.disabled = !s.sel || s.sel === s.lastWrong;
     };
-
-    /* Review mode (reached only from the result screen) is the one place a silent pick shows its verdict. */
-    if (paintReview(n)) return;
-    if (isSilent(n)) { markSel(); syncCheck(); return; }   // the pick, never the verdict
 
     if (s.phase === 'correct' || s.phase === 'wrong2') {
       scqMark(screen, s.cfg.correctId, 'correct');

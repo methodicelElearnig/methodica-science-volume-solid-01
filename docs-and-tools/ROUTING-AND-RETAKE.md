@@ -14,7 +14,7 @@ Companions: [REPORT-XAPI.md](REPORT-XAPI.md) · [RESUME.md](RESUME.md)
                             │
                             ▼
    ┌─────────────────── 01  פתיחה + הקנייה + תרגול סטנדרטי ───────────────────┐
-   │  hook → acquisition (comic ⟋ experiments) → warm-ups → 5 practice Qs     │
+   │  hook → acquisition (comic ⟋ experiments → shared ending) → warm-ups → 5 Qs│
    └───────────────────────────────┬──────────────────────────────────────────┘
                     practiceScore() │ ≥ 4 of 5  ────────────────┐
                                     │ < 4                        │
@@ -38,8 +38,10 @@ Companions: [REPORT-XAPI.md](REPORT-XAPI.md) · [RESUME.md](RESUME.md)
 **Part 03 is reachable from both 01 and 02.** The `prev` back-edge resolves correctly regardless,
 because whichever router navigated is the one that wrote the edge.
 
-**Screen order is not flow order** anywhere in this unit. Part 01's practice runs 13, 14, 15, **17**, 16;
-part 04's scenario screen 9 sits between 5 and 6. `advanceScreen()`/`goBack()` are the
+**Parts 01 and 02 are numbered in storyboard order** (renumbered 2026-10-14; old ids in SCREENS.md).
+Part 01 is linear except at the fork: comic 8→14 or experiments 15→21, both continuing into the
+shared ending 22→26 ("סיום הקניה (בשתי הדרכים)"), then warm-ups 27→29 and practice 30→35. In part 04
+the scenario screens still sit out of numeric order. `advanceScreen()`/`goBack()` remain the
 authoritative graph — **no code may assume `currentScreen ± 1`.**
 
 ---

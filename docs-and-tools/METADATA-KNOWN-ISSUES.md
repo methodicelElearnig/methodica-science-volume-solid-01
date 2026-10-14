@@ -82,7 +82,7 @@ therefore a different state document. Full reasoning in
 
 Part 01's displacement, flooding and measurement applets, its two guess screens and the hook's
 free-text screen are substantial interactions with **no metadata question**, so they can only be
-reported as `interacted`. Item 02 (`הקנייה`) spans ~19 screens and holds exactly one question, on s10.
+reported as `interacted`. Item 02 (`הקנייה`) spans ~19 screens and holds exactly one question, on s15.
 
 If any of these should be *measurable*, they need item questions in the metadata — which is a content
 decision with a metadata push attached. Until then, reporting them as `answered` would be

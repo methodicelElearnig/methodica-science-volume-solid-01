@@ -89,7 +89,7 @@ is what makes resume testable on a dev server.
 
   Debounced-on-navigation is not enough on its own: an answer given by a learner who then closes the
   tab rests entirely on the page-leave handlers, and Chrome may drop those. The rule is bounded to
-  flags that **close a question or gate one** — `aqMeasure` is in because it unlocks s10's question.
+  flags that **close a question or gate one** — `aqMeasure` is in because it unlocks s15's question.
   The purely revealing flags (`dispPlaced`, `floodPlaced`, `measPoured`, `measRevealed`) stay on the
   debounce on purpose: losing one costs a drag, not an answer, and a blocking write mid-animation is
   worse than the loss.
@@ -130,7 +130,7 @@ is what keeps a revisited screen answered.
 **Most screens restore themselves.** `imgqEnter`, `dispEnter`, `aqEnter`, `floodEnter`, `flipEnter`,
 `guessEnter`, `measRender` and `scqEnter`'s `done` branch all rebuild from the restored variables —
 that is what makes part 01's 33 screens tractable. `restoreScreenUI()` fills the five genuine gaps:
-the s2 hint gate, the SCQ marks **and feedback**, the two matching boards, s22's confirm button, and
+the s2 hint gate, the SCQ marks **and feedback**, the two matching boards, s23's confirm button, and
 the comic slider index.
 
 ### What a painter owes the learner
@@ -193,9 +193,9 @@ back to the source bank and renders that, and the restore that follows puts the 
 into `cfg.placement` with nothing left to draw them: the board came back empty while the check button,
 computed from placement, sat enabled over it.
 
-### s17's retry — between two attempts (2026-10-11)
+### s34's retry — between two attempts (2026-10-11)
 
-s17 takes two attempts (`maxAttempts: 2`, storyboard 66–70); s18 keeps one. A wrong first check
+s34 takes two attempts (`maxAttempts: 2`, storyboard 66–70); s28 keeps one. A wrong first check
 resolves nothing — `checked`/`done` stay false and the board stays live — so three fields travel with
 the board: `attempts`, `phase` (`'retry'` while the retry popup is open, cleared by the first change,
 as SCQ's re-pick clears it) and `lastWrong` (the judged board). `lastWrong` drives the per-slot
@@ -303,7 +303,7 @@ declaration after it) and `HTMLMediaElement.load/play`.
 | **`doneQ` guard** | ✓ changing a pick in the completed מועד א and re-submitting emits **nothing** |
 | full path fail→retake→back→forward→pass | ✓ exactly **one** unit `completed`; `__dupes()` empty |
 | deep-clone of all five nested structures | ✓ mutating the live object after capture never leaks |
-| **2026-08-26 — the two field reports** | ✓ s18 answered wrong, toggled to the learner's own board, **real page reload**: lands on s18 showing the model board, the popup, the note and the `התשובה שלי` toggle. ✓ s19 answered, walked forward, walked back: `נכון מאוד!` reopens and the dropdown trigger keeps its verdict colour |
+| **2026-08-26 — the two field reports** | ✓ s28 answered wrong, toggled to the learner's own board, **real page reload**: lands on s28 showing the model board, the popup, the note and the `התשובה שלי` toggle. ✓ s29 answered, walked forward, walked back: `נכון מאוד!` reopens and the dropdown trigger keeps its verdict colour |
 | all 19 popups reopen and clear the chrome | ✓ measured at a 1280×720 canvas: every one anchors at `l:2 … b:636`, inside the canvas and 10px clear of the nav bar at 646 — the same anchor the live popup uses, so nothing new appears on screen |
 | part 04's silent screens stay silent | ✓ s6/s7/s8 come back with the learner's own pick `selected` and no verdict; they have no popup element at all |
 | commit-time flush | ✓ five practice questions answered with **no navigation afterwards**: `phase` and the matching board are already in the state document |

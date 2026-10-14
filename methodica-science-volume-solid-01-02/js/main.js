@@ -6,7 +6,7 @@
    progress-dots + report modal + xAPI, ported from Part 01.
    ═══════════════════════════════════════════════════════════ */
 
-const TOTAL_SCREENS = 8;          // S0 intro + S1–S6 practice + S7 mid transition (sb98, sits between Q4 and Q5)
+const TOTAL_SCREENS = 8;          // storyboard order (2026-10-14): S0 intro · S1–S4 basic Q1–Q4 · S5 mid transition (sb98) · S6–S7 standard-ב Q5–Q6
 const PART_03_URL = '../methodica-science-volume-solid-01-03/index.html';
 
 window.lomdaState = window.lomdaState || {};
@@ -37,7 +37,7 @@ function getCharacter() {
    screen and this unit's QA gate checks the network log for zero 404s.
    Landing a produced GIF is one line here plus the file. */
 /* `start-line` is the 1280×720 sporty pair (מרים כתום משקולות.mp4 / Character-2-Sporty.mp4).
-   It belongs to slide 98 — s7 — and was on s0 by mistake until 2026-08-30; slide 77 names
+   It belongs to slide 98 — s5 — and was on s0 by mistake until 2026-08-30; slide 77 names
    think.mp4, and the sporty pair could not have served s0 anyway, since s0 wanted 1:1 and the
    turquoise variant is a barbell 971px wide inside a 720-tall frame: no square crop clears the
    plates. It stays 16:9 here, which is its native frame, so the instance declares `--ca`. */
@@ -84,7 +84,7 @@ const CHARACTER_SLOTS = {};
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
   if (!screen) return;
-  // Lets a screen's CSS place things per variant where the two poses' artwork differs (s7's bubble).
+  // Lets a screen's CSS place things per variant where the two poses' artwork differs (s5's bubble).
   screen.dataset.character = getCharacter();
   const slot = CHARACTER_SLOTS['s' + n];
   let el = screen.querySelector('.companion');
@@ -140,8 +140,8 @@ function resetScreenState(n) {
   if (n === 2) practiceEnter(1, 's2');
   if (n === 3) practiceEnter(2, 's3');
   if (n === 4) practiceEnter(3, 's4');
-  if (n === 5) practiceEnter(4, 's5');
-  if (n === 6) practiceEnter(5, 's6');
+  if (n === 6) practiceEnter(4, 's6');
+  if (n === 7) practiceEnter(5, 's7');
 }
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft')  advanceScreen();
@@ -149,15 +149,15 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.querySelectorAll('[id$="-popup"], [id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
 });
 function goBack() {
-  if (currentScreen === 7) { goTo(4); return; }                                   // mid transition → back to Q4
-  if (currentScreen === 5) { goTo(7); return; }                                   // Q5 → back to the mid transition
+  if (currentScreen === 5) { goTo(4); return; }                                   // mid transition → back to Q4
+  if (currentScreen === 6) { goTo(5); return; }                                   // Q5 → back to the mid transition
   const pIdx = practiceProgress.questions.findIndex(q => q.screen === currentScreen);
   if (pIdx !== -1) { goTo(pIdx > 0 ? practiceProgress.questions[pIdx - 1].screen : 0); return; }
   goTo(currentScreen - 1);
 }
 function advanceScreen() {
   if (currentScreen === 0) { goTo(1); return; }
-  if (currentScreen === 7) { goTo(5); return; }                                   // mid transition → Q5
+  if (currentScreen === 5) { goTo(6); return; }                                   // mid transition → Q5
   if (practiceProgress.questions.some(q => q.screen === currentScreen)) return;   // via check button
   goTo(currentScreen + 1);
 }
@@ -272,7 +272,7 @@ function scqHint(screen) {
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
 /* Hint availability in one place (720-templates "Hint policy": hidden, not disabled, while
    unavailable): hidden once the question resolves, and on a `hintAfterWrong` question also until the
-   first wrong check. Reads `attempts`, which resume already carries. (2026-10-11, deck notes: s5/s6 "רמז מופיע אחרי שגיאה ראשונה" on slides 101/106; s1-s4 "רמז מופיע תמיד") */
+   first wrong check. Reads `attempts`, which resume already carries. (2026-10-11, deck notes: s6/s7 "רמז מופיע אחרי שגיאה ראשונה" on slides 101/106; s1-s4 "רמז מופיע תמיד") */
 function scqSyncHint(screen) {
   const s = SCQ_REG[screen]; const hint = document.getElementById(screen + '-scq-hint');
   if (!s || !hint) return;
@@ -352,8 +352,8 @@ var practiceProgress = {
     { number: 2, visited: false, state: 'not-answered', screen: 2 },
     { number: 3, visited: false, state: 'not-answered', screen: 3 },
     { number: 4, visited: false, state: 'not-answered', screen: 4 },
-    { number: 5, visited: false, state: 'not-answered', screen: 5 },
-    { number: 6, visited: false, state: 'not-answered', screen: 6 }
+    { number: 5, visited: false, state: 'not-answered', screen: 6 },
+    { number: 6, visited: false, state: 'not-answered', screen: 7 }
   ]
 };
 /* How many of the six the learner got right. Counted from XAPI_Q_RESULTS rather than from
@@ -428,7 +428,7 @@ function registerPractice(idx, cfg) {
     if (next >= practiceProgress.questions.length) { goToNextPart(); return; }
     practiceProgress.questions[next].visited = true;
     // Q4 → the sb98 transition, which then hands on to Q5.
-    goTo(idx === 3 ? 7 : practiceProgress.questions[next].screen);
+    goTo(idx === 3 ? 5 : practiceProgress.questions[next].screen);
   };
   scqRegister(cfg);
   attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup'));
@@ -495,7 +495,7 @@ registerPractice(5, {  // Standard-ב 2 — single bead = 10
    Read by xapiOnScreen() (element 0, to open/close items) and by submitReport() (both).
 
    MUST have exactly TOTAL_SCREENS entries — _test/checks.mjs gate 3 pairs the constant with the
-   markup, and an unlisted screen silently reports no item at all. Screens 0 and 7 were missing
+   markup, and an unlisted screen silently reports no item at all. The intro and the mid-transition were missing
    before: a problem report filed from the intro or the mid-transition went out with an empty item. */
 var SCREEN_TO_SUBCONTENT = {
   0: null,            // intro (sb77)
@@ -503,9 +503,9 @@ var SCREEN_TO_SUBCONTENT = {
   2: ['02', 1],       // basic 2 — who is right
   3: ['03', 1],       // basic 3 — which tool
   4: ['04', 1],       // basic 4 — flooding 760
-  7: null,            // sb98 mid transition — sits between Q4 and Q5, belongs to no item
-  5: ['05', 1],       // standard-ב 1 — rise area
-  6: ['06', 1]        // standard-ב 2 — single bead
+  5: null,            // sb98 mid transition — sits between Q4 and Q5, belongs to no item
+  6: ['05', 1],       // standard-ב 1 — rise area
+  7: ['06', 1]        // standard-ב 2 — single bead
 };
 
 var XAPI_COMP_SLUG = 'methodica-science-volume-solid-01-02';

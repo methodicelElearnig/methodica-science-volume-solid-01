@@ -124,7 +124,7 @@
    `align-items: center` does the centring — no transform, so the wrapper does not become a
    stacking context (see the long note on .companion-say in the shared sheet). */
 #s0 .companion-say,
-#s7 .companion-say { position: relative; }
+#s5 .companion-say { position: relative; }
 
 /* S0 — the mascot STANDS ON the bottom bar's line (2026-10-12): smaller (320px box ≈ 265px of
    character, was 400) and pinned to the band's floor instead of centred with the copy.
@@ -142,7 +142,7 @@
 #s0 .companion-bubble { margin-right: -30px; }
 #s0 .companion { width: 320px; margin-bottom: -20px; }
 
-/* ── S5 · stem under the progress bar, תמונה ב' clear of the feedback (QA 2026-10-11, N17) ──
+/* ── S6 · stem under the progress bar, תמונה ב' clear of the feedback (QA 2026-10-11, N17) ──
    The feedback popup keeps the template's place, bottom-left at x 2–482 of the 1280-wide canvas.
    Centred, the 778px photo pair put תמונה ב' (the photo with the answer rings) at x 251–631, so
    every popup covered part of it; and the 501px block centred at 50% − 20px reached up into the
@@ -154,7 +154,7 @@
    sides and the gap to the popup only grows. Vertically it is centred in the band between the progress labels (bottom ≈ 100) and the
    bottom bar (H − 74), i.e. at 50% + 15px rather than the shared 50% − 20px. The rings are placed
    in percentages of the photo, so they scale with it. */
-#s5 .scq-question--textonly {
+#s6 .scq-question--textonly {
   width: 736px;   /* right-anchored at the 40px gutter (2026-10-12): left = W − 776, 504 at 1280 */
   top: calc(50% + 15px); transform: translateY(-50%);
 }
@@ -184,27 +184,27 @@
 #s4 .scq-question--textonly { width: 880px; }
 #s4 .scq-question--textonly > .scq-qtext { width: 100%; }   /* the base .scq-qtext is a fixed 792px */
 
-/* ── S7 · the mid-section transition, to storyboard slide 98 (QA 2026-08-30) ──
+/* ── S5 · the mid-section transition, to storyboard slide 98 (QA 2026-08-30) ──
    The greeting is not the message on this screen — the sentence under it is — so the two swap
    emphasis: the greeting drops to body size and body colour, and the news line takes the weight.
-   Scoped to #s7: .transition-title / -sub are shared with parts 01 and 04, which still want the
+   Scoped to #s5: .transition-title / -sub are shared with parts 01 and 04, which still want the
    34px blue heading. */
-#s7 .transition-title {
+#s5 .transition-title {
   font-size: 24px; font-weight: 400; color: #303030;
 }
 /* 48px, and it has to hold ONE line — a wrap here would split the sentence mid-clause. The
    default 760px column cannot do that at this size, so the column widens for this screen only;
    `nowrap` then makes a future copy change fail loudly (overflow) instead of silently
    re-wrapping into the shape the deck does not have. */
-#s7 .transition-content { width: 1120px; }  /* 860 held the text; the mirrored row below is up to 1093 */
-#s7 .transition-sub {
+#s5 .transition-content { width: 1120px; }  /* 860 held the text; the mirrored row below is up to 1093 */
+#s5 .transition-sub {
   font-size: 48px; font-weight: 800; line-height: 1.25; white-space: nowrap;
 }
 
 /* His two colour variants have DIFFERENT aspects here (see CHARACTER_ASPECT in js/main.js), so
    the box is driven by HEIGHT: at a shared width the barbell variant would come out a third
    shorter than the dumbbell one. 400px of box = ~342px of character in both. */
-#s7 .companion { width: auto; height: 400px; }
+#s5 .companion { width: auto; height: 400px; }
 
 /* Centre the SPRITE on the canvas, not the pair. The row is [bubble][gap][sprite], so mirroring
    the bubble's width as margin on the sprite's FAR side makes the row symmetric about him, and
@@ -213,28 +213,28 @@
    The vertical padding is 21px rather than the shared 14 so this one-line bubble reaches 76px on
    its own and its text sits centred, instead of being floored by the shared min-height and left
    sitting 7px high in the box. */
-#s7 .companion-bubble { width: 200px; padding-top: 21px; padding-bottom: 21px; }
+#s5 .companion-bubble { width: 200px; padding-top: 21px; padding-bottom: 21px; }
 /* 2026-10-12: the bubble talks from his MOUTH, not from above his head, and he stands lower.
    Measured on the 700×640 frame in its 438×400 box: art starts 76px in from the box's left
    edge, his mouth is ~198px down, and 36px of white sits under his feet.
    - margin-right −47px (gap 0 — a negative `gap` is invalid CSS) pulls the bubble 47px into his box, so the beak tip (19px past the bubble) lands
      at x 66, just short of the art; margin-top 157 puts the beak's middle (28 + 13) at y 198.
    - the mirror on his far side follows the gap: 200 bubble − 47 = 153, so he stays on x=640. */
-#s7 .companion-say { --say-gap: 0px; }
-#s7 .companion-bubble { margin-top: 157px; margin-right: -47px; }
-#s7 .companion-say > .companion { margin-right: 153px; margin-bottom: -36px; }
+#s5 .companion-say { --say-gap: 0px; }
+#s5 .companion-bubble { margin-top: 157px; margin-right: -47px; }
+#s5 .companion-say > .companion { margin-right: 153px; margin-bottom: -36px; }
 /* The turquoise variant lifts a barbell: at mouth height its left plate stands between the bubble
    and him, so the bubble speaks at head height instead, just above the plate (box y ~150) with the
    beak tip ~244px into his 665px box, at the side of his head. Mirror: 200 − 225 = −25. */
-#s7[data-character="turquoise"] .companion-bubble { margin-top: 63px; margin-right: -225px; }
-#s7[data-character="turquoise"] .companion-say > .companion { margin-right: -25px; }
+#s5[data-character="turquoise"] .companion-bubble { margin-top: 63px; margin-right: -225px; }
+#s5[data-character="turquoise"] .companion-say > .companion { margin-right: -25px; }
 /* Lowered: same column shape as s0 — the column spans the band above the bar and auto margins
    split the free height above the copy and between the copy and the pair, so his feet stand on
    the bar's line at every canvas height (the −36px of white under them goes under the bar).
    the mp4's baked-in white is keyed out globally (.companion in unit-css). */
-#s7 .transition-content { top: 0; bottom: 74px; transform: translateX(-50%); }
-#s7 .transition-title { margin-top: auto; }
-#s7 .companion-say { margin-top: auto; }
+#s5 .transition-content { top: 0; bottom: 74px; transform: translateX(-50%); }
+#s5 .transition-title { margin-top: auto; }
+#s5 .companion-say { margin-top: auto; }
 
 /* ── Feedback popup hugs its text (2026-10-12) ──
    The template's fixed 480px left the two-line "שננסה שוב?" retry popup mostly empty and reaching
@@ -242,4 +242,4 @@
    bodies still wrap at the same 480px cap. */
 .scq-popup { width: fit-content; max-width: min(480px, 46%); }
 
-#s6 .s6-para-gap { display: block; height: 16px; }
+#s7 .s7-para-gap { display: block; height: 16px; }

@@ -182,13 +182,13 @@ const btnDisabled = (p, id) => p.val('(function(){ var b = document.getElementBy
 
 /* Which screens carry a feedback popup, and where to park the learner in between. AWAY is a screen
    with no question of its own, so bouncing off it cannot disturb what is being measured. */
-const SCQ_SCREENS = { '01': [10, 13, 14, 15, 16, 19], '02': [1, 2, 3, 4, 5, 6], '04': [1, 2, 3, 4, 5] };
+const SCQ_SCREENS = { '01': [15, 29, 31, 32, 33, 35], '02': [1, 2, 3, 4, 6, 7], '04': [1, 2, 3, 4, 5] };
 const AWAY        = { '01': 0, '02': 0, '04': 0 };
 
-/* s10's question is locked until the ruler applet has been used. Unlock it the way the learner does,
+/* s15's question is locked until the ruler applet has been used. Unlock it the way the learner does,
    not by writing the flag. */
 function unlock(p, part, n) {
-  if (part === '01' && n === 10) p.exec('aqMeasure();');
+  if (part === '01' && n === 15) p.exec('aqMeasure();');
 }
 
 function ids(p, screen) {
@@ -297,7 +297,7 @@ function scenarioPristine(p, part) {
 
 /* ═══════════════════ the two matching boards ═══════════════════ */
 
-const DDQ_SCREENS = [17, 18];
+const DDQ_SCREENS = [34, 28];
 
 /* The model board, and a board that is wrong in every slot — built from correctMap so it stays right
    if the content changes. */
@@ -319,7 +319,7 @@ function place(p, screen, board) {
   p.exec('DDQ_REG["' + screen + '"].cfg.placement = ' + JSON.stringify(board) + '; ddqRender("' + screen + '");');
 }
 
-/* Check a board as the learner's FINAL answer. s17 takes two attempts (slides 66-70, 2026-10-11), so
+/* Check a board as the learner's FINAL answer. s34 takes two attempts (slides 66-70, 2026-10-11), so
    there the first attempt is spent on the other wrong board — different, so the retry gate allows the
    second check — and `board` is what the question resolves on. Single-attempt boards check once. */
 function ddqCheckFinal(p, screen, board, b) {
@@ -429,7 +429,7 @@ function ddqPartlyRight(p, n) {
   ok(ctx, 'after a return: still not-fully, back on the model board', fb && sameHtml(fb.title, FIRST + '<br>' + note), fb && fb.title);
 }
 
-/* s17's retry phase (two attempts, 2026-10-11): between the attempts nothing is resolved, and a
+/* s34's retry phase (two attempts, 2026-10-11): between the attempts nothing is resolved, and a
    return or a reload must bring back exactly the retry look — popup, per-slot marks, the closed gate,
    the hint — without sending anything. Then the second attempt resolves it once. */
 function ddqRetryState(p, screen) {
@@ -441,12 +441,12 @@ function ddqRetryState(p, screen) {
 /* xapiSend() defers to the next tick, so the log is read after one. */
 const nextTick = () => new Promise(r => setTimeout(r, 20));
 async function ddqRetry(p) {
-  const screen = 's17', ctx = '01/s17/retry';
+  const screen = 's34', ctx = '01/s34/retry';
   const b = boards(p, screen);
-  p.exec('goTo(17);');
+  p.exec('goTo(34);');
   ok(ctx, 'the hint starts hidden (slide 68: after a first wrong answer)', ddqRetryState(p, screen).hint === 'hidden');
   place(p, screen, b.wrong);
-  p.exec('ddqCheck("s17");');
+  p.exec('ddqCheck("s34");');
   await nextTick();
   let st = ddqRetryState(p, screen), fb = popup(p, screen, 'ddq'), slots = slotClasses(p, screen);
   ok(ctx, 'a first wrong check is an interim answered, unresolved', st.attempts === 1 && st.phase === 'retry' && !st.done && st.answered === 'answered', JSON.stringify(st));
@@ -455,7 +455,7 @@ async function ddqRetry(p) {
   ok(ctx, 'every judged slot carries its verdict', slots.length === b.n && slots.every(c => /\bwrong\b/.test(c)), slots.join(' | '));
   ok(ctx, 'the gate is closed on the judged board, the hint is shown', st.checkDisabled === true && st.hint === '', JSON.stringify(st));
 
-  p.exec('goTo(' + AWAY['01'] + '); goTo(17);');
+  p.exec('goTo(' + AWAY['01'] + '); goTo(34);');
   await nextTick();
   st = ddqRetryState(p, screen); fb = popup(p, screen, 'ddq'); slots = slotClasses(p, screen);
   ok(ctx, 'a return keeps the retry look and sends nothing',
@@ -464,7 +464,7 @@ async function ddqRetry(p) {
   p.exec('flushResumeSave();');
   const state = p.dump();
   const r = boot('01', { state });
-  r.exec('if (currentScreen !== 17) goTo(17);');
+  r.exec('if (currentScreen !== 17) goTo(34);');
   await nextTick();
   st = ddqRetryState(r, screen); fb = popup(r, screen, 'ddq'); slots = slotClasses(r, screen);
   ok('reload/' + ctx, 'a reload keeps the retry look (popup, marks, gate, hint)',
@@ -474,13 +474,13 @@ async function ddqRetry(p) {
   place(r, screen, b.model);
   st = ddqRetryState(r, screen);
   ok('reload/' + ctx, 'a different full board opens the gate', st.checkDisabled === false, JSON.stringify(st));
-  r.exec('ddqCheck("s17");');
+  r.exec('ddqCheck("s34");');
   await nextTick();
   st = ddqRetryState(r, screen); fb = popup(r, screen, 'ddq');
   ok('reload/' + ctx, 'right on the second attempt: one answered.last, counted correct',
      st.done && st.answered === 'answered.last' && r.val('XAPI_Q_RESULTS["08/q1"]') === true && r.val('practiceProgress.questions[3].state') === 'correct', JSON.stringify(st));
   ok('reload/' + ctx, 'correct popup, hint hidden', fb && !fb.hidden && /תשובה נכונה/.test(fb.title) && st.hint === 'hidden', fb && fb.title);
-  r.exec('goTo(' + AWAY['01'] + '); goTo(17);');
+  r.exec('goTo(' + AWAY['01'] + '); goTo(34);');
   await nextTick();
   ok('reload/' + ctx, 'no duplicate answered.last', r.val('__dupes().length') === 0);
   collectErrors('reload/' + ctx, r);
@@ -515,22 +515,24 @@ function peakScenarios(p, part) {
   p.exec('goTo(1);');
   ok(ctx, 'options start unlocked', p.val('document.querySelector("#s1-opts .peak-opt").disabled') === false);
 
-  p.exec('peakSelect(1, "' + correct + '", document.querySelector("#s1-opts .peak-opt[data-id=\\"' + correct + '\\"]"));');
+  p.exec('peakSelect(1, "' + correct + '");');
   ok(ctx, 'a mere pick does NOT lock the options',
      p.val('document.querySelector("#s1-opts .peak-opt").disabled') === false);
 
-  p.exec('peakContinue(1);');
+  p.exec('peakCheck(1);');
   p.exec('goTo(1);');
-  ok(ctx, 'a committed sub-part is locked',
+  ok(ctx, 'a resolved sub-part is locked',
      p.val('[].every.call(document.querySelectorAll("#s1-opts .peak-opt"), function (o) { return o.disabled; })') === true);
-  ok(ctx, 'the committed pick is still shown',
-     p.val('document.querySelector("#s1-opts .peak-opt[data-id=\\"' + correct + '\\"]").classList.contains("selected")') === true);
+  ok(ctx, 'the correct pick is still marked',
+     p.val('document.querySelector("#s1-opts .peak-opt[data-id=\\"' + correct + '\\"]").classList.contains("correct")') === true);
+  ok(ctx, 'its feedback is shown again',
+     p.val('!document.getElementById("s1-scq-popup").classList.contains("hidden")') === true);
 
   const other = p.val('(function(){ var o = document.querySelector("#s1-opts .peak-opt:not([data-id=\\"' + correct + '\\"])");' +
                       ' return o ? o.dataset.id : null; })()');
   if (other) {
-    p.exec('peakSelect(1, "' + other + '", document.querySelector("#s1-opts .peak-opt[data-id=\\"' + other + '\\"]"));');
-    ok(ctx, 'a locked pick cannot be changed', p.val('peakAnswers[1]') === correct, p.val('peakAnswers[1]'));
+    p.exec('peakSelect(1, "' + other + '");');
+    ok(ctx, 'a locked pick cannot be changed', p.val('peakState[1].sel') === correct, p.val('peakState[1].sel'));
   }
 }
 
@@ -540,21 +542,21 @@ function reloadTests() {
   /* R1 — a correct SCQ answer, then a real page load. */
   {
     const a = boot('01');
-    a.exec('goTo(13);');
-    const correct = a.val('SCQ_REG["s13"].cfg.correctId');
-    a.exec('scqSelect("s13", "' + correct + '"); scqCheck("s13");');
+    a.exec('goTo(31);');
+    const correct = a.val('SCQ_REG["s31"].cfg.correctId');
+    a.exec('scqSelect("s31", "' + correct + '"); scqCheck("s31");');
     const state = a.dump();
     a.close();
 
     ok('reload/01', 'the answer reached the state document synchronously', !!state && state.indexOf('"phase"') !== -1);
 
     const b = boot('01', { state });
-    const ctx = 'reload/01/s13';
-    ok(ctx, 'resumes onto the answered screen', b.val('currentScreen') === 13, b.val('currentScreen'));
-    ok(ctx, 'the correct mark is repainted', hasClass(optClasses(b, 's13'), correct, 'correct'));
-    const fb = popup(b, 's13', 'scq');
+    const ctx = 'reload/01/s31';
+    ok(ctx, 'resumes onto the answered screen', b.val('currentScreen') === 31, b.val('currentScreen'));
+    ok(ctx, 'the correct mark is repainted', hasClass(optClasses(b, 's31'), correct, 'correct'));
+    const fb = popup(b, 's31', 'scq');
     ok(ctx, 'the feedback is repainted', fb && fb.hidden === false, fb && fb.hidden);
-    ok(ctx, 'it is the CORRECT popup', fb && sameHtml(fb.title, b.val('SCQ_REG["s13"].cfg.popups.correct.title')));
+    ok(ctx, 'it is the CORRECT popup', fb && sameHtml(fb.title, b.val('SCQ_REG["s31"].cfg.popups.correct.title')));
     collectErrors(ctx, b);
     b.close();
   }
@@ -562,28 +564,28 @@ function reloadTests() {
   /* R2 — the learner's report: a wrong matching answer, viewed as "my answer", then reloaded. */
   {
     const a = boot('01');
-    a.exec('goTo(18);');
-    const b18 = boards(a, 's18');
-    place(a, 's18', b18.wrong);
-    a.exec('ddqCheck("s18"); ddqToggleAnswer("s18");');    // leave it showing the learner's own board
+    a.exec('goTo(28);');
+    const b18 = boards(a, 's28');
+    place(a, 's28', b18.wrong);
+    a.exec('ddqCheck("s28"); ddqToggleAnswer("s28");');    // leave it showing the learner's own board
     a.exec('flushResumeSave();');
     const state = a.dump();
     a.close();
 
     const b = boot('01', { state });
-    const ctx = 'reload/01/s18';
-    ok(ctx, 'resumes onto the matching screen', b.val('currentScreen') === 18, b.val('currentScreen'));
+    const ctx = 'reload/01/s28';
+    ok(ctx, 'resumes onto the matching screen', b.val('currentScreen') === 28, b.val('currentScreen'));
     ok(ctx, 'both boards survived the reload',
-       b.val('!!(DDQ_REG["s18"].learnerPlacement && DDQ_REG["s18"].correctPlacement)') === true);
-    const slots = slotClasses(b, 's18');
+       b.val('!!(DDQ_REG["s28"].learnerPlacement && DDQ_REG["s28"].correctPlacement)') === true);
+    const slots = slotClasses(b, 's28');
     ok(ctx, 'it reopens on the MODEL answer, not on five red slots',
        slots.length === b18.n && slots.every(c => /\bcorrect\b/.test(c)), slots.join(' | '));
-    const fb = popup(b, 's18', 'ddq');
+    const fb = popup(b, 's28', 'ddq');
     ok(ctx, 'the feedback is repainted', fb && fb.hidden === false, fb && fb.hidden);
     ok(ctx, 'the answer toggle is reachable again',
-       b.val('!!document.getElementById("s18-ddq-answer-toggle")') === true);
-    b.exec('ddqToggleAnswer("s18");');
-    const own = slotClasses(b, 's18');
+       b.val('!!document.getElementById("s28-ddq-answer-toggle")') === true);
+    b.exec('ddqToggleAnswer("s28");');
+    const own = slotClasses(b, 's28');
     ok(ctx, 'and it still leads back to the learner\'s own answer',
        own.length === b18.n && own.every(c => /\bwrong\b/.test(c)), own.join(' | '));
     collectErrors(ctx, b);
@@ -593,17 +595,17 @@ function reloadTests() {
   /* R2b — a PARTLY right matching answer, then reloaded: the 'not fully' title is re-derived. */
   {
     const a = boot('01');
-    a.exec('goTo(17);');
-    const b17 = boards(a, 's17');
-    ddqCheckFinal(a, 's17', b17.partly, b17);
+    a.exec('goTo(34);');
+    const b17 = boards(a, 's34');
+    ddqCheckFinal(a, 's34', b17.partly, b17);
     a.exec('flushResumeSave();');
     const state = a.dump();
     a.close();
     const b = boot('01', { state });
-    const ctx = 'reload/01/s17/partly';
-    const fb = popup(b, 's17', 'ddq');
+    const ctx = 'reload/01/s34/partly';
+    const fb = popup(b, 's34', 'ddq');
     ok(ctx, 'the not-fully title survives a reload',
-       fb && sameHtml(fb.title, 'התשובה אינה נכונה במלואה.<br>' + b.val('DDQ_REG["s17"].cfg.answerNote')), fb && fb.title);
+       fb && sameHtml(fb.title, 'התשובה אינה נכונה במלואה.<br>' + b.val('DDQ_REG["s34"].cfg.answerNote')), fb && fb.title);
     collectErrors(ctx, b);
     b.close();
   }
@@ -631,20 +633,21 @@ function reloadTests() {
     b.close();
   }
 
-  /* R4 — a committed peak sub-part stays locked across a reload. */
+  /* R4 — a resolved peak sub-part stays locked across a reload. */
   {
     const a = boot('05');
     a.exec('goTo(1);');
     const c = a.val('PEAK_CORRECT[1]');
-    a.exec('peakSelect(1, "' + c + '", document.querySelector("#s1-opts .peak-opt[data-id=\\"' + c + '\\"]"));');
-    a.exec('peakContinue(1);');
+    a.exec('peakSelect(1, "' + c + '");');
+    a.exec('peakCheck(1);');
     const state = a.dump();
     a.close();
 
     const b = boot('05', { state });
     const ctx = 'reload/05/s1';
     b.exec('goTo(1);');
-    ok(ctx, 'the commitment survived the reload', b.val('!!peakCommitted[1]') === true);
+    ok(ctx, 'the resolution survived the reload', b.val('!!(peakState[1] && peakState[1].done)') === true);
+    ok(ctx, 'the feedback is repainted', b.val('!document.getElementById("s1-scq-popup").classList.contains("hidden")') === true);
     ok(ctx, 'the options are still locked',
        b.val('[].every.call(document.querySelectorAll("#s1-opts .peak-opt"), function (o) { return o.disabled; })') === true);
     collectErrors(ctx, b);
@@ -677,30 +680,30 @@ function experiencedCount(p) {
   return p.val('__stmts().filter(function (s) { return /experienced/.test(JSON.stringify(s.verb || s)); }).length');
 }
 
-/* Walk part 01 from s0 into the comic: character, comic path, then the carousel to s25 panel 3,
-   picking option c on the s23 guess on the way. */
+/* Walk part 01 from s0 into the comic: character, comic path, then the carousel to s11 panel 3,
+   picking option c on the s10 guess on the way. */
 function walkIntoComic(a) {
   a.exec('selectOption(document.querySelector("#s0 .option-card[data-value=orange]"));');
   a.exec('goTo(7); selectPathOption(document.querySelector("#s7 .option-card[data-value=comic]")); advanceFromPathChoice();');
-  a.exec('comicArrowNext("s8");');                                   // s8 (single panel) -> s24
-  a.exec('comicArrowNext("s24");');                                  // s24 (single panel) -> s23
-  a.exec('guessPick("s23", document.querySelector("#s23-guess .guess-opt[data-id=c]"));');
-  a.exec('comicArrowNext("s23");');                                  // s23 -> s25 panel 1
-  a.exec('comicArrowNext("s25"); comicArrowNext("s25");');          // panel 3
+  a.exec('comicArrowNext("s8");');                                   // s8 (single panel) -> s9
+  a.exec('comicArrowNext("s9");');                                  // s9 (single panel) -> s10
+  a.exec('guessPick("s10", document.querySelector("#s10-guess .guess-opt[data-id=c]"));');
+  a.exec('comicArrowNext("s10");');                                  // s10 -> s11 panel 1
+  a.exec('comicArrowNext("s11"); comicArrowNext("s11");');          // panel 3
 }
 
 async function comicTests() {
-  /* C1 — reload in the middle of s25, with the zoom left open. */
+  /* C1 — reload in the middle of s11, with the zoom left open. */
   let state;
   {
     const a = boot('01');
     walkIntoComic(a);
     const ctx = 'comic/walk';
-    ok(ctx, 'the walk reached s25 panel 3', a.val('currentScreen') === 25 && a.val('comicState.s25.i') === 2,
-       a.val('currentScreen') + '/' + a.val('comicState.s25 && comicState.s25.i'));
-    a.exec('comicZoomOpen("s25");');
+    ok(ctx, 'the walk reached s11 panel 3', a.val('currentScreen') === 11 && a.val('comicState.s11.i') === 2,
+       a.val('currentScreen') + '/' + a.val('comicState.s11 && comicState.s11.i'));
+    a.exec('comicZoomOpen("s11");');
     await sleep(50);
-    ok(ctx, 'one experienced each for s8 and s24, none yet for s25', experiencedCount(a) === 2, experiencedCount(a));
+    ok(ctx, 'one experienced each for s8 and s9, none yet for s11', experiencedCount(a) === 2, experiencedCount(a));
     a.exec('flushResumeSave();');
     state = a.dump();
     collectErrors(ctx, a);
@@ -709,9 +712,9 @@ async function comicTests() {
   {
     const b = boot('01', { state });
     const ctx = 'comic/reload-s25';
-    ok(ctx, 'resumes onto s25', b.val('currentScreen') === 25, b.val('currentScreen'));
+    ok(ctx, 'resumes onto s11', b.val('currentScreen') === 11, b.val('currentScreen'));
     ok(ctx, 'on the comic path', b.val('window.lomdaState.learningPath') === 'comic', b.val('window.lomdaState.learningPath'));
-    let c = comicProbe(b, 's25');
+    let c = comicProbe(b, 's11');
     ok(ctx, 'on panel 3', c.i === 2, c.i);
     ok(ctx, 'both tracks painted at panel 3 at once (no slide from panel 1)',
        c.tracks.length === 2 && c.tracks.every(t => t === 'translateX(200%)'), c.tracks.join(' | '));
@@ -722,92 +725,92 @@ async function comicTests() {
     ok(ctx, 'the zoom did not survive the reload', c.zoom === null && c.zoomCls === false, c.zoom + '/' + c.zoomCls);
     ok(ctx, 'no bubbles revealed before the reveal delay', c.revealed.length === 0, c.revealed.join(','));
     await sleep(1200);
-    c = comicProbe(b, 's25');
+    c = comicProbe(b, 's11');
     ok(ctx, 'exactly one panel revealed, and it is panel 3', c.revealed.length === 1 && c.revealed[0] === 2, c.revealed.join(','));
     ok(ctx, 'no experienced re-sent on resume', experiencedCount(b) === 0, experiencedCount(b));
 
     /* Back across the carousel to the guess: the pick, the bubble and the forward gate are intact. */
-    b.exec('comicArrowPrev("s25"); comicArrowPrev("s25"); comicArrowPrev("s25");');
-    ok(ctx, 'the back arrow crosses to s23', b.val('currentScreen') === 23, b.val('currentScreen'));
-    ok(ctx, 's23: the pick is restored',
-       b.val('document.querySelector("#s23-guess .guess-opt[data-id=c]").classList.contains("selected")') === true);
-    ok(ctx, 's23: the mascot + bubble are shown',
-       b.val('!document.getElementById("s23-guess-bubble").classList.contains("hidden")') === true);
-    ok(ctx, 's23: forward arrow live, Continue still locked (not the comic end)',
-       b.val('document.getElementById("s23-next").disabled') === false && b.val('document.getElementById("s23-continue").disabled') === true);
+    b.exec('comicArrowPrev("s11"); comicArrowPrev("s11"); comicArrowPrev("s11");');
+    ok(ctx, 'the back arrow crosses to s10', b.val('currentScreen') === 10, b.val('currentScreen'));
+    ok(ctx, 's10: the pick is restored',
+       b.val('document.querySelector("#s10-guess .guess-opt[data-id=c]").classList.contains("selected")') === true);
+    ok(ctx, 's10: the mascot + bubble are shown',
+       b.val('!document.getElementById("s10-guess-bubble").classList.contains("hidden")') === true);
+    ok(ctx, 's10: forward arrow live, Continue still locked (not the comic end)',
+       b.val('document.getElementById("s10-next").disabled') === false && b.val('document.getElementById("s10-continue").disabled') === true);
 
-    /* Forward again: s25 comes back on its remembered panel, the seen gate intact, then finishes once. */
-    b.exec('comicArrowNext("s23");');
-    c = comicProbe(b, 's25');
-    ok(ctx, 'forward lands on s25 at its remembered panel', b.val('currentScreen') === 25 && c.i === 0, b.val('currentScreen') + '/' + c.i);
+    /* Forward again: s11 comes back on its remembered panel, the seen gate intact, then finishes once. */
+    b.exec('comicArrowNext("s10");');
+    c = comicProbe(b, 's11');
+    ok(ctx, 'forward lands on s11 at its remembered panel', b.val('currentScreen') === 11 && c.i === 0, b.val('currentScreen') + '/' + c.i);
     ok(ctx, 'seen survived the round trip', c.dots.filter(d => /is-seen|is-active/.test(d)).length === 3, c.dots.join(' | '));
-    b.exec('for (var k = 0; k < 4; k++) comicArrowNext("s25");');
+    b.exec('for (var k = 0; k < 4; k++) comicArrowNext("s11");');
     await sleep(50);
-    c = comicProbe(b, 's25');
-    ok(ctx, 'finishing s25 marks it done and unlocks the forward arrow', c.done === true && c.next === false, c.done + '/' + c.next);
-    ok(ctx, 'exactly one experienced for s25', experiencedCount(b) === 1, experiencedCount(b));
-    b.exec('comicArrowNext("s25"); comicArrowPrev("s26"); comicArrowNext("s25");');
+    c = comicProbe(b, 's11');
+    ok(ctx, 'finishing s11 marks it done and unlocks the forward arrow', c.done === true && c.next === false, c.done + '/' + c.next);
+    ok(ctx, 'exactly one experienced for s11', experiencedCount(b) === 1, experiencedCount(b));
+    b.exec('comicArrowNext("s11"); comicArrowPrev("s12"); comicArrowNext("s11");');
     await sleep(50);
-    ok(ctx, 'leaving and re-finishing s25 does not re-send it', experiencedCount(b) === 1, experiencedCount(b));
-    /* s24 and s8 were finished BEFORE the reload and never rebuilt since: walking back onto them
+    ok(ctx, 'leaving and re-finishing s11 does not re-send it', experiencedCount(b) === 1, experiencedCount(b));
+    /* s9 and s8 were finished BEFORE the reload and never rebuilt since: walking back onto them
        must find their saved records (done + reported), not seed fresh ones. */
-    b.exec('goTo(23); comicArrowPrev("s23"); comicArrowPrev("s24");');
+    b.exec('goTo(10); comicArrowPrev("s10"); comicArrowPrev("s9");');
     await sleep(50);
     ok(ctx, 'walking back reaches s8', b.val('currentScreen') === 8, b.val('currentScreen'));
-    ok(ctx, 's24/s8 keep their pre-reload progress',
-       b.val('!!(comicState.s24 && comicState.s24.done && comicState.s24.reported && comicState.s8 && comicState.s8.reported)') === true,
-       JSON.stringify(b.val('[comicState.s24, comicState.s8].map(function (s) { return s && { done: s.done, reported: s.reported }; })')));
+    ok(ctx, 's9/s8 keep their pre-reload progress',
+       b.val('!!(comicState.s9 && comicState.s9.done && comicState.s9.reported && comicState.s8 && comicState.s8.reported)') === true,
+       JSON.stringify(b.val('[comicState.s9, comicState.s8].map(function (s) { return s && { done: s.done, reported: s.reported }; })')));
     ok(ctx, 'and do not re-send their experienced', experiencedCount(b) === 1, experiencedCount(b));
     ok(ctx, 'no duplicate completed/answered', b.val('__dupes().length') === 0, JSON.stringify(b.val('__dupes()')));
     collectErrors(ctx, b);
     b.close();
   }
 
-  /* C2 — reload on the s26 guess after a pick: gate and pick restored. */
+  /* C2 — reload on the s12 guess after a pick: gate and pick restored. */
   {
     const a = boot('01');
     walkIntoComic(a);
-    a.exec('for (var k = 0; k < 3; k++) comicArrowNext("s25"); comicArrowNext("s25");');   // finish s25 -> s26
-    a.exec('guessPick("s26", document.querySelector("#s26-guess .guess-opt[data-id=b]"));');
+    a.exec('for (var k = 0; k < 3; k++) comicArrowNext("s11"); comicArrowNext("s11");');   // finish s11 -> s12
+    a.exec('guessPick("s12", document.querySelector("#s12-guess .guess-opt[data-id=b]"));');
     a.exec('flushResumeSave();');
     const st2 = a.dump();
     a.close();
     const b = boot('01', { state: st2 });
     const ctx = 'comic/reload-s26';
-    ok(ctx, 'resumes onto s26', b.val('currentScreen') === 26, b.val('currentScreen'));
+    ok(ctx, 'resumes onto s12', b.val('currentScreen') === 12, b.val('currentScreen'));
     ok(ctx, 'the pick is restored',
-       b.val('document.querySelector("#s26-guess .guess-opt[data-id=b]").classList.contains("selected")') === true);
-    ok(ctx, 'the forward arrow is live (gate satisfied)', b.val('document.getElementById("s26-next").disabled') === false);
-    ok(ctx, 'Continue stays locked mid-comic', b.val('document.getElementById("s26-continue").disabled') === true);
-    b.exec('comicArrowPrev("s26");');
-    ok(ctx, 'back lands on s25, finished', b.val('currentScreen') === 25 && b.val('comicState.s25.done') === true,
-       b.val('currentScreen') + ' / ' + JSON.stringify(b.val('comicState.s25 ? {i: comicState.s25.i, seen: comicState.s25.seen, done: comicState.s25.done} : null')));
+       b.val('document.querySelector("#s12-guess .guess-opt[data-id=b]").classList.contains("selected")') === true);
+    ok(ctx, 'the forward arrow is live (gate satisfied)', b.val('document.getElementById("s12-next").disabled') === false);
+    ok(ctx, 'Continue stays locked mid-comic', b.val('document.getElementById("s12-continue").disabled') === true);
+    b.exec('comicArrowPrev("s12");');
+    ok(ctx, 'back lands on s11, finished', b.val('currentScreen') === 11 && b.val('comicState.s11.done') === true,
+       b.val('currentScreen') + ' / ' + JSON.stringify(b.val('comicState.s11 ? {i: comicState.s11.i, seen: comicState.s11.seen, done: comicState.s11.done} : null')));
     collectErrors(ctx, b);
     b.close();
   }
 
-  /* C3 — reload at the comic end: s28 finished -> Continue open, next arrow grey, merge works. */
+  /* C3 — reload at the comic end: s14 finished -> Continue open, next arrow grey, Continue reaches the shared ending. */
   {
     const a = boot('01');
     walkIntoComic(a);
-    a.exec('for (var k = 0; k < 3; k++) comicArrowNext("s25"); comicArrowNext("s25");');
-    a.exec('guessPick("s26", document.querySelector("#s26-guess .guess-opt[data-id=c]")); comicArrowNext("s26");');
-    a.exec('for (var k = 0; k < 7; k++) comicArrowNext("s27");');
-    a.exec('for (var k = 0; k < 2; k++) comicArrowNext("s28");');
-    ok('comic/walk-end', 'the walk reached the last panel of s28',
-       a.val('currentScreen') === 28 && a.val('comicState.s28.done') === true, a.val('currentScreen'));
+    a.exec('for (var k = 0; k < 3; k++) comicArrowNext("s11"); comicArrowNext("s11");');
+    a.exec('guessPick("s12", document.querySelector("#s12-guess .guess-opt[data-id=c]")); comicArrowNext("s12");');
+    a.exec('for (var k = 0; k < 7; k++) comicArrowNext("s13");');
+    a.exec('for (var k = 0; k < 2; k++) comicArrowNext("s14");');
+    ok('comic/walk-end', 'the walk reached the last panel of s14',
+       a.val('currentScreen') === 14 && a.val('comicState.s14.done') === true, a.val('currentScreen'));
     a.exec('flushResumeSave();');
     const st3 = a.dump();
     a.close();
     const b = boot('01', { state: st3 });
     const ctx = 'comic/reload-s28';
-    const c = comicProbe(b, 's28');
-    ok(ctx, 'resumes onto s28 last panel', b.val('currentScreen') === 28 && c.i === 2, b.val('currentScreen') + '/' + c.i);
+    const c = comicProbe(b, 's14');
+    ok(ctx, 'resumes onto s14 last panel', b.val('currentScreen') === 14 && c.i === 2, b.val('currentScreen') + '/' + c.i);
     ok(ctx, 'Continue is open, the next arrow grey', c.cont === false && c.next === true, c.cont + '/' + c.next);
     await sleep(50);
     ok(ctx, 'no experienced re-sent on resume', experiencedCount(b) === 0, experiencedCount(b));
     b.exec('advanceScreen();');
-    ok(ctx, 'Continue merges into s12', b.val('currentScreen') === 12, b.val('currentScreen'));
+    ok(ctx, 'Continue goes on to the shared ending (s22)', b.val('currentScreen') === 22, b.val('currentScreen'));
     collectErrors(ctx, b);
     b.close();
   }
@@ -844,7 +847,7 @@ async function main() {
     p = boot('01'); ddqPartlyRight(p, n); collectErrors('01/ddq-partly-right-s' + n, p); p.close();
   }
   {
-    const p = boot('01'); await ddqRetry(p); collectErrors('01/ddq-retry-s17', p); p.close();
+    const p = boot('01'); await ddqRetry(p); collectErrors('01/ddq-retry-s34', p); p.close();
   }
 
   for (const part of ['05', '06']) {

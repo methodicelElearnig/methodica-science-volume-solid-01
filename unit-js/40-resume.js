@@ -25,8 +25,12 @@
    at 4/5.
 
    A document from an unknown version is therefore discarded outright. Keep the
-   "deploy all six folders atomically" rule regardless — it applies to any future version bump. */
-var RESUME_STATE_VERSION = 1;
+   "deploy all six folders atomically" rule regardless — it applies to any future version bump.
+
+   Version 2 (2026-10-14): parts 01 and 02 were renumbered into storyboard order, so a v1 document's
+   currentScreen and its screen-keyed answers point at the wrong screens. Still nothing in the field,
+   so v1 is simply discarded like any other unknown version. */
+var RESUME_STATE_VERSION = 2;
 var RESUME_STATE_ID      = 'execution-state';
 
 var _resumeReady       = false;
