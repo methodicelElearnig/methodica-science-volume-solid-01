@@ -6,8 +6,10 @@
  * failure it catches is SILENT — see _test/README.md for why each one earns its keep.
  *
  * The part list is derived from the filesystem, never hard-coded. The equivalent checks in
- * methodica-math-scale-01 iterate ['01'…'05']; copying one verbatim would skip part 06, which is
- * the retake and the least-exercised component in this unit.
+ * methodica-math-scale-01 iterate ['01'…'05']; copying one verbatim would skip parts 06 and 07 —
+ * both peak attempts, including the retake (07), the least-exercised component in this unit. Since
+ * the 2026-10-14 split the unit has seven parts (01 hook + acquisition, 02 standard practice, 03
+ * basic, 04 class task, 05 advanced, 06/07 peak מועד א/ב).
  */
 import fs from 'node:fs';
 import path from 'node:path';

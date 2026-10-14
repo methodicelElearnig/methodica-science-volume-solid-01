@@ -569,25 +569,6 @@
 /* QA 2026-10-13: title + mascot column lowered 40px to close the empty band above the title. */
 #s27 .transition-content { top: calc(50% + 3px); }
 
-/* S30 practice intro — Figma "TransitionScreen - A - Example" (720 UI Templates, node 4492:37696,
-   QA 2026-10-12). The text block is pinned to the top (y 70, 810 wide) instead of centred: a 28
-   SemiBold lead-in and the 64 Bold count line as one group (24 apart), then the 28 Regular rule 48
-   below. The Figma gaps are measured on trimmed text boxes (cap to baseline), so with
-   `line-height: 1` the CSS gaps are smaller by the glyph overhang. */
-#s30 .transition-content--intro {
-  top: 70px; transform: translateX(-50%); width: 810px; gap: 36px;
-}
-#s30 .transition-head { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-#s30 .transition-sub { line-height: 1.2; }
-#s30 .transition-lead-in { font-weight: 600; }
-#s30 .transition-count {
-  font-family: 'Assistant', sans-serif; font-size: 64px; font-weight: 700;
-  color: #303030; line-height: 1.1; margin: 0;
-}
-/* The mascot is centred on the canvas and stands on the bottom bar's top line (`bottom: 74px` is
-   the bar's height), as in the template; his bubble hangs to his left. `right` puts the sprite's
-   centre on the canvas centre: half of its 298px --cw. */
-#s30 > .companion-say { right: calc(50% - 149px); bottom: 74px; }
 
 /* ── Two-column content screen (S21, storyboard slide 29) ──────────────────────────────
    QA 2026-08-25 (slide 19). The deck puts the photo in the left half and stacks heading,
@@ -693,20 +674,6 @@
    halved. One line either way -- but it is a decision, not a default. */
 #s18 .split-conclusion { font-size: 20px; }
 
-/* QA 2026-08-25 (slides 24, 30) asked for the practice stems to carry bold ONLY on their
-   closing question, which S31 and S35 now mark up with <strong>. Scoped to this component:
-   .scq-question--textonly is shared with part 02 (s4, s6) and part 04 (s1), whose stems have
-   no <strong> and were not in this QA round — changing the shared rule would silently unbold
-   them. S32 and S35 use the same treatment via their own wrappers. */
-#s31 .scq-qtext, #s32 .scq-qtext, #s35 .scq-qtext { font-weight: 400; }
-/* S35 — the stem is the full slide-71 text since QA 2026-10-11 (seven lines at 24px, not four), and
-   the block centred at the shared 50% − 20px brought its first line onto the progress labels on every
-   canvas under ~770px tall (measured −1px at 1280×710). The block moves down 16px instead of the type
-   shrinking (see the .is-long note in unit-css): the options still end ≥ 48px above the bottom bar. */
-#s35 .scq-question--withimage { top: calc(50% - 4px); }
-/* S32 — QA 2026-10-13: at the 710 canvas floor the stem's first line sat 15px under the progress
-   labels and read as touching them. Down 24px: 39px clear above, options still end 57px above the bar. */
-#s32 .scq-question--withimage { top: calc(50% + 4px); }
 
 /* S12 — the stem + options block is centred vertically (justify-content) and the 100px question
    top-padding drops back to .exp's 24px, since centring already clears the top edge. */
@@ -724,36 +691,8 @@
 #s10 .s10-row .guess-options { width: 520px; align-self: auto; }
 #s10 .s10-row .guess-opt { width: 100%; }
 #s10 .s10-crown { position: relative; align-self: stretch; width: auto; aspect-ratio: 900 / 612; margin: 0; }
-#s10 .s10-crown > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }  /* absolute: the 900×612 raster must not set the row height */
+#s10 .s10-crown > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }  
 
-/* S33 (QA 2026-10-10). Two passes, both with text, fonts and the template's popup position unchanged.
-   1. The centred block started under the progress bar (48..100) at a 720px-high canvas.
-   2. In the final state the wrong-answer popup (left 2..482, bottom 84, 242 tall) covered bubble a
-      and the left child's ring whenever the canvas was under ~880px high — every 16:9 screen. With
-      the popup fixed, the free area on its side is only y 116..H-342 (368 at the 710 minimum), so the
-      photo and all four bubbles are re-laid out together:
-      - c and b take two lines (320px), the breaks slide 61 itself gives them; a takes two (480px);
-        d keeps four. Every bubble still sits against its child and its beak still lands on the face.
-      - The photo is 553px (88%) and starts at canvas x 465, so the popup can only ever cover a
-        17px strip of shelving at its left edge; ring a starts at 562, 22px clear of bubble a.
-      - Stage (stage x = canvas x − 60): c/b on row 1 (top 0, 82 tall), photo at top 22 so they
-        overlap its shelf band by 60px as before, a/d at top 92 with the beak at 55 → face y.
-      - Block = stem 67 + gap 12 + stage 323 = 402. It stays centred (50% − 16px) but never starts
-        above 116px (centre ≥ 317), and never so low that bubble a (block y 171..253) reaches the
-        popup: centre ≤ H − 342 − 253 + 201 = H − 394. Bubble a ends 15px above the popup at H 710,
-        16px at 720; from H ≈ 750 the block is simply centred.
-   Measured: two lines in a/b/c from 470/310/300px, so the widths keep ~10px of slack. */
-#s33 .hotspot-question { top: max(317px, min(calc(50% - 16px), calc(100% - 394px))); }
-#s33 .hotspot-stage { margin-top: -6px; height: 323px; }
-#s33 .hotspot-stage > .hotspot-photo { left: 405px; top: 22px; width: 553px; }
-#s33 .hotspot-bubble--above { top: 0; width: 320px; }
-#s33 .hotspot-bubble--side { top: 92px; }
-#s33 .hotspot-bubble--side::after { top: 55px; }
-#s33 .hotspot-bubble--left { left: 0; width: 480px; }
-#s33 .hotspot-bubble--right { left: 898px; }
-/* Bubble b now covers the photo's top-right corner, where the zoom trigger sits by default (it had
-   already been clipping b's border). Bottom-right is plain table edge; bottom-left is under the popup. */
-#s33 .hotspot-photo > .img-zoom-btn { top: auto; bottom: 10px; }
 
 /* S34 / S28 (2026-10-11). The feedback popup keeps its template position (left 2..482, bottom 84), so
    the BOARD moves (720-templates: move the content, not the popup — the 04 s1 treatment). At the
@@ -769,7 +708,7 @@
   width: 722px; transform: translateY(-50%);
   top: max(calc(116px + var(--half-h)), calc(50% - 20px));
 }
-#s34 .dnd-question--beside-popup { --half-h: 214px; }
+
 #s28 .dnd-question--beside-popup { --half-h: 258px; }  /* 20px type (QA 2026-10-11): board is 516 tall */
 /* Five columns in 722px are 136 wide, so s28's cards are 124 — still all the same size, which is the
    QA 2026-08-24 rule; every task keeps its photo and at most two lines, nothing clips. */
@@ -784,19 +723,11 @@
 #s28 .dnd-question--columns .dnd-slot { flex: 0 0 148px; min-height: 0; }
 #s28 .dnd-question--columns .dnd-slot.occupied { padding: 0; }
 #s28 .dnd-slot.occupied > .dnd-pill { width: 100%; height: 100%; border: 0; box-shadow: none; background: transparent; }
-/* QA 2026-10-12 (s34): same treatment as s28 — 20px headers and captions, a dropped card fills its
-   cell with the slot's border as the only outline. Three 234px columns, so cards are 222×160 (three
-   fit the bank in one row); board grows to ~512 tall, hence --half-h 256. */
-#s34 .dnd-question--beside-popup { --half-h: 256px; }
-#s34 .dnd-question--columns .dnd-target-label { font-size: 20px; line-height: 1.1; }
-#s34 .dnd-question--columns .dnd-pill { width: 222px; height: 160px; font-size: 20px; line-height: 1.1; padding: 6px; }
-#s34 .dnd-question--columns .dnd-source { gap: 10px; min-height: 0; }
-#s34 .dnd-question--columns .dnd-slot { flex: 0 0 164px; min-height: 0; }
-#s34 .dnd-question--columns .dnd-slot.occupied { padding: 0; }
-#s34 .dnd-slot.occupied > .dnd-pill { width: 100%; height: 100%; border: 0; box-shadow: none; background: transparent; }
+
+
 /* QA 2026-10-12 (s34, s28): the photo takes every pixel the caption leaves, instead of a fixed
    52–58px strip floating in the card. Still `contain`, so no object is cropped. */
-#s34 .dnd-question--columns .dnd-pill-img,
+
 #s28 .dnd-question--columns .dnd-pill-img { flex: 1 1 0; min-height: 0; width: 100%; height: auto; object-fit: contain; }
 
 /* QA 2026-10-11 (s1): the mascot and his bubble come down out of the narration column and stand
@@ -903,55 +834,6 @@
 #s24 .meas-vessels:has(.meas-reset:not(.hidden)) { padding-bottom: 40px; }
 #s24 .meas-pour-hint { position: absolute; bottom: calc(100% + 16px); left: 50%; transform: translateX(-50%); width: 260px; font-size: 16px; font-weight: 700; color: var(--subject-900); line-height: 1.3; }
 
-/* S33 (2026-10-12) — centred, and the child is lifted out of the photo instead of ringed.
-   1. The block was right-anchored at the 40px gutter, so on any canvas wider than 1280 the photo and
-      its bubbles drifted right of centre. The stage's drawn extent is 0..1154 (bubble a .. bubble d),
-      so it is centred on that: left = 50% − 577px.
-   2. No visible ring. Each child has a .hotspot-pop: a copy of the photo masked to a feathered ellipse
-      around that child. On hover (of the child OR its bubble) and while selected it scales up from
-      the child's centre and glows; correct/wrong recolour the glow. The .hotspot-area stays as the
-      invisible click target. */
-#s33 .hotspot-question { right: auto; left: calc(50% - 577px); }
-#s33 .hotspot-area,
-#s33 .hotspot-area:hover:not(:disabled),
-#s33 .hotspot-area:focus-visible,
-#s33 .hotspot-area.selected,
-#s33 .hotspot-area.correct,
-#s33 .hotspot-area.wrong { border-color: transparent; background: transparent; box-shadow: none; z-index: 2; }
-#s33 .hotspot-pop {
-  position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  transform-origin: var(--x) var(--y);
-  opacity: 0; transform: scale(1);
-  transition: transform 0.22s ease, opacity 0.22s ease, filter 0.22s ease;
-  --glow: rgba(1, 157, 229, 0.95);
-}
-/* The mask lives on ::before because CSS applies `mask` AFTER `filter` — on one element the glow
-   would be masked away with everything else outside the ellipse. */
-#s33 .hotspot-pop::before {
-  content: ''; position: absolute; inset: 0;
-  background: url(../assets/img/s33-four-kids.jpg) center / 100% 100% no-repeat;
-  -webkit-mask-image: radial-gradient(var(--rw) var(--rh) at var(--x) var(--y), #000 80%, transparent 100%);
-          mask-image: radial-gradient(var(--rw) var(--rh) at var(--x) var(--y), #000 80%, transparent 100%);
-}
-#s33 .hotspot-area:hover:not(:disabled) + .hotspot-pop,
-#s33 .hotspot-area.selected + .hotspot-pop,
-#s33 .hotspot-area.correct + .hotspot-pop,
-#s33 .hotspot-area.wrong + .hotspot-pop,
-#s33 .hotspot-stage:has(.hotspot-bubble[data-id="a"]:hover:not(:disabled)) .hotspot-pop[data-id="a"],
-#s33 .hotspot-stage:has(.hotspot-bubble[data-id="b"]:hover:not(:disabled)) .hotspot-pop[data-id="b"],
-#s33 .hotspot-stage:has(.hotspot-bubble[data-id="c"]:hover:not(:disabled)) .hotspot-pop[data-id="c"],
-#s33 .hotspot-stage:has(.hotspot-bubble[data-id="d"]:hover:not(:disabled)) .hotspot-pop[data-id="d"],
-#s33 .hotspot-stage:has(.hotspot-bubble[data-id="a"]:focus-visible) .hotspot-pop[data-id="a"],
-#s33 .hotspot-stage:has(.hotspot-bubble[data-id="b"]:focus-visible) .hotspot-pop[data-id="b"],
-#s33 .hotspot-stage:has(.hotspot-bubble[data-id="c"]:focus-visible) .hotspot-pop[data-id="c"],
-#s33 .hotspot-stage:has(.hotspot-bubble[data-id="d"]:focus-visible) .hotspot-pop[data-id="d"] {
-  opacity: 1; transform: scale(1.12);
-  filter: drop-shadow(0 0 4px var(--glow)) drop-shadow(0 0 12px var(--glow)) drop-shadow(0 6px 14px rgba(0, 32, 96, 0.35));
-}
-#s33 .hotspot-area.correct + .hotspot-pop { --glow: rgba(46, 155, 87, 0.95); }
-#s33 .hotspot-area.wrong + .hotspot-pop   { --glow: rgba(214, 69, 80, 0.95); }
-#s33 .hotspot-photo > .img-zoom-btn { z-index: 3; }
-@media (prefers-reduced-motion: reduce) { #s33 .hotspot-pop { transition: none; } }
 
 /* ── S18 · QA 2026-10-12 ────────────────────────────────────────────────────────────────
    Text column moved right of centre: the row spreads to its edges instead of centring, the text

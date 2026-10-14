@@ -1,39 +1,245 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   css/style.css — 720 Science · Volume of a Solid · component 03 (PART-LOCAL)
+   css/style.css — 720 Science · Volume of a Solid · component 02 (PART-LOCAL)
 
-   Only the opening transition (S0) needs anything of its own. Everything else —
-   including S1, the task screen — comes from ../unit-css/style.css, which index.html
-   loads before this file. Add a rule here only if it is genuinely specific to THIS
-   component — anything reusable belongs in the shared sheet.
+   The design system, global chrome and every generic template live in
+   ../unit-css/style.css, which index.html loads FIRST. All that remains here is
+   the .speech-bubble family used by the two bubbles over the photo on S2.
+
+   It cannot move to the shared sheet: component 01 defines the same class names
+   with a different implementation (comic-panel bubbles — block layout, custom-property
+   positioning, fade-in, 40×24 tail) and neither version fully redeclares the other,
+   so sharing either one would leak properties into the other.
+
+   Because this sheet loads second, every rule here overrides the shared one.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── S0 · class-task opener — same column shape as part 02 s0 ──
-   The pair stays shrink-to-fit inside .transition-content's centred column, which is what centres
-   it (not .companion-say--inline, which packs the pair against one edge). The column spans the
-   band above the bar and the two auto margins split the free height above the copy and between
-   the copy and the pair, so the copy floats in the band while his feet stand on the bar's line. */
-#s0 .transition-content { top: 0; bottom: 74px; transform: translateX(-50%); }
-#s0 .transition-content > .transition-sub:first-child { margin-top: auto; }
-#s0 .companion-say { position: relative; margin-top: auto; }
-/* Type matches the unit's other transition screens (04 s0 title 48 / 01 s12 & 04 s0 sub 24);
-   the shared defaults (34 / 22) read small next to them. */
-#s0 .transition-title { font-size: 48px; }
-#s0 .transition-sub { font-size: 24px; }
-/* 420px box (was 300) — in line with the other transition mascots (02 s7 400, 04 s0 422).
-   Fits at the 710 canvas floor: ~170px of copy + ~350px of visible character in the 636px band.
-   the mp4's baked-in white is keyed out globally (.companion in unit-css). */
-#s0 .companion { width: 420px; }
-/* Empty matte under his feet, as a fraction of the square frame — measured on part 01 (see the
-   #s6 rule there): orange .168, turquoise .124. Keyed on the src renderCompanion() writes. */
-#s0 .companion[src*="orange-stretch"]    { margin-bottom: calc(420px * -0.168); }
-#s0 .companion[src*="turquoise-stretch"] { margin-bottom: calc(420px * -0.124); }
+/* ── Reusable speech bubble component ──
+   Width and position set via inline style on each instance.
+   Height is content-driven (auto grows with text).
+   Tail position stays attached at bottom center. */
+.speech-bubble {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px;
+  box-sizing: border-box;
+  z-index: 3;            /* stay above the image frame + zoom button */
+}
 
-/* Bubble tucked in to speak from his MOUTH (2026-10-12) instead of hanging ~115px off his box.
-   gap 0, then a negative margin pulls the bubble into his 420px box so the beak tip (19px past the
-   bubble) stops ~8px short of the fur; margin-top puts the beak's middle (--tail-y 28 + 13 = 41)
-   at mouth height. Measured on the 960 frame: orange body edge at mouth height ≈ .29, mouth ≈ .46;
-   turquoise body edge ≈ .25, mouth ≈ .44. The bubble precedes the sprite, so the variant is keyed
-   with :has() on the src renderCompanion() writes. */
-#s0 .companion-say { --say-gap: 0px; }
-#s0 .companion-bubble { margin-top: 152px; margin-right: -95px; }
-#s0 .companion-say:has(.companion[src*="turquoise"]) .companion-bubble { margin-top: 144px; margin-right: -78px; }
+/* Bubble frame: white bg + Subject/500 stroke (same style as the s10 bubble). */
+.speech-bubble__frame {
+  background: #fff;
+  border: 3px solid var(--subject-500);
+  border-radius: 16px;
+  padding: 16px 5px;     /* 8px Figma inset minus the 3px stroke: text column keeps its width */
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+}
+
+/* Bubble text: 20px regular, RTL */
+.speech-bubble__text {
+  font-family: 'Assistant', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #303030;
+  text-align: right;
+  direction: rtl;
+  line-height: 1.4;
+  margin: 0;
+  word-break: break-word;
+}
+
+/* Bubble tail: down-pointing beak with the same white fill + blue stroke.
+   Two stacked CSS border-triangles: a blue one whose top edge sits flush on
+   the frame's outer border line, and a white one shifted up 4.25px (3px
+   perpendicular at 45°) that opens the frame's bottom border across the
+   beak, leaving a continuous 3px outline with no spikes at the corners. */
+.speech-bubble__tail {
+  width: 56px;
+  height: 28px;
+  position: relative;
+  flex-shrink: 0;
+  z-index: 2;            /* white inner triangle must paint over the frame border */
+}
+
+.speech-bubble__tail::before,
+.speech-bubble__tail::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  border-left: 28px solid transparent;
+  border-right: 28px solid transparent;
+}
+
+.speech-bubble__tail::before {
+  top: 0;
+  border-top: 28px solid var(--subject-500);
+}
+
+.speech-bubble__tail::after {
+  top: -4.25px;
+  border-top: 28px solid #fff;
+}
+
+/* Optional side beak — opt-in per instance with .speech-bubble--tail-right /
+   --tail-left; the default stays the in-flow bottom-centre one above.
+   Same quarter-turn trick as component 01, scaled to this component's 56×28
+   triangle: CSS rotate is clockwise, so +90deg points the apex LEFT and -90deg
+   RIGHT. The rotated footprint is 28 wide × 56 tall, so -42px would centre the
+   box 14px outside the wrapper edge; the wrapper carries 4px of padding, so -38px
+   is what lands the beak's base flush on the frame's edge. --tail-y names the
+   beak's CENTRE, measured from the bubble's top; set it inline when the beak has
+   to aim at a particular speaker.
+   `position: absolute` is what takes the beak out of the flex column — without it
+   the bubble would still reserve 28px of column height for the old beak. */
+.speech-bubble--tail-right .speech-bubble__tail,
+.speech-bubble--tail-left  .speech-bubble__tail {
+  position: absolute;
+  top: calc(var(--tail-y, 44px) - 14px);
+}
+.speech-bubble--tail-right .speech-bubble__tail { right: -38px; transform: rotate(-90deg); }
+.speech-bubble--tail-left  .speech-bubble__tail { left:  -38px; transform: rotate(90deg); }
+
+/* ── S0 · the remediation intro, rebuilt to storyboard slide 77 (QA 2026-08-30) ──
+   The deck's three text lines are AUTHORED breaks, not wrapping: the count line has its
+   own size, so where the lines fall cannot be left to the 760px column — a font or copy
+   change would silently re-flow the deck's shape. */
+
+/* The count, "4 שאלות פשוטות יותר". `inline-block`, not `inline`: at 48px inside a 22px
+   paragraph an inline box would inflate the surrounding line box and push the neighbouring
+   lines apart. inline-block gives it its own line box (it already sits between two <br>),
+   so 1.2 here is the whole line's leading and the 22px lines keep theirs. */
+.transition-lead {
+  display: inline-block;
+  font-size: 48px; font-weight: 800; line-height: 1.2;
+  margin: 6px 0;
+}
+
+/* The mascot + his line. NOT .companion-say--inline: that variant stretches to the column
+   and packs the pair against one edge, which is what the s1/s3 narration columns want.
+   Here the pair must be CENTRED, so it stays shrink-to-fit and .transition-content's
+   `align-items: center` does the centring — no transform, so the wrapper does not become a
+   stacking context (see the long note on .companion-say in the shared sheet). */
+#s0 .companion-say,
+#s5 .companion-say { position: relative; }
+
+/* S0 — the mascot STANDS ON the bottom bar's line (2026-10-12): smaller (320px box ≈ 265px of
+   character, was 400) and pinned to the band's floor instead of centred with the copy.
+   The column now spans the whole band above the bar (top 0 → bottom 74px), and the two auto
+   margins split the free height equally above the copy and between the copy and the pair, so
+   the copy still floats in the band while his feet stay on the line at every canvas height.
+   -20px = the 46px of white under his feet in the 732px frame (cropdetect: artwork ends at
+   row 686), scaled to the 320px box — that strip goes under the opaque bar (z 9 > his 8).
+   the mp4's baked-in white is keyed out globally (.companion in unit-css). */
+#s0 .transition-content { top: 0; bottom: 74px; transform: translateX(-50%); }
+#s0 .transition-sub { margin-top: auto; }
+#s0 .companion-say { margin-top: auto; --say-gap: 0px; }
+/* Bubble pulled in toward him (2026-10-12): the 320px video box carries ~44px of empty frame
+   on his left, so the default 14px gap read as a ~58px hole between the beak and his fur. */
+#s0 .companion-bubble { margin-right: -30px; }
+#s0 .companion { width: 320px; margin-bottom: -20px; }
+
+/* ── S6 · stem under the progress bar, תמונה ב' clear of the feedback (QA 2026-10-11, N17) ──
+   The feedback popup keeps the template's place, bottom-left at x 2–482 of the 1280-wide canvas.
+   Centred, the 778px photo pair put תמונה ב' (the photo with the answer rings) at x 251–631, so
+   every popup covered part of it; and the 501px block centred at 50% − 20px reached up into the
+   "שאלה 1/2" labels on every canvas shorter than ~900px (−9 to −14px).
+   So the block is narrowed to 736px (two 359px photos + the 18px gap, set inline on the two
+   figures) and centred in the free band RIGHT of the popup instead of on the canvas: from x 504
+   (popup edge + 22px) to W − 40, i.e. left = 504 + (W − 1280) / 2 = 50% − 136px. On the 1280-wide
+   canvas תמונה ב' starts at x 504; on a wider one (2560×1080 → W 1683) the band widens on both
+   sides and the gap to the popup only grows. Vertically it is centred in the band between the progress labels (bottom ≈ 100) and the
+   bottom bar (H − 74), i.e. at 50% + 15px rather than the shared 50% − 20px. The rings are placed
+   in percentages of the photo, so they scale with it. */
+#s6 .scq-question--textonly {
+  width: 736px;   /* right-anchored at the 40px gutter (2026-10-12): left = W − 776, 504 at 1280 */
+  top: calc(50% + 15px); transform: translateY(-50%);
+}
+
+/* ── S4 · the mascot's reflection line beside the feedback (slide 97, QA 2026-08-30) ──
+   The question block is lifted so he has a band of his own and covers no answer text: the
+   deck draws him OVER the options, which is fine on paper but not while a learner is reading
+   the feedback against the answer they picked.
+   `top` + a translate on X only, replacing --textonly's centre-anchoring: the block must stay
+   put when the band below it changes, not re-centre and eat into it.
+   ⚠️ Costs canvas height. The block runs 112→453 and he is bottom-anchored at 84px, so the
+   band is `H − 537`; below about **H = 700** he starts to reach the last option. #app's height
+   is 1280/aspect, so that is a window wider than roughly 1.83:1. */
+#s4 .scq-question--textonly {
+  top: 112px;
+  transform: none;
+}
+/* 2026-10-12: he moved from beside the options to ABOVE the feedback popup, in the free column
+   left of the stem (x 16–470), with his bubble to his right; scqShowPopup pins the group's floor
+   to the popup's top edge. So he no longer competes with option d and the old height-driven
+   sprite shrink (min(…, 100cqh − 548px)) is gone.
+   His mp4's baked-in white is keyed out globally (.companion in unit-css), so no white box
+   shows over the pills or the popup's shadow. */
+/* The stem's first sentence held "ההצפה." on a line of its own at 760px; 880px keeps it on line
+   one. Only the stem widens: the answers column is max-content and stays right-aligned. The extra
+   120px reaches into the mascot's column only at the stem's height (y 112–~200), well above him. */
+#s4 .scq-question--textonly { width: 880px; }
+#s4 .scq-question--textonly > .scq-qtext { width: 100%; }   /* the base .scq-qtext is a fixed 792px */
+
+/* ── S5 · the mid-section transition, to storyboard slide 98 (QA 2026-08-30) ──
+   The greeting is not the message on this screen — the sentence under it is — so the two swap
+   emphasis: the greeting drops to body size and body colour, and the news line takes the weight.
+   Scoped to #s5: .transition-title / -sub are shared with parts 01 and 04, which still want the
+   34px blue heading. */
+#s5 .transition-title {
+  font-size: 24px; font-weight: 400; color: #303030;
+}
+/* 48px, and it has to hold ONE line — a wrap here would split the sentence mid-clause. The
+   default 760px column cannot do that at this size, so the column widens for this screen only;
+   `nowrap` then makes a future copy change fail loudly (overflow) instead of silently
+   re-wrapping into the shape the deck does not have. */
+#s5 .transition-content { width: 1120px; }  /* 860 held the text; the mirrored row below is up to 1093 */
+#s5 .transition-sub {
+  font-size: 48px; font-weight: 800; line-height: 1.25; white-space: nowrap;
+}
+
+/* His two colour variants have DIFFERENT aspects here (see CHARACTER_ASPECT in js/main.js), so
+   the box is driven by HEIGHT: at a shared width the barbell variant would come out a third
+   shorter than the dumbbell one. 400px of box = ~342px of character in both. */
+#s5 .companion { width: auto; height: 400px; }
+
+/* Centre the SPRITE on the canvas, not the pair. The row is [bubble][gap][sprite], so mirroring
+   the bubble's width as margin on the sprite's FAR side makes the row symmetric about him, and
+   .transition-content's `align-items: center` then lands him on x=640. This needs a FIXED bubble
+   width: a content-sized one would move the mirror every time the copy changed.
+   The vertical padding is 21px rather than the shared 14 so this one-line bubble reaches 76px on
+   its own and its text sits centred, instead of being floored by the shared min-height and left
+   sitting 7px high in the box. */
+#s5 .companion-bubble { width: 200px; padding-top: 21px; padding-bottom: 21px; }
+/* 2026-10-12: the bubble talks from his MOUTH, not from above his head, and he stands lower.
+   Measured on the 700×640 frame in its 438×400 box: art starts 76px in from the box's left
+   edge, his mouth is ~198px down, and 36px of white sits under his feet.
+   - margin-right −47px (gap 0 — a negative `gap` is invalid CSS) pulls the bubble 47px into his box, so the beak tip (19px past the bubble) lands
+     at x 66, just short of the art; margin-top 157 puts the beak's middle (28 + 13) at y 198.
+   - the mirror on his far side follows the gap: 200 bubble − 47 = 153, so he stays on x=640. */
+#s5 .companion-say { --say-gap: 0px; }
+#s5 .companion-bubble { margin-top: 157px; margin-right: -47px; }
+#s5 .companion-say > .companion { margin-right: 153px; margin-bottom: -36px; }
+/* The turquoise variant lifts a barbell: at mouth height its left plate stands between the bubble
+   and him, so the bubble speaks at head height instead, just above the plate (box y ~150) with the
+   beak tip ~244px into his 665px box, at the side of his head. Mirror: 200 − 225 = −25. */
+#s5[data-character="turquoise"] .companion-bubble { margin-top: 63px; margin-right: -225px; }
+#s5[data-character="turquoise"] .companion-say > .companion { margin-right: -25px; }
+/* Lowered: same column shape as s0 — the column spans the band above the bar and auto margins
+   split the free height above the copy and between the copy and the pair, so his feet stand on
+   the bar's line at every canvas height (the −36px of white under them goes under the bar).
+   the mp4's baked-in white is keyed out globally (.companion in unit-css). */
+#s5 .transition-content { top: 0; bottom: 74px; transform: translateX(-50%); }
+#s5 .transition-title { margin-top: auto; }
+#s5 .companion-say { margin-top: auto; }
+
+/* ── Feedback popup hugs its text (2026-10-12) ──
+   The template's fixed 480px left the two-line "שננסה שוב?" retry popup mostly empty and reaching
+   off the left edge of narrow windows. It now shrinks to its content; the longer explanation
+   bodies still wrap at the same 480px cap. */
+.scq-popup { width: fit-content; max-width: min(480px, 46%); }
+
+#s7 .s7-para-gap { display: block; height: 16px; }

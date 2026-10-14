@@ -1,6 +1,6 @@
 'use strict';
 /* ═══════════════════ xAPI (720) — identity ═══════════════════
-   Shared by all SIX components of methodica-science-volume-solid-01. Loaded first; see
+   Shared by all SEVEN components of methodica-science-volume-solid-01. Loaded first; see
    unit-js/README.md for the load order and the hook contract.
 
    Canonical id prefix for this unit. Every id the lomda reports is built from it and must match
@@ -33,7 +33,7 @@ function shortId(u) { return String(u || '').replace(/\/+$/, '').split('/').pop(
 /* Resume (KATA State API). True also switches the loader from xapi-720-i.js to xapi-720-j.js, which
    carries the State transport that -i lacks. See RESUME.md.
 
-   ⚠️ DEPLOY ALL SIX COMPONENT FOLDERS ATOMICALLY when this changes, and on rollback too. A part left
+   ⚠️ DEPLOY ALL SEVEN COMPONENT FOLDERS ATOMICALLY when this changes, and on rollback too. A part left
    on the other setting writes a document its siblings discard, and the discard/rewrite cycle wipes
    the `done` ledger on every hop — which under a ledger means a duplicate 'completed' per cycle. */
 var RESUME_ENABLED = true;

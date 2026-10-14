@@ -1,6 +1,7 @@
 # `unit-js/` — the shared layer
 
-One copy of every behaviour that is the same in all **six** components of this unit. Each
+One copy of every behaviour that is the same in all **seven** components of this unit (six until
+the 2026-10-14 split, when standard practice left part 01 to become part 02). Each
 `methodica-science-volume-solid-01-0N/js/main.js` keeps only that component's configuration and screen
 logic, and fills in the hook contract below.
 
@@ -15,26 +16,26 @@ Every part's `index.html` ends with exactly this:
 
 ```html
 <script src="../unit-js/10-identity.js?v=2"></script>
-<script src="../unit-js/15-ui.js?v=1"></script>
-<script src="../unit-js/20-xapi.js?v=3"></script>
+<script src="../unit-js/15-ui.js?v=6"></script>
+<script src="../unit-js/20-xapi.js?v=5"></script>
 <script src="../unit-js/25-report.js?v=1"></script>
-<script src="../unit-js/30-nav.js?v=3"></script>
-<script src="../unit-js/40-resume.js?v=1"></script>
+<script src="../unit-js/30-nav.js?v=4"></script>
+<script src="../unit-js/40-resume.js?v=3"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
-<script src="../unit-js/60-devbridge.js?v=1"></script>
+<script src="../unit-js/60-devbridge.js?v=2"></script>
 <script src="js/main.js?v=N"></script>              <!-- per-part: DEFINITIONS + CONFIG ONLY -->
-<script src="../unit-js/90-boot.js?v=1"></script>   <!-- the ONLY side effects -->
+<script src="../unit-js/90-boot.js?v=3"></script>   <!-- the ONLY side effects -->
 ```
 
 **What the numeric prefixes mean.** There is no module system here — ten `<script>` tags execute in
-document order, and without the prefix the only record of that order would be six separate
+document order, and without the prefix the only record of that order would be seven separate
 `index.html` files. Counting by 5s and 10s leaves room to insert a file without renumbering.
 **What they do not mean:** nothing reads them, and because every file except `90-boot.js` is
 definition-only, the order among `10-`–`60-` is nearly arbitrary in practice. Only two positions carry
 real weight — **`main.js` before `90-boot.js`**, and **`90-boot.js` last**.
 
-> **`?v=` invariant.** All six `index.html` reference the same shared URLs, so a given shared file's
-> `?v=` **must be identical in all six**. A mismatch means one part fetches a second copy under a
+> **`?v=` invariant.** All seven `index.html` reference the same shared URLs, so a given shared file's
+> `?v=` **must be identical in all seven**. A mismatch means one part fetches a second copy under a
 > different URL, and two parts can execute different versions of the same logic inside one learner
 > session. `_test/checks.mjs` gate 2 enforces that they agree — it cannot know you changed the
 > content, so **bumping is procedure**. See the cache-trap table in `../_test/README.md`.
@@ -82,11 +83,12 @@ Each exists because a real bug in this unit was caused by breaking it, and each 
 `resetScreenState` runs on **every** navigation, every back-navigation and every resume replay. A
 statement sent from there repeats.
 
-Parts 05 and 06 both did this: the terminal component `completed` lived in `resetScreenState`, so
-merely navigating onto the score screen reported a finished assessment. Part 05 additionally hard-coded
-`success: true`, so a learner who answered nothing was reported as having **passed**; part 06's send sat
-outside the `n === 5` test and fired on **both** end screens, producing two contradictory `completed`
-statements from a single pass. Both now live in a `peakFinish()` called from `peakContinue()`.
+The two peak parts (then 05 and 06, now 06 and 07) both did this: the terminal component `completed`
+lived in `resetScreenState`, so merely navigating onto the score screen reported a finished assessment.
+מועד א additionally hard-coded `success: true`, so a learner who answered nothing was reported as having
+**passed**; מועד ב's send sat outside the `n === 5` test and fired on **both** end screens, producing two
+contradictory `completed` statements from a single pass. Both now live in a `peakFinish()` called from
+`peakNext()` after סעיף ד.
 
 ### 2. No statement may be emitted from a deferred callback
 
@@ -95,17 +97,17 @@ that must be ordered or suppressed**:
 
 - A deferred send outlives `applyExecutionState()`'s sender stub **and** the `_restoring` flag, so it
   escapes both of resume's guards.
-- On the last sub-part of an assessment, `peakContinue()` and `peakFinish()` run in the same click, so
+- On the last sub-part of an assessment, the closing answer and `peakFinish()` run in the same click, so
   a deferred answer arrives *after* the item, component and unit `completed`. Observed exactly that.
 
-So: **`completed` is always synchronous**, and the assessment answers in parts 05/06 are too.
+So: **`completed` is always synchronous**, and the closing assessment answers in parts 06/07 are too.
 
 ### 3. `capturePartPayload()` must deep-clone
 
 `practiceEnter()` mutates `practiceProgress`. A payload holding a live reference would mutate with it,
 so the snapshot `goTo()` takes *before* `resetScreenState()` would already contain the change it exists
-to undo — a silent, total defeat of the mechanism in three of six parts. The same applies to `SCQ_REG`,
-`DDQ_REG.cfg.placement`, `comicState`, `flipState` and `peakAnswers`.
+to undo — a silent, total defeat of the mechanism in three of seven parts (02, 03, 05). The same applies to `SCQ_REG`,
+`DDQ_REG.cfg.placement`, `comicState`, `flipState` and `peakState` (`peakAnswers` before 2026-10-14).
 
 **Never capture** the live DnD controllers (`dispDnd`, `aqDnd`, `floodDnd`, `measDnd`) or comic
 `built`/`timer`/`token` — they are DOM and timer identity, not learner state, and a restored
@@ -133,7 +135,7 @@ No `DOMContentLoaded` wrapper is needed: `90-boot.js` sits immediately before `<
 
 **There is no `partBoot()` in use.** The sibling unit routes per-component startup through that hook;
 this unit does not need it, because every per-part side effect (the `scq`/`ddq`/practice registrations,
-the keydown listeners, the dropdown-close delegation, part 03's first `resetScreenState`) still runs at
+the keydown listeners, the dropdown-close delegation, part 04's first `resetScreenState` — the class task, 03 until 2026-10-14) still runs at
 `main.js` top level — and `main.js` loads *before* `90-boot.js`. The ordering guarantee `partBoot`
 exists to provide therefore already holds. The hook is still called if a component ever defines one.
 
@@ -175,7 +177,7 @@ into a codebase that does not have one.
 
 ## What this cost and bought
 
-The six `main.js` went from 3,419 lines to ~4,063 including the resume payloads; `unit-js/` is 1,234.
+The six `main.js` (as the unit then stood) went from 3,419 lines to ~4,063 including the resume payloads; `unit-js/` is 1,234.
 **The raw total went up**, and the honest reason is comment density: the extracted code was dense
 one-liners, and these files document every superset choice and silent-failure trap at the point it
 matters.
@@ -183,5 +185,5 @@ matters.
 What it bought is that nine behaviours now have exactly one copy instead of three to six — the report
 modal, the loader, `scaleApp`, identity, `goTo`/`currentScreen`, `xapiSend`, the dev bridge,
 `attachPopupDrag`, and image zoom. Four defects were fixed or made visible in passing: `shortId`'s
-trailing-slash bug, the `currentScreen`-before-guard ordering bug, part 03's missing
+trailing-slash bug, the `currentScreen`-before-guard ordering bug, part 03's (now 04, the class task) missing
 `TOTAL_SCREENS`/`goTo`/`resetScreenState`, and silently-swallowed item statements (now a loud warning).

@@ -7,7 +7,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 /* ─── Constants ─────────────────────────────────────────── */
-const TOTAL_SCREENS = 36;  // S0–S35, numbered in storyboard order (2026-10-14): hook 0–4 · acquisition 5–7 · comic 8–14 · experiments 15–21 · shared ending 22–26 · warm-ups 27–29 · practice 30–35.
+const TOTAL_SCREENS = 30;  // S0–S29 in storyboard order: hook 0–4 · acquisition 5–7 · comic 8–14 · experiments 15–21 · shared ending 22–26 · warm-ups 27–29. Standard practice (old s30–s35) is component 02 since 2026-10-14.
                            // Must equal the live `.screen` count — index_dev.html derives its jump range from that,
                            // while goTo() rejects n >= TOTAL_SCREENS. The two silently disagree if only one is edited.
 
@@ -212,8 +212,6 @@ const CHARACTER_ASSETS = {
   stretch: 'mp4', ask: 'mp4', 'wet-object': 'mp4',
   /* 2026-10-12: S6's Archimedes remark — finger raised, "thinking" (orange_think / blue_think). */
   think: 'mp4',
-  /* 2026-10-12: S30's practice-rules screen — hand on the headband (orange_headband / blue_headband). */
-  headband: 'mp4',
   /* 2026-10-12: S18's marble screen — holding a ping-pong ball (orange_pingpong / blue_pingpong).
      Replaces `soap` there at the designer's request; `pingpong` (finger raised) stays on s21. */
   'pingpong-ball': 'mp4'
@@ -407,11 +405,6 @@ function resetScreenState(n) {
   if (n === 23 || n === 24) { measEnter(); }                   // multi-step measurement applet
   if (n === 28) { warmupEnter(0, 's28', ddqEnter); }   // warm-up 1 (matching)
   if (n === 29) { warmupEnter(1, 's29', dqEnter); }    // warm-up 2 (dropdown)
-  if (n === 31) { practiceEnter(0, 's31'); }
-  if (n === 32) { practiceEnter(1, 's32'); }
-  if (n === 33) { practiceEnter(2, 's33'); }
-  if (n === 34) { practiceEnterDnD(3, 's34'); }   // Q4 — matching (DnD)
-  if (n === 35) { practiceEnter(4, 's35'); }       // Q5 — SCQ (item 09)
 }
 
 /* ─── Keyboard Navigation ──────────────────────────────────
@@ -468,9 +461,6 @@ function goBack() {
   if (currentScreen === 27) { goTo(26); return; }       // warm-up intro → back to the end of the shared ending
   if (currentScreen === 28) { goTo(27); return; }       // warm-up 1 → transition
   if (currentScreen === 29) { goTo(28); return; }       // warm-up 2 → warm-up 1
-  if (currentScreen === 30) { goTo(29); return; }       // practice rules → back to warm-up 2
-  const pIdx = practiceProgress.questions.findIndex(q => q.screen === currentScreen);
-  if (pIdx !== -1) { goTo(pIdx > 0 ? practiceProgress.questions[pIdx - 1].screen : 30); return; }  // Q1 back → practice rules
   goTo(currentScreen - 1);
 }
 
@@ -509,8 +499,6 @@ function advanceScreen() {
   if (currentScreen === 26) { goTo(MERGE_SCREEN); return; }                              // overflow can → warm-up intro
   if (currentScreen === 27) { goTo(28); return; }                                       // transition → warm-up 1
   if (currentScreen === 28 || currentScreen === 29) return;                             // warm-ups advance via their own check button
-  if (currentScreen === 30) { goTo(31); return; }                                        // practice rules → practice Q1
-  if (practiceProgress.questions.some(q => q.screen === currentScreen)) return;         // practice Qs advance via their own check button
   goTo(currentScreen + 1);
 }
 
@@ -627,7 +615,7 @@ function imgqEnter() {
      comic        8 → 14   (slides 12–18; S9, the cube, before the S10 guess-Q — QA 2026-10-08)
      experiments 15 → 21   (slides 19–29)
      shared      22 → 26   (slides 30–40)
-     warm-ups    27 → 29 · practice 30 → 35 */
+     warm-ups    27 → 29 → Part 02 (standard practice) */
 const COMIC_ENTRY   = 8;
 const COMIC_SCREEN  = COMIC_ENTRY;                     // alias kept for advanceFromPathChoice()
 const COMIC_SCREENS = [8, 9, 10, 11, 12, 13, 14];
@@ -1468,8 +1456,8 @@ function scqSelect(screen, id) {
 }
 /* The element whose text IS the answer. An image-hotspot option is two controls sharing a data-id —
    a ring over the photo (aria-hidden, no text) and the readable bubble, the real role="radio" — and
-   the ring comes first in the DOM, so a plain querySelector reported "" for every s33 answer
-   (2026-10-11). Prefer the role="radio" control; a one-element option is found either way. */
+   the ring comes first in the DOM, so a plain querySelector reported "" for every answer on the
+   hotspot question (then s33 here, now Part 02's s3; 2026-10-11). Prefer the role="radio" control; a one-element option is found either way. */
 function scqAnswerEl(screen, id) {
   return document.querySelector('#' + screen + ' .scq-opt[data-id="' + id + '"][role="radio"]') ||
          document.querySelector('#' + screen + ' .scq-opt[data-id="' + id + '"]');
@@ -1657,9 +1645,7 @@ function aqEnter() {
        bidi-neutral and reorder inside an RTL paragraph without it. */
 const FB_RETRY  = { title: 'התשובה אינה נכונה.', body: ['שננסה שוב?'] };
 const FB_WRONG2 = 'התשובה אינה נכונה.<br />התשובה הנכונה מסומנת.';
-/* `wrong2Extra`: a line the deck adds to the wrong-final popup only. Slide 55 (s31) closes with the
-   encouragement "לא נורא אם טעית…", which its note gives to the mascot's GIF and bubble; that pose
-   (`encourage`) was never produced, so the line sits in the popup until it is (ASSETS-TODO.md). */
+/* `wrong2Extra`: a line the deck adds to the wrong-final popup only (used by Part 02's Q1). */
 const fbPopups = (correctTitle, explanation, wrong2Extra) => ({
   retry:   FB_RETRY,
   correct: { title: correctTitle, body: explanation },
@@ -1745,59 +1731,29 @@ function floodEnter() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   COMPONENT — Standard-practice progress dots + score branch
-   Shared across the practice question screens (S31–S35). One state
-   object + one generic renderer. (SP4 matching, metadata item 08,
-   is a pending 5th slot — added when the DnD template is ported.)
+   COMPONENT — exit to Part 02 + the warm-up progress bar
+   Since the 2026-10-14 restructure this component ends after the warm-ups; standard practice
+   and its 4-of-5 gate are Part 02. There is no gate here, so the route is fixed.
    ═══════════════════════════════════════════════════════════ */
 const PART_02_SLUG = 'methodica-science-volume-solid-01-02';
-const PART_03_SLUG = 'methodica-science-volume-solid-01-03';
 const PART_02_URL = '../' + PART_02_SLUG + '/index.html';
-const PART_03_URL = '../' + PART_03_SLUG + '/index.html';
-// Standard practice = 5 questions (metadata items 05,06,07,08,09).
-// Q1–Q5 live on S31–S35, in order.
-var practiceProgress = {
-  questions: [
-    { number: 1, visited: true,  state: 'current',      screen: 31 },  // item 05 — SCQ
-    { number: 2, visited: false, state: 'not-answered', screen: 32 },  // item 06 — SCQ
-    { number: 3, visited: false, state: 'not-answered', screen: 33 },  // item 07 — SCQ
-    { number: 4, visited: false, state: 'not-answered', screen: 34 },  // item 08 — DnD matching
-    { number: 5, visited: false, state: 'not-answered', screen: 35 }   // item 09 — SCQ
-  ]
-};
-function practiceScore() {
-  return practiceProgress.questions.filter(q => q.state === 'correct').length;
-}
 function goToNextPart() {
-  /* Closes the practice item the learner is standing on (item 09, or 08 if they came via S34) before
-     the component is reported, so the two arrive in order. */
+  /* Closes the item the learner is standing on (warm-up 2) before the component is reported, so the
+     two arrive in order. */
   try { xapiFinishItems(); } catch (e) {}
 
-  const passed = practiceScore() >= 4;
-
-  /* xAPI: the component 'completed', with an explicit result — the library's aggregate is an
-     all-correct AND, which would report failure for any partial pass.
-
-     DENOMINATOR 5, not 8. This component has eight graded questions in code (item 02's embedded
-     check, the two warm-ups, and the five practice questions), but "what the learner was promised"
-     is the practice block: the progress dots count five, and the routing threshold is stated to them
-     as 4 מתוך 5. Reporting 8 would make the score mean something the learner was never shown.
-
-     SUCCESS IS THE REAL THRESHOLD HERE, unlike parts 02 and 04. Those have no gate at all — they
-     always advance, so completing them is the success condition. Part 01 does have one: ≥4/5 routes
-     past remediation. That is a gate that exists in the content, so it is reported rather than
-     invented, and the metadata backs it up — recommendedAfterFail names Part 02. */
+  /* xAPI: the component 'completed', with an EXPLICIT result. No threshold exists in this component
+     (it always proceeds to Part 02), so — as in parts 03 and 05 — completing it is the success
+     condition and score.scaled carries the performance on its graded questions (item 02's check and
+     the two warm-ups). The library's own aggregate is an all-correct AND, which would report
+     success:false for any partial result. */
   try {
     sendCompletedOnce('done', currentPartSlug(), 'onlinelesson',
-      { success: passed, score: { scaled: practiceScore() / 5 } });
+      { success: true, score: { scaled: xapiCorrectCount() / 3 } });
   } catch (e) { console.error('[xAPI] completed component 01', e); }
 
-  // ≥80% correct (4/5) → skip remediation (Part 03); else Part 02 (basic practice).
-  /* Resume: point the document at the branch actually taken, and record the back-edge so that
-     component's first screen knows where "חזרה" leads. Part 03 is reachable from BOTH 01 and 02, and
-     resolves correctly because whichever router navigated is the one that wrote the edge. */
-  if (RESUME_ENABLED) writeForwardState(passed ? PART_03_SLUG : PART_02_SLUG);
-  window.location.href = (passed ? PART_03_URL : PART_02_URL) + window.location.search;
+  if (RESUME_ENABLED) writeForwardState(PART_02_SLUG);
+  window.location.href = PART_02_URL + window.location.search;
 }
 function updateProgressQuestion(container, state) {
   if (!container) return;
@@ -1822,17 +1778,13 @@ function updateProgressQuestion(container, state) {
     conn.classList.toggle('progress-question__connector--visited', st === 'correct' || st === 'incorrect');
   }
 }
-function syncPracticeNav(screen) {
-  updateProgressQuestion(document.querySelector('#' + screen + ' .progress-question'), practiceProgress);
-}
-
 /* The warm-up pair (s28 matching, s29 dropdown) gets its own bar. Storyboard slides 42 and 46 ask
    for it in as many words — "מקטע זה מלווה בסרגל שאלה, שאלה 1 מתוך 2" and "…2 מתוך 2" — and QA
    2026-08-24 (slide 20) asked for the same design and behaviour as the five-question bar.
 
    Nothing about the component needed changing: .progress-question bakes in no count and
-   updateProgressQuestion() already takes any state object. Only the state was singular, so this is
-   a second one beside practiceProgress rather than a second renderer. */
+   updateProgressQuestion() already takes any state object. (The five-question bar of standard
+   practice is Part 02's since 2026-10-14; the renderer is the same in both.) */
 var warmupProgress = {
   questions: [
     { number: 1, visited: true,  state: 'current',      screen: 28 },  // item 03 — matching (DnD)
@@ -1842,7 +1794,7 @@ var warmupProgress = {
 function syncWarmupNav(screen) {
   updateProgressQuestion(document.querySelector('#' + screen + ' .progress-question'), warmupProgress);
 }
-/* Mirrors practiceEnter: mark visited, promote to current, paint, then hand off to the template's
+/* Mark visited, promote to current, paint, then hand off to the template's
    own enter(). idx is the 0-based position in warmupProgress.questions. */
 function warmupEnter(idx, screen, enterFn) {
   const q = warmupProgress.questions[idx];
@@ -1857,67 +1809,6 @@ function warmupFinish(idx, screen, isCorrect) {
   q.visited = true;
   syncWarmupNav(screen);
 }
-function practiceEnter(idx, screen) {
-  const q = practiceProgress.questions[idx];
-  q.visited = true;
-  if (q.state === 'not-answered') q.state = 'current';
-  syncPracticeNav(screen);
-  scqEnter(screen);
-}
-/* Register one standard-practice SingleChoiceQuestion (idx = 0-based position). */
-function registerPractice(idx, cfg) {
-  cfg.screen = 's' + practiceProgress.questions[idx].screen;
-  /* Slides 53/58/63/73: "רמז זמין אחרי מענה שגוי 1" — all four practice SCQs. The warm-up (s29,
-     slide 47 "זמין תמיד") and s15 register directly and keep their hint from the start. */
-  cfg.hintAfterWrong = true;
-  cfg.onFinish = function (isCorrect) {
-    const q = practiceProgress.questions[idx];
-    q.state = isCorrect ? 'correct' : 'incorrect';
-    q.visited = true;
-    syncPracticeNav(cfg.screen);
-  };
-  cfg.onContinue = function () {
-    const next = idx + 1;
-    if (next < practiceProgress.questions.length) {
-      practiceProgress.questions[next].visited = true;
-      goTo(practiceProgress.questions[next].screen);
-    } else {
-      goToNextPart();
-    }
-  };
-  scqRegister(cfg);
-  attachPopupDrag(document.getElementById(cfg.screen + '-scq-popup'));
-}
-
-registerPractice(0, {
-  correctId: 'c',
-  item: '05',
-  popups: fbPopups('נכון מאוד!', [   /* sb52/54/55 */
-    'נפח הגוף שווה לכמות המים שדחק — כלומר ההפרש בין הנפח הסופי לנפח ההתחלתי.',
-    '<span class="section-result-expr">73 − 50 = 23</span>',
-    'נפח האבן = 23\u00A0סמ"ק'],
-    ['לא נורא אם טעית, כל טעות היא צעד קדימה בדרך\u00A0הנכונה!']   /* sb55, not bold on the slide */)
-});
-registerPractice(1, {
-  correctId: 'a',
-  item: '06',
-  popups: fbPopups('תשובה נכונה!', [   /* sb57/59/60 */
-    'נפח המים שישפכו מהכלי שווה בדיוק לנפח הכדור, כך ניתן למדוד נפח של גוף שלא נכנס במשורה — זוהי שיטת\u00A0ההצפה.'])
-});
-registerPractice(2, {
-  correctId: 'd',
-  item: '07',
-  popups: fbPopups('תשובה נכונה!', [   /* sb62/64/65 */
-    'הילד מימין השתמש בנתון מדעי שנמדד בפועל על ידי שיטת דחיקת המים.',
-    'שאר הילדים הסתמכו על השערות או על מדידות שאינן מתאימות למדידת נפח של גוף בעל צורה שאינה הנדסית.'])
-});
-registerPractice(4, {
-  correctId: 'd',
-  item: '09',
-  popups: fbPopups('תשובה נכונה!', [   /* sb72/74/75 */
-    'בשיטת ההצפה נפח המים שנשפכו מהכלי שווה לנפח הגוף שהוכנס אליו. לכן, אם מודדים את נפח המים שנאספו במשורה, אפשר לדעת מה נפח הקריסטל.'])
-});
-
 /* ═══════════════════════════════════════════════════════════
    TEMPLATE — DragAndDropQuestion (generic matching, reusable)
    Config-driven: renders its own source pills + labeled target
@@ -1931,7 +1822,7 @@ registerPractice(4, {
      #S-ddq-check, #S-ddq-popup (+ -title/-body).
    ═══════════════════════════════════════════════════════════ */
 const DDQ_REG = {};
-/* Two attempts (opt-in, `maxAttempts: 2` — s34 only, per storyboard slides 66-70; s28 keeps one, per
+/* Two attempts (opt-in, `maxAttempts: 2` — Part 02's s4, per storyboard slides 66-70; s28 keeps one, per
    42-45). A wrong non-final check is not a resolution: the board stays live, every slot still holding
    the item it was judged with shows that verdict, and `lastWrong` (the judged board) both drives those
    marks and gates בדיקה until the board differs from it (720-templates: "Retry gate", "Per-answer
@@ -2172,71 +2063,8 @@ function ddqEnter(screen) {
   ddqSyncHint(screen);
 }
 
-/* Register a standard-practice DragAndDropQuestion at practice index idx. */
-function registerPracticeDnD(idx, cfg) {
-  cfg.screen = 's' + practiceProgress.questions[idx].screen;
-  cfg.onFinish = function (ok) {
-    const q = practiceProgress.questions[idx];
-    q.state = ok ? 'correct' : 'incorrect'; q.visited = true;
-    syncPracticeNav(cfg.screen);
-  };
-  cfg.onContinue = function () {
-    const next = idx + 1;
-    if (next < practiceProgress.questions.length) { practiceProgress.questions[next].visited = true; goTo(practiceProgress.questions[next].screen); }
-    else goToNextPart();
-  };
-  ddqRegister(cfg);
-  attachPopupDrag(document.getElementById(cfg.screen + '-ddq-popup'));
-}
-function practiceEnterDnD(idx, screen) {
-  const q = practiceProgress.questions[idx];
-  q.visited = true;
-  if (q.state === 'not-answered') q.state = 'current';
-  syncPracticeNav(screen);
-  ddqEnter(screen);
-}
-
-/* Standard practice Q4 (item 08) — match each body to its measurement method */
-registerPracticeDnD(3, {
-  item: '08',
-  /* ⚠️ The three PNGs were rotated against their own filenames — s34-metal-cube.png held the
-     trophy, s34-shell.png the cube, s34-trophy.png the shell — so every pill on this board, and
-     the שדף pill on S28 that borrows s34-shell.png, drew the wrong object beside a correct label.
-     Fixed by renaming the FILES to match their contents (2026-08-26), not by remapping these
-     paths: a path that points at a lying filename only moves the trap. The mapping below is the
-     obvious one and should stay obvious — check the picture, not the name, if it ever looks off. */
-  /* QA 2026-08-29: DELIBERATELY out of order, for the same reason S28's bank is (see its note).
-     These three used to sit in `targets` order, so the nth pill was always the answer to the nth
-     target and the board could be solved by position without reading a word. Rotated one step —
-     shell, goblet, cube — which is the order asked for and, checked against correctMap, leaves no
-     pill at the index of its own target. */
-  items: [
-    { id: 'shell',      label: 'צדפה',        img: 'assets/img/s34-shell.png',      w: 92 },
-    { id: 'goblet',     label: 'גביע גדול',   img: 'assets/img/s34-trophy.png',     w: 86 },
-    { id: 'metal-cube', label: 'קוביית מתכת', img: 'assets/img/s34-metal-cube.png', w: 96 }
-  ],
-  targets: [
-    { id: 't-ruler',    label: 'מדידה הנדסית בעזרת סרגל' },
-    { id: 't-displace', label: 'שיטת דחיקת המים' },
-    { id: 't-flood',    label: 'שיטת ההצפה' }
-  ],
-  correctMap: { 't-ruler': 'metal-cube', 't-displace': 'shell', 't-flood': 'goblet' },
-  /* Copy verbatim from storyboard slides 69 (correct) and 70 (wrong). Slide 70's second title line,
-     'התשובה הנכונה מוצגת.', is `answerNote` — see ddqWrongTitle. */
-  answerNote: 'התשובה הנכונה מוצגת.',
-  /* Two attempts, slides 66-70: 67 is "מענה שגוי 1" (retry), 70 "מענה שגוי 2" (the model board).
-     Slide 68's note: the hint is available only after that first wrong answer. Approved 2026-10-11. */
-  maxAttempts: 2,
-  hintAfterWrong: true,
-  popups: {
-    retry:     FB_RETRY,
-    correct:   { title: 'תשובה נכונה!', body: ['קוביית המתכת היא גוף הנדסי ולכן נבצע מדידה הנדסית.', 'צדפה היא גוף שאינו הנדסי וקטן מספיק להיכנס למשורה ולכן נבצע דחיקת מים.', 'גביע הוא גוף שאינו הנדסי ולא נכנס במשורה ולכן נבצע את שיטת ההצפה.'] },
-    incorrect: { title: 'התשובה אינה נכונה.', body: ['קוביית המתכת היא גוף הנדסי ולכן נבצע מדידה הנדסית.', 'צדפה היא גוף שאינו הנדסי וקטן מספיק להיכנס למשורה ולכן נבצע דחיקת מים.', 'גביע הוא גוף שאינו הנדסי ולא נכנס במשורה ולכן נבצע את שיטת ההצפה.'] }
-  }
-});
-
 /* ═══════════════════════════════════════════════════════════
-   WARM-UPS (metadata items 03–04) — precede standard practice.
+   WARM-UPS (metadata items 03–04) — the last two screens of this component.
    Standalone (no progress-dots). S28 matching (DnD), S29 choice (SCQ).
    ═══════════════════════════════════════════════════════════ */
 ddqRegister({
@@ -2244,8 +2072,8 @@ ddqRegister({
   item: '03',
   items: [
     // Storyboard slide 42 puts a small photo inside each task card. The שדף photo
-    // is the one from S34 (slide 42 illustrates this task with a בלוט, which the
-    // script later renamed to צדף — reusing S34's shell keeps art and copy agreed).
+    // is the shell from standard-practice Q4 (Part 02 s4) — slide 42 illustrates this task with a
+    // בלוט, which the script later renamed to צדף, so reusing that shell keeps art and copy agreed.
     /* QA 2026-08-25 (slide 21): DELIBERATELY out of order. These five used to sit in the same
        sequence as `targets` below, so the nth pill was always the answer to the nth target and the
        matching could be done by position without reading anything. The order asked for is melon
@@ -2253,7 +2081,7 @@ ddqRegister({
        correctMap: no pill now sits at the index of its own target. */
     { id: 'wu-melon', label: 'מה המסה של האבטיח?',                  img: 'assets/img/s28-task-watermelon.jpg', w: 64 },
     { id: 'wu-doll',  label: 'מהו הנפח של בובת הפלסטיק הגדולה?',    img: 'assets/img/s28-task-doll.jpg',       w: 90 },
-    { id: 'wu-shell', label: 'מהו הנפח של הצדף הקטן?',              img: 'assets/img/s34-shell.png',           w: 68 },
+    { id: 'wu-shell', label: 'מהו הנפח של הצדף הקטן?',              img: 'assets/img/s28-task-shell.png',      w: 68 },
     { id: 'wu-cube',  label: 'מה אורך הצלע של הקובייה?',            img: 'assets/img/s28-task-rubik.jpg',      w: 66 },
     { id: 'wu-cup',   label: 'כמה מים יש בכוס?',                    img: 'assets/img/s28-task-water-cup.jpg',  w: 72 }
   ],
@@ -2290,7 +2118,7 @@ scqRegister({
     dqSyncView('s29');
     warmupFinish(1, 's29', ok);
   },
-  onContinue: function () { goTo(30); }   // → practice rules (sb50) → Q1
+  onContinue: function () { goToNextPart(); }   // → Part 02, standard practice (sb51)
 });
 attachPopupDrag(document.getElementById('s29-scq-popup'));
 
@@ -2636,7 +2464,7 @@ function measEnter() {
      02  Instruction   "הקנייה: שיטות מדידת נפח (פלייליסט: קומיקס / ניסויים)"  — the whole acquisition
      03  Practice      "חימום 1"                                              — warm-up 1
      04  Practice      "חימום 2"                                              — warm-up 2
-     05-09 Practice    "סטנדרטי 1-5"                                          — the five practice Qs
+   (Items 05-09, "סטנדרטי 1-5", moved to Part 02 as its items 01-05 on 2026-10-14.)
 
    Item 02 is deliberately large: its title names the playlist, so BOTH branches of the path choice
    belong to it, and it closes only when the learner leaves the merge screen for warm-up 1. That is
@@ -2646,7 +2474,7 @@ function measEnter() {
      hook          0 → 1 → 2 → 3 → 4
      acquisition   5 → 6 → 7 ─┬─ comic:        8 → 14 ──┐
                               └─ experiments: 15 → 21 ──┴─ shared ending 22 → 26
-     warm-ups      27 → 28 → 29 · practice 30 → 31 … 35 → (Part 02 or 03)
+     warm-ups      27 → 28 → 29 → Part 02
 
    Page numbers run in that flow order and are unique within an item, so a bug report identifies the
    screen even where two branches cover the same item. */
@@ -2695,17 +2523,8 @@ var SCREEN_TO_SUBCONTENT = {
 
   /* items 03, 04 — the warm-ups */
   28: ['03', 1],      // חימום 1 — matching (DnD)
-  29: ['04', 1],      // חימום 2 — dropdown
+  29: ['04', 1]       // חימום 2 — dropdown
 
-  /* bridge */
-  30: null,           // אפשר להתחיל! — practice rules; belongs to no catalog item
-
-  /* items 05-09 — the five practice questions, Q1–Q5 on s31–s35 */
-  31: ['05', 1],      // סטנדרטי 1
-  32: ['06', 1],      // סטנדרטי 2
-  33: ['07', 1],      // סטנדרטי 3
-  34: ['08', 1],      // סטנדרטי 4
-  35: ['09', 1]       // סטנדרטי 5
 };
 
 var XAPI_COMP_SLUG = 'methodica-science-volume-solid-01-01';
@@ -2714,7 +2533,7 @@ var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
 /* Items carrying a graded question IN CODE. Item 01 is absent: it is the hook, walked through rather
    than answered, and the metadata gives it no questions at all. Its open-text screen (s2) records an
    'interacted', not an 'answered' — see the note at hookOpenReveal(). */
-var XAPI_EVAL_ITEMS = { '02': 1, '03': 1, '04': 1, '05': 1, '06': 1, '07': 1, '08': 1, '09': 1 };
+var XAPI_EVAL_ITEMS = { '02': 1, '03': 1, '04': 1 };
 
 /* ═══════════════════ xAPI (720 LMS common host) ═══════════════════
    Loaded from the MOE 720 platform's own common host (not a 3rd-party
@@ -2725,8 +2544,8 @@ var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-01.json'
 
 /* ═══════════════════════════════════════════════════════════
    RESUME — this component's payload
-   The largest by far: 33 screens, a branching playlist, three applets, a comic slider, flip cards,
-   two guess screens, a matching board and five practice questions.
+   The largest by far: 30 screens, a branching playlist, three applets, a comic slider, flip cards,
+   two guess screens, a matching board and a dropdown.
 
    What makes it tractable is that MOST of it already restores itself. imgqEnter, dispEnter, aqEnter,
    floodEnter, flipEnter, guessEnter, comicSliderEnter, measEnter→measRender, scqEnter's `done` branch
@@ -2863,24 +2682,6 @@ function applyDdqState(ddq) {
   });
 }
 
-/* Positional, WITHOUT `screen` — static table data. practiceScore() reads `state`, and it decides
-   whether this component routes to part 02 or part 03, so losing it would change the learner's route
-   through the unit after a reload. */
-function capturePracticeState() {
-  return practiceProgress.questions.map(function (q) {
-    return { visited: !!q.visited, state: q.state };
-  });
-}
-
-function applyPracticeState(practice) {
-  if (!practice) return;
-  practice.forEach(function (p, i) {
-    var q = practiceProgress.questions[i];
-    if (!q) return;
-    q.visited = !!p.visited; q.state = p.state;
-  });
-}
-
 /* ⚠️ Everything nested is COPIED, never referenced — see the note in part 04. */
 function capturePartPayload() {
   var st = {
@@ -2901,7 +2702,6 @@ function capturePartPayload() {
     }, {}),
     scq: captureScqState(),
     ddq: captureDdqState(),
-    practice: capturePracticeState(),
     inputs: captureResumeInputs(),
     vars: {}
   };
@@ -2925,7 +2725,6 @@ function applyResumeVars(st) {
   if (st.flipState) Object.keys(st.flipState).forEach(function (k) { flipState[k] = Object.assign({}, st.flipState[k]); });
   applyScqState(st.scq);
   applyDdqState(st.ddq);
-  applyPracticeState(st.practice);
   if (st.vars) {
     Object.keys(st.vars).forEach(function (k) {
       if (RESUME_PLAIN_VARS.indexOf(k) === -1) return;   // never assign an unlisted name
@@ -2949,8 +2748,8 @@ function applyResumeDom(st) {
    measEnter→measRender rebuilds entirely from measStep / measDone / measRevealed / measPoured; flipEnter repaints
    from flipState; guessEnter from guessPicked; imgqEnter from imgqRevealed. Adding redundant
    painters here would be dead code that drifts. */
-var SCQ_RESTORE_SCREENS = [15, 29, 31, 32, 33, 35];
-var DDQ_RESTORE_SCREENS = [28, 34];
+var SCQ_RESTORE_SCREENS = [15, 29];
+var DDQ_RESTORE_SCREENS = [28];
 
 function restoreScreenUI(n) {
   try {

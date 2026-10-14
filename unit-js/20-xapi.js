@@ -1,6 +1,6 @@
 'use strict';
 /* ═══════════════════ xAPI (720) — item scope + question ids ═══════════════════
-   Shared by all six components. DEFINITION-ONLY; 90-boot.js drives startup via bootXAPI().
+   Shared by all seven components. DEFINITION-ONLY; 90-boot.js drives startup via bootXAPI().
    See REPORT-XAPI.md for what each statement means and RESUME.md for the 'completed' ledger.
 
    Per-part seams, every one read at CALL time (each component's own js/main.js declares them):
@@ -43,7 +43,7 @@ function xapiAnswerText(el) {
   var drop = c.querySelectorAll('.scq-info, .scq-tooltip, .opt-tooltip, .peak-opt-info, .img-zoom-btn');
   for (var i = 0; i < drop.length; i++) { drop[i].remove(); }
   var t = c.textContent.replace(/\s+/g, ' ').trim();
-  /* An option drawn as an AREA (an image hotspot, 02 s6) has no text of its own; its explicit label
+  /* An option drawn as an AREA (an image hotspot, 03 s6) has no text of its own; its explicit label
      is its aria-label, the same name a screen reader announces. Without this fallback the response
      went out empty (2026-10-11). Only consulted when there is no text, so every text option reports
      exactly what it did before. */
@@ -226,8 +226,8 @@ function xapiWireVideos() {
 
    ⚠️ NEVER use this for 'completed'. The deferral outlives applyExecutionState()'s sender stub and
    the _restoring flag, so a deferred 'completed' escapes BOTH resume guards and is re-reported on
-   every resume onto a finished screen. Parts 05 and 06 do exactly that today (via resetScreenState)
-   and Stage 4 makes those sends synchronous. It is also what made the sweep oracle under-report
+   every resume onto a finished screen. Parts 05 and 06 (the peaks, now 06 and 07) did exactly that
+   (via resetScreenState) until Stage 4 made those sends synchronous. It is also what made the sweep oracle under-report
    until it was made async. See RESUME.md risk R1. */
 function xapiSend() {
   const args = arguments;

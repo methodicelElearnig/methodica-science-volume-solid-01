@@ -182,8 +182,8 @@ const btnDisabled = (p, id) => p.val('(function(){ var b = document.getElementBy
 
 /* Which screens carry a feedback popup, and where to park the learner in between. AWAY is a screen
    with no question of its own, so bouncing off it cannot disturb what is being measured. */
-const SCQ_SCREENS = { '01': [15, 29, 31, 32, 33, 35], '02': [1, 2, 3, 4, 6, 7], '04': [1, 2, 3, 4, 5] };
-const AWAY        = { '01': 0, '02': 0, '04': 0 };
+const SCQ_SCREENS = { '01': [15, 29], '02': [1, 2, 3, 5], '03': [1, 2, 3, 4, 6, 7], '05': [1, 2, 3, 4, 5] };
+const AWAY        = { '01': 0, '02': 0, '03': 0, '05': 0 };
 
 /* s15's question is locked until the ruler applet has been used. Unlock it the way the learner does,
    not by writing the flag. */
@@ -297,7 +297,7 @@ function scenarioPristine(p, part) {
 
 /* ═══════════════════ the two matching boards ═══════════════════ */
 
-const DDQ_SCREENS = [34, 28];
+const DDQ_SCREENS = [['02', 4], ['01', 28]];   // [part, screen]: standard-practice Q4, warm-up 1
 
 /* The model board, and a board that is wrong in every slot — built from correctMap so it stays right
    if the content changes. */
@@ -331,16 +331,16 @@ function ddqCheckFinal(p, screen, board, b) {
   p.exec('ddqCheck("' + screen + '");');
 }
 
-function ddqScenarios(p) {
-  for (const n of DDQ_SCREENS) {
-    const screen = 's' + n, ctx = '01/' + screen;
+function ddqScenarios(p, part, n) {
+  {
+    const screen = 's' + n, ctx = part + '/' + screen;
     const b = boards(p, screen);
 
     // ── every slot right ──
     p.exec('goTo(' + n + ');');
     place(p, screen, b.model);
     p.exec('ddqCheck("' + screen + '");');
-    p.exec('goTo(' + AWAY['01'] + '); goTo(' + n + ');');
+    p.exec('goTo(' + AWAY[part] + '); goTo(' + n + ');');
     let slots = slotClasses(p, screen), fb = popup(p, screen, 'ddq');
     ok(ctx, 'a fully correct board comes back green',
        slots.length === b.n && slots.every(c => /\bcorrect\b/.test(c)), slots.join(' | '));
@@ -350,16 +350,15 @@ function ddqScenarios(p) {
   }
 
   /* The wrong path needs a clean question, so it gets its own window. */
-  return DDQ_SCREENS;
 }
 
-function ddqWrong(p, n) {
-  const screen = 's' + n, ctx = '01/' + screen;
+function ddqWrong(p, part, n) {
+  const screen = 's' + n, ctx = part + '/' + screen;
   const b = boards(p, screen);
 
   p.exec('goTo(' + n + ');');
   ddqCheckFinal(p, screen, b.wrong, b);
-  p.exec('goTo(' + AWAY['01'] + '); goTo(' + n + ');');
+  p.exec('goTo(' + AWAY[part] + '); goTo(' + n + ');');
 
   let slots = slotClasses(p, screen);
   const fb = popup(p, screen, 'ddq');
@@ -394,7 +393,7 @@ function ddqWrong(p, n) {
   /* Leaving while looking at your OWN answer and coming back must STILL land on the model board —
      the arrival rule is a rule about arriving, not a memory of the last view. Without this the
      learner returns to the same red board the whole fix exists to get them out of. */
-  p.exec('goTo(' + AWAY['01'] + '); goTo(' + n + ');');
+  p.exec('goTo(' + AWAY[part] + '); goTo(' + n + ');');
   const back = slotClasses(p, screen);
   ok(ctx, 'leaving on your own answer still returns to the model board',
      back.length === b.n && back.every(function (c) { return / correct /.test(' ' + c + ' '); }), back.join(' | '));
@@ -411,8 +410,8 @@ function ddqWrong(p, n) {
 
 /* A partly right board (G7): the first title line is 'not fully correct' on the model board, on
    the learner's own board, and after a return — decided from the snapshot, never from the board. */
-function ddqPartlyRight(p, n) {
-  const screen = 's' + n, ctx = '01/' + screen + '/partly';
+function ddqPartlyRight(p, part, n) {
+  const screen = 's' + n, ctx = part + '/' + screen + '/partly';
   const b = boards(p, screen);
   p.exec('goTo(' + n + ');');
   ddqCheckFinal(p, screen, b.partly, b);
@@ -424,38 +423,38 @@ function ddqPartlyRight(p, n) {
   p.exec('ddqToggleAnswer("' + screen + '");');
   fb = popup(p, screen, 'ddq');
   ok(ctx, 'own view: not-fully title + View My Answer line', fb && sameHtml(fb.title, FIRST + '<br>אפשר לצפות שוב בפתרון הנכון.'), fb && fb.title);
-  p.exec('goTo(' + AWAY['01'] + '); goTo(' + n + ');');
+  p.exec('goTo(' + AWAY[part] + '); goTo(' + n + ');');
   fb = popup(p, screen, 'ddq');
   ok(ctx, 'after a return: still not-fully, back on the model board', fb && sameHtml(fb.title, FIRST + '<br>' + note), fb && fb.title);
 }
 
-/* s34's retry phase (two attempts, 2026-10-11): between the attempts nothing is resolved, and a
+/* Part 02 s4's retry phase (two attempts, 2026-10-11): between the attempts nothing is resolved, and a
    return or a reload must bring back exactly the retry look — popup, per-slot marks, the closed gate,
    the hint — without sending anything. Then the second attempt resolves it once. */
 function ddqRetryState(p, screen) {
   return p.val('(function(){ var s = DDQ_REG["' + screen + '"];' +
     ' var chk = document.getElementById("' + screen + '-ddq-check"), h = document.getElementById("' + screen + '-ddq-hint");' +
     ' return { attempts: s.attempts, phase: s.phase, done: s.done, checkDisabled: chk.disabled, hint: h.style.visibility,' +
-    '   answered: __stmts().filter(function (x) { return /^answered/.test(x.verb) && /-01-08\\//.test(x.questionId || ""); }).map(function (x) { return x.verb; }).join(",") }; })()');
+    '   answered: __stmts().filter(function (x) { return /^answered/.test(x.verb) && /-02-04\\//.test(x.questionId || ""); }).map(function (x) { return x.verb; }).join(",") }; })()');
 }
 /* xapiSend() defers to the next tick, so the log is read after one. */
 const nextTick = () => new Promise(r => setTimeout(r, 20));
 async function ddqRetry(p) {
-  const screen = 's34', ctx = '01/s34/retry';
+  const screen = 's4', ctx = '02/s4/retry';
   const b = boards(p, screen);
-  p.exec('goTo(34);');
+  p.exec('goTo(4);');
   ok(ctx, 'the hint starts hidden (slide 68: after a first wrong answer)', ddqRetryState(p, screen).hint === 'hidden');
   place(p, screen, b.wrong);
-  p.exec('ddqCheck("s34");');
+  p.exec('ddqCheck("s4");');
   await nextTick();
   let st = ddqRetryState(p, screen), fb = popup(p, screen, 'ddq'), slots = slotClasses(p, screen);
   ok(ctx, 'a first wrong check is an interim answered, unresolved', st.attempts === 1 && st.phase === 'retry' && !st.done && st.answered === 'answered', JSON.stringify(st));
-  ok(ctx, 'no result recorded yet', p.val('XAPI_Q_RESULTS["08/q1"] === undefined') === true);
+  ok(ctx, 'no result recorded yet', p.val('XAPI_Q_RESULTS["04/q1"] === undefined') === true);
   ok(ctx, 'the retry popup: title + שננסה שוב?', fb && !fb.hidden && fb.title === 'התשובה אינה נכונה.' && /שננסה שוב/.test(fb.body), fb && fb.title + ' | ' + fb.body);
   ok(ctx, 'every judged slot carries its verdict', slots.length === b.n && slots.every(c => /\bwrong\b/.test(c)), slots.join(' | '));
   ok(ctx, 'the gate is closed on the judged board, the hint is shown', st.checkDisabled === true && st.hint === '', JSON.stringify(st));
 
-  p.exec('goTo(' + AWAY['01'] + '); goTo(34);');
+  p.exec('goTo(' + AWAY['02'] + '); goTo(4);');
   await nextTick();
   st = ddqRetryState(p, screen); fb = popup(p, screen, 'ddq'); slots = slotClasses(p, screen);
   ok(ctx, 'a return keeps the retry look and sends nothing',
@@ -463,8 +462,8 @@ async function ddqRetry(p) {
 
   p.exec('flushResumeSave();');
   const state = p.dump();
-  const r = boot('01', { state });
-  r.exec('if (currentScreen !== 17) goTo(34);');
+  const r = boot('02', { state });
+  r.exec('if (currentScreen !== 4) goTo(4);');
   await nextTick();
   st = ddqRetryState(r, screen); fb = popup(r, screen, 'ddq'); slots = slotClasses(r, screen);
   ok('reload/' + ctx, 'a reload keeps the retry look (popup, marks, gate, hint)',
@@ -474,13 +473,13 @@ async function ddqRetry(p) {
   place(r, screen, b.model);
   st = ddqRetryState(r, screen);
   ok('reload/' + ctx, 'a different full board opens the gate', st.checkDisabled === false, JSON.stringify(st));
-  r.exec('ddqCheck("s34");');
+  r.exec('ddqCheck("s4");');
   await nextTick();
   st = ddqRetryState(r, screen); fb = popup(r, screen, 'ddq');
   ok('reload/' + ctx, 'right on the second attempt: one answered.last, counted correct',
-     st.done && st.answered === 'answered.last' && r.val('XAPI_Q_RESULTS["08/q1"]') === true && r.val('practiceProgress.questions[3].state') === 'correct', JSON.stringify(st));
+     st.done && st.answered === 'answered.last' && r.val('XAPI_Q_RESULTS["04/q1"]') === true && r.val('practiceProgress.questions[3].state') === 'correct', JSON.stringify(st));
   ok('reload/' + ctx, 'correct popup, hint hidden', fb && !fb.hidden && /תשובה נכונה/.test(fb.title) && st.hint === 'hidden', fb && fb.title);
-  r.exec('goTo(' + AWAY['01'] + '); goTo(34);');
+  r.exec('goTo(' + AWAY['02'] + '); goTo(4);');
   await nextTick();
   ok('reload/' + ctx, 'no duplicate answered.last', r.val('__dupes().length') === 0);
   collectErrors('reload/' + ctx, r);
@@ -489,8 +488,8 @@ async function ddqRetry(p) {
 
 /* Drags the learner made but never submitted have to survive a return: ddqEnter()'s unanswered
    branch empties the board back into the source bank before the state is re-applied. */
-function ddqUnsubmitted(p, n) {
-  const screen = 's' + n, ctx = '01/' + screen;
+function ddqUnsubmitted(p, part, n) {
+  const screen = 's' + n, ctx = part + '/' + screen;
   const b = boards(p, screen);
   const partial = Object.assign({}, b.model);
   const keys = Object.keys(partial).filter(k => partial[k] !== 'source');
@@ -498,7 +497,7 @@ function ddqUnsubmitted(p, n) {
 
   p.exec('goTo(' + n + ');');
   place(p, screen, partial);
-  p.exec('goTo(' + AWAY['01'] + '); goTo(' + n + ');');
+  p.exec('goTo(' + AWAY[part] + '); goTo(' + n + ');');
 
   const occupied = p.val('document.querySelectorAll("#' + screen + ' .dnd-slot.occupied").length');
   ok(ctx, 'unsubmitted drags survive a return', occupied === 2, 'occupied=' + occupied);
@@ -541,22 +540,22 @@ function peakScenarios(p, part) {
 function reloadTests() {
   /* R1 — a correct SCQ answer, then a real page load. */
   {
-    const a = boot('01');
-    a.exec('goTo(31);');
-    const correct = a.val('SCQ_REG["s31"].cfg.correctId');
-    a.exec('scqSelect("s31", "' + correct + '"); scqCheck("s31");');
+    const a = boot('02');
+    a.exec('goTo(1);');
+    const correct = a.val('SCQ_REG["s1"].cfg.correctId');
+    a.exec('scqSelect("s1", "' + correct + '"); scqCheck("s1");');
     const state = a.dump();
     a.close();
 
-    ok('reload/01', 'the answer reached the state document synchronously', !!state && state.indexOf('"phase"') !== -1);
+    ok('reload/02', 'the answer reached the state document synchronously', !!state && state.indexOf('"phase"') !== -1);
 
-    const b = boot('01', { state });
-    const ctx = 'reload/01/s31';
-    ok(ctx, 'resumes onto the answered screen', b.val('currentScreen') === 31, b.val('currentScreen'));
-    ok(ctx, 'the correct mark is repainted', hasClass(optClasses(b, 's31'), correct, 'correct'));
-    const fb = popup(b, 's31', 'scq');
+    const b = boot('02', { state });
+    const ctx = 'reload/02/s1';
+    ok(ctx, 'resumes onto the answered screen', b.val('currentScreen') === 1, b.val('currentScreen'));
+    ok(ctx, 'the correct mark is repainted', hasClass(optClasses(b, 's1'), correct, 'correct'));
+    const fb = popup(b, 's1', 'scq');
     ok(ctx, 'the feedback is repainted', fb && fb.hidden === false, fb && fb.hidden);
-    ok(ctx, 'it is the CORRECT popup', fb && sameHtml(fb.title, b.val('SCQ_REG["s31"].cfg.popups.correct.title')));
+    ok(ctx, 'it is the CORRECT popup', fb && sameHtml(fb.title, b.val('SCQ_REG["s1"].cfg.popups.correct.title')));
     collectErrors(ctx, b);
     b.close();
   }
@@ -594,25 +593,25 @@ function reloadTests() {
 
   /* R2b — a PARTLY right matching answer, then reloaded: the 'not fully' title is re-derived. */
   {
-    const a = boot('01');
-    a.exec('goTo(34);');
-    const b17 = boards(a, 's34');
-    ddqCheckFinal(a, 's34', b17.partly, b17);
+    const a = boot('02');
+    a.exec('goTo(4);');
+    const b17 = boards(a, 's4');
+    ddqCheckFinal(a, 's4', b17.partly, b17);
     a.exec('flushResumeSave();');
     const state = a.dump();
     a.close();
-    const b = boot('01', { state });
-    const ctx = 'reload/01/s34/partly';
-    const fb = popup(b, 's34', 'ddq');
+    const b = boot('02', { state });
+    const ctx = 'reload/02/s4/partly';
+    const fb = popup(b, 's4', 'ddq');
     ok(ctx, 'the not-fully title survives a reload',
-       fb && sameHtml(fb.title, 'התשובה אינה נכונה במלואה.<br>' + b.val('DDQ_REG["s34"].cfg.answerNote')), fb && fb.title);
+       fb && sameHtml(fb.title, 'התשובה אינה נכונה במלואה.<br>' + b.val('DDQ_REG["s4"].cfg.answerNote')), fb && fb.title);
     collectErrors(ctx, b);
     b.close();
   }
 
   /* R3 — a wrong-final in a different part, to prove the painter is not part-01-shaped. */
   {
-    const a = boot('02');
+    const a = boot('03');
     a.exec('goTo(3);');
     const { correct, wrong } = ids(a, 's3');
     a.exec('scqSelect("s3", "' + wrong[0] + '"); scqCheck("s3");');
@@ -620,8 +619,8 @@ function reloadTests() {
     const state = a.dump();
     a.close();
 
-    const b = boot('02', { state });
-    const ctx = 'reload/02/s3';
+    const b = boot('03', { state });
+    const ctx = 'reload/03/s3';
     ok(ctx, 'resumes onto the answered screen', b.val('currentScreen') === 3, b.val('currentScreen'));
     const cls = optClasses(b, 's3');
     ok(ctx, 'the learner mark is repainted', hasClass(cls, wrong[1], 'wrong'), cls[wrong[1]]);
@@ -635,7 +634,7 @@ function reloadTests() {
 
   /* R4 — a resolved peak sub-part stays locked across a reload. */
   {
-    const a = boot('05');
+    const a = boot('06');
     a.exec('goTo(1);');
     const c = a.val('PEAK_CORRECT[1]');
     a.exec('peakSelect(1, "' + c + '");');
@@ -643,8 +642,8 @@ function reloadTests() {
     const state = a.dump();
     a.close();
 
-    const b = boot('05', { state });
-    const ctx = 'reload/05/s1';
+    const b = boot('06', { state });
+    const ctx = 'reload/06/s1';
     b.exec('goTo(1);');
     ok(ctx, 'the resolution survived the reload', b.val('!!(peakState[1] && peakState[1].done)') === true);
     ok(ctx, 'the feedback is repainted', b.val('!document.getElementById("s1-scq-popup").classList.contains("hidden")') === true);
@@ -828,7 +827,7 @@ function collectErrors(ctx, p) {
 /* ═══════════════════ run ═══════════════════ */
 
 async function main() {
-  for (const part of ['01', '02', '04']) {
+  for (const part of ['01', '02', '03', '05']) {
     for (const [name, fn] of [['correct', scenarioCorrect], ['wrong', scenarioWrong],
                               ['repick', scenarioRepick], ['pristine', scenarioPristine]]) {
       const p = boot(part);
@@ -838,19 +837,17 @@ async function main() {
     }
   }
 
-  {
-    const p = boot('01'); ddqScenarios(p); collectErrors('01/ddq-correct', p); p.close();
-  }
-  for (const n of DDQ_SCREENS) {
-    let p = boot('01'); ddqWrong(p, n); collectErrors('01/ddq-wrong-s' + n, p); p.close();
-    p = boot('01'); ddqUnsubmitted(p, n); collectErrors('01/ddq-partial-s' + n, p); p.close();
-    p = boot('01'); ddqPartlyRight(p, n); collectErrors('01/ddq-partly-right-s' + n, p); p.close();
+  for (const [part, n] of DDQ_SCREENS) {
+    let p = boot(part); ddqScenarios(p, part, n); collectErrors(part + '/ddq-correct-s' + n, p); p.close();
+    p = boot(part); ddqWrong(p, part, n); collectErrors(part + '/ddq-wrong-s' + n, p); p.close();
+    p = boot(part); ddqUnsubmitted(p, part, n); collectErrors(part + '/ddq-partial-s' + n, p); p.close();
+    p = boot(part); ddqPartlyRight(p, part, n); collectErrors(part + '/ddq-partly-right-s' + n, p); p.close();
   }
   {
-    const p = boot('01'); await ddqRetry(p); collectErrors('01/ddq-retry-s34', p); p.close();
+    const p = boot('02'); await ddqRetry(p); collectErrors('02/ddq-retry-s4', p); p.close();
   }
 
-  for (const part of ['05', '06']) {
+  for (const part of ['06', '07']) {
     const p = boot(part); peakScenarios(p, part); collectErrors(part + '/peak', p); p.close();
   }
 

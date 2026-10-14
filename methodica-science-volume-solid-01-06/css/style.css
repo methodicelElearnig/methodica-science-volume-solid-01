@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   css/style.css — 720 Science · Volume of a Solid · component 06 (PART-LOCAL)
+   css/style.css — 720 Science · Volume of a Solid · component 05 (PART-LOCAL)
 
    INTENTIONALLY EMPTY — this component needs no CSS of its own.
 
@@ -15,8 +15,24 @@
    belongs in the shared sheet.
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* 2026-10-12 (producer): s1's companion group sits in the bottom-left corner instead of beside the
+   question. Sprite on the left, bubble to his right. renderCompanion() APPENDS the sprite into the
+   group (it lands after the bubble), so `order: -1` puts him physically first in the group's
+   ltr row; the --left class aims the beak at him. bottom: 74px stands his feet on the nav bar. */
+#s1-say { left: 40px; bottom: 74px; --say-gap: 0px; }
+#s1-say > .companion { order: -1; }
+
 /* Per-סעיף feedback (2026-10-14). The popup keeps the shared bottom-left position but is 400px
    instead of 480, so its right edge (402) clears the 820px question column (options start at 420).
    Narrowing the column instead would break the QA'd one-line options onto two lines. */
 .scq-popup { width: 400px; }
+/* No lone word on a popup's last line. */
 .scq-popup-body p { text-wrap: pretty; }
+/* s1's companion line stands where the popup opens; it steps aside while a popup is up. The class
+   is toggled by renderFeedbackPopup()/peakClosePopup() in js/main.js. */
+.screen.fb-shown .companion-say { visibility: hidden; }
+
+/* 2026-10-12 (producer): סעיף ג's speaker options — no icons, every pill one line, all four the
+   same width (the column's full width, not max-content) and the speaker name in bold. */
+#s3-opts { width: 100%; }
+#s3-opts .scq-opt-text b { font-weight: 700; }
