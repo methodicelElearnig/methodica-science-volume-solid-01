@@ -199,14 +199,14 @@ Notes:
 | s2 | SingleChoiceQuestion (peak sub-part, סעיף ב) | 01 | שאלת שיא: אבטיפוס משחק קופסה — פסלון פלסטיק (4 סעיפים) | q2 |
 | s3 | SingleChoiceQuestion (peak sub-part, סעיף ג, speaker options) | 01 | שאלת שיא: אבטיפוס משחק קופסה — פסלון פלסטיק (4 סעיפים) | q3 |
 | s4 | SingleChoiceQuestion (peak sub-part, סעיף ד) | 01 | שאלת שיא: אבטיפוס משחק קופסה — פסלון פלסטיק (4 סעיפים) | q4 |
-| s6 | Unit complete — success ending (storyboard slide 173), terminal | 01 | שאלת שיא: אבטיפוס משחק קופסה — פסלון פלסטיק (4 סעיפים) | — |
 
 Notes:
+- **2026-10-15: the end screens were removed** (06 s6; 07 s6 and s7 — the confetti `success` sprite). The unit now ends directly from סעיף ד's שנמשיך?; `unitFinish()` signals the host.
 - `isAssessment: true`. Item is `01-06-01` (was `01-05-01`).
 - s1–s4 have no individual header comments, only a shared block note above s1; type inferred from `.peak-opt`/`peak-question` single-select markup.
 - Question-to-screen mapping is unambiguous: `PEAK_CORRECT = {1:'b',2:'a',3:'a',4:'b'}` and `xapiQ(PEAK_ITEM,'q'+idx)` key directly off the screen's own step index, matching the metadata's q1–q4 order (סעיף א/ב/ג/ד) one-to-one.
-- `SCREEN_TO_SUBCONTENT` keeps s0, the scenario s5 and the ending s6 inside item 01 too — a code comment explains this is deliberate so the item opens on entry and only closes in `peakFinish()`.
-- Since 2026-10-14 each סעיף gives its own feedback popup (2 attempts, hint until resolved). The combined answer screens (old s5/s6) were removed and the scenario and ending moved down from s7/s8 into s5/s6. After סעיף ד a pass (≥3/4) goes to s6 and ends the unit; a fail goes straight to component 07 (מועד ב), whose metadata `recommendedAfterFail` stays empty — the content owns that route (`peakGoRetake()`).
+- `SCREEN_TO_SUBCONTENT` keeps s0 and the scenario s5 inside item 01 too — a code comment explains this is deliberate so the item opens on entry and only closes in `peakFinish()`.
+- Since 2026-10-14 each סעיף gives its own feedback popup (2 attempts, hint until resolved). The combined answer screens (old s5/s6) were removed and the scenario and ending moved down from s7/s8 into s5/s6. After סעיף ד a pass (≥3/4) ends the unit; a fail goes straight to component 07 (מועד ב), whose metadata `recommendedAfterFail` stays empty — the content owns that route (`peakGoRetake()`).
 
 ---
 
@@ -221,15 +221,14 @@ Notes:
 | s2 | SingleChoiceQuestion (peak sub-part, inferred) | 01 | שאלת שיא: פסל ספינה טרופה לאקווריום (4 סעיפים) | q2 |
 | s3 | SingleChoiceQuestion (peak sub-part, inferred) | 01 | שאלת שיא: פסל ספינה טרופה לאקווריום (4 סעיפים) | q3 |
 | s4 | SingleChoiceQuestion (peak sub-part, inferred) | 01 | שאלת שיא: פסל ספינה טרופה לאקווריום (4 סעיפים) | q4 |
-| s6 | Unit complete — success ending (storyboard slide 173), terminal | 01 | שאלת שיא: פסל ספינה טרופה לאקווריום (4 סעיפים) | — |
-| s7 | Unit complete — less-successful ending (storyboard slide 172), terminal | 01 | שאלת שיא: פסל ספינה טרופה לאקווריום (4 סעיפים) | — |
 
 Notes:
+- **2026-10-15: the end screens were removed** (06 s6; 07 s6 and s7 — the confetti `success` sprite). The unit now ends directly from סעיף ד's שנמשיך?; `unitFinish()` signals the host.
 - Same structure as component 6 (its מועד ב twin), with a different cover story. Reached only by
   failing מועד א; s0 offers "חזרה" back into component 06. Item is `01-07-01` (was `01-06-01`).
 - s0 maps to item 01 step 0 (not null) for the same reason as component 6: the item stays open until `peakFinish()`.
 - q1–q4 map 1:1 to s1–s4: `PEAK_CORRECT` / `xapiQ(PEAK_ITEM,'q'+idx)` key off step index, and each screen's option text matches its metadata question's answers exactly.
-- Since 2026-10-14 each סעיף gives its own feedback popup (2 attempts); the combined answer screens (old s5/s6) were removed and the scenario and endings moved down from s7/s8/s9 into s5/s6/s7. After סעיף ד a pass (4/4) goes to s6, otherwise to s7 — both terminal (this is the last attempt, מועד ב), and both report the unit `completed`. The s1 companion line ("תדעו אם צדקתם רק בסוף") was removed with it.
+- Since 2026-10-14 each סעיף gives its own feedback popup (2 attempts); the combined answer screens (old s5/s6) were removed and the scenario and endings moved down from s7/s8/s9 into s5/s6/s7. After סעיף ד the unit ends on either outcome (this is the last attempt, מועד ב), and both report the unit `completed`. The s1 companion line ("תדעו אם צדקתם רק בסוף") was removed with it.
 
 ---
 
@@ -242,5 +241,5 @@ Notes:
 | 3 | תרגול בסיסי + סטנדרטי ב | 3 | 8 (s0–s7) | 01–06 | 4 basic + 2 standard-B practice Qs, one Q per item; always → 4 |
 | 4 | משימת כיתה | 4 | 2 (s0–s1) | 01 | Offline class task, presented not graded; reached from 2 or 3 |
 | 5 | תרגול מתקדם | 5 | 11 (s0–s10) | 01–05 | Items 04/05 are multi-part (2 and 3 sub-questions), each with a scenario screen |
-| 6 | שאלת שיא (מועד א) | 6 | 7 (s0–s6) | 01 | Single 4-part peak-question item, feedback per סעיף, pass ends the unit, fail → 7 |
-| 7 | שאלת שיא (מועד ב) | 7 | 8 (s0–s7) | 01 | Single 4-part peak-question item, feedback per סעיף, no retry (final attempt) |
+| 6 | שאלת שיא (מועד א) | 6 | 6 (s0–s5) | 01 | Single 4-part peak-question item, feedback per סעיף, pass ends the unit, fail → 7 |
+| 7 | שאלת שיא (מועד ב) | 7 | 6 (s0–s5) | 01 | Single 4-part peak-question item, feedback per סעיף, no retry (final attempt) |

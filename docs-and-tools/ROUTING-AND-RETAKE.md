@@ -101,15 +101,17 @@ and remove `#back-to-prev-part` from part 07's markup. Leave `doneQ` in place re
 
 ## The attempt-ending sites
 
-Exactly one unit `completed` must be reported across all of them. `done['unit']` — keyed `'unit'`, not
+Since 2026-10-15 there are **no end screens**: the unit ends on סעיף ד's שנמשיך? (`peakNext()` →
+`peakFinish()` → `unitFinish()`, which posts `720:unit-finished` to a framing host). Exactly one unit
+`completed` must be reported across all of them. `done['unit']` — keyed `'unit'`, not
 by slug, so parts 06 and 07 share it — is what guarantees that.
 
 | where | component `completed` | unit `completed` |
 |---|---|---|
-| 06 → s6 — passed מועד א | ✓ `success: true` | ✓ **the unit ends here** |
+| 06 s4 — passed מועד א | ✓ `success: true` | ✓ **the unit ends here** |
 | 06 — failed מועד א (no end screen; straight to part 07) | ✓ `success: false` | ✗ the learner goes on to מועד ב |
-| 07 → s6 — passed מועד ב | ✓ `success: true` | ✓ terminal |
-| 07 → s7 — failed מועד ב | ✓ `success: false` | ✓ terminal — a learner who fails the final attempt has still finished the lomda |
+| 07 s4 — passed מועד ב | ✓ `success: true` | ✓ terminal |
+| 07 s4 — failed מועד ב | ✓ `success: false` | ✓ terminal — a learner who fails the final attempt has still finished the lomda |
 
 Before this work, **the unit `completed` existed nowhere in the unit**, and the failure path of
 מועד א (then part 05, now 06) reported nothing at all — a failed מועד א was indistinguishable from a learner who never started.
