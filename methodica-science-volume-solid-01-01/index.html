@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=112">
-  <link rel="stylesheet" href="css/style.css?v=100">
+  <link rel="stylesheet" href="../unit-css/style.css?v=114">
+  <link rel="stylesheet" href="css/style.css?v=112">
 </head>
 <body data-subject-theme="science">
 
@@ -42,6 +42,11 @@
     <symbol id="pt-icon-comic-off" viewBox="0 0 30 30">
       <rect x="4.5" y="4" width="21" height="22" rx="2.6" fill="none" stroke="#fff" stroke-width="1.6"/>
       <path d="M4.5 13.2h21M15 13.2V26" stroke="#fff" stroke-width="1.6"/>
+    </symbol>
+    <!-- Question mark for the tip button on s18/s21 — the deck's own icon (slides 175-176). -->
+    <symbol id="tip-icon-question" viewBox="0 0 96 96">
+      <path d="M73.335 29.612C71.698 15.6242 59.0316 5.6119 45.0438 7.24889 32.2279 8.74875 22.552 19.5857 22.508 32.489L34.508 32.489C34.5077 25.0359 40.5494 18.9937 48.0024 18.9934 55.4555 18.9931 61.4977 25.0348 61.498 32.4879 61.4982 37.1349 59.1075 41.4551 55.17 43.923 47.0441 48.8948 42.0635 57.712 42 67.238L54 67.238C54.0765 61.841 56.9344 56.866 61.558 54.081 69.8821 48.8856 74.4673 39.3588 73.335 29.612Z" fill="currentColor"/>
+      <path d="M53.379 76.474 53.379 76.474C50.5194 73.6085 45.8784 73.6036 43.0128 76.4632 43.0092 76.4668 43.0056 76.4704 43.002 76.474 42.3314 77.1471 41.7975 77.9438 41.43 78.82 41.0474 79.7251 40.8525 80.6984 40.857 81.681 40.8515 82.6597 41.0472 83.6291 41.432 84.529 42.1798 86.2881 43.5849 87.6857 45.348 88.424 46.2529 88.8065 47.2256 89.0024 48.208 89 49.1866 89.0048 50.1559 88.8092 51.056 88.425 52.8066 87.6774 54.2009 86.2828 54.948 84.532 55.3326 83.632 55.5286 82.6627 55.524 81.684 55.5277 80.7014 55.3324 79.7282 54.95 78.823 54.5828 77.946 54.0493 77.1483 53.379 76.474Z" fill="currentColor"/>
     </symbol>
   </defs>
 </svg>
@@ -903,6 +908,9 @@
             <img class="disp-cylinder-img" src="assets/img/s17-cylinder.svg?v=3" alt="משורה מדורגת עם מים עד קו 50 מ&quot;ל" draggable="false">
             <div class="disp-water" id="disp-water"></div>
             <img class="disp-sunk-marble" id="disp-sunk-marble" src="assets/img/s17-marble.svg?v=2" alt="" draggable="false">
+            <!-- Starting-level reference, same marker as s23/s24. Shown once the water has risen
+                 (QA 2026-10-15) — before the drop the marble is parked on this side. -->
+            <div class="meas-cyl-start" aria-hidden="true"><span class="meas-cyl-start-text">מפלס התחלתי<br><b>50 מ"ל</b></span></div>
             <div class="disp-badge" id="disp-badge">50 מ"ל</div>
           </div>
           <div class="disp-marble-zone">
@@ -924,15 +932,15 @@
   </section>
 
 
-  <!-- ═══ S18 — Storyboard slide 26 · what the displacement showed ═══
-       The second half of the old s17. Same two-column shape as s21 (slide 29's result screen), so
-       the two applet conclusions read alike: the vessel on the left, and heading, paragraph, boxed
-       rule and the mascot down the right. The vessel is the applet's OWN markup frozen in its
-       finished state — `.risen` baked into the class list instead of added by dispDrop() — so the
-       learner sees exactly the picture they just made rather than a separate illustration of it.
-       It carries NO ids: every id in that block belongs to the live applet on s17. -->
+  <!-- ═══ S18 — Storyboard slide 26 (deck slide 175, revised 13.7.26) · what the displacement showed ═══
+       Centred column: the principle, the boxed rule and the vessel with its two readings; the
+       caveat about bodies that dissolve is a tip the learner opens from the left-hand button
+       (.tip-aside), and המשך unlocks once it is open (tipReveal). The mascot is gone, per the deck.
+       The vessel is the applet's OWN markup frozen in its finished state — `.risen` baked into the
+       class list — so the learner sees the picture they just made. It carries NO ids: every id in
+       that block belongs to the live applet on s17. -->
   <section class="screen" data-screen="18" id="s18">
-    <div class="exp exp--content exp--split">
+    <div class="exp exp--content exp--tip">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
            so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
@@ -946,37 +954,41 @@
           <span>לקרוא קומיקס</span></button>
       </div>
       <div class="split-stage">
-        <div class="split-figure split-figure--vessel">
-          <div class="disp-cylinder-wrap risen" role="img" aria-label="משורה מדורגת ובתוכה הגולה; מפלס המים עלה מ-50 ל-62 מ&quot;ל">
-            <img class="disp-cylinder-img" src="assets/img/s17-cylinder.svg?v=3" alt="" draggable="false">
-            <div class="disp-water"></div>
-            <img class="disp-sunk-marble" src="assets/img/s17-marble.svg?v=2" alt="" draggable="false">
-            <div class="disp-badge">62 מ"ל</div>
+      <div class="tip-frame">
+        <div class="tip-main">
+          <p class="exp-instruction tip-lead tip-in" style="--k: 0">עיקרון ארכימדס אומר שכשמכניסים גוף למים, מפלס המים עולה <strong>בכמות שווה לנפח הגוף בדיוק.</strong><br><strong>מסקנה:</strong></p>
+          <p class="tip-conclusion tip-in" style="--k: 1"><strong>נפח המים הסופי פחות נפח המים המקורי<br>=<br>נפח הגולה!</strong></p>
+          <div class="tip-figure tip-in" style="--k: 2">
+            <div class="disp-cylinder-wrap risen" role="img" aria-label="משורה מדורגת ובתוכה הגולה; מפלס המים עלה מ-50 מ&quot;ל (נפח מים התחלתי) ל-62 מ&quot;ל (נפח מים סופי), ולכן נפח הגולה 12 סמ&quot;ק">
+              <img class="disp-cylinder-img" src="assets/img/s17-cylinder.svg?v=3" alt="" draggable="false">
+              <div class="disp-water"></div>
+              <img class="disp-sunk-marble" src="assets/img/s17-marble.svg?v=2" alt="" draggable="false">
+              <!-- The two readings, the brace and the difference, to the vessel's right (deck slide 175).
+                   Row 1 is centred on the 62 mL surface (41%) and row 2 on the 50 mL one (50%). -->
+              <div class="disp-readout" aria-hidden="true">
+                <div class="disp-readout-rows">
+                  <div class="disp-readout-row"><span class="disp-readout-line"></span><span class="disp-readout-badge">62 מ"ל</span><span class="disp-readout-label">נפח מים סופי</span></div>
+                  <div class="disp-readout-row"><span class="disp-readout-line"></span><span class="disp-readout-badge">50 מ"ל</span><span class="disp-readout-label">נפח מים התחלתי</span></div>
+                </div>
+                <svg class="disp-readout-brace" viewBox="0 0 16 64" preserveAspectRatio="none"><path d="M2 2 C9 2 8 8 8 16 V26 C8 30 10 32 14 32 C10 32 8 34 8 38 V48 C8 56 9 62 2 62"/></svg>
+                <span class="disp-readout-result">נפח הגולה = 12 סמ"ק</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="split-side">
-          <!-- Copy is storyboard slide 26 verbatim: the principle is one sentence with the bold on
-               its closing clause rather than on a "עיקרון ארכימדס:" label the deck does not have,
-               and the conclusion is spelled out in words. -->
-          <h1 class="exp-title">מה קרה כאן?</h1>
-          <p class="exp-instruction">מפלס המים עלה ברגע שהגולה נכנסה למשורה.</p>
-          <p class="exp-instruction">עיקרון ארכימדס אומר שכשמכניסים גוף למים, מפלס המים עולה<br><strong>בכמות שווה לנפח הגוף בדיוק.</strong></p>
-          <p class="split-conclusion"><strong>נפח המים הסופי פחות נפח המים המקורי<br>=<br>נפח הגולה!</strong></p>
-          <div class="companion-say companion-say--inline companion-say--right split-say">
-            <p class="companion-bubble s18-gif" style="--bubble-w: 375px;">עיקרון זה תקף לגופים שלא<br>מתמוססים במים.<span class="s18-para-gap"></span>אפשר לעטוף גופים שרגישים למים<br>בשכבת מגן דקה לפני שמכניסים&nbsp;למשורה.</p>
-            <!-- Slide 26 notes: "גיפ מופיע אחרי 5 שניות." — he and his bubble
-                 fade in together at 5s (bubble: QA 2026-10-12). Classed per element, not on the
-                 .companion-say wrapper, which must not become a stacking context.
-                 2026-10-12: the soap clip was swapped for the ping-pong-ball one (orange_pingpong /
-                 blue_pingpong) at the designer's request. -->
-            <video class="companion s18-gif" id="s18-gif" src="assets/img/character-orange-pingpong-ball.mp4?v=4" alt="" aria-hidden="true"
-                 data-pose="pingpong-ball" draggable="false" autoplay loop muted playsinline style="--cw: 170px;"></video>
+        <div class="tip-aside tip-in tip-in--last" style="--k: 3">
+          <svg class="tip-icon" viewBox="0 0 96 96" aria-hidden="true"><use href="#tip-icon-question"/></svg>
+          <button class="tip-btn" id="s18-tip-btn" type="button" aria-expanded="false" aria-controls="s18-tip" onclick="tipReveal('s18')">
+            <span>ומה נעשה עם גופים מסיסים במים?</span><span>לחצו לגלות</span></button>
+          <div class="tip-pop" id="s18-tip" hidden>
+            <p>עיקרון ארכימדס תקף לגופים שלא מתמוססים במים.</p>
+            <p>אפשר לעטוף גופים שרגישים למים בשכבת מגן דקה לפני שמכניסים&nbsp;למשורה.</p>
           </div>
         </div>
       </div>
     </div>
     <div class="nav-bar">
-      <button class="btn-continue" id="s18-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s18-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
@@ -1095,18 +1107,13 @@
   </section>
 
 
-  <!-- ═══ S21 — Storyboard slide 29 · what the flooding method measured ═══
-       Its own screen, not a panel inside the applet: slide 28 is the experiment (s20) and slide 29
-       is the result, and QA 2026-08-24 (slide 13) asked for them separated. The caveat about
-       floating bodies is the mascot's line here, per the same note, and he holds the ping-pong
-       ball slide 29 gives him. Flow: flooding S20 → S21 → shared ending S22. -->
+  <!-- ═══ S21 — Storyboard slide 29 (deck slide 176, revised 13.7.26) · what the flooding method measured ═══
+       Same shape as s18: heading, paragraph and boxed rule over the flooding scene frozen in its
+       finished state (s20's own markup with `.flooded` / `.drained` baked in, no ids), and the caveat
+       about bodies that float behind the left-hand tip button. The photo and the mascot are gone,
+       per the deck. Flow: flooding S20 → S21 → shared ending S22. -->
   <section class="screen" data-screen="21" id="s21">
-    <!-- Two columns, as storyboard slide 29 lays it out (QA 2026-08-25, slide 19): the photo on
-         the left, and on the right the heading, the paragraph, the boxed conclusion and then the
-         mascot with his caveat. The previous single centred column stacked the bubble on top of
-         the conclusion line and hid it. Copy is the deck's: סלע rather than אבן, the drainage as a
-         second sentence, and the caveat split into its two sentences. -->
-    <div class="exp exp--content exp--split">
+    <div class="exp exp--content exp--tip">
       <div class="path-toggle" role="tablist" aria-label="בחירת מסלול למידה">
       <!-- Position-locked, and DOM order is the anchor: the container is `direction: rtl`,
            so the FIRST child renders on the physical RIGHT. experiments right, comic left. -->
@@ -1120,25 +1127,39 @@
           <span>לקרוא קומיקס</span></button>
       </div>
       <div class="split-stage">
-        <div class="split-figure">
-          <div class="scq-figure" style="width: 100%">
-            <img src="assets/img/s21-pour-to-cylinder.jpg" alt="מים נמזגים מקערת האיסוף אל תוך משורה מדורגת המסומנת עד 250 מ&quot;ל">
+      <div class="tip-frame">
+        <div class="tip-main">
+          <div class="tip-lead tip-in" style="--k: 0">
+            <h1 class="exp-title">מה קרה כאן?</h1>
+            <p class="exp-instruction">ברגע שהסלע נכנס לקערה, המים העודפים גלשו, והתנקזו בכלי האיסוף התחתון.</p>
+            <p class="exp-instruction"><strong>מסקנה:</strong></p>
+          </div>
+          <p class="tip-conclusion tip-in" style="--k: 1"><strong>כמות המים שגלשו מהקערה<br>=<br>נפח הסלע!</strong></p>
+          <div class="tip-figure tip-in" style="--k: 2">
+            <div class="flood-scene drained" role="img" aria-label="הסלע שקוע בקערה המלאה במים; המים שגלשו ממנה נאספו בכלי האיסוף התחתון — זה נפח הסלע">
+              <div class="flood-bowl flooded">
+                <div class="flood-bowl-water"></div>
+                <img class="flood-sunk-rock" src="assets/img/s20-rock.png" alt="" draggable="false">
+                <span class="flood-stream flood-stream--l"></span>
+                <span class="flood-stream flood-stream--r"></span>
+              </div>
+              <div class="flood-tray"><div class="flood-tray-water"><span class="flood-tray-label" aria-hidden="true">נפח הסלע</span></div></div>
+            </div>
           </div>
         </div>
-        <div class="split-side">
-          <h1 class="exp-title">מה קרה כאן?</h1>
-          <p class="exp-instruction">המים בקערה גלשו ברגע שהסלע נכנס אליה.<br>המים העודפים התנקזו בכלי האיסוף התחתון.</p>
-          <p class="split-conclusion"><strong>כמות המים שגלשו מהקערה<br>=<br>נפח הסלע!</strong></p>
-          <div class="companion-say companion-say--inline companion-say--right split-say">
-            <p class="companion-bubble" style="--bubble-w: 280px;">עבור גופים קלים שצפים במים ניתן לחבר משקולת כדי שישקעו לתחתית הכלי.<br><br>לא לשכוח להוריד את נפח המשקולת מהתוצאה הסופית!</p>
-            <video class="companion" src="assets/img/character-orange-pingpong.mp4?v=2" alt="" aria-hidden="true"
-                 data-pose="pingpong" draggable="false" autoplay loop muted playsinline style="--cw: 230px;"></video>
+        <div class="tip-aside tip-in tip-in--last" style="--k: 3">
+          <svg class="tip-icon" viewBox="0 0 96 96" aria-hidden="true"><use href="#tip-icon-question"/></svg>
+          <button class="tip-btn" id="s21-tip-btn" type="button" aria-expanded="false" aria-controls="s21-tip" onclick="tipReveal('s21')">
+            <span>ומה נעשה עם גופים שאינם שוקעים?</span><span>לחצו לגלות</span></button>
+          <div class="tip-pop" id="s21-tip" hidden>
+            <p>עבור גופים קלים שאינם שוקעים במים, ניתן לחבר משקולת כדי שישקעו לתחתית הכלי.</p>
+            <p>לא נשכח להוריד את נפח המשקולת מהתוצאה הסופית!</p>
           </div>
         </div>
       </div>
     </div>
     <div class="nav-bar">
-      <button class="btn-continue" id="s21-continue" onclick="advanceScreen()">המשך</button>
+      <button class="btn-continue" id="s21-continue" disabled onclick="advanceScreen()">המשך</button>
       <button class="btn-back" onclick="goBack()">חזרה</button>
     </div>
   </section>
@@ -1230,15 +1251,18 @@
                  VESSEL — it always did; there was simply nothing here for it to act on, so the
                  cylinder drew empty through both steps (QA 2026-08-29). -->
             <div class="meas-cyl-wrap">
-              <img class="meas-cyl-img" src="assets/img/s17-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
+              <img class="meas-cyl-img" src="assets/img/s17-cylinder.svg?v=3" alt="משורה מדורגת; מפלס המים ההתחלתי מסומן ב-50 מ&quot;ל" draggable="false">
               <div class="meas-cyl-water"></div>
+              <!-- Fixed reference: the starting level the learner subtracts from. Unlike the badge,
+                   it never changes with the step (QA 2026-10-15). -->
+              <div class="meas-cyl-start" aria-hidden="true"><span class="meas-cyl-start-text">מפלס התחלתי<br><b>50 מ"ל</b></span></div>
               <img class="meas-cyl-king" src="assets/img/s23-chess-king.svg" alt="" aria-hidden="true" draggable="false">
             </div>
             <div class="meas-badge" id="meas-cyl-badge">50 מ"ל</div>
             <span class="meas-vessel-label">משורה</span>
           </div>
           <div class="meas-vessel" id="meas-bowl" data-vessel="bowl">
-            <div class="meas-bowl"><div class="meas-bowl-water" id="meas-bowl-water"></div><img class="meas-bowl-object" src="assets/img/s23-hammer.svg?v=2" alt="" aria-hidden="true" draggable="false"></div>
+            <div class="meas-bowl"><div class="meas-bowl-water" id="meas-bowl-water"></div><img class="meas-bowl-object" src="assets/img/s23-hammer.png" alt="" aria-hidden="true" draggable="false"></div>
             <!-- Step 4 (storyboard slide 37) makes the tray itself the drag source: the learner
                  pours it into the משורה. It is a child of the bowl vessel, which is also a drop
                  target — harmless, because the drag ghost is pointer-events:none so the drop
@@ -1308,14 +1332,17 @@
                  hinted it was not the place to drag the hammer. `has-king` still lifts the water
                  to 65. -->
             <div class="meas-cyl-wrap">
-              <img class="meas-cyl-img" src="assets/img/s17-cylinder.svg?v=3" alt="משורה מדורגת" draggable="false">
+              <img class="meas-cyl-img" src="assets/img/s17-cylinder.svg?v=3" alt="משורה מדורגת; מפלס המים ההתחלתי מסומן ב-50 מ&quot;ל" draggable="false">
               <div class="meas-cyl-water"></div>
+              <!-- Fixed reference: the starting level the learner subtracts from. Unlike the badge,
+                   it never changes with the step (QA 2026-10-15). -->
+              <div class="meas-cyl-start" aria-hidden="true"><span class="meas-cyl-start-text">מפלס התחלתי<br><b>50 מ"ל</b></span></div>
             </div>
             <div class="meas-badge" id="meas2-cyl-badge">65 מ"ל</div>
             <span class="meas-vessel-label">משורה</span>
           </div>
           <div class="meas-vessel" id="meas2-bowl" data-vessel="bowl">
-            <div class="meas-bowl"><div class="meas-bowl-water" id="meas2-bowl-water"></div><img class="meas-bowl-object" src="assets/img/s23-hammer.svg?v=2" alt="" aria-hidden="true" draggable="false"></div>
+            <div class="meas-bowl"><div class="meas-bowl-water" id="meas2-bowl-water"></div><img class="meas-bowl-object" src="assets/img/s23-hammer.png" alt="" aria-hidden="true" draggable="false"></div>
             <div class="meas-tray" id="meas2-tray"><div class="meas-tray-water" id="meas2-tray-water"></div></div>
             <span class="meas-vessel-label">קערת הצפה + כלי איסוף</span>
             <svg class="meas-pour-arrow hidden" id="meas2-pour-arrow" viewBox="0 0 90 120" aria-hidden="true"><path d="M78 108 C 40 104, 22 70, 24 22" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M8 34 L24 12 L40 34" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1590,7 +1617,7 @@
 <script src="../unit-js/40-resume.js?v=3"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=2"></script>
-<script src="js/main.js?v=100"></script>
+<script src="js/main.js?v=104"></script>
 <script src="../unit-js/90-boot.js?v=3"></script>
 </body>
 </html>

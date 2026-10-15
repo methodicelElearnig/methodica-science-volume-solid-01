@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · שאלת שיא (מועד ב)</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=112">
+  <link rel="stylesheet" href="../unit-css/style.css?v=114">
   <link rel="stylesheet" href="css/style.css?v=100">
 </head>
 <body data-subject-theme="science">
@@ -17,14 +17,13 @@
 
   <!-- ═══ S0 — Peak intro (מועד ב) ═══ -->
   <section class="screen active" data-screen="0" id="s0">
-    <!-- Storyboard slide 160: the transition INTO מועד ב, same shape as part 06's s0 (slide 147).
-         Deck order is kept — the bold label first, then the two lines under it — rather than
-         forced into part 06's sub-title-body sequence, which that slide happens to use.
-         The scenario that used to sit here is s5 (slide 161). -->
+    <!-- Storyboard slide 160: the transition INTO מועד ב. Laid out exactly as part 06's s0
+         (slide 147) — sub line, title, body — so both peak questions open on the same screen
+         (requested 2026-10-15). The scenario that used to sit here is s5 (slide 161). -->
     <div class="peak-transition">
       <div class="peak-transition-text">
-        <h1 class="peak-transition-title">משימת שיא 2</h1>
         <p class="peak-transition-sub">פחות הצלחנו בפעם הראשונה, בואו ננסה שוב.</p>
+        <h1 class="peak-transition-title">משימת שיא 2</h1>
         <p class="peak-transition-body">הפעם יש 4 סעיפים. עליכם להצליח בכולם.</p>
       </div>
       <div class="peak-transition-video" id="s0-video"></div>
@@ -134,38 +133,6 @@
     </div>
   </section>
 
-  <!-- ═══ S6 — Unit complete, the SUCCESS ending (storyboard slide 173) ═══
-       Reached from סעיף ד's שנמשיך? when all four סעיפים are right. 173 is the unit signing off.
-       .peak-end was defined in the shared sheet and never used by anything but its -score child;
-       this is the screen it was written for. -->
-  <section class="screen" data-screen="6" id="s6">
-    <div class="peak-end">
-      <h1 class="peak-end-title">כל הכבוד!</h1>
-      <p class="peak-end-text">השלמת את היחידה בהצלחה!</p>
-      <!-- Injected by CHARACTER_SLOTS so it follows the learner's chosen colour. -->
-      <div class="peak-end-video" id="s6-video"></div>
-    </div>
-    <div class="nav-bar"><button class="btn-continue" id="s6-finish" onclick="unitFinish()">סיימתי</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
-  </section>
-
-  <!-- ═══ S7 — Unit complete, the LESS-SUCCESSFUL ending (storyboard slide 172) ═══
-       Reached from סעיף ד's שנמשיך? when not all four are right. מועד ב is the final attempt, so this is still an
-       ending, not a retry prompt — hence סיימתי, same as s6. .peak-end--retry only recolours the
-       title; the shell is identical.
-       The deck names Character-2-Challenge.mp4 / orange_win.mp4 for this slide. Those are byte-for-byte
-       the intro's climb (md5 8f00601d… and 2c9693ff…), so following the slide literally would replay
-       the opening animation as the closing one. It uses the `success` pose instead — confirmed with
-       the content owner 2026-08-27. -->
-  <section class="screen" data-screen="7" id="s7">
-    <div class="peak-end peak-end--retry">
-      <h1 class="peak-end-title">פחות הצלחת בשאלות השיא.</h1>
-      <p class="peak-end-text">קורה, העיקר שניסית והתאמצת!</p>
-      <div class="peak-end-video" id="s7-video"></div>
-    </div>
-    <div class="nav-bar"><button class="btn-continue" id="s7-finish" onclick="unitFinish()">סיימתי</button><button class="btn-back" onclick="goBack()">חזרה</button></div>
-  </section>
-
-
   <!-- ═══════════════ REPORT MODAL ═══════════════ -->
   <div id="report-modal" class="report-modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
     <div class="report-modal-box">
@@ -198,7 +165,7 @@
 <script src="../unit-js/40-resume.js?v=3"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=2"></script>
-<script src="js/main.js?v=100"></script>
+<script src="js/main.js?v=103"></script>
 <script src="../unit-js/90-boot.js?v=3"></script>
 </body>
 </html>

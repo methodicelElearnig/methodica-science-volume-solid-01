@@ -241,7 +241,7 @@
 
 /* ── Variant: banner ("זוהי שיטת …") — docked across the panel width; --t
    picks the band (default near the top, ~78% to sit low instead).
-   Subject/800 rather than Subject/500 so white text clears AA. */
+   Styled as the caption strip ("מה קרה כאן?") — navy box, white 600 text (QA 2026-10-15). */
 .speech-bubble--banner {
   right: 10%;
   left: 10%;
@@ -255,16 +255,15 @@
 }
 .speech-bubble--banner.speech-bubble--fit .speech-bubble__frame { padding: 8px 40px; }
 .speech-bubble--banner .speech-bubble__frame {
-  background: var(--subject-800);
-  border-color: #fff;
-  border-radius: 1000px;
+  background: rgb(11, 36, 82)   /* opaque — no photo showing through */;
+  border: none;
+  border-radius: 12px;
   padding: 8px 20px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
 }
-/* QA 2026-08-25 (slides 9, 11): the banner strips carried 800 while every other bubble sits at
-   400 — "זוהי שיטת דחיקת המים!" and "זוהי שיטת ההצפה!" read as shouted. The white-on-blue pill
-   already carries the emphasis; the weight does not need to. */
+/* 600 to match the caption strip; 800 (pre QA 2026-08-25) read as shouted. */
 .speech-bubble--banner .speech-bubble__text {
-  color: #fff; font-weight: 400; font-size: 20px; text-align: center;
+  color: #fff; font-weight: 600; font-size: 20px; text-align: center;
 }
 
 /* ── Variant: side note (caveats / footnotes inside a panel) ──
@@ -314,7 +313,7 @@
   /* 84px top: the band above the frame is where the caption hangs. Every comic screen keeps the
      same padding AND the same content height (the dots row keeps its slot even when hidden), so
      the frame sits at exactly the same place and size on every screen (QA 2026-10-08). */
-  padding: 84px 40px 90px;
+  padding: 84px 40px 84px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
 }
 /* prev (›) first in DOM = rightmost; next (‹) last = leftmost */
@@ -518,7 +517,7 @@
 .meas-obj-img { height: 96px; width: auto; display: block; }
 /* 165 is deliberate: the overflow bowl is 195 wide, so the hammer reads as ALMOST too big for it —
    which is the point of step 3, where the learner has to see it will not go in the משורה. Sized by
-   width because the asset is landscape now (viewBox 104x68). */
+   width because the asset is landscape (s23-hammer.png, a realistic photo cut-out, 660x267 — QA 2026-10-15). */
 .meas-obj-img--hammer { width: 165px; height: auto; }
 
 /* QA 2026-08-25 (slide 20). Scoped to S27 on purpose: .transition-title is shared with
@@ -570,50 +569,13 @@
 #s27 .transition-content { top: calc(50% + 3px); }
 
 
-/* ── Two-column content screen (S21, storyboard slide 29) ──────────────────────────────
-   QA 2026-08-25 (slide 19). The deck puts the photo in the left half and stacks heading,
-   paragraph, boxed conclusion and the mascot down the right. `direction: ltr` on the row is
-   what puts the figure physically LEFT while the text inside each column stays RTL — the same
-   trick .aq-stage uses. */
-.exp--split { padding-top: 100px; }
-.split-stage {
-  flex: 1 1 auto; min-height: 0; width: 100%; max-width: 1160px;
-  display: flex; direction: ltr; align-items: center; justify-content: center; gap: 40px;
-}
-.split-figure { flex: 0 0 440px; max-width: 440px; }
-.split-side {
-  flex: 1 1 auto; min-width: 0; direction: rtl;
-  display: flex; flex-direction: column; align-items: stretch; gap: 12px;
-}
-/* The blue-bordered conclusion box of slide 29. */
-.split-conclusion {
-  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700;
-  color: #303030; text-align: center; direction: rtl; line-height: 1.35;
-  border: 2px solid var(--subject-500); border-radius: 12px;
-  padding: 12px 18px; margin: 0;
-  /* QA 2026-08-30, live values off s21: 20 -> 24px and the frame stops at 80% of its column.
-     s18 keeps its own 90% (set from a live value in an earlier round, so it is a decision, not
-     a default) and takes the 24px from here. */
-  width: 80%;
-}
-/* The mascot sits INSIDE the right column, so the group is a flow item. That is exactly what
-   .companion-say--inline already means, so the markup uses it and this only adds the spacing
-   — the old absolutely-anchored group is what put the bubble on top of the conclusion line. */
-.split-say { margin-top: 4px; }
-/* QA 2026-08-29: the bubble drops 30px and tucks 30px in towards the sprite, so the beak meets him
-   at head height instead of pointing across a gap at his shoulder. Both offsets go on the BUBBLE,
-   not on the group: the group is `align-items: flex-start` with a 14px gap, so `margin-top` here
-   moves the bubble alone (the sprite keeps its feet on the group's bottom edge) and the negative
-   `margin-right` eats the gap rather than shifting the whole pair off the column's right edge.
-   Shared by the two screens that use .split-say — s21 and s18. Each keeps its own --bubble-w. */
-.split-say .companion-bubble { margin-top: 30px; margin-right: -30px; }
 
 /* QA 2026-08-29: the measurement applet's heading sits 40px lower. Its .exp carries no --question
    or --content modifier, so it keeps .exp's own 24px top padding and the title was hard against
    the canvas edge while the stage below had room to spare. BOTH halves, s23 and s24: they are the
    same applet across two screens and the head would otherwise jump 40px between step 2 and step 3.
    `margin-top` on the head rather than padding on .exp, so it is obvious which element moved. */
-#s23 .exp-head, #s24 .exp-head { margin-top: 40px; }
+#s23 .exp-head, #s24 .exp-head { margin-top: 76px; }  /* head lands at 100 like the other experiment screens */
 /* QA 2026-10-12: titles match the enlarged s20/s26 ones; the drag hint is 20px #303030 like s20's .flood-hint. */
 #s23 .exp-title, #s24 .exp-title { font-size: 36px; }
 #s23 .meas-obj-hint, #s24 .meas-obj-hint { font-size: 20px; color: #303030; }
@@ -632,8 +594,8 @@
 
 /* S17 two-column stage, storyboard slide 26 (QA 2026-08-25, slide 17).
    `direction: ltr` on the row is what puts the applet physically LEFT and the explanation
-   RIGHT while the text inside each column stays RTL -- the same lever .aq-stage and
-   .split-stage use. .disp-stage's own `direction: rtl` in unit-css is overridden here
+   RIGHT while the text inside each column stays RTL -- the same lever .aq-stage uses.
+   .disp-stage's own `direction: rtl` in unit-css is overridden here
    because this sheet loads second. */
 #s17 .disp-applet { flex: 0 0 auto; display: flex; direction: rtl; align-items: center; gap: 46px; }
 /* QA 2026-10-11: the cylinder is the centre of the screen, the reset button sits directly under it,
@@ -651,28 +613,6 @@
    they described — slide 26's explanation and the mascot's caveat — is s18 now. What is left on s17
    is the applet alone, so the stage just centres it. */
 
-/* S18 (slide 26) borrows s21's two-column shape, but its left column holds the APPLET'S OWN
-   vessel frozen at `.risen` rather than a photo, and .disp-cylinder-wrap is a fixed 190px. So the
-   column shrinks to the art instead of reserving s21's 440px of photo width, which would leave a
-   250px hole beside a 190px cylinder. */
-#s18 .split-figure--vessel { flex: 0 0 auto; max-width: none; display: flex; justify-content: center; }
-/* And the text column is capped, because .split-side is `flex: 1 1 auto`: with the figure column
-   down from s21's 440px to the cylinder's 190px, the copy would otherwise take the 930px left over
-   and the framed rule would stretch across almost the whole canvas. 660 keeps the pair centred. */
-#s18 .split-side { flex: 0 1 660px; }
-/* The framed rule stops short of the column's edge. Scoped to s18 deliberately: .split-conclusion
-   is shared with s21, whose column sits beside a 440px photo instead of a 190px cylinder and was
-   not in this QA round. */
-#s18 .split-conclusion { width: 90%; }
-/* ...and it stays at 20px, where s21 went to 24. NOT an oversight: s18's column already fills
-   its stage exactly (top 96, bottom 641 against a bar top of 646 at H=720), so the 4px of extra
-   line height x2 lines plus padding that 24px costs eats the last 5px of clearance and the
-   mascot's BUBBLE starts crossing the bar below H~710 -- a window wider than about 1.80:1. It is
-   the bubble, not the sprite, that crosses, and at z-index 10 it paints OVER the bar rather than
-   being clipped by it the way a sprite's feet are. Lifting this to 24 needs 15px reclaimed first:
-   `.split-side`'s 12px gap down to 7 (3 gaps in this column), or the bubble's own 30px margin-top
-   halved. One line either way -- but it is a decision, not a default. */
-#s18 .split-conclusion { font-size: 20px; }
 
 
 /* S12 — the stem + options block is centred vertically (justify-content) and the 100px question
@@ -709,26 +649,32 @@
   top: max(calc(116px + var(--half-h)), calc(50% - 20px));
 }
 
-#s28 .dnd-question--beside-popup { --half-h: 258px; }  /* 20px type (QA 2026-10-11): board is 516 tall */
-/* Five columns in 722px are 136 wide, so s28's cards are 124 — still all the same size, which is the
-   QA 2026-08-24 rule; every task keeps its photo and at most two lines, nothing clips. */
-#s28 .dnd-question--columns .dnd-pill { width: 124px; }
-/* QA 2026-10-11 (s28): column headers and task captions at 20px. A dropped card fills its whole
-   cell and drops its own border, so the slot's border (occupied / correct / wrong) is the only
-   outline — no double frame. Bank cards are the slot's size, so nothing jumps on drop. */
-#s28 .dnd-question--columns .dnd-target-label { font-size: 20px; line-height: 1.1; min-height: 0; height: 76px; padding: 4px 6px; }
-#s28 .dnd-question--columns .dnd-pill { width: 132px; height: 144px; font-size: 20px; line-height: 1.1; padding: 6px 4px; }
-#s28 .dnd-question--columns .dnd-pill-img { height: 52px; flex: 0 0 auto; }
-#s28 .dnd-question--columns .dnd-source { gap: 10px; min-height: 0; }
-#s28 .dnd-question--columns .dnd-slot { flex: 0 0 148px; min-height: 0; }
+/* 2026-10-15 (s28): the board spans the full 1200px between the 40px gutters instead of the 722px
+   strip beside the popup, which left the left third of the screen empty. The popup is only shown
+   after every card is placed, so the bank row it covers is empty by then; only the target row has
+   to clear it. That row is kept above the popup's top line (canvas − 84 − 276, the tallest popup
+   with its answer toggle) at every height: `top` is the centred position, pulled up to
+   100% − 618px on short canvases (236px from board top to the slots' bottom + 370 + 12 clear) and
+   never above 108px, under the progress bar. At the 710px minimum the slots end 6px above it.
+   Cards turned landscape (photo beside caption) so the row is short enough for that. Bank cards
+   are the slot's size (228×96 at 1280; both are a fifth of the same 1180px), so nothing jumps on drop — the QA 2026-08-24 / 10-11 rules. */
+#s28 .dnd-question--beside-popup {
+  right: 40px; left: 40px; width: auto; transform: none;
+  top: max(108px, min(calc(50% - 218px), calc(100% - 618px)));
+}
+#s28 .dnd-question--columns .dnd-targets { gap: 10px; padding: 0 10px; }
+#s28 .dnd-question--columns .dnd-target-label { font-size: 20px; line-height: 1.1; min-height: 0; height: 56px; padding: 4px 10px; }
+#s28 .dnd-question--columns .dnd-slot { flex: 0 0 96px; min-height: 0; }
 #s28 .dnd-question--columns .dnd-slot.occupied { padding: 0; }
+#s28 .dnd-question--columns .dnd-source { gap: 10px; min-height: 0; flex-wrap: nowrap; }
+#s28 .dnd-question--columns .dnd-pill {
+  width: calc((100% - 40px) / 5); height: 96px; flex: 0 0 auto; flex-direction: row; gap: 10px; padding: 8px 12px;
+  font-size: 20px; line-height: 1.1; text-align: right;
+}
+#s28 .dnd-question--columns .dnd-pill-img { flex: 0 0 76px; width: 76px; height: 76px; object-fit: contain; }
+#s28 .dnd-question--columns .dnd-pill > span { flex: 1 1 0; min-width: 0; text-wrap: pretty; }
 #s28 .dnd-slot.occupied > .dnd-pill { width: 100%; height: 100%; border: 0; box-shadow: none; background: transparent; }
 
-
-/* QA 2026-10-12 (s34, s28): the photo takes every pixel the caption leaves, instead of a fixed
-   52–58px strip floating in the card. Still `contain`, so no object is cropped. */
-
-#s28 .dnd-question--columns .dnd-pill-img { flex: 1 1 0; min-height: 0; width: 100%; height: auto; object-fit: contain; }
 
 /* QA 2026-10-11 (s1): the mascot and his bubble come down out of the narration column and stand
    on the bottom bar's top line. The group is a direct child of the section (not of .hook-content,
@@ -835,18 +781,149 @@
 #s24 .meas-pour-hint { position: absolute; bottom: calc(100% + 16px); left: 50%; transform: translateX(-50%); width: 260px; font-size: 16px; font-weight: 700; color: var(--subject-900); line-height: 1.3; }
 
 
-/* ── S18 · QA 2026-10-12 ────────────────────────────────────────────────────────────────
-   Text column moved right of centre: the row spreads to its edges instead of centring, the text
-   column ends 30px short of the stage's right edge and the cylinder keeps 150px off its left. */
-#s18 .split-stage { justify-content: space-between; padding: 0 30px 0 150px; box-sizing: border-box; }
-/* The bubble's paragraph break was a <br><br> (a full empty line). */
-#s18 .s18-para-gap { display: block; height: 8px; }
-/* Slide 26 notes: "גיפ מופיע אחרי 5 שניות. מחזיק סבון מוצק קטן." — the soap-holding mascot and
-   his bubble fade in together 5s after entry. (Replaces a tray-pour animation that is not in the script.) */
-#s18 .s18-gif { opacity: 0; }
-#s18 .s18-gif.is-on { animation: s18-gif-show 0.5s ease 5s forwards; }
-@keyframes s18-gif-show { to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { #s18 .s18-gif.is-on { animation-duration: 0.01s; } }
-/* QA 2026-10-12: the ping-pong clip fills more of its frame than the soap one did, so the shared
-   -30px tuck put the bubble's tail into his fur. S18 only: 20px further off him. */
-#s18 .split-say .companion-bubble { margin-right: -10px; }
+
+/* QA 2026-10-15: a permanent "starting level" marker on the משורה, s23 + s24. The badge on the
+   right tracks the CURRENT level (50 → 65); this one stays at 50 because the learner needs it
+   for 65 − 50. Lives inside .meas-cyl-wrap so `top: 50%` is the 50 mL line (see the calibration
+   note on .meas-cyl-water). It runs from the bore's left wall (31.5%) out past the glass, on the
+   side with no printed scale, and the משורה takes a left margin (not a wider gap: s24 has three vessels) for its label. */
+#s23 #meas-cyl, #s24 #meas2-cyl { margin-left: 90px; }
+/* s24 is the widest row (three vessels + the side column) and the margin above pushed the 65 badge
+   to the canvas edge; the stage gap gives back what the margin took. */
+#s24 .meas-stage { gap: 0; }
+.meas-cyl-start {
+  position: absolute; top: 50%; right: 68.5%; width: 56px;
+  border-top: 2px dashed #1e2a38; pointer-events: none;
+}
+.meas-cyl-start-text {
+  position: absolute; right: 100%; top: 0; transform: translateY(-50%); margin-right: 6px;
+  font-family: 'Assistant', sans-serif; font-size: 16px; line-height: 1.15; color: #303030;
+  text-align: center; white-space: nowrap;
+}
+.meas-cyl-start-text b { font-size: 18px; color: #1e2a38; }
+/* s17: the same marker on the displacement applet. Hidden until the marble is in — its parking
+   spot is on this side of the cylinder — then fades in as the water settles at 62. */
+#s17 .meas-cyl-start { opacity: 0; transition: opacity 0.3s ease; }
+#s17 .disp-cylinder-wrap.risen .meas-cyl-start { opacity: 1; transition: opacity 0.4s ease 0.7s; }
+
+/* S7 — the orange comic clip draws the mascot at ~75% of the experiments clip's height (content
+   646 vs 858 source px of 960) and left of centre. Scale it up to match and recentre it. Only the
+   white matte is pushed past the video box, which is invisible on white and multiplies away on the
+   selected fill. Turquoise renders are already matched, so they are left alone. */
+#s7-img-comic[data-character="orange"] {
+  transform: translate(30px, 4px) scale(1.33);
+}
+
+
+/* ── Result screens S18 / S21 — deck slides 175 / 176 (realigned 15.10.26) ──────────────────────
+   One 1280x710 frame centred on the canvas, laid out on the deck's coordinates (pt x 4/3):
+   the lead text right-aligned across the top, on the same 40px right edge as the screens around it;
+   the boxed rule and the figure under it, right of centre, the rule centred over the figure (on s18
+   that is the vessel plus its readout); and the tip — icon, button, and the blue caveat box it
+   opens — in the left band. The frame is centred vertically too, so a canvas taller than 710 adds
+   space evenly rather than under the bar. The path toggle lives in the bottom bar. */
+.exp--tip { padding: 0; }
+.tip-frame {
+  position: absolute; left: 50%; top: calc((100% - 710px) / 2);
+  width: 1280px; height: 710px; margin-left: -640px;
+}
+.tip-main { position: absolute; inset: 0; }
+.tip-lead { position: absolute; right: 40px; top: 30px; width: 971px; text-align: right; }
+.tip-lead .exp-title, .tip-lead .exp-instruction { text-align: right; }
+/* The deck's framed rule, 471px wide. */
+.tip-conclusion {
+  position: absolute; width: 471px; margin: 0; box-sizing: border-box;
+  font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700;
+  color: #303030; text-align: center; direction: rtl; line-height: 1.3;
+  border: 3px solid var(--subject-500); border-radius: 12px; padding: 8px 18px;
+}
+/* Zero-width and centred: `left` is the figure's centre line (no transform — .tip-in animates it). */
+.tip-figure { position: absolute; width: 0; display: flex; justify-content: center; }
+/* s18 (slide 175): rule at 663,161; vessel centred on x 676, top 283. */
+#s18 .tip-conclusion { left: 663px; top: 161px; }
+#s18 .tip-figure { left: 676px; top: 283px; }
+/* s21 (slide 176): rule at 689,187; the scene centred on x 951, 16px under the rule (the deck image's
+   303 includes empty space above the bowl that the live scene does not have). */
+#s21 .tip-conclusion { left: 689px; top: 187px; }
+#s21 .tip-figure { left: 951px; top: 319px; }
+
+/* S18's vessel: 140px wide (336 tall), just under the deck's 148 so it clears the bar below the
+   lowered column. The live applet's 62 mL badge is not used here; the readout below replaces it. */
+#s18 .disp-cylinder-wrap { width: 140px; }
+.disp-readout {
+  position: absolute; left: 76%; top: calc(41% - 16px); height: calc(9% + 32px);
+  display: flex; direction: ltr; align-items: center; gap: 8px;
+}
+.disp-readout-rows { height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+.disp-readout-row { height: 32px; display: flex; align-items: center; }
+.disp-readout-line { width: 46px; height: 2px; background: var(--subject-500); }
+.disp-readout-badge {
+  background: #fff; border: 2px solid var(--subject-500); color: #1e2a38;
+  font-family: 'Assistant', sans-serif; font-weight: 700; font-size: 18px; line-height: 1.2;
+  padding: 1px 10px; border-radius: 999px; white-space: nowrap; direction: rtl;
+}
+.disp-readout-label {
+  width: 140px; text-align: center; white-space: nowrap; direction: rtl;
+  font-family: 'Assistant', sans-serif; font-size: 18px; color: #303030;
+}
+.disp-readout-brace { width: 16px; height: 100%; flex: none; fill: none; stroke: var(--subject-500); stroke-width: 2; }
+.disp-readout-result {
+  font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 700; color: #303030;
+  white-space: nowrap; direction: rtl;
+}
+
+/* S21's flooding scene, frozen. The label sits on the collected water in the tray. */
+.flood-tray-label {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 700; color: #1e2a38; direction: rtl;
+}
+
+/* The tip: icon over the button, the caveat box under it with its beak pointing up at the button.
+   The button is the .btn-continue pill (gradient, 20px regular, 6.5px 40px padding), two lines
+   because of its label; 24px clear of the icon above it (QA 2026-10-15). */
+.tip-aside {
+  position: absolute; width: 402px;
+  display: flex; flex-direction: column; align-items: center;
+}
+.tip-icon { width: 80px; height: 80px; color: var(--subject-500); display: block; }
+.tip-btn {
+  min-width: 140px; padding: 6.5px 40px; margin-top: 24px; white-space: nowrap;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--cta-gradient); color: #fff; border: none; border-radius: 1000px;
+  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400; line-height: 1.2;
+  cursor: pointer; direction: rtl;
+}
+.tip-btn:hover { text-shadow: 0.35px 0 0 currentColor, -0.35px 0 0 currentColor; }
+.tip-btn:focus-visible { outline: 3px solid var(--subject-900); outline-offset: 3px; }
+/* Icon tops and column centres per slide: 175 -> centre x 324, top 169; 176 -> centre x 356, top 205. */
+#s18 .tip-aside { left: 123px; top: 169px; }
+#s21 .tip-aside { left: 155px; top: 205px; }
+@keyframes tip-btn-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px var(--subject-200); }
+  50%      { box-shadow: 0 0 0 9px var(--subject-400); }
+}
+.tip-pop {
+  position: relative; width: 402px; margin-top: 28px; box-sizing: border-box;
+  background: var(--subject-500); color: #fff; border-radius: 16px; padding: 16px 22px;
+  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400; line-height: 1.35;
+  direction: rtl; text-align: right; text-wrap: pretty;
+  animation: tip-pop-in 0.3s ease both;
+}
+.tip-pop[hidden] { display: none; }
+.tip-pop p + p { margin-top: 14px; }
+.tip-pop::before {
+  content: ''; position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%);
+  border: 18px solid transparent; border-top: none; border-bottom-color: var(--subject-500);
+}
+@keyframes tip-pop-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+/* Entrance (deck notes): top to bottom, then the button and its icon last, pulsing until pressed. */
+.tip-in { opacity: 0; }
+.tip-in.is-on { animation: tip-in 0.5s ease calc(var(--k, 0) * 0.45s) both; }
+.tip-in--last.is-on .tip-btn:not(.is-open) { animation: tip-btn-pulse 1.1s ease-in-out calc(var(--k, 0) * 0.45s + 0.5s) infinite; }
+@keyframes tip-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .tip-in.is-on { animation-duration: 0.01s; animation-delay: 0s; }
+  .tip-in--last.is-on .tip-btn:not(.is-open) { animation: none; box-shadow: 0 0 0 4px var(--subject-400); }
+  .tip-pop { animation: none; }
+}

@@ -619,6 +619,40 @@
    52–58px strip floating in the card. Still `contain`, so no object is cropped. */
 #s4 .dnd-question--columns .dnd-pill-img{ flex: 1 1 0; min-height: 0; width: 100%; height: auto; object-fit: contain; }
 
+/* 2026-10-15 (s4): same move as part 01's s28 — the board spans the full 1200px between the 40px
+   gutters instead of the 722px strip pinned right, which left the left third of the screen empty.
+   The popup only opens once every card is placed (and on a retry the cards stay in their slots),
+   so the bank row under it is empty; only the target row has to clear it. `top` is the centred
+   position, pulled up to 100% − 645px on short canvases so the slots end 12px above the popup's
+   top line (canvas − 84 − 337, the final "wrong" popup with its answer toggle — taller than s28's),
+   never above 108px under the progress bar: 212px board top → slots' bottom + 421 + 12. Cards turn
+   landscape (photo beside caption) to keep that row short; bank cards are the slot's size (a third
+   of the same 1180px), so nothing jumps on drop. Overrides the 222×160 portrait rules above. */
+#s4 .dnd-question--beside-popup {
+  right: 40px; left: 40px; width: auto; transform: none;
+  top: max(108px, min(calc(50% - 205px), calc(100% - 645px)));
+}
+#s4 .dnd-question--columns .dnd-targets { gap: 10px; padding: 0 10px; }
+#s4 .dnd-question--columns .dnd-target-label { min-height: 0; height: 56px; padding: 4px 10px; }
+#s4 .dnd-question--columns .dnd-slot { flex: 0 0 96px; }
+#s4 .dnd-question--columns .dnd-source { flex-wrap: nowrap; }
+#s4 .dnd-question--columns .dnd-pill {
+  width: calc((100% - 20px) / 3); height: 96px; flex: 0 0 auto; flex-direction: row; justify-content: center;
+  gap: 14px; padding: 8px 12px;
+}
+#s4 .dnd-question--columns .dnd-pill-img { flex: 0 0 80px; width: 80px; height: 80px; }
+/* Under ~760px of canvas height (the canvas scales by width, so that is an aspect ratio) the 212px
+   no longer fits between 108 and the popup; the board tightens to 170px (stem gap 12, headers 44,
+   slots and cards 76) and keeps the same 12px clearance — slots end at 278, popup top 289 at 710. */
+@media (min-aspect-ratio: 1280/760) {
+  #s4 .dnd-question--beside-popup { gap: 12px; top: max(108px, min(calc(50% - 173px), calc(100% - 603px))); }
+  #s4 .dnd-question--columns .dnd-target { gap: 6px; }
+  #s4 .dnd-question--columns .dnd-target-label { height: 44px; }
+  #s4 .dnd-question--columns .dnd-slot { flex-basis: 76px; }
+  #s4 .dnd-question--columns .dnd-pill { height: 76px; padding: 6px 12px; }
+  #s4 .dnd-question--columns .dnd-pill-img { flex-basis: 64px; width: 64px; height: 64px; }
+}
+
 
   
 

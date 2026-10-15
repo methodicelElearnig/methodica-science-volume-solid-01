@@ -2,19 +2,21 @@
 /* ═══════════════════════════════════════════════════════════
    js/main.js — 720 Science · Volume of a Solid · Part 07 (peak ב)
    Final attempt (reached only after failing מועד א). Intro + scenario
-   + 4 sub-parts, each with its own feedback (2 attempts). After סעיף ד:
-   pass (4/4) → s6, otherwise → s7. Both endings are TERMINAL.
+   + 4 sub-parts, each with its own feedback (2 attempts). After סעיף ד
+   the unit ends on either outcome — there are no end screens.
    ═══════════════════════════════════════════════════════════ */
 
 /* 2026-10-14: the combined answer review (old S5/S6, storyboard 170/171) was removed — feedback now
    follows each סעיף — and the scenario and the two endings (old S7/S8/S9) moved down into S5/S6/S7,
    so the ids stay contiguous (_test/checks.mjs gate 3). */
-const TOTAL_SCREENS = 8;               // S0 intro, S5 scenario, S1–S4 sub-parts, S6/S7 endings
+/* 2026-10-15: both endings (S6 success / S7 less-successful, storyboard 173/172 — the confetti
+   screens) were removed at the content owner's request. The unit now finishes straight from סעיף ד's
+   שנמשיך? (see peakNext()). */
+const TOTAL_SCREENS = 6;               // S0 intro, S5 scenario, S1–S4 sub-parts
 /* The scenario (storyboard 161) took the next free id rather than renumbering four sub-parts,
    their options, hints and SCREEN_TO_SUBCONTENT rows. Reading order lives in peakStart() and
    goBack(), not in the ids — same as part 06. */
 const SCENARIO_SCREEN = 5;
-const PASS_SCREEN = 6, FAIL_SCREEN = 7;   // the two terminal endings (sb173 / sb172)
 const PEAK_CORRECT = { 1: 'a', 2: 'a', 3: 'b', 4: 'a' };
 /* PEAK_PASS is 4 here, not 3 as in מועד א: slide 160 tells the learner "עליכם להצליח בכולם", and
    מועד ב is the terminal attempt, so the screen and the gate have to agree. Resolved 2026-08-26 by
@@ -46,7 +48,7 @@ function getCharacter() {
 /* '2num' keeps the delivered filename (Copmpanion/Orange_2num.mp4, turquoise_2num.mp4) so the
    pose maps 1:1 to the source and nobody has to guess which clip it is. 960x960, 4.06s — square,
    unlike the 1280x720 clips around it, so its slot must NOT declare `ca`. */
-const CHARACTER_ASSETS = { selection: 'png', 'two-fingers': 'png', panting: 'mp4', challenge: 'mp4', '2num': 'mp4', success: 'mp4' };
+const CHARACTER_ASSETS = { selection: 'png', 'two-fingers': 'png', panting: 'mp4', challenge: 'mp4', '2num': 'mp4' };
 function characterAsset(pose) {
   const ext = CHARACTER_ASSETS[pose];
   /* ?v= is a CACHE-BUSTER, not decoration: the sprite files were re-encoded in place
@@ -71,11 +73,7 @@ function startCompanionMedia(el) {
 const CHARACTER_SLOTS = {
   /* sb160: the transition carries the sprite as its illustration, 640x360 in the middle of the
      column. */
-  s0: { pose: 'challenge',   w: 640, into: 's0-video', ca: '16 / 9' },  /* sb160 */
-  /* Both endings share the `success` pose. `w` is documentation only — .peak-end-video sizes
-     the sprite at 100% of its own 320px box. No `ca`: the pair is 960x960 in both colours. */
-  s6: { pose: 'success',     w: 480, into: 's6-video' },                     /* sb173 */
-  s7: { pose: 'success',     w: 480, into: 's7-video' }                      /* sb172 */
+  s0: { pose: 'challenge',   w: 640, into: 's0-video', ca: '16 / 9' }   /* sb160 */
 };
 function renderCompanion(n) {
   const screen = document.getElementById('s' + n);
@@ -150,6 +148,10 @@ function resetScreenState(n) {
   renderCompanion(n);
   if (n >= 1 && n <= PEAK_PARTS) peakPaint(n);
 }
+/* First paint of s0. goTo() is what normally injects a screen's sprite, and a fresh entry never
+   calls it — only a resume with a saved payload replays onto a screen — so the intro's character
+   was missing on every first visit. Same top-level call part 04 makes. */
+resetScreenState(0);
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.querySelectorAll('[id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
   if (e.key === 'ArrowLeft')  { if (currentScreen >= 1 && currentScreen <= PEAK_PARTS) return; }
@@ -158,10 +160,9 @@ document.addEventListener('keydown', e => {
 /* The end screens were unreachable in reverse: this only ever handled 1-4, the scenario and 0, so
    every `חזרה` added to them would have been a dead button. Named edges, not `currentScreen - 1` —
    ROUTING-AND-RETAKE.md forbids assuming the numeric order anywhere in this unit, and it is wrong
-   here twice over (the scenario is screen 5, the endings 6/7). Walking back into an answered
+   here twice over (the scenario is screen 5). Walking back into an answered
    sub-part is already safe: the doneQ ledger is what stops a graded answer being reported twice. */
 function goBack() {
-  if (currentScreen === PASS_SCREEN || currentScreen === FAIL_SCREEN) { goTo(PEAK_PARTS); return; }   // ending -> סעיף ד
   if (currentScreen >= 2 && currentScreen <= PEAK_PARTS) { goTo(currentScreen - 1); return; }
   if (currentScreen === 1) { goTo(SCENARIO_SCREEN); return; }
   if (currentScreen === SCENARIO_SCREEN) { goTo(0); return; }
@@ -174,7 +175,8 @@ function advanceScreen() { if (currentScreen === 0) peakStart(); }
    closes it on navigation, the same convention as the other parts. */
 function peakHint(idx) {
   const ov = document.getElementById('s' + idx + '-hint-overlay');
-  if (!ov) return;
+  const s = ps(idx);
+  if (!ov || s.done || s.attempts < 1) return;   // offered only after a first wrong answer
   ov.classList.remove('hidden');
   /* Reported on open. No parentId: v2.4 mandates it for answered/evaluated only. */
   xapiSend('requested.1', 'question', null, { questionId: xapiQ(PEAK_ITEM, 'q' + idx).questionId });
@@ -272,12 +274,12 @@ function peakPaint(idx) {
   const btn = document.getElementById(screen + '-continue');
   if (btn) {
     btn.textContent = s.done ? 'שנמשיך?' : 'צדקתי?';
-    btn.disabled = s.done ? false : (!s.sel || s.sel === s.lastWrong);
+    btn.disabled = s.done ? (idx === PEAK_PARTS && unitFinished) : (!s.sel || s.sel === s.lastWrong);
   }
-  /* Hint policy: available on every סעיף until it resolves (slides "אפשר רמז?"), hidden — not
-     disabled — afterwards. */
+  /* Hint policy (2026-10-15, as in the practice questions' hintAfterWrong): the hint appears only
+     after a first wrong answer and stays until the סעיף resolves; hidden — not disabled — otherwise. */
   const hint = document.getElementById(screen + '-hint');
-  if (hint) hint.style.visibility = s.done ? 'hidden' : '';
+  if (hint) hint.style.visibility = (s.done || s.attempts < 1) ? 'hidden' : '';
   if (s.phase) renderFeedbackPopup(screen, s.phase, PEAK_FEEDBACK[idx]);
   else peakClosePopup(screen);
 }
@@ -301,21 +303,20 @@ function peakClosePopup(screen) {
 /* Draggable, like every other feedback popup in the unit (unit-js/15-ui.js). */
 for (let i = 1; i <= PEAK_PARTS; i++) attachPopupDrag(document.getElementById('s' + i + '-scq-popup'));
 
-/* שנמשיך? on a resolved סעיף. After סעיף ד the pass threshold picks the ending: s6 (pass) or s7
-   (the less-successful one). Both are terminal — מועד ב is the last attempt. Navigate FIRST, then
-   report: the endings belong to the same item, so reporting first would let the next goTo() re-open
-   the item that xapiFinishItems() just closed. peakFinish() cannot throw. */
+/* שנמשיך? on a resolved סעיף. After סעיף ד the unit ends whatever the outcome — מועד ב is the last
+   attempt, and since 2026-10-15 there is no end screen. Report first (synchronously, RESUME.md risk
+   R1), then signal the host. peakFinish() cannot throw. */
 function peakNext(idx) {
   if (idx < PEAK_PARTS) { goTo(idx + 1); return; }
   const passed = peakScore() >= PEAK_PASS;
-  goTo(passed ? PASS_SCREEN : FAIL_SCREEN);
   peakFinish(passed);
+  unitFinish();
 }
 
 /* Reports the end of מועד ב — and with it the end of the unit, on EVERY path.
    Called from peakNext() only, synchronously (RESUME.md risk R1).
 
-   Both end screens are terminal here: there is no third attempt. So unlike part 06, this component
+   Both outcomes end the unit here: there is no third attempt. So unlike part 06, this component
    closes the unit whether the learner passed or failed — a learner who fails the final attempt has
    still finished the lomda, and REPORT-XAPI.md is explicit that a component the learner does not
    clear must still be reported or the whole attempt goes unrecorded. */
@@ -333,32 +334,36 @@ function peakFinish(passed) {
   } catch (e) { console.error('[xAPI] completed unit (via 07)', e); }
 }
 
-/* ─── סיימתי ───────────────────────────────────────────────
+/* ─── End of the unit ─────────────────────────────────────
    ⚠️ THIS MUST NOT REPORT. peakFinish() already sent the item, the component and (on the paths that
-   own it) the unit `completed`, synchronously, when the learner committed their last answer — long
-   before they could reach this screen. sendCompletedOnce() would dedupe a second call, but sending
-   one would still be wrong: this button is an exit affordance, not an outcome.
+   own it) the unit `completed`, synchronously, just before this runs. sendCompletedOnce() would
+   dedupe a second call, but sending one would still be wrong: this is an exit signal, not an outcome.
 
-   The unit has no documented host-exit contract — 60-devbridge.js's postMessage is the dev
-   wrapper's jump bar, not a production channel — so this is a seam, deliberately small. It disables
-   the button so a second press cannot double-fire, and announces the finish to a framing host that
-   may or may not be listening. Drop the real handshake in here once the platform partner confirms
-   it; nothing else in the unit needs to change. */
+   Called straight from peakNext() since 2026-10-15, when the end screens (and their סיימתי button)
+   were removed. The unit has no documented host-exit contract — 60-devbridge.js's postMessage is the
+   dev wrapper's jump bar, not a production channel — so this is a seam, deliberately small. It runs
+   once, disables סעיף ד's שנמשיך? so a second press cannot double-fire, and announces the finish to
+   a framing host that may or may not be listening. Drop the real handshake in here once the platform
+   partner confirms it; nothing else in the unit needs to change. */
+var unitFinished = false;   // var, not let: peakPaint() reads it and may run first
 function unitFinish() {
-  document.querySelectorAll('.btn-continue[id$="-finish"]').forEach(b => { b.disabled = true; });
+  if (unitFinished) return;
+  unitFinished = true;
+  const btn = document.getElementById('s' + PEAK_PARTS + '-continue');
+  if (btn) btn.disabled = true;
   if (window.parent !== window) {
     try { window.parent.postMessage({ type: '720:unit-finished' }, '*'); } catch (e) {}
   }
 }
 
 function peakScore() { let n = 0; for (let i = 1; i <= PEAK_PARTS; i++) { const s = peakState[i]; if (s && s.done && s.sel === PEAK_CORRECT[i]) n++; } return n; }
-/* מועד ב is the final attempt — no retake; both end screens are terminal. */
+/* מועד ב is the final attempt — no retake; both outcomes end the unit. */
 
 /* ═══════════════════════════════════════════════════════════
    xAPI (720) — per-part seams
    ═══════════════════════════════════════════════════════════ */
 
-/* Four sub-parts = q1..q4 of ONE item, so the item spans screens 1-4 and both endings. */
+/* Four sub-parts = q1..q4 of ONE item, so the item spans screens 1-4. */
 var SCREEN_TO_SUBCONTENT = {
   /* The intro is page 0 OF THE ITEM, not a no-item screen. Mapping it to null made the item close
      the moment a learner navigated back to the intro (goBack allows 2->1->0), emitting a premature
@@ -370,8 +375,6 @@ var SCREEN_TO_SUBCONTENT = {
   2: ['01', 2],       // sub-part 2
   3: ['01', 3],       // sub-part 3
   4: ['01', 4],       // sub-part 4
-  6: ['01', 5],       // unit complete, success ending          (terminal)
-  7: ['01', 5],       // unit complete, less-successful ending  (terminal)
   /* Same item and page as the intro: the scenario asks nothing, so opening or closing the item
      on it would report a screen that carries no answer. */
   5: ['01', 0]        // scenario
