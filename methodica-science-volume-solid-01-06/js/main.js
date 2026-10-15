@@ -151,6 +151,10 @@ function resetScreenState(n) {
   renderCompanion(n);
   if (n >= 1 && n <= PEAK_PARTS) peakPaint(n);
 }
+/* First paint of s0. goTo() is what normally injects a screen's sprite, and a fresh entry never
+   calls it — only a resume with a saved payload replays onto a screen — so the intro's character
+   was missing on every first visit. Same top-level call part 04 makes. */
+resetScreenState(0);
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.querySelectorAll('[id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
   if (e.key === 'ArrowLeft')  { if (currentScreen >= 1 && currentScreen <= PEAK_PARTS) return; }

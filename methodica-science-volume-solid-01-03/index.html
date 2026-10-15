@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · תרגול בסיסי</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=112">
+  <link rel="stylesheet" href="../unit-css/style.css?v=114">
   <link rel="stylesheet" href="css/style.css?v=100">
 </head>
 <body data-subject-theme="science">
@@ -25,12 +25,11 @@
          The line breaks are the deck's, not the browser's — see the note in css/style.css
          on why they are authored rather than left to wrapping. -->
     <div class="transition-content transition-content--rules transition-content--compact">
-      <p class="transition-sub">כל הכבוד שניסיתם, זה חשוב מאוד!<br>כדי לחזק את ההבנה נמשיך לתרגל —<br><strong class="transition-lead">4 שאלות פשוטות יותר</strong><br>וכבר בהתחלה יש רמז! ענו נכון על 3 שאלות ומעלה (75%) כדי להתקדם.</p>
+      <p class="transition-sub">כל הכבוד שניסיתם, זה חשוב מאוד!<br>כדי לחזק את ההבנה נמשיך לתרגל —<br><strong class="transition-lead">4 שאלות פשוטות יותר</strong><br>וכבר בהתחלה יש רמז! ענו נכון על 3 שאלות ומעלה כדי להתקדם.</p>
       <!-- Bubble FIRST, sprite second: .companion-say sets direction:ltr, so DOM order is
            physical order and --right puts the beak on the edge facing him. The pair is
            shrink-to-fit inside .transition-content's centred column, which is what centres it. -->
       <div class="companion-say companion-say--right">
-        <p class="companion-bubble" style="--bubble-w: 260px;">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</p>
         <video class="companion" src="assets/img/character-orange-think.mp4?v=3" aria-hidden="true"
              data-pose="think" draggable="false" autoplay loop muted playsinline style="--cw: 320px;"></video>
       </div>
@@ -274,11 +273,11 @@
       <p class="scq-qtext scq-qtext--mixed">בתמונה א' ניתן לראות את נפח המים במשורה <b>לפני</b> שהכניסו אליה את בובת המפלצת.<br />בתמונה ב' ניתן לראות את נפח המים במשורה <b>אחרי</b> שהכניסו אליה את בובת המפלצת.<br />סמנו בתמונה ב' את האזור בו ניתן לראות שגובה המים במשורה עלה.</p>
       <div class="hotspot-pair" role="radiogroup" aria-label="סמנו בתמונה ב' את האזור שבו גובה המים עלה">
         <div class="scq-figure scq-figure--square" style="width: 359px">
-          <img src="assets/img/s6-cylinder-before.jpg" alt="משורה עם מים על שולחן, ולידה בובת מפלצת ירוקה קטנה">
+          <img src="assets/img/s6-cylinder-before.jpg?v=2" alt="משורה עם מים על שולחן, ולידה בובת מפלצת ירוקה קטנה">
           <span class="scq-figure__label">תמונה א'</span>
         </div>
         <div class="hotspot-photo hotspot-photo--square" style="width: 359px">
-          <img src="assets/img/s6-cylinder-after.jpg" alt="אותה משורה לאחר שבובת המפלצת הוכנסה למים">
+          <img src="assets/img/s6-cylinder-after.jpg?v=2" alt="אותה משורה לאחר שבובת המפלצת הוכנסה למים">
           <span class="scq-figure__label">תמונה ב'</span>
           <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s6','c')" aria-label="האזור הריק שמעל מפלס המים" style="--x:50%;--y:31%;--w:19%;--h:8%"></button>
           <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s6','b')" aria-label="אזור העלייה — התוספת שמעל המפלס המקורי" style="--x:50%;--y:42%;--w:19%;--h:8%"></button>

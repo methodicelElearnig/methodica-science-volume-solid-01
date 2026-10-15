@@ -148,6 +148,10 @@ function resetScreenState(n) {
   renderCompanion(n);
   if (n >= 1 && n <= PEAK_PARTS) peakPaint(n);
 }
+/* First paint of s0. goTo() is what normally injects a screen's sprite, and a fresh entry never
+   calls it — only a resume with a saved payload replays onto a screen — so the intro's character
+   was missing on every first visit. Same top-level call part 04 makes. */
+resetScreenState(0);
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.querySelectorAll('[id$="-hint-overlay"]').forEach(el => el.classList.add('hidden'));
   if (e.key === 'ArrowLeft')  { if (currentScreen >= 1 && currentScreen <= PEAK_PARTS) return; }
@@ -171,7 +175,8 @@ function advanceScreen() { if (currentScreen === 0) peakStart(); }
    closes it on navigation, the same convention as the other parts. */
 function peakHint(idx) {
   const ov = document.getElementById('s' + idx + '-hint-overlay');
-  if (!ov) return;
+  const s = ps(idx);
+  if (!ov || s.done || s.attempts < 1) return;   // offered only after a first wrong answer
   ov.classList.remove('hidden');
   /* Reported on open. No parentId: v2.4 mandates it for answered/evaluated only. */
   xapiSend('requested.1', 'question', null, { questionId: xapiQ(PEAK_ITEM, 'q' + idx).questionId });
@@ -271,10 +276,10 @@ function peakPaint(idx) {
     btn.textContent = s.done ? 'שנמשיך?' : 'צדקתי?';
     btn.disabled = s.done ? (idx === PEAK_PARTS && unitFinished) : (!s.sel || s.sel === s.lastWrong);
   }
-  /* Hint policy: available on every סעיף until it resolves (slides "אפשר רמז?"), hidden — not
-     disabled — afterwards. */
+  /* Hint policy (2026-10-15, as in the practice questions' hintAfterWrong): the hint appears only
+     after a first wrong answer and stays until the סעיף resolves; hidden — not disabled — otherwise. */
   const hint = document.getElementById(screen + '-hint');
-  if (hint) hint.style.visibility = s.done ? 'hidden' : '';
+  if (hint) hint.style.visibility = (s.done || s.attempts < 1) ? 'hidden' : '';
   if (s.phase) renderFeedbackPopup(screen, s.phase, PEAK_FEEDBACK[idx]);
   else peakClosePopup(screen);
 }

@@ -1,7 +1,7 @@
 'use strict';
 /* ═══════════════════════════════════════════════════════════
    js/main.js — 720 Science · Volume of a Solid · Part 05 (advanced)
-   S0 intro + 8 SingleChoice questions with progress dots and two scenario
+   S0 intro + 5 questions (8 SingleChoice סעיפים) with progress dots and two scenario
    screens. On completion → Part 06 (peak א). Engine + SCQ + progress +
    report + xAPI.
    ═══════════════════════════════════════════════════════════ */
@@ -298,7 +298,7 @@ function scqReset(screen) {
   scqSyncHint(screen);
 }
 
-/* ═══ Progress dots + practice wiring (8 questions → Part 06) ═══ */
+/* ═══ Progress dots + practice wiring (8 סעיפים in 5 questions → Part 06) ═══ */
 var practiceProgress = { questions: [] };
 for (let i = 1; i <= 8; i++) practiceProgress.questions.push({ number: i, visited: i === 1, state: i === 1 ? 'current' : 'not-answered', screen: i });
 /* Correct answers out of the eight, read from XAPI_Q_RESULTS so the number reported and the number
@@ -312,8 +312,8 @@ function goToNextPart() {
   try { xapiFinishItems(); } catch (e) {}
 
   /* Explicit result: the library's aggregate is an all-correct AND, which would report failure for
-     any partial pass. Denominator is 8 — the eight questions the learner was promised (and the eight
-     progress dots), which here also matches the metadata count.
+     any partial pass. Denominator is 8 — the eight answered סעיפים (the
+     bar groups them into five question dots via NAV_GROUP).
 
      success:true unconditionally, on the same reading confirmed for part 03: this component has no
      pass threshold anywhere in its code and always proceeds to Part 06, so completing it IS the
@@ -326,20 +326,37 @@ function goToNextPart() {
   if (RESUME_ENABLED) writeForwardState('methodica-science-volume-solid-01-06');
   window.location.href = NEXT_PART_URL + window.location.search;
 }
-function visibleState(q) { return q.state; }
+/* The bar counts QUESTIONS, not סעיפים: Liyan's slime (s4–s5) is one question with סעיפים א-ב and
+   Gili's marbles (s6–s8) one question with סעיפים א-ג, so the eight answer slots show as five dots.
+   practiceProgress keeps one entry per סעיף (flow, resume and xAPI read it per סעיף); NAV_GROUP maps
+   each entry to the dot it belongs to. */
+const NAV_GROUP = [1, 2, 3, 4, 4, 5, 5, 5];
+function navGroups(qs) {
+  const groups = [];
+  qs.forEach((q, i) => { const g = NAV_GROUP[i] - 1; (groups[g] = groups[g] || []).push(q); });
+  return groups;
+}
+/* A question reads correct/incorrect only once every סעיף is answered (incorrect if any סעיף was);
+   until then it is current as soon as any סעיף has been opened. */
+function groupState(subs) {
+  if (subs.every(q => q.state === 'correct' || q.state === 'incorrect'))
+    return subs.every(q => q.state === 'correct') ? 'correct' : 'incorrect';
+  return subs.some(q => q.state !== 'not-answered') ? 'current' : 'not-answered';
+}
 function updateProgressQuestion(container, state) {
-  if (!container) return; const qs = state.questions;
-  qs.forEach((q, i) => {
+  if (!container) return; const groups = navGroups(state.questions);
+  groups.forEach((subs, i) => {
     const n = i + 1; const item = container.querySelector('[data-question="' + n + '"]'); if (!item) return;
     const icon = item.querySelector('.progress-question__icon'), label = item.querySelector('.progress-question__label');
-    const vs = visibleState(q);
+    const vs = groupState(subs), visited = subs.some(q => q.visited);
     icon.classList.remove('progress-question__icon--current', 'progress-question__icon--correct', 'progress-question__icon--incorrect');
     if (vs !== 'not-answered') icon.classList.add('progress-question__icon--' + vs);
-    label.classList.toggle('progress-question__label--visited', q.visited);
-    const nav = q.visited && q.screen != null && q.screen !== currentScreen;
-    item.style.cursor = nav ? 'pointer' : ''; item.onclick = nav ? (function (s) { return function () { goTo(s); }; })(q.screen) : null;
+    label.classList.toggle('progress-question__label--visited', visited);
+    const target = subs[0].screen;   // a dot opens its question on סעיף א
+    const nav = visited && !subs.some(q => q.screen === currentScreen);
+    item.style.cursor = nav ? 'pointer' : ''; item.onclick = nav ? (function (s) { return function () { goTo(s); }; })(target) : null;
   });
-  for (let n = 1; n < qs.length; n++) { const conn = container.querySelector('[data-connector="' + n + '"]'); if (!conn) continue; const st = visibleState(qs[n - 1]); conn.classList.toggle('progress-question__connector--visited', st === 'correct' || st === 'incorrect'); }
+  for (let n = 1; n < groups.length; n++) { const conn = container.querySelector('[data-connector="' + n + '"]'); if (!conn) continue; const st = groupState(groups[n - 1]); conn.classList.toggle('progress-question__connector--visited', st === 'correct' || st === 'incorrect'); }
 }
 function syncPracticeNav(screen) { updateProgressQuestion(document.querySelector('#' + screen + ' .progress-question'), practiceProgress); }
 function practiceEnter(idx, screen) { const q = practiceProgress.questions[idx]; q.visited = true; if (q.state === 'not-answered') q.state = 'current'; syncPracticeNav(screen); scqEnter(screen); }

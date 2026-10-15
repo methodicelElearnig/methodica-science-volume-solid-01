@@ -1588,13 +1588,31 @@ html, body {
   background: #ececec;
 }
 /* Current — Figma 96:809: var(--subject-500) dot (r3.6) > white > var(--subject-500) ring (r8.6, 2px) > var(--subject-300) halo (r12).
-   radial-gradient(circle…) keeps the rings perfectly circular at any scale; no box-shadow layer. */
+   Built from three real circles (element = halo, ::before = ring, ::after = dot), not a radial-gradient:
+   hard gradient stops aren't anti-aliased and render jagged/pixelated; rounded borders and backgrounds are. */
 .progress-question__icon--current {
+  position: relative;
   border: none;
-  background: radial-gradient(circle closest-side,
-    var(--subject-500) 0 30%, #fff 30% 63.33%, var(--subject-500) 63.33% 80%, var(--subject-300) 80% 100%);
+  background: var(--subject-300);
 }
-.progress-question__icon--current::before { display: none; }
+.progress-question__icon--current::before,
+.progress-question__icon--current::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.progress-question__icon--current::before {
+  width: 17.2px; height: 17.2px;
+  background: #fff;
+  border: 2px solid var(--subject-500);
+}
+.progress-question__icon--current::after {
+  width: 7.2px; height: 7.2px;
+  background: var(--subject-500);
+}
 .progress-question__icon--correct {
   background: var(--subject-500); border-color: var(--subject-500);
 }
@@ -3084,11 +3102,8 @@ html, body {
    COMPONENT — Learning-path toggle (position-locked).
    "לקרוא קומיקס" always on the right, "לערוך ניסויים" on the left.
    ═══════════════════════════════════════════════════════ */
-/* Lives in the 74px bottom bar, centred between the action button (physical left)
-   and חזרה (physical right). bottom:37px is the bar's centre line and
-   translateY(50%) puts the pill's own midpoint on it, so the height of the pill
-   never has to be hardcoded. z-index 16, not 15: on S10 the .scq-bar is also 15
-   and comes later in the DOM, which would bury an equal-priority toggle. */
+/* z-index 16, not 15: on S10 the .scq-bar is also 15 and comes later in the DOM,
+   which would bury an equal-priority toggle. */
 /* Mode switch, restyled 2026-08-27 onto the house design — mass-measure-01's .vpv-toggle
    (that unit's part-01 css/style.css:1140). The polarity INVERTED: the container used to be pale
    #eef4f9 with a blue-filled active tab, and is now a solid Subject/500 pill whose active tab is
@@ -3096,14 +3111,15 @@ html, body {
    math-themed build follows automatically.
    `direction: rtl` is load-bearing and is the only thing deciding left/right here: the FIRST child
    renders on the physical RIGHT. The markup puts experiments first for exactly that reason.
-   Placement is this unit's own and deliberately unchanged — bottom: 37px with a 50% Y translate, so
-   the pill straddles the bar's top edge. Only the skin moved.
+   Placement: centred in the 74px bottom bar, below its rule, between the action button and חזרה —
+   the comic screens' original layout. A 2026-10-15 move to the top of the content was reverted the
+   same day (QA): the toggle belongs under the line. bottom: 12px centres the 50px pill in the bar.
    The reference also carries a .vpv-toggle-pill span that JS sizes to the active tab so the white
    pill can slide. Not ported: switchLearningPath() calls goTo(), so choosing a tab replaces the
    whole screen and no in-place transition is ever visible. A plain background on .is-active is
    identical at rest and saves 18 spans plus a positioning pass. */
 .path-toggle {
-  position: absolute; bottom: 37px; left: 50%; transform: translate(-50%, 50%);
+  position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
   display: flex; direction: rtl; align-items: center; gap: 0;
   background: var(--subject-500);
   border-radius: 1000px; padding: 6px; z-index: 16;
@@ -3536,6 +3552,9 @@ html, body {
   position: absolute; right: 40px; left: auto; top: calc(50% - 24px); transform: translateY(-50%);
   width: 760px; display: flex; flex-direction: column; align-items: center; gap: 18px;
 }
+/* Single-paragraph variant (no image) sits at the regular question top, not centred — a lone
+   centred sentence floated mid-canvas (QA 2026-10-15, 03 s3). */
+.dq-question:not(.dq-question--withimage) { top: 139px; transform: none; }
 .dq-question .scq-qtext { display: block; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: #303030; text-align: right; line-height: 2.2; }
 /* Slide 46 keeps these three as separate lines: a blue title, then plain instruction and stem. */
 .dq-title { font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-500); text-align: right; direction: rtl; line-height: 1.4; }
@@ -3723,7 +3742,7 @@ html, body {
 
 /* ═══ Class task (Part 04) ═══ */
 .task-content {
-  position: absolute; left: 50%; top: calc(50% - 37px); transform: translate(-50%, -50%);
+  position: absolute; right: 40px; left: auto; top: calc(50% - 37px); transform: translateY(-50%);
   width: 860px; display: flex; flex-direction: column; gap: 16px; direction: rtl; text-align: right;
 }
 /* QA 2026-08-29: one body size for the whole screen — intro, list and note all sit at 24/500,
@@ -3985,8 +4004,10 @@ html, body {
   position: absolute; left: var(--x); top: var(--y);
   width: var(--w); height: var(--h); transform: translate(-50%, -50%);
   display: block; padding: 0; gap: 0;
-  background: transparent; border: 3px solid rgba(255, 255, 255, 0.55); border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(0, 32, 96, 0.25);
+  /* Solid white ring with a dark hairline on BOTH sides, so it reads on bright glass and on
+     the dimmed background alike (the old 55% white + 25% navy outline all but vanished). */
+  background: rgba(255, 255, 255, 0.18); border: 3px solid #fff; border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(0, 32, 96, 0.85), inset 0 0 0 1.5px rgba(0, 32, 96, 0.6);
   cursor: pointer; transition: background 0.15s, border-color 0.15s;
 }
 .hotspot-area:hover:not(:disabled),

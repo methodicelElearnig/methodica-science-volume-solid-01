@@ -213,7 +213,7 @@ const CHARACTER_ASSETS = {
   /* 2026-10-12: S6's Archimedes remark — finger raised, "thinking" (orange_think / blue_think). */
   think: 'mp4',
   /* 2026-10-12: S18's marble screen — holding a ping-pong ball (orange_pingpong / blue_pingpong).
-     Replaces `soap` there at the designer's request; `pingpong` (finger raised) stays on s21. */
+     Unused since the 13.7.26 deck revision took the mascot off s18 and s21; kept for the asset. */
   'pingpong-ball': 'mp4'
 };
 function characterAsset(pose) {
@@ -271,7 +271,8 @@ const CHARACTER_SLOTS = {
 function renderPathCharacters() {
   const c = document.getElementById('s7-img-comic');
   const e = document.getElementById('s7-img-experiments');
-  if (c) { c.src = characterAsset('comic'); startCompanionMedia(c); }
+  /* data-character lets CSS correct per-render framing (orange comic is drawn smaller in its clip). */
+  if (c) { c.src = characterAsset('comic'); c.dataset.character = getCharacter(); startCompanionMedia(c); }
   if (e) { e.src = characterAsset('experiments'); startCompanionMedia(e); }
 }
 function renderCompanion(n) {
@@ -385,15 +386,7 @@ function resetScreenState(n) {
     // Aquarium ruler applet + SingleChoiceQuestion.
     aqEnter();
   }
-  if (n === 21) { syncPathToggle(); }
-  if (n === 18) {
-    // Slide 26: the mascot "GIF" and his bubble appear 5s after entry — restart so the delay counts from this visit.
-    document.querySelectorAll('#s18 .s18-gif').forEach(el => {   // the mascot and his bubble
-      el.classList.remove('is-on'); void el.offsetWidth; el.classList.add('is-on');
-    });
-    const gif = document.getElementById('s18-gif');
-    if (gif) gif.currentTime = 0;
-  }
+  if (n === 18 || n === 21) { syncPathToggle(); tipEnter('s' + n); }   // result screens (deck 175/176)
   if (n === 20) {
     // Flooding / overflow applet.
     floodEnter();
@@ -481,10 +474,10 @@ function advanceScreen() {
   if (currentScreen === 15) return;                                        // aquarium advances via its check button
   if (currentScreen === 16) { if (!guessPicked['s16']) return; goTo(17); return; }        // guess-Q (sb24) → displacement
   if (currentScreen === 17)  { if (!dispPlaced) return; goTo(18); return; } // displacement applet (sb25) → its result (sb26)
-  if (currentScreen === 18) { goTo(19); return; }                         // displacement result → guess-Q
+  if (currentScreen === 18) { if (!tipOpened['s18']) return; goTo(19); return; }   // displacement result → guess-Q
   if (currentScreen === 19) { if (!guessPicked['s19']) return; goTo(20); return; }       // guess-Q → flooding
   if (currentScreen === 20) { if (!floodPlaced) return; goTo(21); return; }             // flooding → its result (sb29)
-  if (currentScreen === 21) { goTo(SHARED_END_ENTRY); return; }                         // flooding result → the shared ending (flip-cards)
+  if (currentScreen === 21) { if (!tipOpened['s21']) return; goTo(SHARED_END_ENTRY); return; } // flooding result → the shared ending (flip-cards)
   if (currentScreen === 22) { const c = document.getElementById('s22-continue'); if (c && c.disabled) return; goTo(23); return; } // flip-cards → measurement applet
   /* The measurement applet used to carry its own "המשך לשלב הבא" for the one step that crosses a
      screen (2 → 3). It was redundant next to the bar's המשך — worse, the bar's button was ENABLED
@@ -1661,7 +1654,7 @@ scqRegister({
   popups: fbPopups('נכון מאוד!', [   /* sb20/22/23 */
     'למדידת נפח של תיבה משתמשים בסרגל: מודדים את אחת מצלעות הקובייה ומכפילים אותו בעצמו שלוש פעמים — פעם אחת לאורך, פעם אחת לרוחב ופעם אחת לגובה.',
     'אורך הצלע במקרה זה הוא 10\u00A0ס"מ וכיוון שכל הצלעות בקובייה זהות:',
-    '<span class="section-result-expr">10 × 10 × 10 = 1,000</span>']),
+    '<span class="section-result-expr">10 · 10 · 10 = 1,000</span>']),
   /* ⚠️ goTo(16), NOT goTo(17). This screen advances through its own check button rather than
      advanceScreen(), so the flow edge lives here. Skipping to 17 once made s16 (sb24, the guess
      before the displacement applet) unreachable going FORWARD. */
@@ -2079,11 +2072,11 @@ ddqRegister({
        matching could be done by position without reading anything. The order asked for is melon
        first, cube second-to-last, cup last; the other two fill the middle. Checked against
        correctMap: no pill now sits at the index of its own target. */
-    { id: 'wu-melon', label: 'מה המסה של האבטיח?',                  img: 'assets/img/s28-task-watermelon.jpg', w: 64 },
+    { id: 'wu-melon', label: 'מה המסה של\u00a0האבטיח?',                  img: 'assets/img/s28-task-watermelon.jpg', w: 64 },
     { id: 'wu-doll',  label: 'מהו הנפח של בובת הפלסטיק הגדולה?',    img: 'assets/img/s28-task-doll.jpg',       w: 90 },
     { id: 'wu-shell', label: 'מהו הנפח של הצדף הקטן?',              img: 'assets/img/s28-task-shell.png',      w: 68 },
     { id: 'wu-cube',  label: 'מה אורך הצלע של הקובייה?',            img: 'assets/img/s28-task-rubik.jpg',      w: 66 },
-    { id: 'wu-cup',   label: 'כמה מים יש בכוס?',                    img: 'assets/img/s28-task-water-cup.jpg',  w: 72 }
+    { id: 'wu-cup',   label: 'כמה מים יש\u00a0בכוס?',                    img: 'assets/img/s28-task-water-cup.jpg',  w: 72 }
   ],
   targets: [
     { id: 'wt-pour',     label: 'מזיגה למשורה' },
@@ -2234,6 +2227,34 @@ function flipEnter(screen) {
    COMPONENT — Guess-question (no feedback). Pick any option →
    a companion bubble appears and Continue unlocks. No scoring.
    ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   COMPONENT — result-screen tip (s18 / s21, deck slides 175-176, revised 13.7.26)
+   The column rises top to bottom (.tip-in, staggered by --k); the "ומה נעשה עם...? לחצו לגלות"
+   button and its icon come last and pulse until pressed. Pressing opens the caveat under it and
+   unlocks המשך, which stays unlocked on a return visit.
+   ═══════════════════════════════════════════════════════════ */
+const tipOpened = {};
+function tipPaint(screen) {
+  const open = !!tipOpened[screen];
+  const btn = document.getElementById(screen + '-tip-btn');
+  const pop = document.getElementById(screen + '-tip');
+  const cont = document.getElementById(screen + '-continue');
+  if (btn) { btn.setAttribute('aria-expanded', open ? 'true' : 'false'); btn.classList.toggle('is-open', open); }
+  if (pop) pop.hidden = !open;
+  if (cont) cont.disabled = !open;
+}
+function tipEnter(screen) {
+  tipPaint(screen);
+  // Restart the entrance so it plays on every visit, not only the first.
+  document.querySelectorAll('#' + screen + ' .tip-in').forEach(el => {
+    el.classList.remove('is-on'); void el.offsetWidth; el.classList.add('is-on');
+  });
+}
+function tipReveal(screen) {
+  tipOpened[screen] = true;
+  tipPaint(screen);
+}
+
 const guessPicked = {};
 /* The mascot and his line arrive TOGETHER, on the pick — QA 2026-08-24 asked for this on every
    guess screen: he used to stand there from arrival with nothing to say, which reads as a loading
@@ -2292,7 +2313,7 @@ const MEAS = {
      "too big for the cylinder" here would hand over the judgement this step exists to test. */
   3: { screen: 24, obj: true, /* ?v=2 — the file was re-exported under the same name (upright -> lying down), and this
         path is written from JS, so it needs the buster the markup copies carry. */
-       objImg: 's23-hammer.svg?v=2', objClass: 'meas-obj-img--hammer', objLabel: 'פטיש', correct: 'bowl',
+       objImg: 's23-hammer.png', objClass: 'meas-obj-img--hammer', objLabel: 'פטיש', correct: 'bowl',
        /* Two lines (QA 2026-10-11): the question naming both methods, then the action in bold. */
        instructionHtml: 'איך נמדוד נפח של פטיש – בדחיקת מים (במשורה) או בהצפת מים (בקערת הצפה)?<br><strong>גררו את הפטיש אל כלי המדידה המתאים.</strong>' },
   /* `pour` gates the input behind a real action: slide 37 says the level reaches 250 מ"ל "לאחר
@@ -2440,7 +2461,26 @@ function measRender() {
   if (cont) cont.disabled = (cfg.screen === 24) ? !measDone : !(step > 2 || measRevealed);
 }
 function awaitingPourFlag(cfg) { return !!cfg.pour && !measPoured; }
+/* Reaching s24 without finishing the king on s23 (paging ahead) left measStep at 1-2, so s24
+   rendered the KING's step and the hammer never appeared (QA 2026-10-15). s24 always starts at
+   the hammer. Called from measEnter AND from restoreScreenUI, because goTo's resume repaint
+   re-applies the saved measStep after measEnter has run. Returns true when it moved the step. */
+function measSyncToScreen() {
+  if (currentScreen === 24 && measStep < 3) {
+    measStep = 3; measDone = false; measRevealed = false; measPoured = false;
+    return true;
+  }
+  /* The mirror case: back on s23 with measStep at 3+ (from s24, or a resumed save) sent every
+     lookup to s24's meas2-* DOM, so s23 kept its ♟ placeholder and had no drag (QA 2026-10-15).
+     s23 restarts at the king. */
+  if (currentScreen === 23 && measStep >= 3) {
+    measStep = 1; measDone = false; measRevealed = false; measPoured = false;
+    return true;
+  }
+  return false;
+}
 function measEnter() {
+  measSyncToScreen();
   measInitDnd();
   syncPathToggle();
   measRender();
@@ -2696,6 +2736,7 @@ function capturePartPayload() {
     imgqRevealed: Object.assign({}, imgqRevealed),
     comic: captureComicState(),
     guessPicked: Object.assign({}, guessPicked),
+    tipOpened: Object.assign({}, tipOpened),
     /* flipState is {screen: {cardId: true}} — two levels, so a shallow copy is not enough. */
     flipState: Object.keys(flipState).reduce(function (o, k) {
       o[k] = Object.assign({}, flipState[k]); return o;
@@ -2722,6 +2763,7 @@ function applyResumeVars(st) {
   if (st.imgqRevealed) imgqRevealed = Object.assign({}, st.imgqRevealed);
   applyComicState(st.comic);
   if (st.guessPicked) Object.keys(st.guessPicked).forEach(function (k) { guessPicked[k] = st.guessPicked[k]; });
+  if (st.tipOpened) Object.keys(st.tipOpened).forEach(function (k) { tipOpened[k] = st.tipOpened[k]; });
   if (st.flipState) Object.keys(st.flipState).forEach(function (k) { flipState[k] = Object.assign({}, st.flipState[k]); });
   applyScqState(st.scq);
   applyDdqState(st.ddq);
@@ -2769,6 +2811,7 @@ function restoreScreenUI(n) {
     /* 3. s23/s24 — measRender() recomputes everything from measStep/measDone/measRevealed/measPoured
            EXCEPT the confirm button, which it derives from #meas-input's live value; that value is
            restored after measRender has already run. */
+    if ((n === 23 || n === 24) && measSyncToScreen()) { measInitDnd(); measRender(); }
     if ((n === 23 || n === 24) && typeof measInputChange === 'function') measInputChange();
 
     /* 4. the comic sliders — comicSliderEnter() runs comicBuild(), which seeds a FRESH record when
