@@ -3664,9 +3664,40 @@ html, body {
   transition: opacity 0.4s ease; pointer-events: none;
 }
 .meas-vessel.has-object .meas-bowl-object { opacity: 0.95; }
-.meas-tray { position: relative; width: 225px; height: 51px; margin-top: 12px; border: 3px solid #7fb8d6; border-top: none; border-radius: 0 0 15px 15px; overflow: hidden; }
+.meas-tray { position: relative; width: 225px; height: 66px; margin-top: 12px; border: 3px solid #7fb8d6; border-top: none; border-radius: 0 0 15px 15px; overflow: hidden; }
 .meas-tray-water { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: rgba(120,190,225,0.5); transition: height 0.5s ease; }
-.meas-vessel.overflowed .meas-tray-water { height: 70%; }
+.meas-vessel.overflowed .meas-tray-water { height: 45px; }
+/* Graduated scale on the bowl and tray — ticks AND numbers, in the cylinders' tick colour (#a85d2a),
+   on the left wall like theirs. Markup is .meas-scale > i (tick) inside each vessel; --y is the
+   tick's distance from the rim (bowl) or the floor (tray) in px, .lg marks a labelled tick.
+   Bowl: graduated near the top only (1000 -> 500 mL, 10px per 100) — lower down, the curved wall
+   leaves no room. Its 1000 line is the brim water surface (top 9px, see .meas-bowl-water).
+   Tray: 0 -> 300 mL from the floor, 18px per 100; 250 mL = 45px, the overflowed water's height. */
+.meas-scale { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.meas-scale i { position: absolute; left: 0; width: 7px; border-top: 2px solid #a85d2a; font-style: normal; }
+.meas-scale i.lg { width: 13px; }
+.meas-scale i.lg::after {
+  content: attr(data-v); position: absolute; left: 16px; top: -1px; transform: translateY(-50%);
+  font-family: 'Assistant', sans-serif; font-size: 12px; font-weight: 700; line-height: 1; color: #a85d2a;
+}
+.meas-bowl .meas-scale i { top: calc(var(--y) * 1px); }
+.meas-tray .meas-scale i { bottom: calc(var(--y) * 1px); }
+/* The reading on the tray once the hammer's water is in it — the same dashed marker + caption as the
+   משורה's levels, drawn inside the tray (it clips its overflow), to the right of the scale. */
+.meas-tray-level {
+  position: absolute; bottom: 45px; left: 46px; right: 74px; border-top: 2px dashed #1e2a38;
+  pointer-events: none; z-index: 2; opacity: 0; transition: opacity 0.3s ease;
+}
+.meas-tray-level .meas-cyl-start-text { right: auto; left: 100%; margin: 0 0 0 6px; font-size: 14px; }
+.meas-tray-level .meas-cyl-start-text b { font-size: 15px; }
+.meas-vessel.overflowed .meas-tray-level { opacity: 1; transition: opacity 0.4s ease 0.6s; }
+  content: ''; position: absolute; left: 9px; width: 14px; pointer-events: none; z-index: 2;
+  background:
+    repeating-linear-gradient(to bottom, #a85d2a 0 2px, transparent 2px var(--tick-major)) 0 0 / 14px 100% no-repeat,
+    repeating-linear-gradient(to bottom, #a85d2a 0 2px, transparent 2px var(--tick-minor)) 0 0 / 8px 100% no-repeat;
+}
+.meas-bowl::after { --tick-minor: 12px; --tick-major: 24px; top: 14px; height: 50px; }
+.meas-tray::after { --tick-minor: 8px; --tick-major: 16px; top: 6px; height: 34px; }
 /* Step 4 (storyboard slide 37): the tray becomes the drag source for the pour. `overflow: hidden`
    above is what clips its water, so the grab affordance goes on the tray itself rather than on a
    child that would be clipped away. */

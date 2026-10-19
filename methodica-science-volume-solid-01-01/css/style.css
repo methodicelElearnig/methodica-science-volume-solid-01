@@ -1064,3 +1064,69 @@
   position: absolute; right: 54px; top: 3px; direction: rtl;
   font-family: 'Assistant', sans-serif; font-size: 16px; font-weight: 700; line-height: 1; color: #2d6688;
 }
+
+/* ── s24 step 4: the overflow (QA 2026-10-19 — "you can't see the water running into the tray") ──
+   The same story as #s20's flood applet, on the measurement applet's bowl and tray. Everything is
+   keyed on .overflowed (set when the hammer lands, cleared on the pour and on נסו שוב), as one-shot
+   keyframe animations, so no JS timer is needed:
+     0–550ms     the hammer drops into the water
+     450ms       the water domes up over the rim (the bowl was full to the brim)
+     700ms       the spill runs down both outer walls into the tray, drops riding each stream
+     1000–2600ms the tray fills to its 250 mL line
+     2600ms      the streams retract and the dome sinks back; the 250 mL marker and the pour cue appear
+   .meas-bowl clips its overflow, so the dome, streams and drops live on .meas-bowl-wrap around it.
+   Stream length = bowl 126 + vessel gap 6 + tray margin 12 + tray inner height 63 = 207px: it ends
+   on the tray's floor and the rising water swallows its lower end. Move any of those and it moves. */
+.meas-bowl-wrap { position: relative; }
+#s24 .meas-vessel.has-object .meas-bowl-object { animation: meas-hammer-drop 0.55s cubic-bezier(.55,0,1,.45) both; }
+@keyframes meas-hammer-drop {
+  from { opacity: 0.95; transform: translate(-50%, -130px); }
+  to   { opacity: 0.95; transform: translate(-50%, 0); }
+}
+.meas-spill-dome {
+  position: absolute; left: -6px; right: -6px; top: -12px; height: 26px; border-radius: 50%;
+  background: rgba(120,190,225,0.6); border-top: 2px solid rgba(255,255,255,0.9);
+  transform: scaleY(0); transform-origin: 50% 100%; opacity: 0; pointer-events: none;
+}
+.meas-vessel.overflowed .meas-spill-dome { animation: meas-dome 2.6s ease both; }
+@keyframes meas-dome {
+  0%, 17%  { transform: scaleY(0); opacity: 0; }
+  30%, 85% { transform: scaleY(1); opacity: 1; }
+  100%     { transform: scaleY(0); opacity: 0; }
+}
+.meas-spill {
+  position: absolute; top: 0; width: 7px; height: 0; border-radius: 3px; z-index: 3;
+  background: rgba(120,190,225,0.75); pointer-events: none;
+}
+.meas-spill--l { left: -10px; } .meas-spill--r { right: -10px; }
+.meas-vessel.overflowed .meas-spill { animation: meas-spill 3.1s both; }
+@keyframes meas-spill {
+  0%, 22.5% { height: 0; animation-timing-function: ease-in; }
+  45%, 84%  { height: 207px; animation-timing-function: ease; }
+  100%      { height: 0; }
+}
+.meas-spill-drop {
+  position: absolute; top: 0; width: 9px; height: 12px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: rgba(100,175,215,0.95); opacity: 0; z-index: 4; pointer-events: none;
+}
+.meas-spill-drop--l { left: -11px; } .meas-spill-drop--r { right: -11px; }
+.meas-vessel.overflowed .meas-spill-drop { animation: meas-spill-drop 0.75s ease-in 0.8s 2; }
+.meas-vessel.overflowed .meas-spill-drop--2 { animation-delay: 1.18s; }
+@keyframes meas-spill-drop {
+  0%   { opacity: 0; transform: translateY(0); }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(196px); }
+}
+#s24 .meas-vessel.overflowed .meas-tray-water { transition: height 1.6s ease-in-out 1s; }
+#s24 .meas-vessel.overflowed .meas-tray-level { transition: opacity 0.4s ease 2.6s; }
+/* The pour cue (arrow, hint, pulsing tray) waits until the spill is over. */
+#s24 .meas-vessel.overflowed .meas-pour-arrow { animation: meas-cue-in 0.4s ease 2.6s both, meas-arrow-nudge 1.1s ease-in-out 3s infinite; }
+#s24 .meas-vessel.overflowed .meas-pour-hint { animation: meas-cue-in 0.4s ease 2.6s both; }
+#s24 .meas-vessel.overflowed .meas-tray.is-pourable { animation: meas-tray-pulse 1.1s ease-in-out 2.6s infinite; }
+@keyframes meas-cue-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .meas-spill, .meas-spill-drop, .meas-spill-dome { display: none; }
+  #s24 .meas-vessel.has-object .meas-bowl-object { animation: none; }
+}
+#s24 .meas-vessel.overflowed .meas-tray.is-pourable.dragging { animation: none; }
