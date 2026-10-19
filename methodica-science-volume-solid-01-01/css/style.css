@@ -508,6 +508,76 @@
   background: linear-gradient(180deg, rgba(234,245,252,0.5), rgba(220,240,250,0.2));
   box-shadow: inset 6px 0 10px rgba(255,255,255,0.35);
 }
+
+/* ── #s20 overflow animation (QA 2026-10-19: "it isn't obvious what happened") ──
+   The overflow now plays as a story instead of everything appearing at once:
+     0–550ms     the rock falls from above the rim into the water
+     450ms       splash; the water domes up OVER the rim (the bowl was full to the brim)
+     700ms       the spill runs down both outer walls, with drops riding each stream
+     1000–2600ms the tray fills slowly
+     2600ms      .drained (floodDrop): streams retract, the water settles back to the brim
+   Scoped to #s20 so s21's baked `.flooded.drained` copy stays a still picture. The delays live
+   on the .flooded state only; the reset and the .drained state carry their own, shorter ones. */
+#s20 .flood-rock.placed { transition: none; }   /* the dragged copy vanishes; the falling one takes over */
+#s20 .flood-sunk-rock {
+  transform: translate(-50%, -210px) scale(0.92);
+  transition: opacity 0.15s ease, transform 0.55s cubic-bezier(.55,0,1,.45);
+}
+#s20 .flood-bowl.flooded .flood-sunk-rock { transform: translate(-50%, 0) scale(0.92); }
+/* The water domes up over the rim — a real rounded element, not a gradient — then sinks back. */
+#s20 .flood-bowl-water::after {
+  content: ''; position: absolute; left: -10px; right: -10px; top: -26px; height: 40px; border-radius: 50%;
+  background: rgba(120,190,225,0.6); border-top: 2px solid rgba(255,255,255,0.9);
+  transform: scaleY(0); transform-origin: 50% 100%; opacity: 0;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+#s20 .flood-bowl.flooded .flood-bowl-water::after {
+  transform: scaleY(1); opacity: 1; transition: transform 0.35s ease-out 0.45s, opacity 0.2s ease 0.45s;
+}
+#s20 .flood-scene.drained .flood-bowl.flooded .flood-bowl-water::after { transform: scaleY(0); opacity: 0; transition: transform 0.6s ease, opacity 0.6s ease; }
+/* While pouring, each stream reaches the tray's FLOOR (286px below the bowl's inner top, measured on
+   the served pack: 211 to the tray's opening + its 75px inner height), not the final 62% water line
+   the shared rule stops at. Otherwise, while the tray is still empty, the spill ends in mid-air
+   (QA 2026-10-19). The rising water then swallows the stream's lower end. */
+#s20 .flood-bowl.flooded .flood-stream { height: 286px; transition: height 0.7s ease-in 0.7s; }
+#s20 .flood-scene.drained .flood-stream { height: 0; transition: height 0.5s ease; }
+#s20 .flood-bowl.flooded ~ .flood-tray .flood-tray-water { transition: height 1.6s ease-in-out 1s; }
+
+/* Splash: two real rounded drops that leap off the surface as the rock lands. */
+#s20 .flood-splash {
+  position: absolute; top: 4px; left: 50%; width: 12px; height: 12px; border-radius: 50%;
+  background: rgba(120,190,225,0.85); opacity: 0; pointer-events: none; z-index: 2;
+}
+#s20 .flood-scene:not(.drained) .flood-bowl.flooded .flood-splash--l { animation: flood-splash-l 0.6s ease-out 0.5s both; }
+#s20 .flood-scene:not(.drained) .flood-bowl.flooded .flood-splash--r { animation: flood-splash-r 0.6s ease-out 0.5s both; }
+@keyframes flood-splash-l {
+  0%   { opacity: 1; transform: translate(-50%, 0); }
+  50%  { opacity: 1; transform: translate(-60px, -42px); }
+  100% { opacity: 0; transform: translate(-82px, -6px) scale(0.6); }
+}
+@keyframes flood-splash-r {
+  0%   { opacity: 1; transform: translate(-50%, 0); }
+  50%  { opacity: 1; transform: translate(48px, -42px); }
+  100% { opacity: 0; transform: translate(70px, -6px) scale(0.6); }
+}
+
+/* Drops riding each stream from the rim down to the tray, while the spill lasts. */
+#s20 .flood-drop {
+  position: absolute; top: 0; width: 10px; height: 14px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: rgba(100,175,215,0.95); opacity: 0; pointer-events: none; z-index: 4;
+}
+#s20 .flood-drop--l { left: -12px; } #s20 .flood-drop--r { right: -12px; }
+#s20 .flood-scene:not(.drained) .flood-bowl.flooded .flood-drop { animation: flood-drop 0.75s ease-in 0.8s infinite; }
+#s20 .flood-scene:not(.drained) .flood-bowl.flooded .flood-drop--2 { animation-delay: 1.18s; }
+@keyframes flood-drop {
+  0%   { opacity: 0; transform: translateY(0); }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(276px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #s20 .flood-splash, #s20 .flood-drop { display: none; }
+}
 /* The icon box grows to whatever the object needs; the king keeps its 56px height and the hammer
    sets its own width below. */
 .meas-object-icon { display: flex; align-items: center; justify-content: center; min-height: 96px; }
@@ -801,6 +871,14 @@
   text-align: center; white-space: nowrap;
 }
 .meas-cyl-start-text b { font-size: 18px; color: #1e2a38; }
+/* QA 2026-10-19: the final level gets the same dashed line + caption instead of the 50→65 badge.
+   65 mL = top 38.75% (see .meas-cyl-water). Shown with the risen water. */
+.meas-cyl-end {
+  position: absolute; top: 38.75%; right: 68.5%; width: 56px;
+  border-top: 2px dashed #1e2a38; pointer-events: none;
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.meas-vessel.has-king .meas-cyl-end { opacity: 1; transition: opacity 0.4s ease 0.5s; }
 /* s17: the same marker on the displacement applet. Hidden until the marble is in — its parking
    spot is on this side of the cylinder — then fades in as the water settles at 62. */
 #s17 .meas-cyl-start { opacity: 0; transition: opacity 0.3s ease; }
@@ -926,4 +1004,63 @@
   .tip-in.is-on { animation-duration: 0.01s; animation-delay: 0s; }
   .tip-in--last.is-on .tip-btn:not(.is-open) { animation: none; box-shadow: 0 0 0 4px var(--subject-400); }
   .tip-pop { animation: none; }
+}
+
+/* QA 2026-10-19: s24's כלי מדידה reads its 250 through a dashed level marker on its left, the same
+   look as the משורה's starting level (it replaces the 0/250 badge). Inside .meas-mv-wrap, so
+   `top: 12.5%` is the 250 mL line (y=60 of the 480 viewBox) and `right: 71%` starts it at the
+   bore's left wall (x=58 of 200). Hidden until the pour, then fades in as the water settles. */
+.meas-mv-level {
+  position: absolute; top: 12.5%; right: 71%; width: 56px;
+  border-top: 2px dashed #1e2a38; pointer-events: none;
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.meas-vessel.filled .meas-mv-level { opacity: 1; transition: opacity 0.4s ease 0.7s; }
+/* The marker's label needs ~70px left of the vessel. The side column (380px, its content centred and
+   far narrower) gives that back so the row's width — and the 65 badge at its right end — is unchanged. */
+#s24 #meas2-mv { margin-left: 70px; }
+#s24 .meas-side { width: 300px; }
+
+/* Magnifier lens on the graduated vessels (QA 2026-10-19) — the logic is at the end of main.js. */
+.meas-cyl-wrap, .meas-mv-wrap, .disp-cylinder-wrap { cursor: zoom-in; touch-action: none; }
+.meas-lens {
+  position: absolute; width: 140px; height: 140px; border-radius: 50%; overflow: hidden;
+  border: 3px solid var(--subject-500); background: #fff;
+  box-shadow: 0 6px 18px rgba(30, 42, 56, 0.25);
+  pointer-events: none; z-index: 20; display: none;
+}
+.meas-lens.on { display: block; }
+.meas-lens-clone { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.meas-lens-clone * { transition: none !important; }
+/* The cue that the vessel can be magnified: a small round chip at the rim's left. */
+.meas-lens-cue {
+  position: absolute; top: -6px; left: 4px; width: 30px; height: 30px; border-radius: 50%;
+  background: #fff; border: 2px solid var(--subject-500); color: var(--subject-500);
+  display: flex; align-items: center; justify-content: center; pointer-events: none;
+}
+.meas-lens-cue svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
+.meas-cyl-wrap:hover .meas-lens-cue, .meas-mv-wrap:hover .meas-lens-cue, .disp-cylinder-wrap:hover .meas-lens-cue { opacity: 0; }
+
+/* QA 2026-10-19: the applet's head goes up 40px (76 → 36) so the stage has the room it needs and
+   נסו שוב under the bowl no longer runs into the bottom bar on a 710px canvas. */
+#s23 .exp-head, #s24 .exp-head { margin-top: 36px; }
+
+/* Graduations on the collection vessel (s20 + s21), QA 2026-10-19: without them the learner can't
+   tell how many מ"ל spilled, so "the spilled water = the rock's volume" had no number to it.
+   The scale is pinned to the water: 20 מ"ל sits exactly on the tray's 62% fill line
+   (unit-css .flood-tray-water), so --ml maps to `62% * ml / 20` of the tray's inner height.
+   Ticks are real elements (not gradient stops) so they render crisp at any scale. */
+.flood-tray-scale { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.ft-tick {
+  position: absolute; right: 26px; bottom: calc(62% * var(--ml) / 20); width: 10px; height: 2px;
+  background: #3d7fa3; border-radius: 1px; transform: translateY(50%);
+}
+.ft-tick--major { width: 18px; }
+.ft-tick b {
+  position: absolute; right: 24px; top: 50%; transform: translateY(-50%);
+  font-family: 'Assistant', sans-serif; font-size: 17px; font-weight: 700; line-height: 1; color: #2d6688;
+}
+.ft-unit {
+  position: absolute; right: 54px; top: 3px; direction: rtl;
+  font-family: 'Assistant', sans-serif; font-size: 16px; font-weight: 700; line-height: 1; color: #2d6688;
 }

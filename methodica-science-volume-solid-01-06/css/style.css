@@ -36,3 +36,18 @@
    same width (the column's full width, not max-content) and the speaker name in bold. */
 #s3-opts { width: 100%; }
 #s3-opts .scq-opt-text b { font-weight: 700; }
+
+/* 2026-10-19 (producer): סעיף א repeats the lab figures from s5 in a תכלת box, so the learner
+   does not have to go back to the scenario screen. It stands in the free left column above the
+   companion, its top level with the stem's 120px; content-width, so its left edge is the 40px gutter. */
+.peak-data-box {
+  position: absolute; left: 40px; top: 120px;
+  direction: rtl; text-align: right;
+  background: var(--subject-100); border: 2px solid var(--subject-300); border-radius: 16px;
+  padding: 14px 20px;
+  font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 400; color: #303030; line-height: 1.45;
+}
+.peak-data-box .peak-scenario-list { font-size: 22px; margin-top: 4px; }
+.peak-data-box .peak-scenario-list > li:last-child { margin-bottom: 0; }
+/* A little air between the `סעיף א:` title and the question under it (producer, 2026-10-19). */
+#s1 .scq-qtext-part { display: inline-block; margin-bottom: 12px; }

@@ -66,7 +66,7 @@
        80-90 span reading 82, 84, 85, 86, 88: uneven gaps of 2,2,1,1,2 that made the scale
        look mis-drawn rather than fine (QA 2026-08-29). -->
   <!-- majors, every 10 mL -->
-  <g stroke="#a85d2a" stroke-width="2" stroke-linecap="round">
+  <g stroke="#a85d2a" stroke-width="2.6" stroke-linecap="round">
     <line x1="120" y1="420" x2="138" y2="420"/>
     <line x1="120" y1="384" x2="138" y2="384"/>
     <line x1="120" y1="348" x2="138" y2="348"/>
@@ -80,7 +80,7 @@
     <line x1="120" y1="60" x2="138" y2="60"/>
   </g>
   <!-- mids, every 5 mL -->
-  <g stroke="#a85d2a" stroke-width="1.5" stroke-linecap="round" opacity="0.92">
+  <g stroke="#a85d2a" stroke-width="2" stroke-linecap="round" opacity="0.92">
     <line x1="128" y1="402" x2="138" y2="402"/>
     <line x1="128" y1="366" x2="138" y2="366"/>
     <line x1="128" y1="330" x2="138" y2="330"/>
@@ -93,7 +93,7 @@
     <line x1="128" y1="78" x2="138" y2="78"/>
   </g>
   <!-- minors, every 1 mL -->
-  <g stroke="#a85d2a" stroke-width="0.9" stroke-linecap="round" opacity="0.55">
+  <g stroke="#a85d2a" stroke-width="1.1" stroke-linecap="round" opacity="0.7">
     <line x1="133" y1="416.4" x2="138" y2="416.4"/>
     <line x1="133" y1="412.8" x2="138" y2="412.8"/>
     <line x1="133" y1="409.2" x2="138" y2="409.2"/>
@@ -175,18 +175,18 @@
     <line x1="133" y1="67.2" x2="138" y2="67.2"/>
     <line x1="133" y1="63.6" x2="138" y2="63.6"/>
   </g>
-  <g fill="#a85d2a" font-family="Assistant, Arial, sans-serif" font-size="13" font-weight="700" text-anchor="end">
-    <text x="116" y="64">100</text>
-    <text x="116" y="100">90</text>
-    <text x="116" y="136">80</text>
-    <text x="116" y="172">70</text>
-    <text x="116" y="208">60</text>
-    <text x="116" y="244">50</text>
-    <text x="116" y="280">40</text>
-    <text x="116" y="316">30</text>
-    <text x="116" y="352">20</text>
-    <text x="116" y="388">10</text>
+  <g fill="#a85d2a" font-family="Assistant, Arial, sans-serif" font-size="19" font-weight="700" text-anchor="end">
+    <text x="116" y="67">100</text>
+    <text x="116" y="103">90</text>
+    <text x="116" y="139">80</text>
+    <text x="116" y="175">70</text>
+    <text x="116" y="211">60</text>
+    <text x="116" y="247">50</text>
+    <text x="116" y="283">40</text>
+    <text x="116" y="319">30</text>
+    <text x="116" y="355">20</text>
+    <text x="116" y="391">10</text>
   </g>
   <!-- The unit label clears the lip now; it used to sit on the rim ellipse (QA 2026-08-29). -->
-  <text x="138" y="26" fill="#a85d2a" font-family="Assistant, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="end">ml</text>
+  <text x="138" y="26" fill="#a85d2a" font-family="Assistant, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="end">ml</text>
 </svg>
