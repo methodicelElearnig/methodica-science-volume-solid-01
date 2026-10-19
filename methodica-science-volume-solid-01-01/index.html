@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=114">
-  <link rel="stylesheet" href="css/style.css?v=112">
+  <link rel="stylesheet" href="../unit-css/style.css?v=115">
+  <link rel="stylesheet" href="css/style.css?v=115">
 </head>
 <body data-subject-theme="science">
 
@@ -781,7 +781,7 @@
         <!-- RIGHT: question text + answers -->
         <div class="aq-side">
           <h1 class="exp-title">מדידת נפח של גוף הנדסי</h1>
-          <p class="aq-qtext">לפניכם אקווריום בצורת קובייה. כמה מים צריך כדי למלא אותו עד הקצה?</p>
+          <p class="aq-qtext">לפניכם אקווריום בצורת קובייה.<br>כמה מים צריך <strong>כדי למלא אותו עד הקצה</strong>?</p>
           <div class="scq-answers" id="s15-answers" role="radiogroup" aria-label="כמה מים צריך כדי למלא את האקווריום עד הקצה?">
             <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="a" onclick="scqSelect('s15','a')"><span class="scq-opt-text">100 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
             <button class="scq-opt" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s15','b')"><span class="scq-opt-text">40 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
@@ -846,7 +846,7 @@
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s16', this)"><span class="scq-opt-text">נעריך אותם לפי העין</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
       <div class="scq-figure s16-figure">
-        <img src="assets/img/s16-nongeometric.jpg" alt="גולת זכוכית, אגוז, מפתח ישן וחייל צעצוע מונחים בשורה על משטח עץ">
+        <img src="assets/img/s16-nongeometric.jpg?v=2" alt="גולת זכוכית, אגוז, מפתח ישן וחייל צעצוע מונחים בשורה על משטח עץ">
       </div>
       </div>
     </div>
@@ -905,7 +905,7 @@
         <div class="disp-applet">
           <div class="disp-vessel-col">
           <div class="disp-cylinder-wrap" id="disp-cylinder">
-            <img class="disp-cylinder-img" src="assets/img/s17-cylinder.svg?v=3" alt="משורה מדורגת עם מים עד קו 50 מ&quot;ל" draggable="false">
+            <img class="disp-cylinder-img" src="assets/img/s17-cylinder.svg?v=4" alt="משורה מדורגת עם מים עד קו 50 מ&quot;ל" draggable="false">
             <div class="disp-water" id="disp-water"></div>
             <img class="disp-sunk-marble" id="disp-sunk-marble" src="assets/img/s17-marble.svg?v=2" alt="" draggable="false">
             <!-- Starting-level reference, same marker as s23/s24. Shown once the water has risen
@@ -960,7 +960,7 @@
           <p class="tip-conclusion tip-in" style="--k: 1"><strong>נפח המים הסופי פחות נפח המים המקורי<br>=<br>נפח הגולה!</strong></p>
           <div class="tip-figure tip-in" style="--k: 2">
             <div class="disp-cylinder-wrap risen" role="img" aria-label="משורה מדורגת ובתוכה הגולה; מפלס המים עלה מ-50 מ&quot;ל (נפח מים התחלתי) ל-62 מ&quot;ל (נפח מים סופי), ולכן נפח הגולה 12 סמ&quot;ק">
-              <img class="disp-cylinder-img" src="assets/img/s17-cylinder.svg?v=3" alt="" draggable="false">
+              <img class="disp-cylinder-img" src="assets/img/s17-cylinder.svg?v=4" alt="" draggable="false">
               <div class="disp-water"></div>
               <img class="disp-sunk-marble" src="assets/img/s17-marble.svg?v=2" alt="" draggable="false">
               <!-- The two readings, the brace and the difference, to the vessel's right (deck slide 175).
@@ -1077,7 +1077,7 @@
       </div>
       <div class="exp-head">
         <h1 class="exp-title">"שיטת ההצפה" לגוף שאינו נכנס למשורה</h1>
-        <p class="exp-instruction" id="flood-instruction">הכניסו את האבן לתוך הקערה הגדולה המלאה במים.</p>
+        <p class="exp-instruction" id="flood-instruction">הכניסו את האבן לתוך הקערה הגדולה המלאה במים <strong>עד הקצה</strong>.</p>
       </div>
 
       <div class="flood-stage">
@@ -1087,8 +1087,15 @@
             <img class="flood-sunk-rock" src="assets/img/s20-rock.png" alt="" aria-hidden="true" draggable="false">
             <span class="flood-stream flood-stream--l"></span>
             <span class="flood-stream flood-stream--r"></span>
+            <!-- Overflow animation (s20 only): splash where the rock enters, and drops riding each stream. -->
+            <span class="flood-splash flood-splash--l" aria-hidden="true"></span>
+            <span class="flood-splash flood-splash--r" aria-hidden="true"></span>
+            <span class="flood-drop flood-drop--l" aria-hidden="true"></span>
+            <span class="flood-drop flood-drop--l flood-drop--2" aria-hidden="true"></span>
+            <span class="flood-drop flood-drop--r" aria-hidden="true"></span>
+            <span class="flood-drop flood-drop--r flood-drop--2" aria-hidden="true"></span>
           </div>
-          <div class="flood-tray"><div class="flood-tray-water" id="flood-tray-water"></div></div>
+          <div class="flood-tray"><div class="flood-tray-water" id="flood-tray-water"></div><div class="flood-tray-scale" aria-hidden="true"><span class="ft-tick" style="--ml: 5"></span><span class="ft-tick ft-tick--major" style="--ml: 10"><b>10</b></span><span class="ft-tick" style="--ml: 15"></span><span class="ft-tick ft-tick--major" style="--ml: 20"><b>20</b></span><span class="ft-tick" style="--ml: 25"></span><span class="ft-unit">מ"ל</span></div></div>
           <button class="disp-reset" id="flood-reset" type="button" onclick="floodReset()" hidden>ניסוי מחדש</button>
         </div>
 
@@ -1136,14 +1143,14 @@
           </div>
           <p class="tip-conclusion tip-in" style="--k: 1"><strong>כמות המים שגלשו מהקערה<br>=<br>נפח הסלע!</strong></p>
           <div class="tip-figure tip-in" style="--k: 2">
-            <div class="flood-scene drained" role="img" aria-label="הסלע שקוע בקערה המלאה במים; המים שגלשו ממנה נאספו בכלי האיסוף התחתון — זה נפח הסלע">
+            <div class="flood-scene drained" role="img" aria-label="הסלע שקוע בקערה המלאה במים; המים שגלשו ממנה נאספו בכלי האיסוף התחתון, שעליו שנתות למדידת נפח — זה נפח הסלע">
               <div class="flood-bowl flooded">
                 <div class="flood-bowl-water"></div>
                 <img class="flood-sunk-rock" src="assets/img/s20-rock.png" alt="" draggable="false">
                 <span class="flood-stream flood-stream--l"></span>
                 <span class="flood-stream flood-stream--r"></span>
               </div>
-              <div class="flood-tray"><div class="flood-tray-water"><span class="flood-tray-label" aria-hidden="true">נפח הסלע</span></div></div>
+              <div class="flood-tray"><div class="flood-tray-water"><span class="flood-tray-label" aria-hidden="true">נפח הסלע</span></div><div class="flood-tray-scale" aria-hidden="true"><span class="ft-tick" style="--ml: 5"></span><span class="ft-tick ft-tick--major" style="--ml: 10"><b>10</b></span><span class="ft-tick" style="--ml: 15"></span><span class="ft-tick ft-tick--major" style="--ml: 20"><b>20</b></span><span class="ft-tick" style="--ml: 25"></span><span class="ft-unit">מ"ל</span></div></div>
             </div>
           </div>
         </div>
@@ -1251,14 +1258,16 @@
                  VESSEL — it always did; there was simply nothing here for it to act on, so the
                  cylinder drew empty through both steps (QA 2026-08-29). -->
             <div class="meas-cyl-wrap">
-              <img class="meas-cyl-img" src="assets/img/s17-cylinder.svg?v=3" alt="משורה מדורגת; מפלס המים ההתחלתי מסומן ב-50 מ&quot;ל" draggable="false">
+              <img class="meas-cyl-img" src="assets/img/s17-cylinder.svg?v=4" alt="משורה מדורגת; מפלס המים ההתחלתי מסומן ב-50 מ&quot;ל" draggable="false">
               <div class="meas-cyl-water"></div>
               <!-- Fixed reference: the starting level the learner subtracts from. Unlike the badge,
                    it never changes with the step (QA 2026-10-15). -->
               <div class="meas-cyl-start" aria-hidden="true"><span class="meas-cyl-start-text">מפלס התחלתי<br><b>50 מ"ל</b></span></div>
               <img class="meas-cyl-king" src="assets/img/s23-chess-king.svg" alt="" aria-hidden="true" draggable="false">
+              <!-- The final-level marker replaces the old 50→65 badge (QA 2026-10-19): the same dashed
+                   line + caption as the starting level, shown once the king is in (has-king). -->
+              <div class="meas-cyl-end" aria-hidden="true"><span class="meas-cyl-start-text">מפלס סופי<br><b>65 מ"ל</b></span></div>
             </div>
-            <div class="meas-badge" id="meas-cyl-badge">50 מ"ל</div>
             <span class="meas-vessel-label">משורה</span>
           </div>
           <div class="meas-vessel" id="meas-bowl" data-vessel="bowl">
@@ -1332,13 +1341,14 @@
                  hinted it was not the place to drag the hammer. `has-king` still lifts the water
                  to 65. -->
             <div class="meas-cyl-wrap">
-              <img class="meas-cyl-img" src="assets/img/s17-cylinder.svg?v=3" alt="משורה מדורגת; מפלס המים ההתחלתי מסומן ב-50 מ&quot;ל" draggable="false">
+              <img class="meas-cyl-img" src="assets/img/s17-cylinder.svg?v=4" alt="משורה מדורגת; מפלס המים ההתחלתי מסומן ב-50 מ&quot;ל" draggable="false">
               <div class="meas-cyl-water"></div>
               <!-- Fixed reference: the starting level the learner subtracts from. Unlike the badge,
                    it never changes with the step (QA 2026-10-15). -->
               <div class="meas-cyl-start" aria-hidden="true"><span class="meas-cyl-start-text">מפלס התחלתי<br><b>50 מ"ל</b></span></div>
+              <!-- The final-level marker replaces the old 50→65 badge (QA 2026-10-19). -->
+              <div class="meas-cyl-end" aria-hidden="true"><span class="meas-cyl-start-text">מפלס סופי<br><b>65 מ"ל</b></span></div>
             </div>
-            <div class="meas-badge" id="meas2-cyl-badge">65 מ"ל</div>
             <span class="meas-vessel-label">משורה</span>
           </div>
           <div class="meas-vessel" id="meas2-bowl" data-vessel="bowl">
@@ -1353,10 +1363,12 @@
                250 reading here. 0-250 scale, so the level is readable — the משורה's 0-100 one is not. -->
           <div class="meas-vessel" id="meas2-mv" data-vessel="mv">
             <div class="meas-mv-wrap">
-              <img class="meas-cyl-img" src="assets/img/s23-cylinder-250.svg" alt="כלי מדידה מדורג עד 250 מ&quot;ל" draggable="false">
+              <img class="meas-cyl-img" src="assets/img/s23-cylinder-250.svg?v=2" alt="כלי מדידה מדורג עד 250 מ&quot;ל" draggable="false">
               <div class="meas-mv-water"></div>
+              <!-- The reading after the pour, as a dashed level marker like the משורה's starting level
+                   (QA 2026-10-19 — replaces the 0/250 badge). Fades in with .filled. -->
+              <div class="meas-mv-level" aria-hidden="true"><span class="meas-cyl-start-text"><b>250 מ"ל</b></span></div>
             </div>
-            <div class="meas-badge" id="meas2-mv-badge">0 מ"ל</div>
             <span class="meas-vessel-label">כלי מדידה</span>
           </div>
         </div>
@@ -1617,7 +1629,7 @@
 <script src="../unit-js/40-resume.js?v=3"></script>
 <script src="../unit-js/50-loader.js?v=3"></script>
 <script src="../unit-js/60-devbridge.js?v=2"></script>
-<script src="js/main.js?v=104"></script>
+<script src="js/main.js?v=106"></script>
 <script src="../unit-js/90-boot.js?v=3"></script>
 </body>
 </html>

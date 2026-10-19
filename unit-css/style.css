@@ -3479,6 +3479,8 @@ html, body {
 .dnd-slot.wrong { border-color: #d64550; background: #ffe3e5; }
 .dnd-source-wrap { display: flex; flex-direction: column; gap: 8px; }
 .dnd-source-label { font-family: 'Assistant', sans-serif; font-size: 16px; font-weight: 600; color: #6a7683; text-align: right; direction: rtl; }
+/* 2026-10-19: the bank label on the measuring-method sort (component 02) matches the instruction line's size. */
+.dnd-question--columns:not(.dnd-question--warmup) .dnd-source-label { font-size: 24px; }
 .dnd-source { display: flex; direction: rtl; flex-wrap: wrap; gap: 12px; min-height: 60px; padding: 10px; background: #eef4f9; border-radius: 12px; }
 .dnd-pill {
   display: inline-flex; align-items: center; justify-content: center;

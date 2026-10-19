@@ -1652,7 +1652,7 @@ scqRegister({
   startLocked: true,
   item: '02',
   popups: fbPopups('נכון מאוד!', [   /* sb20/22/23 */
-    'למדידת נפח של תיבה משתמשים בסרגל: מודדים את אחת מצלעות הקובייה ומכפילים אותו בעצמו שלוש פעמים — פעם אחת לאורך, פעם אחת לרוחב ופעם אחת לגובה.',
+    'למדידת נפח של תיבה משתמשים בסרגל: מודדים את אחת מצלעות הקובייה ומכפילים אותו בעצמו שלוש פעמים - פעם אחת לאורך, פעם אחת לרוחב ופעם אחת לגובה.',
     'אורך הצלע במקרה זה הוא 10\u00A0ס"מ וכיוון שכל הצלעות בקובייה זהות:',
     '<span class="section-result-expr">10 · 10 · 10 = 1,000</span>']),
   /* ⚠️ goTo(16), NOT goTo(17). This screen advances through its own check button rather than
@@ -1669,6 +1669,7 @@ attachPopupDrag(document.getElementById('s15-scq-popup'));
    ═══════════════════════════════════════════════════════════ */
 let floodPlaced = false;
 let floodDnd = null;
+let floodTimer = null;
 function floodInitDnd() {
   if (floodDnd) return;
   floodDnd = createPointerDnd({
@@ -1686,25 +1687,28 @@ function floodDrop() {
   document.getElementById('flood-bowl').classList.add('flooded');
   const inst = document.getElementById('flood-instruction');
   if (inst) inst.textContent = 'האבן שקעה והמים גלשו לכלי האיסוף — בואו נבין למה.';
-  /* The tray's fill is `height 0.6s ease 0.3s`, so it lands at 900ms — the same beat the
-     explanation appears on. Marking the scene drained then stops the spill streams, because by
-     that point every drop that was going to leave the bowl has arrived (QA 2026-08-24, slide 13:
-     the lines should disappear once the flow stops). */
-  setTimeout(function () {
+  /* Staged overflow (lesson css, "#s20 overflow animation"): rock falls 0–550ms, water bulges over
+     the rim from 450ms, streams run from 700ms, tray fills 1000–2600ms. Marking the scene drained at
+     2600 stops the streams and settles the bowl back to the brim, because by then every drop that
+     was going to leave the bowl has arrived (QA 2026-08-24, slide 13: the lines should disappear
+     once the flow stops). */
+  clearTimeout(floodTimer);
+  floodTimer = setTimeout(function () {
     const rs = document.getElementById('flood-reset');    if (rs) rs.hidden = false;
     const cont = document.getElementById('s20-continue');  if (cont) cont.disabled = false;
     document.querySelector('#s20 .flood-scene')?.classList.add('drained');
-  }, 900);
+  }, 2600);
   xapiSend('interacted', 'question', { response: 'overflow' }, { category: 'flooding-applet' });
 }
 function floodReset() {
   floodPlaced = false;
+  clearTimeout(floodTimer);
   const rock = document.getElementById('flood-rock');
   rock.classList.remove('placed'); rock.style.transform = '';
   document.getElementById('flood-hint').textContent = 'גררו את האבן לקערה';
   document.getElementById('flood-bowl').classList.remove('flooded');
   document.querySelector('#s20 .flood-scene')?.classList.remove('drained');
-  document.getElementById('flood-instruction').textContent = 'הכניסו את האבן לתוך הקערה הגדולה המלאה במים.';
+  document.getElementById('flood-instruction').innerHTML = 'הכניסו את האבן לתוך הקערה הגדולה המלאה במים <strong>עד הקצה</strong>.';
   document.getElementById('flood-reset').hidden = true;
   document.getElementById('s20-continue').disabled = true;
 }
@@ -1815,8 +1819,7 @@ function warmupFinish(idx, screen, isCorrect) {
      #S-ddq-check, #S-ddq-popup (+ -title/-body).
    ═══════════════════════════════════════════════════════════ */
 const DDQ_REG = {};
-/* Two attempts (opt-in, `maxAttempts: 2` — Part 02's s4, per storyboard slides 66-70; s28 keeps one, per
-   42-45). A wrong non-final check is not a resolution: the board stays live, every slot still holding
+/* Two attempts (opt-in, `maxAttempts: 2` — Part 02's s4, per storyboard slides 66-70, and s28). A wrong non-final check is not a resolution: the board stays live, every slot still holding
    the item it was judged with shows that verdict, and `lastWrong` (the judged board) both drives those
    marks and gates בדיקה until the board differs from it (720-templates: "Retry gate", "Per-answer
    verdict after a non-final wrong attempt"). `phase` is only which popup is open — 'retry' until the
@@ -2091,7 +2094,11 @@ ddqRegister({
      agreements are the deck's, not unified — choosing one is a language call left to QA. Both slides
      end the second line with '..'; one period is kept (docs-and-tools/TEXT-FIDELITY.md, deck defects). */
   answerNote: 'ההתאמה הנכונה מוצגת.',
+  /* Two attempts, like Part 02's s4: the first wrong check opens the retry popup and keeps the board
+     live; the second resolves to the model board. The hint stays available from the start. */
+  maxAttempts: 2,
   popups: {
+    retry:     FB_RETRY,
     correct:   { title: 'התאמה מושלמת!', body: ['כל כלי ושיטת מדידה מתאימים למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] },
     incorrect: { title: 'התשובה אינה נכונה.', body: ['כל כלי ושיטת מדידה מתאימה למשימה אחרת.', 'כדי לבחור נכון, חשוב לזהות מה רוצים למדוד והאם מדובר בנוזל, בגוף בעל צורה הנדסית או בגוף בעל צורה מורכבת.'] }
   },
@@ -2442,13 +2449,9 @@ function measRender() {
   if (el('pour-hint')) el('pour-hint').classList.toggle('hidden', !awaitingPourFlag(cfg));
   if (el('pour-arrow')) el('pour-arrow').classList.toggle('hidden', !awaitingPourFlag(cfg));
   /* The משורה reads 50 before the king goes in and 65 after — and STAYS at 65 through steps 3-4
-     (slide 36 says so). The 250 belongs to the measuring vessel, which only exists on s24. */
-  el('cyl-badge').textContent = (step >= 2) ? '65 מ"ל' : '50 מ"ל';
+     (slide 36 says so). `has-king` raises the water and shows the "מפלס סופי" marker. */
   el('cyl').classList.toggle('has-king', step >= 2);
-  if (el('mv')) {
-    el('mv').classList.toggle('filled', measPoured);
-    el('mv-badge').textContent = measPoured ? '250 מ"ל' : '0 מ"ל';
-  }
+  if (el('mv')) el('mv').classList.toggle('filled', measPoured);
   /* The tray holds the water the hammer displaced until the learner pours it across. */
   if (el('bowl')) el('bowl').classList.toggle('overflowed', step >= 4 && !measPoured);
   /* The hammer STAYS in the bowl after the pour — only the water moved across. Without this the
@@ -2919,3 +2922,50 @@ function onXapiReady() {
     try { sendStatement720('initialized', 'onlinelesson', null, { scope: 'unit' }); } catch (e) {}
   });
 }
+
+/* Magnifier lens on the graduated vessels (QA 2026-10-19): the scales are fine-grained, so pointing
+   at a vessel (or pressing on it, on touch) shows a round lens at the pointer with that spot drawn
+   2.4× larger. The lens holds a CLONE of the wrap, taken when the pointer arrives, so it shows the
+   water, the sunk object and the level markers exactly as they are — and because the clone stays
+   inside the same .meas-vessel / #sNN, every state selector (has-king, filled, risen) still matches.
+   Coordinates are in canvas px: the client delta is divided by appScale(). Skipped while something
+   is being dragged, since the vessels are drop targets. */
+(function () {
+  const ZOOM = 2.4, R = 70;  // lens radius, canvas px
+  function attach(wrap) {
+    const cue = document.createElement('span');
+    cue.className = 'meas-lens-cue'; cue.setAttribute('aria-hidden', 'true');
+    cue.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><path d="M15 15l5.5 5.5"/></svg>';
+    wrap.appendChild(cue);
+    const lens = document.createElement('div');
+    lens.className = 'meas-lens'; lens.setAttribute('aria-hidden', 'true');
+    wrap.appendChild(lens);
+    let clone = null;
+    function show(e) {
+      if (document.querySelector('.dragging')) return hide();
+      const sc = appScale(), b = wrap.getBoundingClientRect();
+      const x = (e.clientX - b.left) / sc, y = (e.clientY - b.top) / sc;
+      if (!clone) {
+        clone = wrap.cloneNode(true);
+        clone.querySelectorAll('.meas-lens, .meas-lens-cue').forEach(n => n.remove());
+        clone.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+        clone.removeAttribute('id'); clone.removeAttribute('role'); clone.removeAttribute('aria-label');
+        clone.classList.add('meas-lens-clone');
+        clone.style.width = wrap.offsetWidth + 'px';
+        lens.appendChild(clone);
+      }
+      lens.style.left = (x - R) + 'px'; lens.style.top = (y - R) + 'px';
+      clone.style.transform = 'translate(' + (R - x * ZOOM) + 'px,' + (R - y * ZOOM) + 'px) scale(' + ZOOM + ')';
+      lens.classList.add('on');
+    }
+    function hide() { lens.classList.remove('on'); if (clone) { clone.remove(); clone = null; } }
+    wrap.addEventListener('pointerenter', show);
+    wrap.addEventListener('pointerdown', show);
+    wrap.addEventListener('pointermove', show);
+    wrap.addEventListener('pointerleave', hide);
+    wrap.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') hide(); });
+    wrap.addEventListener('pointercancel', hide);
+  }
+  function init() { document.querySelectorAll('.meas-cyl-wrap, .meas-mv-wrap, .disp-cylinder-wrap').forEach(attach); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();

@@ -41,6 +41,7 @@
   <button onclick="nav(-1)" title="אחורה (RTL: ימין = אחורה)">▶</button>
   <input type="number" id="jump-input" min="0" value="0" onkeydown="if(event.key==='Enter')jumpTo()">
   <button onclick="jumpTo()">Go</button>
+  <button onclick="resetLomda()" title="מוחק את ההתקדמות השמורה ומתחיל את הלומדה מההתחלה">↺ איפוס</button>
   <span style="margin-right:auto; font-size:11px; font-weight:400;">Ctrl+← קדימה &nbsp;|&nbsp; Ctrl+→ אחורה</span>
 </div>
 
@@ -83,6 +84,13 @@
   function jumpTo() {
     const n = parseInt(input.value, 10);
     if (!isNaN(n) && n >= 0 && n < total) send(n);
+  }
+
+  // Wipes the saved progress (the lesson's own ?resetState escape hatch, see unit-js/40-resume.js)
+  // and reloads the lesson from screen 0.
+  function resetLomda() {
+    cur = 0; input.value = 0; updateLabel();
+    frame.src = 'index.html?resetState';
   }
 
   function updateLabel() {

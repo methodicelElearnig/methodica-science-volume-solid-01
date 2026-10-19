@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · שאלת שיא</title>
-  <link rel="stylesheet" href="../unit-css/style.css?v=114">
-  <link rel="stylesheet" href="css/style.css?v=100">
+  <link rel="stylesheet" href="../unit-css/style.css?v=115">
+  <link rel="stylesheet" href="css/style.css?v=104">
 </head>
 <body data-subject-theme="science">
 <div id="app">
@@ -36,8 +36,8 @@
   </section>
 
   <!-- S1–S4 sub-parts: single-select, feedback popup after each סעיף (2 attempts) -->
-  <!-- Storyboard slide 149. The photo and the measurements are NOT repeated here: they are the
-       scenario, and the scenario is s5 (slide 148), which now precedes this screen. The shell is
+  <!-- Storyboard slide 149. The photo is NOT repeated here (it is the scenario, s5 / slide 148,
+       which precedes this screen); the measurements are, in .peak-data-box (producer, 2026-10-19). The shell is
        still .peak-question--withimage, but its media column holds the companion rather than the
        photo — see the note on the container below. -->
   <section class="screen" data-screen="1" id="s1">
@@ -60,6 +60,17 @@
           <button class="scq-opt peak-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="peakSelect(1,'d')"><span class="scq-opt-text">160 סמ"ק</span><span class="scq-radio" aria-hidden="true"></span></button>
         </div>
       </div>
+    </div>
+    <!-- 2026-10-19 (producer): the lab figures from s5 are repeated here in a תכלת box so the
+         learner can answer without going back to the scenario screen. It stands in the free left
+         column, above the companion (#s1-say); positioned in css/style.css. -->
+    <div class="peak-data-box">
+      <p>בבדיקת הפסלון במעבדה התקבלו הנתונים הבאים:</p>
+      <ul class="peak-scenario-list">
+        <li>המסה במאזניים: 156&nbsp;גרם.</li>
+        <li>מדידה במשורה לפני הכנסת הפסלון: 50&nbsp;מ"ל מים.</li>
+        <li>מדידה במשורה אחרי הכנסת הפסל: 110&nbsp;מ"ל.</li>
+      </ul>
     </div>
     <!-- 2026-10-12 (producer): the companion and his line moved out of the question row to the
          bottom-left corner — sprite on the left, bubble to his right (--left: beak on the bubble's
