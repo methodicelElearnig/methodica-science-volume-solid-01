@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
-  <link rel="stylesheet" href="../unit-css/style.css?v=115">
-  <link rel="stylesheet" href="css/style.css?v=115">
+  <link rel="stylesheet" href="../unit-css/style.css?v=117">
+  <link rel="stylesheet" href="css/style.css?v=116">
 </head>
 <body data-subject-theme="science">
 
@@ -1271,12 +1271,12 @@
             <span class="meas-vessel-label">משורה</span>
           </div>
           <div class="meas-vessel" id="meas-bowl" data-vessel="bowl">
-            <div class="meas-bowl"><div class="meas-bowl-water" id="meas-bowl-water"></div><img class="meas-bowl-object" src="assets/img/s23-hammer.png" alt="" aria-hidden="true" draggable="false"></div>
+            <div class="meas-bowl"><div class="meas-bowl-water" id="meas-bowl-water"></div><div class="meas-scale" aria-hidden="true"><i class="lg" data-v="1000" style="--y:9"></i><i style="--y:19"></i><i class="lg" data-v="800" style="--y:29"></i><i style="--y:39"></i><i class="lg" data-v="600" style="--y:49"></i><i style="--y:59"></i></div><img class="meas-bowl-object" src="assets/img/s23-hammer.png" alt="" aria-hidden="true" draggable="false"></div>
             <!-- Step 4 (storyboard slide 37) makes the tray itself the drag source: the learner
                  pours it into the משורה. It is a child of the bowl vessel, which is also a drop
                  target — harmless, because the drag ghost is pointer-events:none so the drop
                  hit-test sees the cylinder underneath, not this node. -->
-            <div class="meas-tray" id="meas-tray"><div class="meas-tray-water" id="meas-tray-water"></div></div>
+            <div class="meas-tray" id="meas-tray"><div class="meas-tray-water" id="meas-tray-water"></div><div class="meas-scale" aria-hidden="true"><i style="--y:9"></i><i class="lg" data-v="100" style="--y:18"></i><i style="--y:27"></i><i class="lg" data-v="200" style="--y:36"></i><i style="--y:45"></i><i class="lg" data-v="300" style="--y:54"></i></div><div class="meas-tray-level" aria-hidden="true"><span class="meas-cyl-start-text"><b>250 מ"ל</b></span></div></div>
             <span class="meas-vessel-label">קערת הצפה + כלי איסוף</span>
           </div>
         </div>
@@ -1352,8 +1352,8 @@
             <span class="meas-vessel-label">משורה</span>
           </div>
           <div class="meas-vessel" id="meas2-bowl" data-vessel="bowl">
-            <div class="meas-bowl"><div class="meas-bowl-water" id="meas2-bowl-water"></div><img class="meas-bowl-object" src="assets/img/s23-hammer.png" alt="" aria-hidden="true" draggable="false"></div>
-            <div class="meas-tray" id="meas2-tray"><div class="meas-tray-water" id="meas2-tray-water"></div></div>
+            <div class="meas-bowl-wrap"><div class="meas-bowl"><div class="meas-bowl-water" id="meas2-bowl-water"></div><div class="meas-scale" aria-hidden="true"><i class="lg" data-v="1000" style="--y:9"></i><i style="--y:19"></i><i class="lg" data-v="800" style="--y:29"></i><i style="--y:39"></i><i class="lg" data-v="600" style="--y:49"></i><i style="--y:59"></i></div><img class="meas-bowl-object" src="assets/img/s23-hammer.png" alt="" aria-hidden="true" draggable="false"></div><span class="meas-spill-dome" aria-hidden="true"></span><span class="meas-spill meas-spill--l" aria-hidden="true"></span><span class="meas-spill meas-spill--r" aria-hidden="true"></span><span class="meas-spill-drop meas-spill-drop--l" aria-hidden="true"></span><span class="meas-spill-drop meas-spill-drop--l meas-spill-drop--2" aria-hidden="true"></span><span class="meas-spill-drop meas-spill-drop--r" aria-hidden="true"></span><span class="meas-spill-drop meas-spill-drop--r meas-spill-drop--2" aria-hidden="true"></span></div>
+            <div class="meas-tray" id="meas2-tray"><div class="meas-tray-water" id="meas2-tray-water"></div><div class="meas-scale" aria-hidden="true"><i style="--y:9"></i><i class="lg" data-v="100" style="--y:18"></i><i style="--y:27"></i><i class="lg" data-v="200" style="--y:36"></i><i style="--y:45"></i><i class="lg" data-v="300" style="--y:54"></i></div><div class="meas-tray-level" aria-hidden="true"><span class="meas-cyl-start-text"><b>250 מ"ל</b></span></div></div>
             <span class="meas-vessel-label">קערת הצפה + כלי איסוף</span>
             <svg class="meas-pour-arrow hidden" id="meas2-pour-arrow" viewBox="0 0 90 120" aria-hidden="true"><path d="M78 108 C 40 104, 22 70, 24 22" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M8 34 L24 12 L40 34" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <button class="disp-reset meas-reset hidden" id="meas2-reset" type="button" onclick="measReset()">נסו שוב</button>

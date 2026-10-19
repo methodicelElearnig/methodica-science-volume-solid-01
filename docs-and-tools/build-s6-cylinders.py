@@ -16,7 +16,7 @@ fg = nd.binary_opening(fg, iterations=1); fg = nd.binary_closing(fg, iterations=
 cyl = np.zeros_like(fg); cyl[40:585, 228:388] = fg[40:585, 228:388]
 lab,n = nd.label(cyl); sizes = nd.sum(cyl, lab, range(1,n+1)); cyl = lab == (1+np.argmax(sizes))
 cyl = nd.binary_fill_holes(cyl)
-lim = np.zeros_like(cyl); lim[40:530, 262:355] = True; lim[525:585, 228:388] = True
+lim = np.zeros_like(cyl); lim[40:530, 262:355] = True; lim[525:578, 228:388] = True
 cyl &= lim
 doll = np.zeros_like(fg); doll[398:565, 385:478] = fg[398:565, 385:478]
 lab,n = nd.label(doll); sizes = nd.sum(doll, lab, range(1,n+1)); doll = lab == (1+np.argmax(sizes))
@@ -47,6 +47,20 @@ def soft_bg(src):
     tone = np.array([236,240,244], np.float32)
     return b*0.55 + tone*0.45                                     # lighter, low contrast
 
+def whiten_glass(C):
+    # white page: the window seen through the glass is replaced by a smooth per-column profile
+    C = C.copy()
+    g = C.mean(2, keepdims=True); C = g + (C-g)*0.2              # drop the colours of the room
+    x0,x1 = 258, 358
+    for s,e,air in [(60, SURF-3, True), (SURF+4, BOT-4, False)]:
+        prof = np.median(C[s:e,x0:x1], axis=0).mean(1, keepdims=True)  # horizontal shading only
+        if air: prof = (255-(255-prof)*0.35)*np.array([0.985,0.99,1.0])
+        else:   prof = (255-(255-prof)*0.55)*np.array([0.78,0.88,1.0])    # light blue water
+        C[s:e,x0:x1] = prof[None]
+    for s,e in [(45,60), (BOT-4, H)]:                              # rim + base: lighter glass
+        C[s:e] = 255-(255-C[s:e])*0.55
+    return C
+
 def build(after):
     src = O.copy()
     if after:   # remove the standing doll + its reflection from the table
@@ -54,17 +68,26 @@ def build(after):
         refl = np.zeros_like(doll); refl[555:650, 388:478] = True
         src = inpaint(src, hole | refl)
     bg = soft_bg(src)
+    if BGMODE == 'white':
+        bg = np.full_like(src, 255)
+        yy,xx = np.mgrid[0:H,0:W].astype(np.float32)
+        sh = np.exp(-(((xx-(L+R)/2)/82)**2 + ((yy-578)/9)**2)*1.6)
+        if not after: sh = np.maximum(sh, 0.8*np.exp(-(((xx-430)/36)**2 + ((yy-556)/6)**2)*1.6))
+        bg = bg*(1-0.22*sh[...,None])
     # soft darker halo behind the glass so it still reads on a light background
     halo = nd.gaussian_filter(nd.binary_dilation(cyl, iterations=3).astype(np.float32), 9)[...,None]
-    bg = bg*(1-0.30*halo)
+    if BGMODE != 'white': bg = bg*(1-0.30*halo)
     out = bg.copy()
+    Cw = whiten_glass(C) if BGMODE == 'white' else C
     fgm = cyl | (doll if not after else np.zeros_like(doll))
     fm = feather(fgm)
-    out = out*(1-fm) + C*fm
+    out = out*(1-fm) + Cw*fm
+    if BGMODE == 'white' and not after:   # the doll keeps its own colours
+        dm = feather(doll); out = out*(1-dm) + C*dm
     if after:
         # raise water 60 -> 75 mL
         NS = int(round(y_of(75)))
-        a0,a1 = L-3, R+4
+        a0,a1 = (258,358) if BGMODE == 'white' else (L-3, R+4)
         air = out[NS-12:SURF-6, a0:a1].mean(0); wat = out[SURF+8:SURF+30, a0:a1].mean(0)
         ratio = wat/np.maximum(air,1)
         line = out[SURF-3:SURF+4, L-2:R+3].copy()

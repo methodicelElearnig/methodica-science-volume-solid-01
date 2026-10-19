@@ -90,6 +90,17 @@ function createPointerDnd(opts) {
     const ghost = src.cloneNode(true);
     ghost.removeAttribute('id');
     ghost.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+    /* The ghost lives on <body>, outside the screen-scoped rules that shaped the source (e.g.
+       #s28's landscape cards with a 76px photo box), so it fell back to the default pill and the
+       photo jumped size on press. Freeze the source's computed layout onto the clone, node by node. */
+    const GHOST_PROPS = ['display', 'flex-direction', 'flex', 'align-items', 'justify-content', 'gap',
+      'padding', 'width', 'height', 'object-fit', 'font-size', 'line-height', 'text-align', 'border-radius'];
+    const srcNodes = [src, ...src.querySelectorAll('*')];
+    const ghostNodes = [ghost, ...ghost.querySelectorAll('*')];
+    srcNodes.forEach((n, i) => {
+      const cs = getComputedStyle(n), g = ghostNodes[i];
+      if (g) GHOST_PROPS.forEach(p => g.style.setProperty(p, cs.getPropertyValue(p)));
+    });
     ghost.style.position       = 'fixed';
     ghost.style.left           = rect.left + 'px';
     ghost.style.top            = rect.top  + 'px';
