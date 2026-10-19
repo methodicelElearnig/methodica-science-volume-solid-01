@@ -1,0 +1,70 @@
+screen_id,dom_id,screen_title,screen_type,source_file,units
+08-01-00,s0,מי תלווה אותנו בלמידה?,other,methodica-science-volume-solid-01-01/index.html,6
+08-01-01,s1,רוני מצאה אוצר?,other,methodica-science-volume-solid-01-01/index.html,7
+08-01-02,s2,,other,methodica-science-volume-solid-01-01/index.html,6
+08-01-03,s3,,other,methodica-science-volume-solid-01-01/index.html,5
+08-01-04,s4,למה חשוב למדוד נפח של חפץ מוצק?,other,methodica-science-volume-solid-01-01/index.html,13
+08-01-05,s5,ידעתם שהשיטה למדידת נפח הומצאהלפני אלפי שנים ביוון העתיקה?,other,methodica-science-volume-solid-01-01/index.html,8
+08-01-06,s6,,other,methodica-science-volume-solid-01-01/index.html,10
+08-01-07,s7,איך נמדוד נפח של מוצק?,other,methodica-science-volume-solid-01-01/index.html,9
+08-01-08,s8,,Comic panel screen,methodica-science-volume-solid-01-01/index.html,14
+08-01-09,s9,,Comic panel screen,methodica-science-volume-solid-01-01/index.html,14
+08-01-10,s10,מדידת נפח של גוף שאינו הנדסי,Comic panel screen,methodica-science-volume-solid-01-01/index.html,16
+08-01-11,s11,,Comic panel screen,methodica-science-volume-solid-01-01/index.html,24
+08-01-12,s12,מדידת נפח לגוף שאינו נכנס במשורה,Comic panel screen,methodica-science-volume-solid-01-01/index.html,15
+08-01-13,s13,,Comic panel screen,methodica-science-volume-solid-01-01/index.html,30
+08-01-14,s14,,Comic panel screen,methodica-science-volume-solid-01-01/index.html,18
+08-01-15,s15,מדידת נפח של גוף הנדסי,Comic panel screen,methodica-science-volume-solid-01-01/index.html,22
+08-01-16,s16,מדידת נפח לגוף שאינו הנדסי,Comic panel screen,methodica-science-volume-solid-01-01/index.html,14
+08-01-17,s17,"שיטת ארכימדס – ""דחיקת מים""",Comic panel screen,methodica-science-volume-solid-01-01/index.html,13
+08-01-18,s18,,Comic panel screen,methodica-science-volume-solid-01-01/index.html,14
+08-01-19,s19,מדידת נפח לגוף שאינו נכנס במשורה,Comic panel screen,methodica-science-volume-solid-01-01/index.html,14
+08-01-20,s20,"""שיטת ההצפה"" לגוף שאינו נכנס למשורה",Comic panel screen,methodica-science-volume-solid-01-01/index.html,11
+08-01-21,s21,מה קרה כאן?,Comic panel screen,methodica-science-volume-solid-01-01/index.html,15
+08-01-22,s22,איך מדידת נפח של מוצק נראית בעולם האמיתי?,Comic panel screen,methodica-science-volume-solid-01-01/index.html,16
+08-01-23,s23,בואו נמדוד נפח של חפצים שונים!,Comic panel screen,methodica-science-volume-solid-01-01/index.html,18
+08-01-24,s24,בואו נמדוד נפח של חפצים שונים!,Comic panel screen,methodica-science-volume-solid-01-01/index.html,23
+08-01-25,s25,,Comic panel screen,methodica-science-volume-solid-01-01/index.html,7
+08-01-26,s26,הכלי עובד כך,Comic panel screen,methodica-science-volume-solid-01-01/index.html,11
+08-01-27,s27,מה נשאר לנו בראש?,TransitionScreen,methodica-science-volume-solid-01-01/index.html,4
+08-01-28,s28,,DragAndDropQuestion,methodica-science-volume-solid-01-01/index.html,12
+08-01-29,s29,עיקרון דחיקת המים,DropdownQuestion,methodica-science-volume-solid-01-01/index.html,20
+08-02-00,s0,,TransitionScreen,methodica-science-volume-solid-01-02/index.html,5
+08-02-01,s1,,SingleChoiceQuestion,methodica-science-volume-solid-01-02/index.html,20
+08-02-02,s2,,SingleChoiceQuestion,methodica-science-volume-solid-01-02/index.html,21
+08-02-03,s3,,SingleChoiceQuestion,methodica-science-volume-solid-01-02/index.html,21
+08-02-04,s4,,DragAndDropQuestion,methodica-science-volume-solid-01-02/index.html,16
+08-02-05,s5,,SingleChoiceQuestion,methodica-science-volume-solid-01-02/index.html,21
+08-03-00,s0,,TransitionScreen,methodica-science-volume-solid-01-03/index.html,3
+08-03-01,s1,,SingleChoiceQuestion,methodica-science-volume-solid-01-03/index.html,20
+08-03-02,s2,,SingleChoiceQuestion,methodica-science-volume-solid-01-03/index.html,20
+08-03-03,s3,,SingleChoiceQuestion,methodica-science-volume-solid-01-03/index.html,18
+08-03-04,s4,,SingleChoiceQuestion,methodica-science-volume-solid-01-03/index.html,20
+08-03-05,s5,יופי של עבודה!,TransitionScreen,methodica-science-volume-solid-01-03/index.html,5
+08-03-06,s6,,SingleChoiceQuestion,methodica-science-volume-solid-01-03/index.html,20
+08-03-07,s7,,SingleChoiceQuestion,methodica-science-volume-solid-01-03/index.html,17
+08-04-00,s0,משימת כיתה,TransitionScreen,methodica-science-volume-solid-01-04/index.html,6
+08-04-01,s1,משימת כיתה: אימון מודל AI למדידת נפח,other,methodica-science-volume-solid-01-04/index.html,9
+08-05-00,s0,זמן ל־5 שאלות מתקדמותועוד הפתעות מעניינות...,TransitionScreen,methodica-science-volume-solid-01-05/index.html,4
+08-05-01,s1,,SingleChoiceQuestion,methodica-science-volume-solid-01-05/index.html,14
+08-05-02,s2,,SingleChoiceQuestion,methodica-science-volume-solid-01-05/index.html,15
+08-05-03,s3,,SingleChoiceQuestion,methodica-science-volume-solid-01-05/index.html,15
+08-05-04,s4,,SingleChoiceQuestion,methodica-science-volume-solid-01-05/index.html,14
+08-05-05,s5,,SingleChoiceQuestion,methodica-science-volume-solid-01-05/index.html,15
+08-05-06,s6,,SingleChoiceQuestion,methodica-science-volume-solid-01-05/index.html,9
+08-05-07,s7,,SingleChoiceQuestion,methodica-science-volume-solid-01-05/index.html,10
+08-05-08,s8,,SingleChoiceQuestion,methodica-science-volume-solid-01-05/index.html,9
+08-05-09,s9,,other,methodica-science-volume-solid-01-05/index.html,5
+08-05-10,s10,,other,methodica-science-volume-solid-01-05/index.html,4
+08-06-00,s0,עכשיו מגיעה שאלת השיא,TransitionScreen,methodica-science-volume-solid-01-06/index.html,5
+08-06-01,s1,,Peak question (SingleChoice),methodica-science-volume-solid-01-06/index.html,19
+08-06-02,s2,,Peak question (SingleChoice),methodica-science-volume-solid-01-06/index.html,14
+08-06-03,s3,,Peak question (SingleChoice),methodica-science-volume-solid-01-06/index.html,13
+08-06-04,s4,,Peak question (SingleChoice),methodica-science-volume-solid-01-06/index.html,14
+08-06-05,s5,בואו נשחק!,other,methodica-science-volume-solid-01-06/index.html,8
+08-07-00,s0,כל הכבוד!,TransitionScreen,methodica-science-volume-solid-01-07/index.html,6
+08-07-01,s1,,Peak question (SingleChoice),methodica-science-volume-solid-01-07/index.html,14
+08-07-02,s2,,Peak question (SingleChoice),methodica-science-volume-solid-01-07/index.html,14
+08-07-03,s3,,Peak question (SingleChoice),methodica-science-volume-solid-01-07/index.html,13
+08-07-04,s4,,Peak question (SingleChoice),methodica-science-volume-solid-01-07/index.html,14
+08-07-05,s5,האקווריום של ארז,other,methodica-science-volume-solid-01-07/index.html,8
