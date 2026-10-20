@@ -32,6 +32,11 @@ function xapiAnswerText(el) {
   var c = el.cloneNode(true);
   var drop = c.querySelectorAll('.scq-info, .scq-tooltip, .opt-tooltip, .peak-opt-info, .img-zoom-btn, .help-popup, [class*="tooltip"], [class*="info-bubble"], [class*="badge"], button, svg');
   for (var i = 0; i < drop.length; i++) { drop[i].remove(); }
+  /* A <br> is a word boundary the author wrote as a line wrap ("מים,<br />ונפח" in 07 s4): textContent
+     would glue the two words and the metadata lookup would miss. Found by the response layer's own
+     warning on the first stub walk, 2026-10-20. */
+  var brs = c.querySelectorAll('br');
+  for (var j = 0; j < brs.length; j++) { brs[j].replaceWith(' '); }
   var t = c.textContent.replace(/\s+/g, ' ').trim();
   /* An option drawn as an AREA (an image hotspot, 03 s6) has no text of its own; its explicit label
      is its aria-label, the same name a screen reader announces. Only consulted when there is no
