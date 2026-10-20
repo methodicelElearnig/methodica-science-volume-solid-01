@@ -52,11 +52,13 @@ statement is a silent no-op — while `window.METADATA` still loads for real, so
 form work. To observe statements and exercise the State API, load the local stub:
 
 ```
-?xapiLib=../_test/xapi-720-j.js
+?xapiLib=../_test/xapi-720-k.js
 ```
 
-**Start every local run with `?resetState`** — off-platform there is no `?registration`, so one document
-is shared by every local run and a full ledger makes it look as if reporting has stopped.
+**Start every local run with `?resetState`** — off-platform there is no `?registration`, so the fallback
+keys every local run of a part to one document and a full ledger makes it look as if reporting has
+stopped. Add `&registration=<anything>` to simulate a Kata launch, or `&dev=1` (no registration) to open
+the dev-only hops between parts.
 
 ## Checks
 
@@ -66,18 +68,22 @@ node _test/checks.mjs
 
 Six static gates: identifier collisions, `?v=` equality across the seven `index.html`, `TOTAL_SCREENS`
 vs markup, metadata id resolution, `SCREEN_TO_SUBCONTENT` completeness, and markup structure. All six
-must stay green. `_test/verify-resume.js` (jsdom, see `_test/README.md`) checks the resume painters.
+must stay green. `_test/verify-report.js` (reporting/resume layer, 1539 checks) and
+`_test/verify-resume.js` (resume painters, 530 checks) run in jsdom — see `_test/README.md`.
 
-> **Deploy all seven component folders atomically.** A part left on a different `RESUME_ENABLED` setting
-> or state-document version writes a document its siblings discard, which wipes the `completed` ledger
-> on every hop.
+> **Deploy all seven component folders atomically**, with one `?v=` token on every shared file and
+> `js/main.js` — a part on a stale `40-resume.js` discards the v5 document.
 
 ## Status
 
-Reporting is v2.4-conformant and resume is enabled. **Nothing has been verified against a live Kata
-launch** — no real `?slxapi`/`?registration`, and the State API has never been exercised over HTTP.
-The open list is at the end of [docs-and-tools/RESUME.md](docs-and-tools/RESUME.md); reporting questions for the platform are at the
-end of [docs-and-tools/REPORT-XAPI.md](docs-and-tools/REPORT-XAPI.md).
+Reporting and resume follow the MOE 2.7 / Kata model since 2026-10-20 (library `xapi-720-k.js`,
+one State document per component, platform-owned routing, `result.response` = the metadata text;
+see `docs-and-tools/REPORT-XAPI.md`, `RESUME.md`, `ROUTING-AND-RETAKE.md`). Verified with the local
+stub, headlessly, and **live against production Kata on 2026-10-20**
+(`docs-and-tools/LIVE-VERIFICATION-2026-10-20.md`); metadata is in the catalogue and the seven
+components are published.
+Open: part 06's `recommendedAfterFail` must name part 07 for Kata to route a failed מועד א to the
+retake (`METADATA-KNOWN-ISSUES.md` §3).
 
 Content completeness is tracked separately and is **not** release-ready: see
 [docs-and-tools/ASSETS-TODO.md](docs-and-tools/ASSETS-TODO.md). `CHARACTER_ASSETS` currently declares one pose while

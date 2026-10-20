@@ -203,7 +203,10 @@ function createPointerDnd(opts) {
    free edge rather than dropped on top of the copy.
    ═══════════════════════════════════════════════════════════ */
 function getCharacter() {
-  try { return localStorage.getItem('lomda_selectedCharacter') || 'orange'; }
+  /* The document first, then the per-unit localStorage cache (unit-js/40-resume.js
+     getUnitCharacter) — the part-01 choice reaches the later parts, launched separately by Kata,
+     through that cache. Never the old origin-wide key this unit used before 2026-10-20. */
+  try { return (typeof getUnitCharacter === 'function' ? getUnitCharacter() : null) || 'orange'; }
   catch (e) { return 'orange'; }
 }
 /* Which pose files exist on disk, and in which format. A manifest, not an
@@ -397,18 +400,11 @@ function scqCheck(screen) {
   if (!s.sel || s.sel === s.lastWrong) return;   // the retry gate, also against a programmatic or keyboard submit
   s.attempts++;
   const correct = s.sel === cfg.correctId;
-  /* xAPI: resolved at send time — xapiQ() reads window.METADATA, which the library fetches
-     asynchronously while these registrations run during parse. parentId is the containing item
-     (v2.4 §2, mandatory); `response` is the option's visible text and was missing entirely. */
-  const q = xapiQ(cfg.item, cfg.qKey || 'q1');
-  xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question',
-    { response: xapiAnswerText(scqAnswerEl(screen, s.sel)),
-      success: !!correct,
-      score: { scaled: correct ? 1 : 0 } },
-    { questionId: q.questionId, parentId: q.parentId });
-  if (correct || s.attempts >= cfg.maxAttempts) {
-    XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!correct;
-  }
+  /* xAPI (synchronous, unit-js/20-xapi.js): the option's visible text is resolved to the metadata
+     answer string by the response layer; ids come from window.METADATA at send time. XAPI_Q_RESULTS
+     is written inside xapiAnswered, outside its try/catch. */
+  xapiAnswered(cfg.item, cfg.qKey || 'q1', correct, correct || s.attempts >= cfg.maxAttempts,
+    { choices: [xapiAnswerText(scqAnswerEl(screen, s.sel))] });
   if (correct) { s.phase = 'correct'; scqMark(screen, cfg.correctId, 'correct'); scqShowPopup(screen, 'correct'); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) {
     s.phase = 'wrong2';
@@ -448,7 +444,7 @@ function scqShowPopup(screen, type) {
 function scqClosePopup(screen) { document.getElementById(screen + '-scq-popup')?.classList.add('hidden'); }
 function scqHint(screen) {
   const s = SCQ_REG[screen]; if (!s || s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) return;
-  xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey || 'q1').questionId });
+  xapiRequestedHint(s.cfg.item, s.cfg.qKey || 'q1');   // once per question per attempt (hints ledger)
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
@@ -516,8 +512,6 @@ const fbPopups = (correctTitle, explanation, wrong2Extra) => ({
    ═══════════════════════════════════════════════════════════ */
 const PART_03_SLUG = 'methodica-science-volume-solid-01-03';   // basic practice (remediation)
 const PART_04_SLUG = 'methodica-science-volume-solid-01-04';   // class task
-const PART_03_URL = '../' + PART_03_SLUG + '/index.html';
-const PART_04_URL = '../' + PART_04_SLUG + '/index.html';
 // Standard practice = 5 questions (metadata items 01–05), Q1–Q5 on S1–S5.
 var practiceProgress = {
   questions: [
@@ -532,33 +526,15 @@ function practiceScore() {
   return practiceProgress.questions.filter(q => q.state === 'correct').length;
 }
 function goToNextPart() {
-  /* Closes the practice item the learner is standing on (item 05, or 04 if they came via S4) before
-     the component is reported, so the two arrive in order. */
-  try { xapiFinishItems(); } catch (e) {}
-
-  const passed = practiceScore() >= 4;
-
-  /* xAPI: the component 'completed', with an explicit result — the library's aggregate is an
-     all-correct AND, which would report failure for any partial pass.
-
-     DENOMINATOR 5: the five questions the progress dots count, and the routing threshold is stated
-     to the learner as 4 מתוך 5.
-
-     SUCCESS IS THE REAL THRESHOLD HERE, unlike parts 01, 03 and 05, which have no gate and always
-     advance. This part has one: ≥4/5 routes past remediation. It is a gate that exists in the
-     content, so it is reported rather than invented, and the metadata backs it up —
-     recommendedAfterFail names Part 03. (Until the 2026-10-14 split this gate ended part 01.) */
-  try {
-    sendCompletedOnce('done', currentPartSlug(), 'onlinelesson',
-      { success: passed, score: { scaled: practiceScore() / 5 } });
-  } catch (e) { console.error('[xAPI] completed component 02', e); }
-
-  // ≥80% correct (4/5) → skip remediation, on to the class task (Part 04); else Part 03 (basic practice).
-  /* Resume: point the document at the branch actually taken, and record the back-edge so that
-     component's first screen knows where "חזרה" leads. Part 04 is reachable from BOTH 02 and 03, and
-     resolves correctly because whichever router navigated is the one that wrote the edge. */
-  if (RESUME_ENABLED) writeForwardState(passed ? PART_04_SLUG : PART_03_SLUG);
-  window.location.href = (passed ? PART_04_URL : PART_03_URL) + window.location.search;
+  /* Q5's "שנמשיך?" is the learner's last click: report and STOP. The 4-of-5 gate is REPORTED as
+     `success` (xapiPartResult); the ROUTING on it belongs to Kata — part 03 (remediation) is
+     isRequired:false in the catalogue and reached through recommendedAfterFail. The hop is dev-only. */
+  partFinish(document.getElementById(XAPI_END_BTN));
+  if (DEV_NAV) {
+    const dest = practiceScore() >= 4 ? PART_04_SLUG : PART_03_SLUG;
+    writeForwardState(dest);
+    window.location.href = '../' + dest + '/index.html' + window.location.search;
+  }
 }
 function updateProgressQuestion(container, state) {
   if (!container) return;
@@ -756,6 +732,20 @@ function ddqSyncHint(screen) {
   const hint = document.getElementById(screen + '-ddq-hint'); if (!s || !hint) return;
   hint.style.visibility = (s.done || (s.cfg.hintAfterWrong && s.attempts < 1)) ? 'hidden' : '';
 }
+
+/* The learner's pairings as {source, target} LABELS, for xapiAnswered: the response layer resolves
+   each label to the metadata string (answers.source = the dragged items, answers.target = the
+   methods) and emits 'S[.]T[,]S[.]T' in answers.source order. Unplaced items are left out — the
+   response layer emits 'S[.]' for a source with no pair. */
+function ddqPairs(cfg) {
+  return Object.keys(cfg.placement)
+    .filter(function (id) { return cfg.placement[id] && cfg.placement[id] !== 'source'; })
+    .map(function (id) {
+      var it = cfg.items.filter(function (i) { return i.id === id; })[0];
+      var tg = cfg.targets.filter(function (t) { return t.id === cfg.placement[id]; })[0];
+      return { source: it ? it.label : id, target: tg ? tg.label : cfg.placement[id] };
+    });
+}
 function ddqCheck(screen) {
   const s = DDQ_REG[screen], cfg = s.cfg;
   if (s.checked) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
@@ -765,12 +755,9 @@ function ddqCheck(screen) {
   /* One matching board = one question, closed by a single 'answered.last'. A wrong non-final check
      is an interim 'answered', the same split as scqCheck. `response` lists the learner's pairings in
      a readable form, since there is no single option element to read. */
-  const q = xapiQ(cfg.item, cfg.qKey || 'q1');
-  xapiSend(final ? 'answered.last' : 'answered', 'question',
-    { response: Object.keys(cfg.placement).map(function (id) { return id + '->' + cfg.placement[id]; }).join(', '),
-      success: !!allCorrect,
-      score: { scaled: allCorrect ? 1 : 0 } },
-    { questionId: q.questionId, parentId: q.parentId });
+  /* xAPI (synchronous): one matching board = one question; `response` is the metadata pairs
+     'S[.]T[,]…' built from the learner's placement BEFORE it is swapped for the model answer below. */
+  xapiAnswered(cfg.item, cfg.qKey || 'q1', !!allCorrect, final, { pairs: ddqPairs(cfg) });
   if (!final) {
     /* Retry: nothing is resolved — no result, no onFinish, the board stays draggable. */
     s.phase = 'retry';
@@ -781,7 +768,6 @@ function ddqCheck(screen) {
     try { flushResumeSave(); } catch (e) {}
     return;
   }
-  XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!allCorrect;
   s.checked = true; s.done = true; s.phase = null; s.lastWrong = null;
   /* The learner's own placement used to be overwritten here and lost. QA 2026-08-25 (slide 29)
      asks for a toggle between "התשובה שלי" and "תשובה נכונה" inside the wrong-answer feedback,
@@ -811,7 +797,7 @@ function ddqCheck(screen) {
    ids end in -hint-overlay, so goTo() closes them on navigation. */
 function ddqHint(screen) {
   const s = DDQ_REG[screen]; if (!s || s.checked || (s.cfg.hintAfterWrong && s.attempts < 1)) return;
-  xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey || 'q1').questionId });
+  xapiRequestedHint(s.cfg.item, s.cfg.qKey || 'q1');   // once per question per attempt (hints ledger)
   document.getElementById(screen + '-ddq-hint-overlay')?.classList.remove('hidden');
 }
 function ddqCloseHint(screen) { document.getElementById(screen + '-ddq-hint-overlay')?.classList.add('hidden'); }
@@ -983,6 +969,21 @@ var XAPI_EVAL_ITEMS = { '01': 1, '02': 1, '03': 1, '04': 1, '05': 1 };
 
 /* Per-part seam read by unit-js/50-loader.js. */
 var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-02.json';
+
+/* ── The end of this component (2026-10-20, platform owns routing) ──
+   XAPI_END_BTN is the last button the learner clicks; partFinish() reports the component
+   'completed' through xapiEndComponent (unit-js/20-xapi.js) and disables that button — and does
+   NOTHING else: Kata removes the component from the screen when 'completed' arrives (v2.7 p.23)
+   and decides what comes next from the catalogue. restoreEndedButton() keeps the button disabled
+   after a reload (D-8). The hop to the next part lives only under DEV_NAV. */
+var XAPI_END_BTN = 's5-scq-check';
+/* The real gate of this unit: 4 of the 5 standard-practice questions (stated to the learner as 4 מתוך 5). Kata routes a failing learner to part 03 via recommendedAfterFail. */
+function xapiPartResult() {
+  return { success: practiceScore() >= 4, score: { scaled: practiceScore() / 5 } };
+}
+function partFinish(btn) {
+  xapiEndComponent(xapiPartResult(), btn || document.getElementById(XAPI_END_BTN));
+}
 
 /* ═══════════════════════════════════════════════════════════
    RESUME — this component's payload
@@ -1188,7 +1189,7 @@ function ddqRestoreUI(screen) {
    entry every launch passes through) is a reporting-semantics question for Stage 4, not a
    refactoring one. See REPORT-XAPI.md. */
 function onXapiReady() {
-  loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {
-    try { sendStatement720('initialized', 'onlinelesson', null, { scope: 'unit' }); } catch (e) {}
-  });
+  /* Loads the UNIT metadata for the bug-report form. No unit-scope statement: v2.5/v2.7 define
+     initialized/completed at item and component level only (removed 2026-10-20). */
+  loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {});
 }

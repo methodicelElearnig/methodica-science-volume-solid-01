@@ -172,7 +172,9 @@ if (!fs.existsSync(xapiSrc)) {
       for (const q of sc.questions || []) {
         checkedQs++;
         const r = scoped.xapiQ(suffix, q.questionId);
-        const expect = sc.id + q.questionId;      // this unit stores bare 'qN' in metadata
+        /* Since the 2.7 metadata (2026-10-20) questionId is the ABSOLUTE question IRI; the bare
+           'qN' form the unit used before is still accepted by xapiQ, so both shapes are checked. */
+        const expect = /^https?:\/\//.test(q.questionId) ? q.questionId : sc.id + q.questionId;
         if (r.questionId !== expect) bad.push(`${p} q ${suffix}/${q.questionId}: built ${r.questionId} != ${expect}`);
         /* v2.4 §2: parent must be the containing item — the same id when the question IS the item. */
         if (r.parentId !== sc.id) bad.push(`${p} parent ${suffix}/${q.questionId}: ${r.parentId} != ${sc.id}`);

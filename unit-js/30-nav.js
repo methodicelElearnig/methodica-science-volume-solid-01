@@ -79,6 +79,9 @@ function goTo(n) {
       if (typeof restoreScreenUI === 'function') restoreScreenUI(n);
     } catch (e) { console.error('[resume] repaint on nav', e); }
   }
+  /* D-8: a finished component's finish button stays disabled after a reload or a step back and
+     forward — the screen's own enter code re-enables it, the LEDGER decides (20-xapi.js). */
+  try { restoreEndedButton(); } catch (e) {}
 
   /* Inert today by design: announce() early-returns unless #sr-announcer exists, and no part has
      that region. It activates the moment an accessibility pass adds one. The reference also calls
@@ -100,7 +103,7 @@ function goTo(n) {
    exactly what was just restored, so the variables are assigned AGAIN afterwards and only then
    painted. (goTo's own capture/re-apply block is suppressed while _restoring, so it does not fight
    this.) */
-function applyExecutionState(st) {
+function applyExecutionState(st, screenOverride) {
   if (!st) return;
   _restoring = true;
 
@@ -115,10 +118,17 @@ function applyExecutionState(st) {
   window.sendStatement720 = function () {};
   try {
     applyResumeVars(st);
-    goTo((typeof st.currentScreen === 'number') ? st.currentScreen : 0);
+    /* '#screen=N' (a dev "חזרה" between parts) picks the SCREEN but never cancels the restore of
+       the STATE. Range-checked against TOTAL_SCREENS: goTo() rejects out-of-range and RETURNS, so
+       currentScreen would stay on the previous value and the painter would paint another screen. */
+    var _n = (typeof screenOverride === 'number' && screenOverride >= 0 && screenOverride < TOTAL_SCREENS)
+      ? screenOverride
+      : ((typeof st.currentScreen === 'number') ? st.currentScreen : 0);
+    goTo(_n);
     applyResumeVars(st);                                             // undo this screen's sNNEnter()
     if (typeof applyResumeDom === 'function') applyResumeDom(st);     // before the painter locks inputs
     if (typeof restoreScreenUI === 'function') restoreScreenUI(currentScreen);
+    try { restoreEndedButton(); } catch (e) {}                        // D-8: the ledger decides (20-xapi.js)
   } catch (e) {
     console.error('[resume] apply', e);
   } finally {
@@ -134,5 +144,8 @@ function applyExecutionState(st) {
      after the COMPONENT 'initialized', so that a resumed load reports component-then-item in the same
      order a normal load does. Emitting it here produced the reverse, which had the child opening
      before its parent. */
+  /* Before anything can close an item: tell the library about the answers just restored and
+     deliberately not re-sent, otherwise their 'completed' is dropped (xapiSeedAnsweredFromResume). */
+  try { xapiSeedAnsweredFromResume(); } catch (e) {}
   xapiCurrentItem = null;
 }

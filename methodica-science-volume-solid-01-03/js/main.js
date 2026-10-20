@@ -7,7 +7,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 const TOTAL_SCREENS = 8;          // storyboard order (2026-10-14): S0 intro · S1–S4 basic Q1–Q4 · S5 mid transition (sb98) · S6–S7 standard-ב Q5–Q6
-const NEXT_PART_URL = '../methodica-science-volume-solid-01-04/index.html';
+const NEXT_PART_SLUG = 'methodica-science-volume-solid-01-04';   // dev-only hop target
 
 window.lomdaState = window.lomdaState || {};
 
@@ -29,7 +29,10 @@ window.lomdaState = window.lomdaState || {};
    free edge rather than dropped on top of the copy.
    ═══════════════════════════════════════════════════════════ */
 function getCharacter() {
-  try { return localStorage.getItem('lomda_selectedCharacter') || 'orange'; }
+  /* The document first, then the per-unit localStorage cache (unit-js/40-resume.js
+     getUnitCharacter) — the part-01 choice reaches the later parts, launched separately by Kata,
+     through that cache. Never the old origin-wide key this unit used before 2026-10-20. */
+  try { return (typeof getUnitCharacter === 'function' ? getUnitCharacter() : null) || 'orange'; }
   catch (e) { return 'orange'; }
 }
 /* Which pose files exist on disk, and in which format. A manifest, not an
@@ -199,19 +202,10 @@ function scqCheck(screen) {
      library fetches asynchronously, and registerPractice() runs while the page is still parsing. It
      returns the question IRI and the id of the containing item, which 720 v2.4 §2 makes mandatory as
      context.contextActivities.parent. */
-  const q = xapiQ(cfg.item, cfg.qKey || 'q1');
-  xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question',
-    { response: xapiAnswerText(document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]')),
-      success: !!correct,
-      score: { scaled: correct ? 1 : 0 } },
-    { questionId: q.questionId, parentId: q.parentId });
-
-  /* Outside the send: xapiSend swallows exceptions, and the component score must not depend on
-     whether reporting succeeded. Recorded only on the attempt that closes the question, so a first
-     wrong answer followed by a correct one counts as correct. */
-  if (correct || s.attempts >= cfg.maxAttempts) {
-    XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!correct;
-  }
+  /* The option's visible text (an image hotspot's aria-label on s6) is resolved to the metadata
+     answer string by the response layer (unit-js/20-xapi.js); synchronous. */
+  xapiAnswered(cfg.item, cfg.qKey || 'q1', correct, correct || s.attempts >= cfg.maxAttempts,
+    { choices: [xapiAnswerText(document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]'))] });
 
   if (correct) { s.phase = 'correct'; scqMark(screen, cfg.correctId, 'correct'); scqShowPopup(screen, 'correct'); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) { s.phase = 'wrong2'; scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); scqShowPopup(screen, 'wrong2'); scqFinish(screen, false); }
@@ -265,8 +259,7 @@ function scqHint(screen) {
   /* Reported on OPEN only. This overlay has no toggle — closing goes through scqCloseHint — so a
      learner reopening the hint legitimately reports a second request.
      No parentId: v2.4 mandates it for answered/evaluated only. */
-  const q = xapiQ(s.cfg.item, s.cfg.qKey || 'q1');
-  xapiSend('requested.1', 'question', null, { questionId: q.questionId });
+  xapiRequestedHint(s.cfg.item, s.cfg.qKey || 'q1');   // once per question per attempt (hints ledger)
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
@@ -363,29 +356,12 @@ function practiceScore() {
 }
 
 function goToNextPart() {
-  /* Close the item the learner is standing in before reporting the component: an item 'completed'
-     that arrived after its component's would be out of order. */
-  try { xapiFinishItems(); } catch (e) {}
-
-  /* xAPI: the component 'completed', with an EXPLICIT result. The library's own aggregate is an
-     all-correct AND, which would report success:false for any partial pass.
-
-     Denominator is 6 — the six exercises the learner was promised (and the six progress dots),
-     not the metadata question count, which happens to agree here but does not in part 05.
-
-     ⚠️ success:true unconditionally, and that is a deliberate reading rather than an oversight.
-     This component is remediation: it has NO pass threshold anywhere in the code and always
-     proceeds to Part 04, whatever the learner scores. v2.4 leaves `success` to the content
-     provider's own definition, so with no gate to clear, completing the component IS the success
-     condition and `score.scaled` carries the performance. If the content owner wants a threshold
-     here (part 01 uses 4/5), this is the one line to change — see REPORT-XAPI.md open items. */
-  try {
-    sendCompletedOnce('done', currentPartSlug(), 'onlinelesson',
-      { success: true, score: { scaled: practiceScore() / 6 } });
-  } catch (e) { console.error('[xAPI] completed component 03', e); }
-
-  if (RESUME_ENABLED) writeForwardState('methodica-science-volume-solid-01-04');
-  window.location.href = NEXT_PART_URL + window.location.search;   // remediation always proceeds to Part 04
+  /* Q6's "שנמשיך?" is the learner's last click: report and STOP (Kata routes). Dev-only hop. */
+  partFinish(document.getElementById(XAPI_END_BTN));
+  if (DEV_NAV) {
+    writeForwardState(NEXT_PART_SLUG);
+    window.location.href = '../' + NEXT_PART_SLUG + '/index.html' + window.location.search;
+  }
 }
 function updateProgressQuestion(container, state) {
   if (!container) return;
@@ -519,6 +495,21 @@ var XAPI_EVAL_ITEMS = { '01': 1, '02': 1, '03': 1, '04': 1, '05': 1, '06': 1 };
 
 /* Per-part seam read by unit-js/50-loader.js. */
 var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-03.json';
+
+/* ── The end of this component (2026-10-20, platform owns routing) ──
+   XAPI_END_BTN is the last button the learner clicks; partFinish() reports the component
+   'completed' through xapiEndComponent (unit-js/20-xapi.js) and disables that button — and does
+   NOTHING else: Kata removes the component from the screen when 'completed' arrives (v2.7 p.23)
+   and decides what comes next from the catalogue. restoreEndedButton() keeps the button disabled
+   after a reload (D-8). The hop to the next part lives only under DEV_NAV. */
+var XAPI_END_BTN = 's7-scq-check';
+/* Remediation has no pass threshold (it always proceeds), so completing it IS the success condition; score.scaled over the six exercises promised to the learner. */
+function xapiPartResult() {
+  return { success: true, score: { scaled: practiceScore() / 6 } };
+}
+function partFinish(btn) {
+  xapiEndComponent(xapiPartResult(), btn || document.getElementById(XAPI_END_BTN));
+}
 
 /* ═══════════════════════════════════════════════════════════
    RESUME — this component's payload
@@ -680,7 +671,7 @@ function restoreScreenUI(n) {
    entry every launch passes through) is a reporting-semantics question for Stage 4, not a
    refactoring one. See REPORT-XAPI.md. */
 function onXapiReady() {
-  loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {
-    try { sendStatement720('initialized', 'onlinelesson', null, { scope: 'unit' }); } catch (e) {}
-  });
+  /* Loads the UNIT metadata for the bug-report form. No unit-scope statement: v2.5/v2.7 define
+     initialized/completed at item and component level only (removed 2026-10-20). */
+  loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {});
 }

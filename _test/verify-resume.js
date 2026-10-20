@@ -24,13 +24,13 @@
    production page relies on. `let`/`const` at top level (currentScreen, PEAK_CORRECT) never reach
    window even in a real page, so those are read through an injected expression script.
 
-   The CDN never loads off-platform, so _test/xapi-720-j.js stands in for it — the same local library
+   The CDN never loads off-platform, so _test/xapi-720-k.js stands in for it — the same local library
    ?xapiLib= exists to load. Its state lives in sessionStorage, which is what makes a genuine reload
    testable: the document is copied out of one window and seeded into the next before its scripts
    run.
 
    Run (jsdom is NOT in the repo — see _test/README.md):
-     NODE_PATH=/c/lomda-test/node_modules node _test/verify-resume.js
+     NODE_PATH=$LOCALAPPDATA/lomda-jsdom/node_modules node _test/verify-resume.js
 */
 'use strict';
 
@@ -115,11 +115,13 @@ function boot(part, opts) {
   w.HTMLMediaElement.prototype.play = function () { return Promise.resolve(); };
   w.HTMLMediaElement.prototype.pause = function () {};
 
-  if (opts.state) w.sessionStorage.setItem('__test_state', opts.state);
+  /* One document per component (v5): the stub keys it by the state id, which carries the slug. */
+  const STATE_KEY = '__test_state::execution-state::' + slug;
+  if (opts.state) w.sessionStorage.setItem(STATE_KEY, opts.state);
 
   /* The local stand-in for the CDN library goes FIRST, so saveState720/loadState720 exist by the
      time anything reads them. */
-  exec(fs.readFileSync(path.join(__dirname, 'xapi-720-j.js'), 'utf8'));
+  exec(fs.readFileSync(path.join(__dirname, 'xapi-720-k.js'), 'utf8'));
 
   for (const src of [...w.document.querySelectorAll('script[src]')].map(s => s.getAttribute('src'))) {
     const p = path.resolve(dir, src.split('?')[0]);
@@ -127,23 +129,25 @@ function boot(part, opts) {
     try { exec(fs.readFileSync(p, 'utf8')); } catch (e) { errors.push(src + ': ' + e.message); }
   }
 
-  /* Drive the resume seam exactly as 50-loader.js does, in its order. The loader's own two nested
-     loadScript() callbacks need the network, so they never fire here; everything INSIDE them that
-     matters to resume is reproduced verbatim. The cross-part hop is deliberately skipped — this
-     suite is about painters, and a hop would leave no window to assert against. */
+  /* Drive the resume seam exactly as 50-loader.js does, in its order (Phase A read + character,
+     Phase B writes open + drain + restore). The loader's own two nested loadScript() callbacks need
+     the network, so they never fire here; everything INSIDE them that matters to resume is
+     reproduced. ?resetState was already handled by initResumeResetHatch in 90-boot.js. */
   exec([
     'try {',
     '  var saved = readUnitState();',
+    '  adoptUnitCharacter(saved);',
     '  _resumeReady = true;',
-    '  var payload = saved.parts[currentPartSlug()];',
-    '  if (payload) applyExecutionState(payload);',
+    '  drainPendingUnitState();',
+    '  if (saved.payload) applyExecutionState(saved.payload);',
+    '  dropBootCover();',
     '} catch (e) { console.error("[resume] harness init", e); }'
   ].join('\n'));
 
   return {
     w, exec, val, d: w.document, errors, part,
     /* The state document as the next page load would find it. */
-    dump: () => w.sessionStorage.getItem('__test_state'),
+    dump: () => w.sessionStorage.getItem(STATE_KEY),
     close: () => dom.window.close(),
   };
 }
@@ -435,9 +439,9 @@ function ddqRetryState(p, screen) {
   return p.val('(function(){ var s = DDQ_REG["' + screen + '"];' +
     ' var chk = document.getElementById("' + screen + '-ddq-check"), h = document.getElementById("' + screen + '-ddq-hint");' +
     ' return { attempts: s.attempts, phase: s.phase, done: s.done, checkDisabled: chk.disabled, hint: h.style.visibility,' +
-    '   answered: __stmts().filter(function (x) { return /^answered/.test(x.verb) && /-02-04\\//.test(x.questionId || ""); }).map(function (x) { return x.verb; }).join(",") }; })()');
+    '   answered: __stmts().filter(function (x) { return /^answered/.test(x.verb) && /-02-04\\//.test((x.opts && x.opts.questionId) || ""); }).map(function (x) { return x.verb; }).join(",") }; })()');
 }
-/* xapiSend() defers to the next tick, so the log is read after one. */
+/* Sends are synchronous since 2026-10-20; the tick only lets any timers settle. */
 const nextTick = () => new Promise(r => setTimeout(r, 20));
 async function ddqRetry(p) {
   const screen = 's4', ctx = '02/s4/retry';
@@ -449,7 +453,9 @@ async function ddqRetry(p) {
   await nextTick();
   let st = ddqRetryState(p, screen), fb = popup(p, screen, 'ddq'), slots = slotClasses(p, screen);
   ok(ctx, 'a first wrong check is an interim answered, unresolved', st.attempts === 1 && st.phase === 'retry' && !st.done && st.answered === 'answered', JSON.stringify(st));
-  ok(ctx, 'no result recorded yet', p.val('XAPI_Q_RESULTS["04/q1"] === undefined') === true);
+  /* xapiAnswered records EVERY attempt (last write wins), so an interim wrong leaves `false`, not
+     undefined — the component score reads the final verdict only through practiceProgress. */
+  ok(ctx, 'an interim wrong is recorded as false, nothing final', p.val('XAPI_Q_RESULTS["04/q1"] === false') === true && p.val('practiceProgress.questions[3].state') !== 'correct');
   ok(ctx, 'the retry popup: title + שננסה שוב?', fb && !fb.hidden && fb.title === 'התשובה אינה נכונה.' && /שננסה שוב/.test(fb.body), fb && fb.title + ' | ' + fb.body);
   ok(ctx, 'every judged slot carries its verdict', slots.length === b.n && slots.every(c => /\bwrong\b/.test(c)), slots.join(' | '));
   ok(ctx, 'the gate is closed on the judged board, the hint is shown', st.checkDisabled === true && st.hint === '', JSON.stringify(st));
@@ -565,8 +571,10 @@ function reloadTests() {
     const a = boot('01');
     a.exec('goTo(28);');
     const b18 = boards(a, 's28');
-    place(a, 's28', b18.wrong);
-    a.exec('ddqCheck("s28"); ddqToggleAnswer("s28");');    // leave it showing the learner's own board
+    /* s28 takes two attempts (maxAttempts: 2): the first wrong check is interim, so the board is
+       resolved the way ddqCheckFinal does it — a different wrong board first, then the final one. */
+    ddqCheckFinal(a, 's28', b18.wrong, b18);
+    a.exec('ddqToggleAnswer("s28");');    // leave it showing the learner's own board
     a.exec('flushResumeSave();');
     const state = a.dump();
     a.close();
@@ -657,7 +665,7 @@ function reloadTests() {
 /* ═══════════════════ comic (part 01) ═══════════════════
    The comic is one carousel over seven screens (COMIC_SCREENS). What must survive a reload: the
    screen, the panel, which panels were seen (the forward gate), the guess picks (the guess gate),
-   and the `reported` flags (one 'experienced' per comic screen, never re-sent). What must NOT come
+   and the `reported` flags (bookkeeping only; the 'experienced' statement they gated was removed 2026-10-20). What must NOT come
    back: an open zoom, or more than one bubble reveal. All walking goes through the carousel's own
    functions (comicArrowNext/Prev, guessPick), the same ones the arrows and the keyboard call. */
 
@@ -702,7 +710,7 @@ async function comicTests() {
        a.val('currentScreen') + '/' + a.val('comicState.s11 && comicState.s11.i'));
     a.exec('comicZoomOpen("s11");');
     await sleep(50);
-    ok(ctx, 'one experienced each for s8 and s9, none yet for s11', experiencedCount(a) === 2, experiencedCount(a));
+    ok(ctx, 'no experienced is ever sent (verb removed 2026-10-20)', experiencedCount(a) === 0, experiencedCount(a));
     a.exec('flushResumeSave();');
     state = a.dump();
     collectErrors(ctx, a);
@@ -747,10 +755,10 @@ async function comicTests() {
     await sleep(50);
     c = comicProbe(b, 's11');
     ok(ctx, 'finishing s11 marks it done and unlocks the forward arrow', c.done === true && c.next === false, c.done + '/' + c.next);
-    ok(ctx, 'exactly one experienced for s11', experiencedCount(b) === 1, experiencedCount(b));
+    ok(ctx, 'finishing s11 sends no experienced', experiencedCount(b) === 0, experiencedCount(b));
     b.exec('comicArrowNext("s11"); comicArrowPrev("s12"); comicArrowNext("s11");');
     await sleep(50);
-    ok(ctx, 'leaving and re-finishing s11 does not re-send it', experiencedCount(b) === 1, experiencedCount(b));
+    ok(ctx, 'leaving and re-finishing s11 sends nothing', experiencedCount(b) === 0, experiencedCount(b));
     /* s9 and s8 were finished BEFORE the reload and never rebuilt since: walking back onto them
        must find their saved records (done + reported), not seed fresh ones. */
     b.exec('goTo(10); comicArrowPrev("s10"); comicArrowPrev("s9");');
@@ -759,7 +767,7 @@ async function comicTests() {
     ok(ctx, 's9/s8 keep their pre-reload progress',
        b.val('!!(comicState.s9 && comicState.s9.done && comicState.s9.reported && comicState.s8 && comicState.s8.reported)') === true,
        JSON.stringify(b.val('[comicState.s9, comicState.s8].map(function (s) { return s && { done: s.done, reported: s.reported }; })')));
-    ok(ctx, 'and do not re-send their experienced', experiencedCount(b) === 1, experiencedCount(b));
+    ok(ctx, 'and send nothing', experiencedCount(b) === 0, experiencedCount(b));
     ok(ctx, 'no duplicate completed/answered', b.val('__dupes().length') === 0, JSON.stringify(b.val('__dupes()')));
     collectErrors(ctx, b);
     b.close();

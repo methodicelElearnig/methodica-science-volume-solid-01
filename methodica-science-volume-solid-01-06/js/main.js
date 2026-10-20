@@ -16,7 +16,7 @@ const TOTAL_SCREENS = 6;               // S0 intro, S5 scenario, S1–S4 sub-par
    their options, hints and SCREEN_TO_SUBCONTENT rows. The reading order lives in peakStart()
    and goBack(), not in the ids — the same approach part 05 takes with its SCENARIOS table. */
 const SCENARIO_SCREEN = 5;
-const NEXT_PART_URL = '../methodica-science-volume-solid-01-07/index.html';
+const NEXT_PART_SLUG = 'methodica-science-volume-solid-01-07';   // dev-only hop target (the platform routes a failed מועד א via recommendedAfterFail)
 const PEAK_CORRECT = { 1: 'b', 2: 'a', 3: 'a', 4: 'b' };
 const PEAK_PARTS = 4, PEAK_PASS = 3;
 
@@ -36,7 +36,10 @@ const PEAK_PARTS = 4, PEAK_PASS = 3;
    free edge rather than dropped on top of the copy.
    ═══════════════════════════════════════════════════════════ */
 function getCharacter() {
-  try { return localStorage.getItem('lomda_selectedCharacter') || 'orange'; }
+  /* The document first, then the per-unit localStorage cache (unit-js/40-resume.js
+     getUnitCharacter) — the part-01 choice reaches the later parts, launched separately by Kata,
+     through that cache. Never the old origin-wide key this unit used before 2026-10-20. */
+  try { return (typeof getUnitCharacter === 'function' ? getUnitCharacter() : null) || 'orange'; }
   catch (e) { return 'orange'; }
 }
 /* Which pose files exist on disk, and in which format. A manifest, not an
@@ -146,7 +149,7 @@ const PEAK_FEEDBACK = {
    the dev bridge or a back-button produced a completed assessment), it hard-coded success:true so a
    learner who answered nothing was reported as having PASSED, and being deferred it would have
    escaped both of resume's guards — the sender stub and the _restoring flag are both gone by the
-   time a macrotask runs. See RESUME.md risk R1. It now lives in peakFinish(), synchronously. */
+   time a macrotask runs. See RESUME.md risk R1. It now lives in partFinish(), synchronously. */
 function resetScreenState(n) {
   renderCompanion(n);
   if (n >= 1 && n <= PEAK_PARTS) peakPaint(n);
@@ -179,9 +182,8 @@ function advanceScreen() { if (currentScreen === 0) peakStart(); }
 function peakHint(idx) {
   const ov = document.getElementById('s' + idx + '-hint-overlay');
   if (!ov) return;
+  xapiRequestedHint(PEAK_ITEM, 'q' + idx);   // once per question per attempt (hints ledger); before the reveal
   ov.classList.remove('hidden');
-  /* Reported on open. No parentId: v2.4 mandates it for answered/evaluated only. */
-  xapiSend('requested.1', 'question', null, { questionId: xapiQ(PEAK_ITEM, 'q' + idx).questionId });
 }
 function peakCloseHint(idx) {
   document.getElementById('s' + idx + '-hint-overlay')?.classList.add('hidden');
@@ -227,25 +229,12 @@ function peakCheck(idx) {
   const correct = s.sel === PEAK_CORRECT[idx];
   const final = correct || s.attempts >= PEAK_MAX_ATTEMPTS;
 
-  /* xAPI. response is the option's visible text (the metadata's `answers` are the full option
-     strings). The closing attempt goes through the doneQ ledger, synchronously: this is an
-     isAssessment component and the retake edge makes it re-enterable, so a graded answer must never
-     be reported twice (sendAnsweredOnce, unit-js/40-resume.js). A first wrong attempt is a plain
-     'answered'. */
-  const q = xapiQ(PEAK_ITEM, 'q' + idx);
-  const result = {
-    response: xapiAnswerText(document.querySelector('#s' + idx + '-opts .peak-opt[data-id="' + s.sel + '"]')),
-    success: correct,
-    score: { scaled: correct ? 1 : 0 }
-  };
-  if (final) {
-    try { sendAnsweredOnce(PEAK_ITEM, 'q' + idx, result, { questionId: q.questionId, parentId: q.parentId }); }
-    catch (e) { console.error('[xAPI] answered q' + idx, e); }
-    /* Outside the send — see the note in part 03's scqCheck. */
-    XAPI_Q_RESULTS[PEAK_ITEM + '/q' + idx] = correct;
-  } else {
-    xapiSend('answered', 'question', result, { questionId: q.questionId, parentId: q.parentId });
-  }
+  /* xAPI (synchronous): the option's visible text is resolved to the metadata answer string by the
+     response layer (unit-js/20-xapi.js). The closing attempt is 'answered.last'. No re-answer ledger
+     any more: under platform routing nothing re-enters this component after its 'completed', and
+     peakState (restored by resume) already locks a resolved סעיף. */
+  xapiAnswered(PEAK_ITEM, 'q' + idx, correct, final,
+    { choices: [xapiAnswerText(document.querySelector('#s' + idx + '-opts .peak-opt[data-id="' + s.sel + '"]'))] });
 
   if (correct) s.phase = 'correct';
   else if (final) s.phase = 'wrong2';
@@ -276,7 +265,7 @@ function peakPaint(idx) {
   const btn = document.getElementById(screen + '-continue');
   if (btn) {
     btn.textContent = s.done ? 'שנמשיך?' : 'צדקתי?';
-    btn.disabled = s.done ? (idx === PEAK_PARTS && unitFinished) : (!s.sel || s.sel === s.lastWrong);
+    btn.disabled = s.done ? (idx === PEAK_PARTS && xapiComponentEnded()) : (!s.sel || s.sel === s.lastWrong);   // D-8: the ledger decides
   }
   /* Hint policy: available on every סעיף until it resolves (slides "אפשר רמז?"), hidden — not
      disabled — afterwards. */
@@ -305,96 +294,39 @@ function peakClosePopup(screen) {
 /* Draggable, like every other feedback popup in the unit (unit-js/15-ui.js). */
 for (let i = 1; i <= PEAK_PARTS; i++) attachPopupDrag(document.getElementById('s' + i + '-scq-popup'));
 
-/* שנמשיך? on a resolved סעיף. After סעיף ד the pass threshold routes: pass -> the unit is done
-   (there is no end screen since 2026-10-15; unitFinish() signals the host); fail -> מועד ב (part 07).
-   Both paths report first, synchronously (RESUME.md risk R1). peakFinish() catches everything
-   internally and cannot throw. */
+/* "שנמשיך?" on a resolved סעיף. After סעיף ד the learner's click is the component's end: the
+   verdict is recorded, the component is reported (on BOTH outcomes — a failed מועד א must still be
+   reported or the attempt goes unrecorded) and the button is disabled. Nothing else: Kata removes
+   the component on 'completed' and routes a failing learner to מועד ב (part 07) through the
+   catalogue's recommendedAfterFail. The hop below is dev-only. */
 function peakNext(idx) {
   if (idx < PEAK_PARTS) { goTo(idx + 1); return; }
   const passed = peakScore() >= PEAK_PASS;
-  if (passed) { peakFinish(true); unitFinish(); }
-  else { peakFinish(false); peakGoRetake(); }
+  /* This part's own verdict, into its State document (RESULT_KEYS, unit-js/40-resume.js). Nothing
+     reads it across parts. Written BEFORE the report so the document that carries the `done` ledger
+     carries the verdict too. */
+  try { setUnitResult('volume-solid-01_moedAPassed', passed ? 'true' : 'false'); } catch (e) {}
+  partFinish(document.getElementById(XAPI_END_BTN));
+  if (DEV_NAV && !passed) {
+    writeForwardState(NEXT_PART_SLUG);
+    window.location.href = '../' + NEXT_PART_SLUG + '/index.html' + window.location.search;
+  }
 }
 
 function peakScore() { let n = 0; for (let i = 1; i <= PEAK_PARTS; i++) { const s = peakState[i]; if (s && s.done && s.sel === PEAK_CORRECT[i]) n++; } return n; }
-
-/* Reports the end of מועד א. Called from peakNext() only — once, when the learner leaves the
-   resolved סעיף ד — never from a screen-entry hook.
-
-   SYNCHRONOUS on purpose (sendStatement720, not xapiSend): the pass path navigates nowhere but the
-   fail path leads to peakGoRetake(), and a deferred send would be racing an unload. It is also the
-   standing rule from RESUME.md risk R1 — a 'completed' must never be deferred, because the deferral
-   outlives resume's sender stub. */
-function peakFinish(passed) {
-  /* Close item 01 (all four questions live in it) before the component. */
-  try { xapiFinishItems(); } catch (e) {}
-
-  /* The component is reported on BOTH paths. Previously only the pass path reported anything, so a
-     learner who failed מועד א produced no component 'completed' at all and their whole attempt went
-     unrecorded — the platform could not tell them apart from a learner who never started.
-     Routing a failed learner onward is the content's job here (see ROUTING-AND-RETAKE.md); the
-     report just has to be truthful about the outcome. */
-  try {
-    sendCompletedOnce('done', currentPartSlug(), 'onlinelesson',
-      { success: passed, score: { scaled: peakScore() / PEAK_PARTS } });
-  } catch (e) { console.error('[xAPI] completed component 06', e); }
-
-  /* The UNIT closes here only when the learner PASSES מועד א — that is the end of the lomda for
-     them. A learner who fails goes on to מועד ב (part 07), which owns the unit 'completed' for
-     every path through it. Nobody sent this before, at any point in the unit. */
-  if (passed) {
-    try {
-      sendCompletedOnce('done', 'unit', 'onlinelesson',
-        { success: true, score: { scaled: peakScore() / PEAK_PARTS } }, { scope: 'unit' });
-    } catch (e) { console.error('[xAPI] completed unit (via 06)', e); }
-  }
-}
-
-
-/* ─── End of the unit ─────────────────────────────────────
-   ⚠️ THIS MUST NOT REPORT. peakFinish() already sent the item, the component and (on the paths that
-   own it) the unit `completed`, synchronously, just before this runs. sendCompletedOnce() would
-   dedupe a second call, but sending one would still be wrong: this is an exit signal, not an outcome.
-
-   Called straight from peakNext() since 2026-10-15, when the end screens (and their סיימתי button)
-   were removed. The unit has no documented host-exit contract — 60-devbridge.js's postMessage is the
-   dev wrapper's jump bar, not a production channel — so this is a seam, deliberately small. It runs
-   once, disables סעיף ד's שנמשיך? so a second press cannot double-fire, and announces the finish to
-   a framing host that may or may not be listening. Drop the real handshake in here once the platform
-   partner confirms it; nothing else in the unit needs to change. */
-var unitFinished = false;   // var, not let: peakPaint() reads it and may run first
-function unitFinish() {
-  if (unitFinished) return;
-  unitFinished = true;
-  const btn = document.getElementById('s' + PEAK_PARTS + '-continue');
-  if (btn) btn.disabled = true;
-  if (window.parent !== window) {
-    try { window.parent.postMessage({ type: '720:unit-finished' }, '*'); } catch (e) {}
-  }
-}
-
-function peakGoRetake() {
-  /* The retake edge. Unlike a normal forward hop this leads to a component the learner reaches by
-     FAILING, and writeForwardState records prev['…-07'] = '…-06' — so מועד ב offers "חזרה" back into
-     the failed מועד א. That is a deliberate product decision, not an oversight, and it is why the
-     doneQ ledger exists: walking back must not let a graded answer be reported twice.
-     See ROUTING-AND-RETAKE.md. */
-  if (RESUME_ENABLED) writeForwardState('methodica-science-volume-solid-01-07');
-  window.location.href = NEXT_PART_URL + window.location.search;
-}
 
 /* ═══════════════════════════════════════════════════════════
    xAPI (720) — per-part seams
    ═══════════════════════════════════════════════════════════ */
 
 /* All four sub-parts are questions q1–q4 of ONE catalog item, so the item stays open across screens
-   1–4; xapiOnScreen() emits nothing while the suffix is unchanged, and peakFinish() closes it. */
+   1–4; xapiOnScreen() emits nothing while the suffix is unchanged, and partFinish() closes it. */
 var SCREEN_TO_SUBCONTENT = {
   /* The intro is page 0 OF THE ITEM, not a no-item screen. Mapping it to null made the item close
      the moment a learner navigated back to the intro (goBack allows 2->1->0), emitting a premature
      item 'completed' carrying a partial score — which, once the Stage 5a ledger lands, would mark
-     the item done and SUPPRESS the real one from peakFinish(). Keeping the intro inside the item
-     means the item opens on entry and closes only in peakFinish(), whatever route the learner takes. */
+     the item done and SUPPRESS the real one from partFinish(). Keeping the intro inside the item
+     means the item opens on entry and closes only in partFinish(), whatever route the learner takes. */
   0: ['01', 0],       // intro
   1: ['01', 1],       // sub-part 1
   2: ['01', 2],       // sub-part 2
@@ -425,6 +357,21 @@ var XAPI_ITEM_RESULT = {
 
 /* Per-part seam read by unit-js/50-loader.js. */
 var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-06.json';
+
+/* ── The end of this component (2026-10-20, platform owns routing) ──
+   XAPI_END_BTN is the last button the learner clicks; partFinish() reports the component
+   'completed' through xapiEndComponent (unit-js/20-xapi.js) and disables that button — and does
+   NOTHING else: Kata removes the component from the screen when 'completed' arrives (v2.7 p.23)
+   and decides what comes next from the catalogue. restoreEndedButton() keeps the button disabled
+   after a reload (D-8). The hop to the next part lives only under DEV_NAV. */
+var XAPI_END_BTN = 's4-continue';
+/* מועד א: pass = PEAK_PASS of PEAK_PARTS סעיפים; reported on both outcomes. */
+function xapiPartResult() {
+  return { success: peakScore() >= PEAK_PASS, score: { scaled: peakScore() / PEAK_PARTS } };
+}
+function partFinish(btn) {
+  xapiEndComponent(xapiPartResult(), btn || document.getElementById(XAPI_END_BTN));
+}
 
 /* ═══════════════════════════════════════════════════════════
    RESUME — this component's payload
