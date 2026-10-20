@@ -179,7 +179,8 @@ asserts nothing throws and nothing is sent.
 - Browser walk of all seven parts with the stub (`?xapiLib=../_test/xapi-720-k.js&registration=X&resetState`),
   2026-10-20: every `response` equals the metadata string, one `completed` per two finish clicks,
   no navigation, `requested` once per question, `__dupes()` empty.
-- Live Kata run: see `LIVE-VERIFICATION-<date>.md` once the unit is in the catalogue.
+- Live Kata run 2026-10-20 — `LIVE-VERIFICATION-2026-10-20.md`: all seven parts, every statement
+  200, every State write 204, resume and character adoption confirmed against production.
 
 ## Open items
 

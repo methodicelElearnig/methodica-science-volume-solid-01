@@ -79,7 +79,9 @@ must stay green. `_test/verify-report.js` (reporting/resume layer, 1539 checks) 
 Reporting and resume follow the MOE 2.7 / Kata model since 2026-10-20 (library `xapi-720-k.js`,
 one State document per component, platform-owned routing, `result.response` = the metadata text;
 see `docs-and-tools/REPORT-XAPI.md`, `RESUME.md`, `ROUTING-AND-RETAKE.md`). Verified with the local
-stub in the browser and headlessly; **the live Kata run is pending** (`LIVE-VERIFICATION-<date>.md`).
+stub, headlessly, and **live against production Kata on 2026-10-20**
+(`docs-and-tools/LIVE-VERIFICATION-2026-10-20.md`); metadata is in the catalogue and the seven
+components are published.
 Open: part 06's `recommendedAfterFail` must name part 07 for Kata to route a failed מועד א to the
 retake (`METADATA-KNOWN-ISSUES.md` §3).
 

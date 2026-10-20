@@ -323,19 +323,15 @@ before its component's. The item init lives in the loader, always after the comp
 
 ---
 
-## Still NOT verified — do not claim otherwise
+## Verified live against Kata — 2026-10-20
 
-Every result above used the local stub or the real library's **localStorage fallback**. A real Kata
-run has not yet been made from this unit (the reference unit's identical layer passed one on
-2026-10-20). Pending `LIVE-VERIFICATION-<date>.md`:
-
-1. `?slxapi` + `?registration` from a real launch: statements 200 with `context.registration`.
-2. **The State API over HTTP** — `PUT`/`GET /api/v1/xapi/activities/state?registration=…`, 404 →
-   `absent` on the first read, 204 on writes.
-3. Kata removing the component on `completed` and routing on the catalogue (part 06 → 07 needs
-   `recommendedAfterFail`).
-4. **Multi-tab / two devices.** Every save writes the whole document; `If-Match`/ETag is available in
-   Kata and deliberately unused.
+See [LIVE-VERIFICATION-2026-10-20.md](LIVE-VERIFICATION-2026-10-20.md): all seven parts opened by
+real launch links (one registration each), every statement 200 with `context.registration`, every
+State `PUT` 204, the first read 404 → `absent`; part 01 relaunched onto its last answered screen
+with nothing re-sent and the finish button disabled; part 02 reloaded mid-walk with answers,
+progress and the library's answered map restored; the character chosen in 01 adopted by 02–07.
+Not covered: a platform re-take (State cleared by Kata), Kata's routing on `completed`, two devices
+on one registration (`If-Match`/ETag deliberately unused).
 
 ## The peak assessment locks what it has reported
 
