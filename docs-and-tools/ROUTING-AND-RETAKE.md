@@ -1,152 +1,106 @@
 # Routing, the retake, and who owns each decision
 
-The one document the sibling unit cannot supply, because its flow is linear and this one's is not.
-Read this before changing any navigation or any `completed`.
+**The platform owns routing (since 2026-10-20 in this unit; family-wide since 2026-09-16).** Kata
+launches each component on its own URL with its own `?registration`, reads our component `completed`
+and decides what comes next from the catalogue — `recommendedAfterFail`, `isRequired`, `order`. A
+part reports and stops. Read this before changing any navigation or any `completed`.
 
 Companions: [REPORT-XAPI.md](REPORT-XAPI.md) · [RESUME.md](RESUME.md)
 
 ---
 
-## The unit's flow graph
+## The unit's flow graph (what the catalogue has to express)
 
 ```
-                    root index.html  (carries ?slxapi + ?registration)
-                            │
-                            ▼
-   ┌─────────────────── 01  הוק והקניה ───────────────────────────────────────┐
-   │  hook → acquisition (comic ⟋ experiments → shared ending) → warm-ups      │
-   └───────────────────────────────┬──────────────────────────────────────────┘
-                                    │  always (no gate)
-                                    ▼
-   ┌─────────────────── 02  תרגול סטנדרטי (5 Qs) ─────────────────────────────┐
-   └───────────────────────────────┬──────────────────────────────────────────┘
-                    practiceScore() │ ≥ 4 of 5  ────────────────┐
-                                    │ < 4                        │
-                                    ▼                            │
-                    03  תרגול בסיסי (remediation, 6 Qs)          │
-                                    │  always                    │
-                                    ▼                            ▼
-                    04  משימת כיתה  ◄──────────────────────────────┘
-                                    │  "חזרתי"
-                                    ▼
-                    05  תרגול מתקדם (8 Qs, 2 scenarios)
-                                    │
-                                    ▼
-                    06  שאלת שיא — מועד א   (isAssessment, 4 sub-parts, ≥3 to pass)
-                          ├─ pass ─→  END OF UNIT
-                          └─ fail ─→  07  שאלת שיא — מועד ב  (final attempt, 4/4 to pass)
-                                            ├─ pass ─→ END OF UNIT
-                                            └─ fail ─→ END OF UNIT
+   01  הוק והקניה ──always──▶ 02  תרגול סטנדרטי (5 Qs, gate 4 of 5)
+                                   ├─ ≥4 ──────────────────────────▶ 04  משימת כיתה ─▶ 05  תרגול מתקדם ─▶ 06  מועד א (≥3 of 4)
+                                   └─ <4 ─▶ 03  תרגול בסיסי ─────▶                                        ├─ pass ─▶ end
+                                                                                                           └─ fail ─▶ 07  מועד ב (4 of 4) ─▶ end
 ```
 
-**Part 04 is reachable from both 02 and 03.** The `prev` back-edge resolves correctly regardless,
-because whichever router navigated is the one that wrote the edge.
+| catalogue field | state (metadata/, 2026-10-20) | effect |
+|---|---|---|
+| 02 → 03 on fail | 03 `isRequired: false`, `recommendedAfterFail` names 02 | remediation only for a learner who failed the gate |
+| 05 | `isRequired: false` | — |
+| 06 → 07 on fail | **06 `recommendedAfterFail: []`** | ⚠️ no route to the retake yet; the reference unit's 06 names its 07. Metadata is the content owner's — flagged in REPORT-XAPI.md and METADATA-KNOWN-ISSUES.md |
+| 06, 07 | both `order: 6`, `isAssessment: true` | — |
 
-**The 7-component split (2026-10-14).** Until 2026-10-14 the unit had six components: standard
-practice was the tail of part 01 (s30–s35, holding the 4-of-5 gate) and the later parts were numbered
-one lower (remediation 02, class task 03, advanced 04, peaks 05/06). Standard practice is now its own
-part 02 (s0–s5), part 01 always continues to it, and every later part moved up by one.
-
-**Parts 01, 02 and 03 are numbered in storyboard order** (renumbered 2026-10-14; old ids in SCREENS.md).
-Part 01 is linear except at the fork: comic 8→14 or experiments 15→21, both continuing into the
-shared ending 22→26 ("סיום הקניה (בשתי הדרכים)"), then warm-ups 27→29 → part 02. Part 02 is linear,
-practice rules s0 then questions s1→s5. In part 05 the scenario screens (s10, s9) still sit out of
-numeric order, and in parts 06/07 the scenario s5 is read between the intro s0 and סעיף א s1.
-`advanceScreen()`/`goBack()` remain the authoritative graph — **no code may assume `currentScreen ± 1`.**
+Inside a part the flow is still the content's: part 01 forks at s7 (comic 8→14 or experiments
+15→21) into the shared ending 22→26 and the warm-ups 27→29; part 05's scenario screens (s10, s9)
+and parts 06/07's scenario s5 sit out of numeric order. `advanceScreen()`/`goBack()` remain the
+authoritative graph — **no code may assume `currentScreen ± 1`.**
 
 ---
 
-## Who owns the retake routing
+## Why the content must not route
 
-**The content does.** `peakGoRetake()` in part 06 navigates to part 07, and part 06's metadata
-`recommendedAfterFail` is deliberately left **empty**.
+Kata's registration is per {learner, component} and so is the State document. The old model
+appended `window.location.search` to every hop, so a learner walking the unit from part 01 reported
+every part under part 01's registration and saved every part's resume slot into part 01's document.
+Under platform launch, parts 02–07 arrive with their own registration; an internal hop would carry
+the previous component's. That was the live reporting defect behind the change, not only an
+ownership question.
 
-This was a decision, not an omission. The alternative — naming part 07 in `recommendedAfterFail` and
-letting the platform route — carries a concrete risk: Kata's registration is stable per platform,
-learner **and component**, so a platform-initiated deep launch of part 07 would arrive with a *different*
-registration, addressing a *different* state document. The learner's progress would split in two, and
-the ledger in the new document would be empty — so every `completed` they had already earned would be
-reported a second time.
-
-Keeping one path in means one registration and one document.
-
-> **Do not declare both.** Populating `recommendedAfterFail` *and* keeping `peakGoRetake()` makes part 07
-> reachable two ways, one of which brings a fresh registration. If the platform ever needs to own this,
-> remove `peakGoRetake()` in the same change.
-
-**To confirm with the platform partner:** does the platform ever deep-launch a non-first component, and
-does it expect to route a failed מועד א itself?
-
-Regardless of the answer, **part 07 must tolerate a cold start**: arriving with an empty document has to
-be a legitimate fresh start, never a hop, and never an assumption that `done` is populated.
-`readUnitState()` already behaves that way — it never returns `null` — but it is a first-class case, not
-an edge case.
-
----
-
-## The back edge into a failed assessment
-
-Part 07 **does** offer `חזרה` back into part 06. `writeForwardState()` records
-`prev['…-07'] = '…-06'` and part 07's `#back-to-prev-part` becomes visible.
-
-That is a product decision, and it is the reason the **`doneQ` ledger** exists. A learner walking back
-into מועד א can re-answer its sub-parts; without a guard, the LRS would receive a second full round of
-graded answers for מועד א *after* מועד ב had already begun — corruption in the unit's only
-`isAssessment: true` component. Two layers defend it; see RESUME.md.
-
-If the product decision is ever reversed, the change is: stop writing the back-edge in `peakGoRetake()`
-and remove `#back-to-prev-part` from part 07's markup. Leave `doneQ` in place regardless.
+What was removed: the loader's hop to the saved part, the forward routers' `location.href`, the
+`prev` back-edges and `syncBackButton`, `peakGoRetake`, `unitFinish` and the `720:unit-finished`
+postMessage, the root `index.html` is repo-only (never deployed).
 
 ---
 
 ## The attempt-ending sites
 
-Since 2026-10-15 there are **no end screens**: the unit ends on סעיף ד's שנמשיך? (`peakNext()` →
-`peakFinish()` → `unitFinish()`, which posts `720:unit-finished` to a framing host). Exactly one unit
-`completed` must be reported across all of them. `done['unit']` — keyed `'unit'`, not
-by slug, so parts 06 and 07 share it — is what guarantees that.
+Each part's last click calls `partFinish(btn)` → `xapiEndComponent(result, btn)`: closes the open
+item, reports the component `completed` through the `done` ledger, disables the button. Nothing
+follows. Outside Kata (QA on the CDN, a local run) nothing removes the component; the disabled button
+is the only sign the click was recorded.
 
-| where | component `completed` | unit `completed` |
-|---|---|---|
-| 06 s4 — passed מועד א | ✓ `success: true` | ✓ **the unit ends here** |
-| 06 — failed מועד א (no end screen; straight to part 07) | ✓ `success: false` | ✗ the learner goes on to מועד ב |
-| 07 s4 — passed מועד ב | ✓ `success: true` | ✓ terminal |
-| 07 s4 — failed מועד ב | ✓ `success: false` | ✓ terminal — a learner who fails the final attempt has still finished the lomda |
+| part | last click | reports | then |
+|---|---|---|---|
+| 01 | s29 שנמשיך? (`goToNextPart`) | component `completed` | stop |
+| 02 | s5 שנמשיך? | `completed`, `success` = the 4-of-5 gate | stop — Kata routes to 03 or 04 |
+| 03 | s7 שנמשיך? | `completed` | stop |
+| 04 | s1 חזרתי (`classTaskDone`) | `completed {success:true}` | stop |
+| 05 | s8 שנמשיך? | `completed` | stop |
+| 06 | s4 שנמשיך? (`peakNext(4)`) | verdict → `setUnitResult`, `completed` on **both** outcomes | stop — Kata routes a fail via `recommendedAfterFail` |
+| 07 | s4 שנמשיך? | `completed` on both outcomes | stop — the final attempt |
 
-Before this work, **the unit `completed` existed nowhere in the unit**, and the failure path of
-מועד א (then part 05, now 06) reported nothing at all — a failed מועד א was indistinguishable from a learner who never started.
-
-Both are sent from `peakFinish()`, called from `peakNext()` (after סעיף ד) only, **synchronously**, and never from
-a screen-entry hook. See the standing rules in `unit-js/README.md`.
+Both peaks report through `partFinish` from `peakNext()` only, synchronously, never from a
+screen-entry hook. There is **no unit `completed`**: the platform derives the unit outcome.
 
 ---
 
-## Query-string propagation
+## Dev navigation (`DEV_NAV`)
 
-`?slxapi` and `?registration` must survive every hop, or both the LRS configuration and the learner's
-resume document are lost from that point on. Every site:
+`index_dev.html` loads each part with `?dev=1`. `DEV_NAV` (`unit-js/10-identity.js`) is true only when
+`?dev=1` is present **and** there is no `?registration` — every Kata launch carries one, so a launch
+URL with `&dev=1` appended still behaves as production. Under `DEV_NAV` only:
 
-| site | |
-|---|---|
-| root `index.html` | `window.location.replace('./…-01/' + window.location.search)` |
-| `goToNextPart()` in 01, 02, 03, 05 | `+ window.location.search` |
-| `classTaskDone()` in 04 | `+ window.location.search` |
-| `peakGoRetake()` in 06 | `+ window.location.search` |
-| `goBackToPrevPart()` in `40-resume.js` | `+ window.location.search` |
-| resume hop in `50-loader.js` | `+ window.location.search` |
+- the former routers hop to the next part after `partFinish` (`writeForwardState(dest)` records the
+  back edge in `sessionStorage`, then `location.href`), 02 by the gate, 06 only on a fail;
+- the first screen's `#back-to-prev-part` is shown (hidden by attribute **and** inline display
+  otherwise, `syncDevBackButton` in `90-boot.js`) and `goBackToPreviousPart(fallbackSlug)` resolves
+  the edge (`NAV_EDGE_KEY`) or the fallback; without the flag the function returns.
+- `?resetState` is appended by the dev wrapper's reset button and strips itself from the URL.
+
+The `completed` is never gated on the flag.
+
+---
+
+## Re-take
+
+The platform may clear a component's State on re-entry. The part reads a 404 → an empty v5 document:
+`payload: null` (nothing to restore), empty ledgers (`completed` goes out again — intended), empty
+`results` that beats the localStorage mirror of the previous attempt. No code path depends on the
+document being populated; a cold start is a first-class case.
 
 ---
 
 ## Score thresholds, in one place
 
-| gate | where | effect |
+| gate | where | reported as |
 |---|---|---|
-| *(none)* | part 01 | always advances to part 02. `success: true`, score = correct / 3 (item 02's q1 + the 2 warm-ups) |
-| **4 of 5** | part 02 standard practice | ≥4 skips remediation → part 04; <4 → part 03. Also the component's reported `success` |
-| *(none)* | parts 03, 05 | always advance. `success: true`, score carries performance |
-| **3 of 4** | part 06 (מועד א) | pass/fail of the assessment, and of the unit |
-| **4 of 4** | part 07 (מועד ב) | pass/fail of the final attempt; the unit ends either way |
-
-Part 02's threshold is reported as `success` because it exists in the content and the metadata's
-`recommendedAfterFail` (= part 03) backs it up. Parts 01, 03 and 05 have no gate, so inventing one
-would have been a pedagogical decision disguised as a reporting one — see REPORT-XAPI.md.
+| *(none)* | 01 | `success: true`, score = correct / 3 |
+| **4 of 5** | 02 | `success: practiceScore() >= 4`, score / 5 — the platform routes on it |
+| *(none)* | 03, 05 | `success: true`, score carries performance |
+| **3 of 4** | 06 מועד א | `success` on both paths; verdict in the document under `results` |
+| **4 of 4** | 07 מועד ב | `success` on both paths; the unit ends either way |

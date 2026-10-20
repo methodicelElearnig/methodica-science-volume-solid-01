@@ -1,72 +1,70 @@
 # Resume — `המשך מהמקום שבו הפסקת`
 
-A learner who leaves mid-unit and relaunches through the platform lands on the screen of the component
-they stopped at, with their answers, attempts and scores intact and repainted — **and nothing is
-re-reported to the LRS.**
+A learner who leaves mid-component and is relaunched by the platform lands on the screen they stopped
+at, with their answers, attempts and scores intact and repainted — **and nothing is re-reported to
+the LRS.**
 
-State document version **3** (`RESUME_STATE_VERSION`). Enabled via `RESUME_ENABLED` in `unit-js/10-identity.js`.
-v2 (2026-10-14) followed the storyboard renumbering of parts 01 and 02; v3 (same day) followed the
-split into seven components. Older documents are discarded — see below.
+State document version **5** (`RESUME_STATE_VERSION`), **one document per component**, enabled via
+`RESUME_ENABLED` in `unit-js/10-identity.js`. Upgraded 2026-10-20 from the v3 unit-wide document
+(never shipped to a learner; discarded, no migration). Procedure:
+`Documentation/reporting-and-resume/ADDING-REPORTING-AND-RESUME.md` §8; reference
+`methodica-science-body-matter-01` (verified live against Kata 2026-10-20).
 
 Companions: [unit-js/README.md](../unit-js/README.md) · [REPORT-XAPI.md](REPORT-XAPI.md) ·
 [ROUTING-AND-RETAKE.md](ROUTING-AND-RETAKE.md)
 
-> ⚠️ **DEPLOY ALL SEVEN COMPONENT FOLDERS ATOMICALLY** whenever `RESUME_ENABLED` or the document version
-> changes — on rollback too. A part left on the other setting writes a document its siblings discard,
-> and the discard/rewrite cycle wipes the `done` ledger on every hop, which under a ledger means a
-> duplicate `completed` per cycle.
+> ⚠️ **DEPLOY ALL SEVEN COMPONENT FOLDERS ATOMICALLY**, with one `?v=` token on every `unit-js/*.js`
+> and `js/main.js` — a stale cached `40-resume.js` reading a newer document discards it, and a new
+> `main.js` against a stale `40-resume.js` calls setters that do not exist.
 
 ---
 
-## Scope: one document for the whole unit
+## Scope: one document per {learner, component}
 
-Kata addresses a state document by **`?registration` alone**, and the launch registration rides through
-every cross-part navigation on `window.location.search`. That is what lets seven components share one
-document. There is no `activityId`, no `stateId`, no `unitKey` parameter; `window.XAPI_UNIT_ID` only
-keys the off-platform localStorage fallback.
+Kata addresses a State document by **`?registration` alone**, and a registration represents a
+{user, component} pair: the platform launches every component on its own URL with its own
+registration, and since 2026-10-20 no part navigates to another part or copies its query string
+along (dev only — ROUTING-AND-RETAKE.md). So every part reads and writes **its own document**. A
+document whose `component` names another part is discarded with `console.warn` — a registration
+shared by two components is a platform fault, and a foreign payload is never applied.
 
-Re-entry always arrives through the root `index.html` → part 01, which reads the document and **hops**
-to the stopped-at component *before emitting any statement of its own*.
+The platform may clear a component's State on re-entry (a re-take). A missing document (404) is a
+new attempt: `payload: null`, empty ledgers (the `completed` goes out again — intended), empty
+`results` that beats the localStorage cache of the previous attempt.
 
-> **A documented risk.** This works because the platform launches component 01 once and the lomda
-> navigates internally. Kata's registration is stable per platform, learner **and component** — so if
-> the platform ever deep-launched part 04 or part 07 directly, that registration would address a
-> different document and the learner's progress would split in two. Part 07 is the live concern, because
-> `recommendedAfterFail` is the platform's own routing mechanism. See ROUTING-AND-RETAKE.md.
+`window.XAPI_UNIT_ID` (the bare unit slug) and `RESUME_STATE_ID = 'execution-state::<slug>'` key only
+the library's localStorage fallback, used when there is no valid `?slxapi` — one slot per part there
+too, so a `?dev=1` walk does not read part 01's document in part 02.
 
 ---
 
 ## The document
 
 ```js
-{ v: 3,
-  part:      '<slug the learner should land on>',
-  parts:     { '<slug>': { currentScreen, …that part's payload } },   // all seven retained
-  prev:      { '<slug>': '<slug it was entered FROM>' },               // back-edges
-  done:      { '<slug>': true, unit: true },                           // component/unit 'completed' sent
-  doneItems: { '<slug>#<itemSuffix>': true },                          // item 'completed' sent
-  doneQ:     { '<slug>#<itemSuffix>/<qKey>': true }                    // graded answer sent
-}
+{ v: 5,
+  component: '<this part's slug>',          // checked on every read; a foreign one is discarded
+  payload:   { currentScreen, …this part's payload },   // capturePartPayload(); null = nothing to restore
+  done:      { '<slug>': true },             // the component 'completed' has been sent
+  doneItems: { '<slug>#<itemSuffix>': true },// item 'completed' sent
+  hints:     { '<itemSuffix>/<qKey>': true },// 'requested.1' sent (once per question per attempt)
+  picks:     {},                             // one-off 'selected' (unused here)
+  ui:        { character: 'orange' | 'turquoise' | null },
+  results:   { 'volume-solid-01_moedAPassed': 'true' | 'false' } }   // RESULT_KEYS
 ```
 
-~10–20 KB against Kata's ~1 MB cap.
+A few KB against Kata's ~1 MB cap. `done`/`doneItems` are namespaced by slug because parts 06 and 07
+each hold a single item `'01'`.
 
-**There is no migration path, deliberately.** This unit has never shipped resume, so no document of any
-version exists in the field. The sibling's `migrateV2()` would also be *actively wrong* here: it seeds
-the ledger from position in a **linear** part chain, and this unit is not linear — reaching part 07 does
-not imply part 06 was passed (it implies the opposite), and reaching part 04 does not imply part 03 was
-visited, because part 02 branches straight past it at 4/5. An unknown version is discarded outright —
-which is also how the v1 and v2 documents written before the 2026-10-14 renumbering and split (old
-slugs, old part-01 screen ids) are handled.
+**The character** is chosen in part 01 (`setUnitCharacter`: the document **and** the per-unit
+localStorage cache `methodica_science_volume_solid_01_selectedCharacter`) and reaches the later
+parts — launched separately by Kata with empty documents — through that cache: `adoptUnitCharacter`
+in the loader's Phase A reads this part's document, else the cache, copies it into the document
+(persisted in Phase B) and **never deletes the cache**. Values outside `UNIT_CHARACTERS` are ignored.
+A `?resetState` boot adopts nothing. Known cost: a learner who switches devices mid-unit sees the
+default character in parts not yet opened on the new device.
 
-**`doneItems` and `doneQ` are namespaced by part slug, and here that is not cosmetic.** Parts 06 and 07
-each hold a single item with suffix `'01'`, distinguished only by `XAPI_COMP_ID`. Without the slug they
-would share one key and מועד ב's item `completed` would be silently suppressed. Verified in a full
-traversal: `doneItems` ends up holding **both** `…-06#01` and `…-07#01` (verified as `…-05#01` /
-`…-06#01` before the 2026-10-14 split).
-
-The unit `completed` is keyed `'unit'`, not by slug, so parts 06 and 07 share it — exactly one unit
-completion across the three attempt-ending paths.
+**`results`** holds part 06's verdict (`setUnitResult`). Nothing reads it across parts — the platform
+routes — but it is the part's own verdict and `?resetState` clears it.
 
 ---
 
@@ -101,7 +99,8 @@ is what makes resume testable on a dev server.
   worse than the loss.
 - **screen change** — debounced, at the end of `goTo()`; the choke point that bounds how much a learner
   can lose
-- **cross-part jump** — `writeForwardState()` / `goBackToPrevPart()`, synchronous
+- **character / verdict** — `setUnitCharacter` / `setUnitResult`, synchronous (queued in
+  `_pendingProfile` / `_pendingResults` until the document has been read, drained in Phase B)
 - **`completed` reported** — `markSent` persists synchronously, because several sites (parts 06/07's
   `peakFinish`) send without navigating afterwards, so nothing else would ever write it
 - **page leave** — `beforeunload` **and** `pagehide` **and** a hidden `visibilitychange`. `beforeunload`
@@ -112,32 +111,45 @@ is what makes resume testable on a dev server.
 
 ## Restore
 
-`applyExecutionState(st)` in `unit-js/30-nav.js`, called by the loader:
+Two phases in `unit-js/50-loader.js`:
+
+- **Phase A**, right after the library loads and before the metadata poll: `readUnitState()`,
+  `adoptUnitCharacter()` (repaint screen 0 if the colour changed), and if there is no payload the
+  boot cover drops at once. Reads only — `_resumeReady` stays off so no `goTo()` can arm a save that
+  overwrites the payload before it is restored.
+- **Phase B**, after the metadata settles and `changeConfig`, **before** the component
+  `initialized`: `_resumeReady = true`, `drainPendingUnitState()`, then
+  `applyExecutionState(payload, #screen=N override)`; then `dropBootCover()`.
+
+`applyExecutionState(st, screenOverride)` in `unit-js/30-nav.js`:
 
 ```
 _restoring = true
 window.sendStatement720 = no-op          ← replayed answers must not re-report
   applyResumeVars(st)
-  goTo(st.currentScreen)                 ← runs the screen's sNNEnter(), which RESETS what we just set
+  goTo(screenOverride ?? st.currentScreen) ← runs the screen's sNNEnter(), which RESETS what we just set
   applyResumeVars(st)                    ← so assign again
   applyResumeDom(st)                     ← before the painter locks the inputs
   restoreScreenUI(currentScreen)
+  restoreEndedButton()                   ← D-8: a finished part's button stays disabled (the ledger decides)
 restore sendStatement720; _restoring = false
-xapiCurrentItem = null                   ← latch only; the loader emits the item init
+xapiSeedAnsweredFromResume()             ← re-arm the library's xapiItemAnswered, or it drops every restored item's 'completed'
+xapiCurrentItem = null                   ← latch only; the loader emits the item init after the component's
 ```
 
 The two-pass shape is load-bearing. So is holding the stub **across** `goTo()`: that is what stops a
-finale screen re-emitting the item, component and unit `completed` on resume — the library's
-one-per-page-load dedupe cannot help across a page load.
+finale screen re-emitting the item and component `completed` on resume. `goTo()` performs the same
+capture → reset → re-apply → repaint sequence (and `restoreEndedButton`) on **every** navigation.
 
-`goTo()` performs the same capture → reset → re-apply → repaint sequence on **every** navigation, which
-is what keeps a revisited screen answered.
+**The boot cover.** `#boot-cover` (a sibling of `#app`, inline-styled white) hides screen 0 until
+Phase B has painted; an inline script in the markup removes it after 800 ms regardless, or waits up
+to 6 s while `window.__resumeInFlight` is set by `bootXAPI()`. `dropBootCover()` runs on every loader
+exit path.
 
 **Most screens restore themselves.** `imgqEnter`, `dispEnter`, `aqEnter`, `floodEnter`, `flipEnter`,
-`guessEnter`, `measRender` and `scqEnter`'s `done` branch all rebuild from the restored variables —
-that is what makes part 01's 30 screens tractable. `restoreScreenUI()` fills the five genuine gaps:
-the s2 hint gate, the SCQ marks **and feedback**, the two matching boards (01 s28, 02 s4), s23's
-confirm button, and the comic slider index.
+`guessEnter`, `measRender` and `scqEnter`'s `done` branch all rebuild from the restored variables.
+`restoreScreenUI()` fills the genuine gaps: the s2 hint gate, the SCQ marks **and feedback**, the two
+matching boards (01 s28, 02 s4), s23's confirm button, and the comic slider index.
 
 ### What a painter owes the learner
 
@@ -216,56 +228,48 @@ comes back as a fresh first attempt, a resolved one is unaffected — so no stat
 
 ## The ledgers
 
-Three orderings are load-bearing:
+`done`, `doneItems`, `hints` — all through `sendStatementOnce(ledger, key, verb, …)`. Three orderings
+are load-bearing:
 
 1. **During a restore we neither send nor mark.** `applyExecutionState` stubs the sender, so a mark made
-   there would permanently suppress a statement that never actually left.
+   there would permanently suppress a statement that never actually left. `xapiRequestedHint` latches
+   its in-memory key only when the ledger reports SETTLED.
 2. **Fail open.** The ledger is obeyed only when it positively says "already sent". If the document is
    unavailable we send anyway — every call site swallows exceptions, and a silent drop is far worse than
    a duplicate.
 3. **Marks persist synchronously.**
 
-### The `doneQ` guard
+**B-1.** The library drops an evaluated item's `completed` when that item has no `answered` in the
+page load (no queue, no retry). `_xapiCloseItem` asks the library's own question first
+(`_xapiLibWouldDrop`) and leaves the ledger untouched when the statement would be dropped, so the real
+scored `completed` is not suppressed forever.
 
-Part 07 offers `חזרה` back into part 06, so a learner who failed מועד א can walk back into it from the
-retake. The `done` ledger stops a second component `completed`, but `answered.last` is not ledgered in
-the sibling's design — so the LRS would receive a **second full round of graded answers for מועד א after
-מועד ב had begun**. That is corruption in the unit's only `isAssessment: true` component.
-
-Two deliberately redundant layers:
-
-1. part 06's payload restores `peakState`, so a resolved סעיף comes back resolved and `peakCheck()`
-   cannot grade it again — a per-part correctness claim;
-2. `sendAnsweredOnce()`, a structural backstop that does not depend on any part getting layer 1 right.
-
-Used **only** by parts 06 and 07. Ordinary practice questions are unguarded: re-answering those is
-legitimate learning behaviour the platform expects to see.
+The old `doneQ` re-answer guard is gone: under platform routing nothing re-enters מועד א after its
+`completed`, and `peakState` (restored by resume) locks a resolved סעיף.
 
 ---
 
 ## `?resetState`
 
-The QA escape hatch, and it matters more here than in the sibling: after a failed מועד א the document
-names part 07, so **every** subsequent launch — including every QA launch through the root
-`index.html` — hops straight to the retake, forever. This is the only way out.
-
-It **strips itself from the URL** via `history.replaceState`. That is load-bearing: every cross-part
-navigation copies `window.location.search` verbatim, so left in place it would re-fire on arrival in the
-next component and wipe the document on every hop — resume would never work at all. With seven parts,
-that is six chances to get it wrong.
-
-Off-platform there is no `?registration`, so the fallback keys every local run to one document; after
-one pass the ledger is full and no `completed` is emitted again, which reads as a catastrophic
-regression to whoever tests next. **Start every local run with `?resetState`.**
+The QA escape hatch. `initResumeResetHatch()` runs **first** in `90-boot.js`: it sets
+`_resetRequested` (so `readUnitState` writes an empty document), clears the character cache,
+`RESULT_KEYS` and the dev nav edges, and strips itself from the URL via `history.replaceState` —
+otherwise every reload would reset again. Off-platform there is no `?registration`, so the fallback
+keys every local run to one document per part; after one pass the ledger is full and no `completed`
+is emitted again. **Start every local run with `?resetState`** (`index_dev.html`'s reset button does).
 
 ---
 
-## Verified headlessly — `_test/verify-resume.js`
+## Verified headlessly — `_test/verify-resume.js` and `_test/verify-report.js`
 
-530 assertions (as of the 2026-10-14 split) across parts 01, 02, 03, 05, 06 and 07 — the SCQ screens
-of 01/02/03/05, both matching boards (02 s4, 01 s28), the retry on 02 s4, and the peaks — in jsdom, against the real `index.html` +
-`js/main.js` + `unit-js/*.js`. Two rules it is built around, both borrowed from the sibling unit's
-`RESUME.md` §6א/§6ג:
+`verify-resume.js`: 530 assertions (2026-10-20) across parts 01, 02, 03, 05, 06 and 07 — the SCQ
+screens, both matching boards, the retry on 02 s4, the peaks, five real reloads and the comic — in
+jsdom, against the real `index.html` + `js/main.js` + `unit-js/*.js`, with the loader's two-phase
+seam reproduced. `verify-report.js` adds the document shape (exact v5 field set, a foreign
+`component` discarded with the warning, a v3 document discarded), the ledgers (one `completed` for
+two finish clicks, the hint ledger), D-8 after a reload, and the character's four steps (adopted from
+the cache, never deleted; `?resetState` adopts nothing; a foreign value rejected) — 1539 checks.
+Two rules both are built around:
 
 1. **Every assertion drives through `goTo()`** — or through a genuine reload, by copying the state
    document out of one window and seeding it into the next before its scripts run. The sibling's
@@ -300,51 +304,38 @@ covered, and the revert fails as it should. Two jsdom gaps are stubbed in the ri
 in the unit: `matchMedia` (part 01 reads it at top level, and unstubbed it silently kills every
 declaration after it) and `HTMLMediaElement.load/play`.
 
-## Verified in the browser
+## Verified in the browser (stub, 2026-10-20)
 
-Run before the 2026-10-14 split; part numbers below are translated to the current ones.
+Every part walked on the dev server with `?xapiLib=../_test/xapi-720-k.js&registration=<fake>&resetState`:
 
 | | |
 |---|---|
-| real reload resumes to the stopped-at screen | ✓ answers, `practiceProgress`, `practiceScore()` and the repainted marks all survive |
-| resume onto a finished component | ✓ only `initialized`; **0** `completed`, **0** `answered` |
-| resume onto part 07's terminal finale | ✓ same, with the score text intact |
-| cross-part hop | ✓ launching part 01 with the document naming 06 redirects, preserves the query, and leaves **no statement behind** for the part passed through |
-| retake back edge | ✓ `prev` recorded, `חזרה` visible, returns with all four answers and the score |
-| **`doneQ` guard** | ✓ changing a pick in the completed מועד א and re-submitting emits **nothing** |
-| full path fail→retake→back→forward→pass | ✓ exactly **one** unit `completed`; `__dupes()` empty |
-| deep-clone of all five nested structures | ✓ mutating the live object after capture never leaks |
-| **2026-08-26 — the two field reports** | ✓ s28 answered wrong, toggled to the learner's own board, **real page reload**: lands on s28 showing the model board, the popup, the note and the `התשובה שלי` toggle. ✓ s29 answered, walked forward, walked back: `נכון מאוד!` reopens and the dropdown trigger keeps its verdict colour |
-| all 19 popups reopen and clear the chrome | ✓ measured at a 1280×720 canvas: every one anchors at `l:2 … b:636`, inside the canvas and 10px clear of the nav bar at 646 — the same anchor the live popup uses, so nothing new appears on screen |
-| part 05's silent screens stay silent | ✓ s6/s7/s8 come back with the learner's own pick `selected` and no verdict; they have no popup element at all — *superseded 2026-10-14: they now give per-סעיף feedback* |
-| commit-time flush | ✓ five practice questions answered with **no navigation afterwards**: `phase` and the matching board are already in the state document |
-| peak lock | ✓ parts 06 and 07: options unlocked at entry, still unlocked after a pick, locked after continue, and a click on another option is refused. `__dupes()` empty, one `answered.last` per sub-part |
-| statement order on a resumed load | ✓ component `initialized` before item — see below |
+| boot | v5 document keyed `execution-state::<slug>`, `XAPI_USING_G`, `DEV_NAV` false under a registration, cover dropped, component `initialized` once, no console error |
+| part 01 full walk | character → document + cache; `selected learning-type`; item 02 wrong → hint ×2 (one `requested.1`) → right; s28 matching `S[.]T[,]…`; s29 dropdown; two clicks on שנמשיך? → **one** component `completed {success:true, 1}`, button disabled, URL unchanged |
+| reload | lands on s29 with marks and popup, button still disabled (D-8), component `initialized` **before** the item's, nothing re-sent, `xapiItemAnswered` seeded for items 02/03/04 |
+| part 06 fail path | item and component `completed {success:false, 0.5}`, `results.volume-solid-01_moedAPassed = "false"` in the document and the cache, button disabled, no navigation, back button hidden |
+| parts 02, 03, 04, 05, 07 | every `response` equals the metadata string (07 s4 after the `<br>` fix), one `completed` per part, `__dupes()` empty |
+| character across parts | chosen in 01, part 03 launched under another registration paints the turquoise sprite and copies it into its own document |
+| `?dev=1` | `DEV_NAV` true, back button visible, `previousPartHref` carries the query |
 
-**A defect found and fixed here:** the resumed load used to emit the **item** `initialized` before its
-component's — the child opening before the parent, and the reverse of a normal load. `applyExecutionState`
-was ending with `xapiOnScreen()`. The item init now lives in the loader, always after the component
-`initialized`, which also removed the `_resumed` flag. **The sibling unit has the same inverted order**;
-worth reporting upstream.
+**A defect found and fixed here (2026-08):** the resumed load used to emit the **item** `initialized`
+before its component's. The item init lives in the loader, always after the component `initialized`.
 
 ---
 
 ## Still NOT verified — do not claim otherwise
 
-Every result above used the local stub or the real library's **localStorage fallback**. A real Kata run
-has never been exercised from this unit, or from the sibling.
+Every result above used the local stub or the real library's **localStorage fallback**. A real Kata
+run has not yet been made from this unit (the reference unit's identical layer passed one on
+2026-10-20). Pending `LIVE-VERIFICATION-<date>.md`:
 
-1. `?slxapi` + `?registration` from a real launch: statements arriving 2xx with `context.registration`.
-2. **The State API over HTTP** — `PUT`/`GET /api/v1/xapi/activities/state`. Never exercised.
-3. That all seven components genuinely share ONE document under a single launch registration.
-4. Whether Kata validates a registration against the calling `componentKey`. If it does, parts 02–07
-   presenting part 01's registration fail every state call.
-5. Behaviour with `?registration` absent.
-6. **Multi-tab / two devices.** Every save writes the whole document from a possibly-stale `_unitState`,
-   so a stale write can resurrect an un-`done` entry or wipe another part's answers. `If-Match`/ETag is
-   available in Kata and **deliberately unused** — adding optimistic concurrency plus a merge path on top
-   of an unexercised transport would turn a convenience bug into a data-loss bug.
-7. Visual confirmation of painted restored states beyond the assertions above.
+1. `?slxapi` + `?registration` from a real launch: statements 200 with `context.registration`.
+2. **The State API over HTTP** — `PUT`/`GET /api/v1/xapi/activities/state?registration=…`, 404 →
+   `absent` on the first read, 204 on writes.
+3. Kata removing the component on `completed` and routing on the catalogue (part 06 → 07 needs
+   `recommendedAfterFail`).
+4. **Multi-tab / two devices.** Every save writes the whole document; `If-Match`/ETag is available in
+   Kata and deliberately unused.
 
 ## The peak assessment locks what it has reported
 

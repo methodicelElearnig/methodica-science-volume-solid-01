@@ -7,6 +7,7 @@ reporting and resume layers can be exercised on a dev server, where there is no 
 |---|---|
 | `xapi-720-k.js` | stand-in for the CDN library — statements, State API, console helpers, the sweep oracle |
 | `checks.mjs` | six static gates: identifier collisions, `?v=` equality, `TOTAL_SCREENS` vs markup, metadata id resolution, `SCREEN_TO_SUBCONTENT` coverage, markup structure — over all seven parts |
+| `verify-report.js` | headless (jsdom) + static check of the reporting/resume layer: identity, wiring, routing/devnav, response layer H1–H13, shared-layer invariants, statement flow, document shape, character — see below |
 | `verify-resume.js` | headless (jsdom) check of the resume painters — see below |
 | `viewer.html` | local QA viewer: jump to any screen of any of the seven components. Not shipped |
 | `baselines/` | sweep output captured at each stage; the acceptance gate for the extraction |
@@ -33,28 +34,20 @@ also reproduces one quirk of the real library on purpose: `window.METADATA` is b
 before the resolved object replaces it, which is what keeps `50-loader.js`'s `settleMetadata()`
 exercised locally.
 
-### Two modes, not interchangeable
+### Mode B is the mode
 
-| Mode | How | `XAPI_USING_G` | What it is for |
-|---|---|---|---|
-| **A** | no `?xapiLib`; inject the stub after load (see below) | `false` | comparing against `baselines/stage-0.json` — the item layer stays dark, as it was pre-reconstruction |
-| **B** | `?xapiLib=…` | **`true`** | the full pipeline: real metadata, item-level statements live |
-
-Mode B turns the item layer on because the stub's filename ends in `xapi-720-k.js`, which the
-`XAPI_USING_G` regex matches. **Do not compare mode B output to the Stage 0 baseline.**
-
-Off-platform with no `?xapiLib`, the loader deliberately loads **no** library at all and logs why.
-That is not laziness: `xapi-720-f.js` has no `XAPI_DISABLED` path, so without a valid `?slxapi` it
-retries every statement against a placeholder endpoint. From Stage 3 (`-i`/`-j`) that hazard is gone
-and the restriction can be relaxed.
+`?xapiLib=…` turns the item layer on because the stub's filename ends in `xapi-720-k.js`, which the
+`XAPI_USING_G` regex matches. Add `&registration=<anything>` to simulate a Kata launch (`DEV_NAV`
+off, one State document per registration in `sessionStorage`) and `&resetState` to start clean;
+`&dev=1` without a registration opens the dev hops and the cross-part back button.
 
 > ⚠️ **The filename must keep the `xapi-720-k.js` ending.** `50-loader.js` derives
 > `window.XAPI_USING_G` from a regex on the library URL (`/xapi-720-[ghijk]\.js/`). Rename the file
 > and item-level `initialized`/`completed` and the video `played`/`paused` all go silent — with no
 > error, because `xapiOnScreen()` and `xapiWireVideos()` early-return on that flag.
 
-State and the statement log live in `sessionStorage`, so both survive the cross-part navigations
-this harness exists to exercise. `saveState720Debounced` really does defer by 800 ms, so the
+State (one document per part, keyed by the state id) and the statement log live in `sessionStorage`,
+so both survive reloads and the dev-only cross-part hops. `saveState720Debounced` really does defer by 800 ms, so the
 stale-timer race that the cross-part handoff guards against is reproducible here.
 
 ### Console helpers
@@ -62,17 +55,16 @@ stale-timer race that the cross-part handoff guards against is reproducible here
 | Call | What it gives you |
 |---|---|
 | `__stmts()` | every statement sent this session, across parts |
-| `__state()` | the current resume document |
-| `__reset()` | clear state + log + the forced-failure flag |
-| `__failWrites(true)` | make `saveState720` return `false`, to test the write-failure branches |
-| `__dupes()` | duplicate `completed` **and** `answered.last` — empty is the pass condition |
+| `__state()` / `__setState(doc)` | this part's resume document / seed one |
+| `__reset()` | clear every part's document, the log, the forced-failure flag, the character cache and the verdict mirror |
+| `__lastState()` | the `-k` diagnostics of the last State call: `{op, status, ok, reason}` |
+| `__failWrites(true \| 413 \| 401 \| 0)` | make `saveState720` fail, with a specific status to reach each `reason` branch |
+| `__dupes()` | duplicate `completed` per object — empty is the pass condition |
 | `__screenIds()` | every `data-screen` value present in this part's markup |
 | `__sweep()` | drive `goTo()` over all of them and return a normalised, diffable log |
 
-`__dupes()` deliberately ignores `initialized`: 720 v2.4 §1 **requires** it again on every
-re-entry, so a repeat there is conformance, not a defect. It *does* cover `answered.last`, which
-the reference's version did not — part 07's back edge into a failed מועד א makes a re-sent graded
-answer a live hazard in this unit. See `ROUTING-AND-RETAKE.md`.
+`__dupes()` deliberately ignores `initialized`: the spec **requires** it again on every re-entry, so a
+repeat there is conformance, not a defect.
 
 ## The sweep oracle
 
@@ -80,11 +72,6 @@ answer a live hazard in this unit. See `ROUTING-AND-RETAKE.md`.
 That distinction matters here: screen ids are neither DOM order nor flow order (part 05's scenario screens s10/s9 sit outside the numeric flow, and parts 06/07 read
 their scenario s5 between s0 and s1; before the 2026-10-14 renumbering part 01's practice questions
 ran 13, 14, 15, **17**, 16), so a positional loop would both miss screens and visit ones that do not exist.
-
-`__sweep()` is **async and must stay async.** The peak parts (06 and 07; 05 and 06 before 2026-10-14) send through `xapiSend()`, which is
-`setTimeout(…, 0)` — a synchronous read of the log returns *before* those macrotasks run and reports
-zero statements for exactly the screens most likely to over-report. That is how the part-05 (now
-06, מועד א) defect was nearly missed. It is the same deferral that defeats the resume stub (risk R1 in `RESUME.md`).
 
 Its output is the **acceptance gate for the shared-layer extraction**: a pure move must leave
 `visited` and `statements` unchanged. Baselines live in `_test/baselines/`.
@@ -99,11 +86,6 @@ dev server up, load a part and run:
   return await window.__sweep();
 })()
 ```
-
-Until Stage 2 lands `?xapiLib`, inject the stub this way — **after** load. Before then a hard
-`localhost` guard in each `main.js` returns before the library ever loads, so
-`window.sendStatement720` is undefined and every `xapiSend()` is swallowed by its own `try/catch`.
-Injecting post-load gives the handlers a sender. From Stage 2 on, prefer `?xapiLib`.
 
 `__sweep()` calls `__reset()` first, so boot-time statements are excluded by design and only what
 `goTo()` emits is measured — which is precisely the invariant a pure move must preserve.
@@ -156,30 +138,39 @@ The failure mode is the nastiest one in this codebase: `main.js` loads *after* t
 cached `main.js` still carrying a part-local copy of an extracted function **wins**, and the
 extraction looks successful while shipping the old code.
 
-## `verify-resume.js` — the resume painters
+## `verify-report.js` and `verify-resume.js`
 
-Loads each part's real `index.html`, `js/main.js` and `unit-js/*.js` in jsdom, answers every question,
-walks away and back through `goTo()`, and asserts that the answered look — marks, feedback popup and
-the matching screens' answer toggle — comes back. It covers the SCQ screens of parts 01, 02, 03 and
-05, both matching boards (02 s4 and 01 s28), the retry between attempts on 02 s4, and the peak
-סעיפים of parts 06 and 07 — 530 assertions at the 2026-10-14 split. Some of the assertions are
-genuine reloads: the
-state document is copied out of one window and seeded into the next before its scripts run.
+Both load each part's real `index.html`, `js/main.js` and `unit-js/*.js` in jsdom (the CDN never loads;
+`verify-resume.js` injects the stub first and reproduces the loader's two-phase resume seam).
 
-**jsdom is not in the repo and must not be installed into it** — the project lives in a synced
-OneDrive folder and jsdom's `node_modules` is ~26MB of pointless sync traffic. Install it somewhere
-outside and point `NODE_PATH` at it:
+- `verify-report.js` (from `methodica-science-body-matter-01`, adapted to this unit's generic
+  controllers): catalogue identity and the 2.7 metadata shapes, per-part wiring (script order, one
+  `?v=` per file, boot cover, `XAPI_END_BTN`, `SCREEN_TO_SUBCONTENT` ↔ DOM ↔ catalogue,
+  `XAPI_EVAL_ITEMS`), routing/devnav (every hop under `DEV_NAV`, no `postMessage`/close, no
+  unit-scope statement), the response layer H1–H13 (census from the registrations, spec shapes,
+  canonical strings round-tripped from the catalogue), shared-layer invariants, and the runtime group
+  (regression gate without a library, statement flow with an inline recorder, B-1, one component
+  `completed` for two clicks, no navigation, D-8, document shape/isolation, hints ledger, resume
+  round trip, painter sweeps, the character's four steps). **1539 checks, 2026-10-20.**
+- `verify-resume.js`: the painters — every SCQ screen of 01/02/03/05, both matching boards, the retry
+  on 02 s4, the peaks, five real reloads and the comic. **530 checks.** Every assertion drives through
+  `goTo()` or a genuine reload and checks an outcome, never "it did not throw"; any `[resume]`
+  `console.error` fails the suite.
+
+**jsdom is not in the repo and must not be installed into it** (OneDrive). It lives outside:
 
 ```bash
-mkdir -p /c/lomda-test && cd /c/lomda-test && npm install jsdom
+mkdir -p "$LOCALAPPDATA/lomda-jsdom" && cd "$LOCALAPPDATA/lomda-jsdom" && npm install jsdom@24
 ```
 
 ```bash
-NODE_PATH=/c/lomda-test/node_modules node _test/verify-resume.js
+NODE_PATH="$LOCALAPPDATA/lomda-jsdom/node_modules" node _test/verify-report.js
 ```
 
-Exit code 0 and `all resume checks passed`, or a list of failures with the observed value.
+```bash
+NODE_PATH="$LOCALAPPDATA/lomda-jsdom/node_modules" node _test/verify-resume.js
+```
 
-Two rules to keep if you extend it, both paid for in the sibling unit: every assertion goes through
-`goTo()` rather than calling a painter directly, and every assertion checks an outcome rather than the
-absence of a throw. See `docs-and-tools/RESUME.md` §Verified headlessly.
+(The `/tmp/lomda-test` install mentioned by older docs is incomplete — `xhr-sync-worker.js` is
+missing — and jsdom fails to load from it.) Without jsdom, `verify-report.js` still runs its static
+groups and reports the runtime group as skipped.

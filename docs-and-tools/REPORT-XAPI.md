@@ -1,59 +1,64 @@
 # xAPI (720) reporting in this unit
 
-What this unit reports, where each statement fires, and why. Conformance target: **720 technical
-guidelines v2.4 (26/07/2026)** plus `דוגמאות XAPI.pdf`.
+What this unit reports, where each statement fires, and why. Conformance target: **MOE technical
+guidelines v2.7 (15/09/2026)**, `דוגמאות XAPI.pdf`, the MOE mail of 19/10/2026 on `result.response`,
+and Kata's platform model (`Documentation/KATA/KATA-API.md`). Procedure followed:
+`Documentation/reporting-and-resume/ADDING-REPORTING-AND-RESUME.md`; reference implementation
+`methodica-science-body-matter-01` (verified live against Kata on 2026-10-20).
 
-> ⚠️ The copy of the guidelines in this repo's `Docs/` is **v2.2** — two revisions stale, and it
-> predates both of v2.4's breaking changes. Build against the v2.4 PDF in
-> `…/methodica-math-scale-01/docs/`, not against `Docs/`.
+Upgraded from the v2.4 / `xapi-720-j.js` model on 2026-10-20. The old model (content-side routing, a
+unit-wide State document, unit-level statements, `interacted`/`experienced`) is gone; this document
+describes only what ships.
 
 Companions: [unit-js/README.md](../unit-js/README.md) · [RESUME.md](RESUME.md) ·
-[ROUTING-AND-RETAKE.md](ROUTING-AND-RETAKE.md) · [METADATA-KNOWN-ISSUES.md](METADATA-KNOWN-ISSUES.md)
+[ROUTING-AND-RETAKE.md](ROUTING-AND-RETAKE.md) · [RESPONSE-EXAMPLES.md](RESPONSE-EXAMPLES.md) ·
+[METADATA-KNOWN-ISSUES.md](METADATA-KNOWN-ISSUES.md)
 
 ---
 
 ## Library
 
-`xapi-720-j.js`, loaded from `https://lomdot.education.gov.il/metodica/720active/common/`.
+`xapi-720-k.js`, loaded from `https://lomdot.education.gov.il/metodica/720active/common/`.
 `unit-js/50-loader.js` picks it because `RESUME_ENABLED` is true; with resume off it would load `-i`.
+`-k` is `-j` plus the mandatory `helpType: "hint"` context extension on `requested` (v2.7 p.24,
+MOE request of 2026-09-15); every live 720 unit loads `-k`.
 
-**`xapi-720-f.js` is deprecated and must not be reinstated.** It predates v2.4 entirely: no
-`contextActivities.parent`, no item-level `objectId`, no `XAPI_DISABLED`, no `context.registration`, and
-pre-spec adlnet verb IRIs for `selected`/`requested`. It also has no master in `720-common-lib/` — only
-a deployed copy. The full `-f`→`-i` comparison, including the proof that **no id changes shape**, is in
-`_test/baselines/stage-3-library-diff.md`.
+**`LIB720` and the `XAPI_USING_G` regex change in the same edit.** The regex lists the letters that
+support item-level statements; a letter missing from it silences `xapiOnScreen()` and the video
+reporting with no error.
 
 On every library bump, re-check that **`sendStatement720` is a top-level `function` declaration**.
 `applyExecutionState()` suppresses replayed statements by swapping `window.sendStatement720` for a
 no-op; if it ever becomes `const`/`let` that swap fails silently and resume re-reports everything.
+Also re-check that `xapiItemAnswered` is reachable on `window` — `xapiSeedAnsweredFromResume()`
+re-arms it after a restore, or the library drops every restored item's `completed`.
 
 ---
 
-## Ids
+## Launch and identity
 
-Everything is a full IRI under the unit prefix, and must match `metadata/*.json` **byte-for-byte**,
-including the trailing slashes this unit's metadata carries on unit, component and item ids.
+Everything comes from the launch URL: `?slxapi=<JSON {actor, auth, endpoint}>` and
+`?registration=<uuid>`. Kata launches **each component on its own URL** with its own registration
+(`POST /api/v1/launcher/context` takes one `componentId`). Without a valid `slxapi` the library sets
+`XAPI_DISABLED` and every send is a silent no-op; the State layer falls back to `localStorage`.
+
+Ids must match `metadata/*.json` **byte-for-byte**:
 
 | level | shape | trailing slash |
 |---|---|---|
-| unit | `<prefix>` — **see METADATA-KNOWN-ISSUES.md** | yes |
-| component | `<prefix><comp-slug>/` | yes |
-| item | `<prefix><comp-slug>/<comp-slug>-NN/` | yes |
-| question | `<item>qN` | no |
+| unit | `methodica-science-volume-solid-01` — a bare slug (v2.5 §2.7; `window.XAPI_UNIT_ID`) | — |
+| component | `<prefix><comp-slug>/` (`XAPI_COMP_ID`) | yes |
+| item | `<prefix><comp-slug>/<comp-slug>-NN/` (`xapiItemId`) | yes |
+| question | `<item>qN` — the metadata stores the absolute IRI since 2.7 | no |
 
-**Items nest inside the component.** The pre-reconstruction code built `<prefix><comp-slug>-NN/qN`,
-omitting the component segment, so **no `answered` in the unit matched the catalog** — consistent with
-the "שאלה לא נמצאה" the platform reported for the sibling unit.
+`xapiQ(itemSuffix, qKey)` resolves question and parent ids from `window.METADATA` at **send time**
+(the library fetches the metadata asynchronously while the registrations run during parse).
+`50-loader.js` compares `XAPI_COMP_ID` with `METADATA.id` on every load and logs an ID MISMATCH error.
+`_test/checks.mjs` gate 4 runs the real `xapiItemId`/`xapiQ` against every metadata file.
 
-Ids are never hand-assembled now. `xapiQ(itemSuffix, qKey)` resolves them from `window.METADATA` and
-returns `{questionId, parentId}` in one lookup, so the catalog is the single source of truth and
-re-syncing metadata can change the prefix without touching code. `_test/checks.mjs` gate 4 runs the
-**real** `xapiItemId`/`xapiQ` against all eight metadata files (unit + seven components): **23 items / 31 questions, zero
-mismatches**.
-
-> **Resolve at SEND time, not at registration time.** `xapiQ()` reads `window.METADATA`, which the
-> library fetches asynchronously, while `registerPractice()` runs during parse. So configs carry only
-> `item` (and `qKey` where an item has several questions), and the IRI is built inside the send.
+**No unit-level statement.** v2.5/v2.7 define `initialized`/`completed` at item and component level
+only; the platform derives the unit outcome itself. `XAPI_UNIT_ID` keys only the localStorage
+fallback and the bug-report form.
 
 ---
 
@@ -62,124 +67,129 @@ mismatches**.
 | Statement | Fires |
 |---|---|
 | `initialized` (component) | `50-loader.js`, once per page load — deliberately **not** deduped |
-| `initialized` (unit, `scope:'unit'`) | `onXapiReady()` in parts 01, 02 and 03 — see open items |
-| `initialized` / `completed` (item) | `xapiOnScreen()`, when the learner crosses into a different item |
-| `answered` / `answered.last` | each check/submit. Only `.last` feeds the component score. Two-attempt questions (the practice SCQs; 02 s4's matching board — 01 s34 until 2026-10-14 — since 2026-10-11; each peak סעיף since 2026-10-14) send a wrong first try as `answered` and the closing try as `.last`; one-attempt ones (01 s28) send `.last` only |
-| `requested.1` | on hint **open** only |
-| `completed` (component) | the routing function that leaves the component, via the ledger |
-| `completed` (unit) | part 06 on pass; part 07 on **both** paths |
-| `selected` | exactly one site — the part 01 learning-path choice |
-| `played` / `paused` | `xapiWireVideos()`, part 01's `<video>` |
-| `interacted` | applets, guesses, the hook's free text, the companion picker |
-| `experienced` | each comic panel |
+| `initialized` (item) | `xapiOnScreen()` from `goTo()`, when the learner crosses into a different item; `isEvaluationItem` category on graded items |
+| `completed` (item) | `_xapiCloseItem()` when the item is left or the component ends, through the `doneItems` ledger. **B-1:** an evaluated item with no `answered` in this page load is not closed (the library would drop it) |
+| `answered` / `answered.last` | `xapiAnswered()` on each check. Two-attempt questions send a wrong first try as `answered` and the closing try as `.last`; only `.last` enters the library's component denominator |
+| `requested.1` | `xapiRequestedHint()` on hint **open**, once per question per attempt (`hints` ledger); the library adds `helpType: "hint"` |
+| `completed` (component) | `partFinish()` → `xapiEndComponent()` on the **last click** of the part, through the `done` ledger; then the button is disabled and nothing else happens |
+| `selected` | exactly one site — part 01's learning-path choice, category `learning-type` |
+| `played` / `paused` | `xapiWireVideos()`, only `<video data-xapi-report="NN">` (part 01's `#s1-video`, item 01); object = the item |
 
-**`initialized` is never guarded.** v2.4 §1 requires it again on every re-entry — the inverse of v2.3,
-changed by the deletion of a single word (`אין` → `יש`). Only `completed` is deduped.
+Removed on 2026-10-20: the unit-scope `initialized` (parts 01/02/03) and `completed` (06/07), the
+nine `interacted` and one `experienced` sites of part 01 (outside the 720 verb list), the
+`720:unit-finished` postMessage. The learner's companion choice, the applets, the guesses, the open
+hook question and the comic panels are not reported.
+
+**`initialized` is never guarded** (v2.7 requires it on every re-entry). `completed` is deduped by
+the ledgers across page loads and by the library within one.
 
 **Item scope is driven from `goTo()`.** Paging inside one item emits nothing; the item closes when the
-learner enters a screen belonging to a *different* item. That is why `SCREEN_TO_SUBCONTENT` must cover
-**every** screen — an unmapped screen reports no item, in the statements and in the bug report alike.
-Gate 5 enforces `TOTAL_SCREENS` entries per part: **72/72 screens mapped** across the seven parts.
+learner enters a screen belonging to a *different* item, so `SCREEN_TO_SUBCONTENT` must cover
+**every** screen (gate 5).
+
+---
+
+## The finish button — report and stop
+
+Kata removes the component from the screen when `completed` arrives (v2.7 p.23) and decides what
+comes next from the catalogue (`recommendedAfterFail`, `isRequired`, `order`). So `completed` is the
+learner's **last click** in the component — after every feedback — and the part then does nothing:
+no navigation, no `window.close`, no `postMessage`, no alert (rule of 2026-10-14). The button is
+disabled, and `restoreEndedButton()` keeps it disabled after a reload (D-8).
+
+| part | `XAPI_END_BTN` | `xapiPartResult()` |
+|---|---|---|
+| 01 | `s29-scq-check` (warm-up 2's שנמשיך?) | `{success: true, score: {scaled: correct / 3}}` |
+| 02 | `s5-scq-check` | `{success: practiceScore() >= 4, score: {scaled: /5}}` — the unit's real gate |
+| 03 | `s7-scq-check` | `{success: true, scaled: /6}` |
+| 04 | `s1-continue` (חזרתי) | `{success: true}` — no score, an off-computer task |
+| 05 | `s8-scq-check` | `{success: true, scaled: /8}` |
+| 06 | `s4-continue` | `{success: peakScore() >= 3, scaled: /4}`, on both outcomes; also `setUnitResult('volume-solid-01_moedAPassed')` |
+| 07 | `s4-continue` | `{success: peakScore() >= 4, scaled: /4}`, on both outcomes |
+
+**Report `completed` on failure paths too.** A component the learner did not clear must still be
+reported, or the attempt goes unrecorded; routing a failing learner is the platform's job.
+
+The hop to the next part exists only under `DEV_NAV` (`?dev=1` and **no** `?registration`) for the
+`index_dev.html` walkthrough — see ROUTING-AND-RETAKE.md.
 
 ---
 
 ## Result shapes
 
-v2.4 requires `response` **and** `success` **and** `score.scaled` on `answered`. Before this work the
-unit split cleanly in two and neither half conformed: every SCQ and the DDQ sent `{success, score}`
-with no `response`, while the applets and peak answers sent `{response}` with no `success`/`score`.
+`answered` carries `success`, `score.scaled` (1 or 0) and `response`.
 
-`response` is the option's **visible text**, from `xapiAnswerText()`. Decisive evidence: the metadata's
-`answers` arrays hold the full option strings, so the raw `'a'`/`'b'` data-id the peak components used
-to send matched nothing.
+**`response` is the metadata text, byte for byte** (MOE, 19/10/2026): the response layer in
+`unit-js/20-xapi.js` resolves what the UI hands it (an option's visible text, a matching board's
+item/target labels) to the metadata `answers` entry and emits the xAPI interaction format:
 
-**Always supply an explicit `result` on `completed`.** The library's own aggregate is an all-correct
-AND, which reports `success: false` for any partial pass. `XAPI_ITEM_RESULT` supplies an item's result
-where it spans several questions (part 05's items 04/05, parts 06/07's single item); items holding one
-question omit it, because the AND is already right.
+| `questionType` | format | this unit |
+|---|---|---|
+| `choice` | `A` or `A[,]B`, in `answers` order | every SCQ, dropdown, hotspot, peak סעיף |
+| `matching` | `S[.]T[,]S[.]T`, one pair per `answers.source`, in source order; `S[.]` if unplaced | 01 s28, 02 s4 |
+| `performance` / `fill-in` / `numeric` / `true-false` / `sequencing` / `other` | per `xapiResponse()` | none today |
+
+An unresolvable UI text is sent normalised and `console.warn`ed (`not in metadata`); the harnesses
+turn that into a failure. `xapiAnswerText()` drops tooltips/badges/buttons and treats `<br>` as a
+space (07 s4). See RESPONSE-EXAMPLES.md for real statements.
+
+**Always supply an explicit `result` on `completed`.** The library's aggregate is an all-correct
+AND. `XAPI_ITEM_RESULT` supplies an item's result where it spans several questions (05 items 04/05,
+06/07's single item).
 
 ### Denominators — what the learner was promised
 
 | component | denominator | why |
 |---|---|---|
-| 01 | 3 | its graded questions: item 02's q1 and the two warm-ups (no progress dots, no gate) |
-| 02 | **5** | five questions, five progress dots, and the learner is told `4 מתוך 5` |
-| 03 | 6 | six exercises, six dots |
-| 04 | *no score* | an off-computer inquiry task with no answer UI at all |
-| 05 | 8 | eight dots, which here also matches the metadata count |
-| 06 / 07 | 4 | four sub-parts |
-
-Until 2026-10-14 the standard practice was the end of part 01, whose denominator was then 5 although
-eight questions were graded in code; the split gave the five questions their own component.
+| 01 | 3 | item 02's q1 and the two warm-ups (no gate) |
+| 02 | **5** | five questions, five dots, `4 מתוך 5` on screen |
+| 03 | 6 | six exercises |
+| 04 | *no score* | an off-computer inquiry task with no answer UI |
+| 05 | 8 | eight סעיפים |
+| 06 / 07 | 4 | four סעיפים |
 
 ### `success` — reported only where a gate exists
 
-- **Part 02** reports the real threshold: `practiceScore() >= 4`. That gate exists in the content and
-  the metadata's `recommendedAfterFail` names Part 03, so it is reported, not invented. (Until
-  2026-10-14 this gate ended part 01.)
-- **Parts 01, 03 and 05** report `success: true` unconditionally. They have **no** pass threshold anywhere
-  and always advance, so with no gate to clear, completing the component *is* the success condition and
-  `score.scaled` carries the performance. Confirmed with the content owner.
-- **Parts 06 and 07** report their assessment rule (≥3/4 in מועד א, 4/4 in מועד ב), on both pass and
-  fail paths.
-
-**Report `completed` on failure paths too.** A component the learner does not clear must still be
-reported, or the whole attempt goes unrecorded — the platform cannot distinguish it from a learner who
-never started. מועד א's failure path (then part 05, now 06) used to send nothing at all.
+Part 02 reports the real threshold (`>= 4`); parts 01, 03 and 05 have no gate, so completing them
+*is* the success condition and `score.scaled` carries the performance; 06/07 report their assessment
+rule on both paths.
 
 ---
 
 ## `selected` has a closed dictionary
 
-v2.4 §4 lists exactly five categories: `learning-type`, `practice-decision`, `is-understood`,
-`is-repeat`, `external-learning`. Three sites in part 01 claimed to be `selected`; one qualifies.
-
-| site | now | why |
-|---|---|---|
-| s7 learning-path choice | `selected` / **`learning-type`** | a genuine learning-format preference. The old camelCase `learningType` was not a dictionary value |
-| s0 companion picker | `interacted` / `companion-choice` | picking a mascot is not a learning type; an avatar picker is decoration, and reporting it as a preference would be false |
-| s4 image reveal | `interacted` | not in the dictionary — the learner reveals a reason, not a preference |
-
-Similarly, five sites sent `answered` for things that are **not catalog questions** (the hook's free
-text and four applets). Since v2.4 makes `parent` mandatory on `answered` and there is no item question
-to parent to, those statements were unmatchable as well as non-conformant. All are now `interacted`.
+v2.7 p.24: `learning-type`, `practice-decision`, `is-understood`, `is-repeat`, `external-learning`.
+The one site that qualifies is part 01 s7's comic-vs-experiments choice (`learning-type`). The
+companion picker and the s4 image reveal are not preferences and are no longer reported at all.
 
 ---
-
-## Query-string propagation
-
-`?slxapi` and `?registration` enter through the root `index.html` and **every** cross-part jump must
-append `window.location.search`. Miss one and both the LRS configuration and the learner's resume
-document are lost from that point on. The sites: the root redirect, the forward routers
-(`goToNextPart()` in 01, 02, 03, 05 and `classTaskDone()` in 04), `peakGoRetake()` in 06,
-`goBackToPrevPart()`, and the loader's resume hop. See ROUTING-AND-RETAKE.md.
 
 ## Regression gate
 
-With no `?slxapi`, the library sets `XAPI_DISABLED` and every send becomes a silent no-op. Verified: a
-local answer issues no `/statements` request at all. That is also what allows the loader to load the
-real library off-platform, which gives a dev server real `window.METADATA` — so `xapiQ()` resolves and
-the bug-report form posts real ids without any stubbing.
+With no `?slxapi`, the library sets `XAPI_DISABLED` and every send is a silent no-op; the State
+layer uses `localStorage`. `_test/verify-report.js` 4a loads every part with no library at all and
+asserts nothing throws and nothing is sent.
 
----
+## Verification
 
-## Open items — for the platform or the content owner
+- `node _test/checks.mjs` — six static gates.
+- `NODE_PATH=%LOCALAPPDATA%\lomda-jsdom\node_modules node _test/verify-report.js` — identity,
+  wiring, routing, response layer H1–H13, shared-layer invariants, jsdom runtime (statement flow,
+  D-8, document shape, character). 1539 checks on 2026-10-20.
+- Browser walk of all seven parts with the stub (`?xapiLib=../_test/xapi-720-k.js&registration=X&resetState`),
+  2026-10-20: every `response` equals the metadata string, one `completed` per two finish clicks,
+  no navigation, `requested` once per question, `__dupes()` empty.
+- Live Kata run: see `LIVE-VERIFICATION-<date>.md` once the unit is in the catalogue.
 
-1. **`experienced` and `interacted` are off-spec verbs** (nine sites). Both resolve to real ADL IRIs, so
-   the statements are valid, but neither is in the 720 verb list. Confirm they are acceptable, or say
-   what to use instead.
-2. **Should the applets be catalog items?** The displacement, flooding and measurement applets are
-   substantial interactions with no metadata question, so they can only be `interacted`. Making them
-   measurable needs item questions in the metadata — and a metadata push.
-3. **The unit-scope `initialized` fires from parts 01, 02 and 03**, preserved from the original code
-   (originally parts 01 and 02; the 2026-10-14 split copied part 01's hook into the new part 02).
-   Whether exactly one component should open the unit is a platform-semantics question; the sibling unit
-   left the same one open.
-4. **An item `initialized` after that item's `completed`** is unavoidable given v2.4's deliberate
-   asymmetry (repeat `initialized` required, repeat `completed` forbidden) plus back-navigation. Raised
-   by the sibling unit and never answered.
-5. **`scqReset` clears the attempt counter** on re-entry, so a learner who leaves a question mid-attempt
-   and returns produces two interim `answered` and never an `answered.last` — that question is then
-   never closed in the record. Pre-existing; the resume repaint fixes it for the resume path.
-6. **The bare unit id** — see [METADATA-KNOWN-ISSUES.md](METADATA-KNOWN-ISSUES.md).
-7. **Nothing has been verified against a live Kata launch.** See RESUME.md's open list.
+## Open items
+
+1. **Part 06's `recommendedAfterFail` is empty** — Kata has no route from a failed מועד א to the
+   retake until the metadata names part 07 (the reference unit's 06 does). Metadata is the content
+   owner's; flagged, not changed.
+2. **An item `initialized` after that item's `completed`** on back-navigation is unavoidable given
+   the spec's asymmetry (repeat `initialized` required, repeat `completed` forbidden).
+3. **`scqReset` clears the attempt counter** on re-entry; a learner who leaves mid-attempt and
+   returns can produce two interim `answered` and never a `.last`. Pre-existing; the resume repaint
+   fixes it for the resume path.
+4. **Should the applets be catalogue items?** They are not reported at all today. Making them
+   measurable needs item questions in the metadata.

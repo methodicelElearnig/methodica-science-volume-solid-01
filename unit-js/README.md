@@ -15,16 +15,16 @@ Companions: [../docs-and-tools/REPORT-XAPI.md](../docs-and-tools/REPORT-XAPI.md)
 Every part's `index.html` ends with exactly this:
 
 ```html
-<script src="../unit-js/10-identity.js?v=2"></script>
-<script src="../unit-js/15-ui.js?v=6"></script>
-<script src="../unit-js/20-xapi.js?v=5"></script>
-<script src="../unit-js/25-report.js?v=1"></script>
-<script src="../unit-js/30-nav.js?v=4"></script>
-<script src="../unit-js/40-resume.js?v=3"></script>
-<script src="../unit-js/50-loader.js?v=3"></script>
-<script src="../unit-js/60-devbridge.js?v=2"></script>
-<script src="js/main.js?v=N"></script>              <!-- per-part: DEFINITIONS + CONFIG ONLY -->
-<script src="../unit-js/90-boot.js?v=3"></script>   <!-- the ONLY side effects -->
+<script src="../unit-js/10-identity.js?v=20261020"></script>
+<script src="../unit-js/15-ui.js?v=20261020"></script>
+<script src="../unit-js/20-xapi.js?v=20261020"></script>
+<script src="../unit-js/25-report.js?v=20261020"></script>
+<script src="../unit-js/30-nav.js?v=20261020"></script>
+<script src="../unit-js/40-resume.js?v=20261020"></script>
+<script src="../unit-js/50-loader.js?v=20261020"></script>
+<script src="../unit-js/60-devbridge.js?v=20261020"></script>
+<script src="js/main.js?v=20261020"></script>       <!-- per-part: DEFINITIONS + CONFIG ONLY -->
+<script src="../unit-js/90-boot.js?v=20261020"></script>   <!-- the ONLY side effects -->
 ```
 
 **What the numeric prefixes mean.** There is no module system here — ten `<script>` tags execute in
@@ -57,6 +57,7 @@ which is why `main.js` may load after the shared files.
 | `XAPI_EVAL_ITEMS` | object | `xapiOnScreen`, `xapiFinishItems` |
 | `XAPI_ITEM_RESULT` | object, *optional* | `xapiItemResult` |
 | `XAPI_METADATA_FILE` | string | `bootXAPI` |
+| `XAPI_END_BTN` | string — id of the part's finish button | `restoreEndedButton` (D-8) |
 | `RESUME_PLAIN_VARS` | array (may be `[]`) | that part's own capture/apply |
 | `RESUME_INPUT_IDS`, `RESUME_TEXT_IDS` | array, optional | that part's own `applyResumeDom` |
 
@@ -69,7 +70,9 @@ which is why `main.js` may load after the shared files.
 | `capturePartPayload()` | this part's payload, including `currentScreen`. **Must deep-clone** |
 | `applyResumeVars(st)` | **the parameter must be named `st`** |
 | `applyResumeDom(st)` | restores DOM-only answers |
-| `onXapiReady()` | *optional* — runs after the component `initialized` |
+| `xapiPartResult()` | the component's `{success, score}` for its `completed` |
+| `partFinish(btn)` | the last click: `xapiEndComponent(xapiPartResult(), btn)` — report, disable, STOP |
+| `onXapiReady()` | *optional* — runs after the component `initialized`; loads the unit metadata for the bug-report form, sends nothing |
 | `partBoot()` | *optional* — currently unused; see below |
 
 ---
@@ -90,17 +93,14 @@ lived in `resetScreenState`, so merely navigating onto the score screen reported
 contradictory `completed` statements from a single pass. Both now live in a `peakFinish()` called from
 `peakNext()` after סעיף ד.
 
-### 2. No statement may be emitted from a deferred callback
+### 2. Every statement is synchronous, through the shared helpers
 
-`xapiSend()` defers by one macrotask. That is fine for an ordinary answer, and **wrong for anything
-that must be ordered or suppressed**:
-
-- A deferred send outlives `applyExecutionState()`'s sender stub **and** the `_restoring` flag, so it
-  escapes both of resume's guards.
-- On the last sub-part of an assessment, the closing answer and `peakFinish()` run in the same click, so
-  a deferred answer arrives *after* the item, component and unit `completed`. Observed exactly that.
-
-So: **`completed` is always synchronous**, and the closing assessment answers in parts 06/07 are too.
+There is no deferred sender any more (`xapiSend` was deleted 2026-10-20). `xapiAnswered`,
+`xapiRequestedHint`, `xapiEndComponent` and the direct `selected` all send synchronously, because a
+deferred send outlives `applyExecutionState()`'s sender stub **and** the `_restoring` flag and would
+be re-reported on every resume onto a finished screen. `completed` goes only through `partFinish`,
+from the learner's last click, and nothing may follow it (no navigation outside `DEV_NAV`, no
+`postMessage`, no close).
 
 ### 3. `capturePartPayload()` must deep-clone
 
@@ -124,22 +124,18 @@ to undo — a silent, total defeat of the mechanism in three of seven parts (02,
 
 `90-boot.js` is the only file here with top-level side effects:
 
-1. **`scaleApp()` first.** Nothing else in boot reads the canvas transform, but `appScale()` — which
-   every popup drag divides by — parses `#app.style.transform`, which does not exist until `scaleApp`
-   has written it.
-2. **`initDevBridge()` before `bootXAPI()`.** `bootXAPI()` may `window.location.replace()` to another
-   component (the resume hop), and nothing after it runs.
-3. **`bootXAPI()` last**, exactly as every `main.js` used to end.
+1. **`initResumeResetHatch()` first.** It strips `?resetState` from the URL and sets the reset flag,
+   so it must run before anything reads the query or the state document.
+2. **`scaleApp()`.** `appScale()` — which every popup drag divides by — parses `#app.style.transform`,
+   which does not exist until `scaleApp` has written it.
+3. **`initDevBridge()` then `syncDevBackButton()`** — the cross-part back button is hidden by attribute
+   and inline display unless `DEV_NAV`.
+4. **`initResumeLeaveHandlers()`**, then **`bootXAPI()` last.** The loader runs the two-phase restore
+   (Phase A reads the document and adopts the character before the metadata poll; Phase B opens the
+   writes, drains pending choices and restores, then sends the component `initialized`). There is no
+   hop to another part.
 
 No `DOMContentLoaded` wrapper is needed: `90-boot.js` sits immediately before `</body>`.
-
-**There is no `partBoot()` in use.** The sibling unit routes per-component startup through that hook;
-this unit does not need it, because every per-part side effect (the `scq`/`ddq`/practice registrations,
-the keydown listeners, the dropdown-close delegation, part 04's first `resetScreenState` — the class task, 03 until 2026-10-14) still runs at
-`main.js` top level — and `main.js` loads *before* `90-boot.js`. The ordering guarantee `partBoot`
-exists to provide therefore already holds. The hook is still called if a component ever defines one.
-
----
 
 ## Adding to the shared layer
 
@@ -165,13 +161,13 @@ into a codebase that does not have one.
 
 | File | What it holds |
 |---|---|
-| `10-identity.js` | `XAPI_ID_PREFIX`, `window.XAPI_UNIT_ID`, `shortId()`, `RESUME_ENABLED` |
+| `10-identity.js` | `XAPI_ID_PREFIX`, `window.XAPI_UNIT_ID` (bare slug), `shortId()`, `RESUME_ENABLED`, `DEV_NAV` |
 | `15-ui.js` | `announce`, `scaleApp`, `appScale`, image zoom, `attachPopupDrag` |
-| `20-xapi.js` | item scope and question ids — `xapiOnScreen`, `xapiQ`, `xapiFinishItems`, `xapiAnswerText`, `xapiSend` |
+| `20-xapi.js` | item scope and ids (`xapiOnScreen`, `xapiQ`, `xapiFinishItems`, `xapiAnswerText`), the `result.response` layer (`xapiResponse` + per-type builders), `xapiAnswered`, `xapiRequestedHint`, `xapiCompleteComponent` / `xapiEndComponent`, `restoreEndedButton`, `xapiSeedAnsweredFromResume`, `xapiWireVideos` |
 | `25-report.js` | the whole "מצאתם בעיה?" layer + `initReportModal()` |
-| `30-nav.js` | `currentScreen`, `goTo()`, `applyExecutionState()` |
-| `40-resume.js` | the resume core, the three ledgers, cross-part back, save/flush |
-| `50-loader.js` | `bootXAPI()` — CDN loader, `?xapiLib`, metadata settle, resume hop, `onXapiReady()` |
+| `30-nav.js` | `currentScreen`, `goTo()`, `applyExecutionState(st, screenOverride)` |
+| `40-resume.js` | the v5 per-component document, `readUnitState`/`captureUnitState`/`persistUnitState`, the `done`/`doneItems`/`hints` ledgers (`sendStatementOnce`), character + verdict setters/`adoptUnitCharacter`, `dropBootCover`, dev-only back edges, `initResumeResetHatch`, save/flush |
+| `50-loader.js` | `bootXAPI()` — CDN loader (`-k`), `?xapiLib`, bounded metadata poll, two-phase restore, ID-mismatch check, `onXapiReady()` |
 | `60-devbridge.js` | `initDevBridge()` — the `index_dev.html` postMessage bridge (**is** deployed here) |
 | `90-boot.js` | the startup sequence — the only side effects |
 
