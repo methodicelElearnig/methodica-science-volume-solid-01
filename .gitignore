@@ -23,8 +23,8 @@ build/
 # Logs
 *.log
 
-# Metadata sender — contains a live API key once configured; never commit
-docs-and-tools/send-metadata.ps1
+# The Kata sender/retriever read the key from -ApiKey, $env:KATA_API_KEY or the ignored
+# kata-api-key.txt (2026-10-20); the scripts themselves are key-free and ARE committed.
 
 # Kata API key (docs-and-tools/kata-api-key.txt or root) — never commit, never ship
 kata-api-key.txt
