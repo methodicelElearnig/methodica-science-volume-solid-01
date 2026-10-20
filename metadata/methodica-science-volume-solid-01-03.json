@@ -1,115 +1,160 @@
 {
   "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/",
-  "title": "תרגול בסיסי + סטנדרטי ב",
-  "learningUnitId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/",
+  "title": "זמן תרגול 2",
+  "learningUnitId": "methodica-science-volume-solid-01",
   "componentPurpose": "practice",
   "isAssessment": false,
-  "manufacture": "methodica",
-  "recommendedAfterFail": [],
-  "isRequired": true,
+  "recommendedAfterFail": [
+    "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-02/"
+  ],
+  "isRequired": false,
   "relativeDifficulty": 2,
+  "masteryLevel": null,
   "order": 3,
-  "depthLevel": "Core Curriculum Basic",
-  "cognitiveLevel": "Applying a Model or Procedure",
-  "languages": ["Hebrew"],
+  "depthLevel": "core-curriculum-basic",
+  "cognitiveLevels": [
+    "applying-a-model-or-procedure"
+  ],
+  "languages": [
+    "Hebrew"
+  ],
   "skills": [],
   "estimatedTimeInMinutes": 12,
-  "createdAt": "2026-07-14T00:00:00.000Z",
-  "updatedAt": "2026-10-14T00:00:00.000Z",
+  "createdAt": "2026-10-19T00:00:00.000Z",
+  "updatedAt": "2026-10-19T00:00:00.000Z",
   "subContent": [
     {
       "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/methodica-science-volume-solid-01-03-01/",
-      "title": "בסיסי 1: זיהוי גוף שאינו בעל צורה הנדסית",
-      "informationToBot": "מטרת הפריט: זיהוי גוף שאין לו צורה הנדסית מוגדרת (שאי אפשר לחשב את נפחו בעזרת נוסחה). מה התלמיד אמור להבין/לתרגל: מפלצת פלסטלינה = צורה לא אחידה, לא בנויה מקווים ישרים או מעגלים, ואי-אפשר לחשב נפחה בנוסחה. לבנה/קופסת קרטון/קוביית עץ = צורות הנדסיות מוגדרות. כיווני חשיבה ואסטרטגיות: זיהוי חזותי - האם הצורה 'רגילה' (קובייה/תיבה) או 'אורגנית'. טעויות נפוצות: מיון שגוי של קופסת קרטון או קוביית עץ. מידע נוסף: choice עם 4 אפשרויות. רמת בסיסי — הרמז מוצג ליד השאלה. צילום מסך: לא צורף.",
-      "contentType": "Practice",
-      "mediaFormat": "Interactive content",
+      "title": "זיהוי גוף שאינו בעל צורה הנדסית",
+      "informationToBot": "מטרת הפריט: זיהוי גוף שאין לו צורה הנדסית מוגדרת, שאי אפשר לחשב את נפחו בנוסחה. מה התלמיד אמור להבין/לתרגל: מפלצת הפלסטלינה היא בעלת צורה לא אחידה, ולכן אי אפשר לחשב את נפחה בנוסחה; לבנה, קופסת קרטון וקוביית עץ הן צורות הנדסיות. כיווני חשיבה ואסטרטגיות: זיהוי חזותי - האם הצורה \"רגילה\" (קובייה/תיבה) או אורגנית. טעויות נפוצות: מיון שגוי של קופסת הקרטון או קוביית העץ. מידע נוסף: שאלה אחת עם 4 אפשרויות על תמונה; ברמה הבסיסית הרמז זמין כבר בתחילת השאלה. צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
-          "questionId": "q1",
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/methodica-science-volume-solid-01-03-01/q1",
           "questionType": "choice",
           "questionText": "איזה מהגופים שבתמונה אינו בעל צורה הנדסית מוגדרת?",
-          "answers": ["לבנה", "מפלצת פלסטלינה", "קופסת קרטון", "קוביית עץ"],
-          "correctAnswers": ["מפלצת פלסטלינה"]
+          "answers": [
+            "לבנה",
+            "מפלצת פלסטלינה",
+            "קופסת קרטון",
+            "קוביית עץ"
+          ],
+          "correctAnswers": [
+            "מפלצת פלסטלינה"
+          ]
         }
       ]
     },
     {
       "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/methodica-science-volume-solid-01-03-02/",
-      "title": "בסיסי 2: תום או שירלי — מה השיטה לגוף לא הנדסי",
-      "informationToBot": "מטרת הפריט: זיהוי השיטה המתאימה למדידת נפח של גוף שאינו הנדסי - שיטת דחיקת המים. מה התלמיד אמור להבין/לתרגל: שירלי צודקת. לגוף לא הנדסי משתמשים בדחיקת מים - מכניסים למשורה, המים עולים, ההפרש = הנפח. תום שגוי - מאזניים וסרגל לא מתאימים למדידת נפח של גוף לא הנדסי. כיווני חשיבה ואסטרטגיות: זיהוי מהי מדידת נפח (לא מסה, לא אורך). טעויות נפוצות: בחירת תום (מאזניים = מסה, סרגל = אורך, לא נפח). מידע נוסף: true-false בין שני ילדים. רמז זמין. צילום מסך: לא צורף.",
-      "contentType": "Practice",
-      "mediaFormat": "Interactive content",
+      "title": "תום או שירלי — מה השיטה לגוף לא הנדסי",
+      "informationToBot": "מטרת הפריט: זיהוי השיטה המתאימה למדידת נפח של גוף שאינו הנדסי. מה התלמיד אמור להבין/לתרגל: שירלי צודקת - לגוף לא הנדסי משתמשים בדחיקת מים; מאזניים מודדים מסה וסרגל מודד אורך, ולכן תום טועה. כיווני חשיבה ואסטרטגיות: להבהיר מה נמדד בנפח (לא מסה ולא אורך). טעויות נפוצות: בחירה בתום. מידע נוסף: שתי אפשרויות בלבד (\"תום צודק\" / \"שירלי צודקת\"); שני ניסיונות; רמז זמין. צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
-          "questionId": "q1",
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/methodica-science-volume-solid-01-03-02/q1",
           "questionType": "choice",
-          "questionText": "שירלי: 'כדי למדוד נפח של גוף ללא צורה הנדסית מוגדרת, יש להשתמש בשיטת דחיקת המים'. תום: 'כדי למדוד נפח של גוף ללא צורה הנדסית מוגדרת, יש להשתמש במאזניים וסרגל'. מי מהילדים צודק?",
-          "answers": ["תום צודק", "שירלי צודקת"],
-          "correctAnswers": ["שירלי צודקת"]
+          "questionText": "שירלי: כדי למדוד נפח של גוף ללא צורה הנדסית מוגדרת, יש להשתמש בשיטת דחיקת המים. תום: כדי למדוד נפח של גוף ללא צורה הנדסית מוגדרת, יש להשתמש במאזניים וסרגל. מי מהילדים צודק? תום או שירלי?",
+          "answers": [
+            "תום צודק",
+            "שירלי צודקת"
+          ],
+          "correctAnswers": [
+            "שירלי צודקת"
+          ]
         }
       ]
     },
     {
       "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/methodica-science-volume-solid-01-03-03/",
-      "title": "בסיסי 3: הכלי לשיטת דחיקת המים",
-      "informationToBot": "מטרת הפריט: זיהוי המשורה ככלי המתאים לשיטת דחיקת המים. מה התלמיד אמור להבין/לתרגל: משורה היא הכלי הנכון - יש בה סימוני נפח (שנתות) שמאפשרים לקרוא את מפלס המים לפני ואחרי. כיווני חשיבה ואסטרטגיות: בחירת הכלי שמאפשר קריאת נפח, ולא כלי שמודד אורך (סרגל) או מסה (מאזניים/משקולת). טעויות נפוצות: בחירת סרגל או מאזניים במקום משורה. מידע נוסף: fill-in / choice של 4 כלים. רמז זמין. צילום מסך: לא צורף.",
-      "contentType": "Practice",
-      "mediaFormat": "Interactive content",
+      "title": "הכלי לשיטת דחיקת המים",
+      "informationToBot": "מטרת הפריט: זיהוי המשורה ככלי המתאים לשיטת דחיקת המים. מה התלמיד אמור להבין/לתרגל: במשורה יש שנתות נפח שמאפשרות לקרוא את מפלס המים לפני ואחרי הכנסת הגוף. כיווני חשיבה ואסטרטגיות: לבחור כלי שמראה נפח ולא אורך (סרגל) או מסה (מאזניים, משקולת). טעויות נפוצות: בחירה בסרגל או במאזניים. מידע נוסף: השלמת משפט בתפריט נפתח אחד עם 4 כלים; שני ניסיונות; רמז זמין. צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
-          "questionId": "q1",
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/methodica-science-volume-solid-01-03-03/q1",
           "questionType": "choice",
           "questionText": "כשמודדים נפח בשיטת דחיקת המים משתמשים ב-__.",
-          "answers": ["סרגל", "משורה", "מאזניים", "משקולת"],
-          "correctAnswers": ["משורה"]
+          "answers": [
+            "סרגל",
+            "משורה",
+            "מאזניים",
+            "משקולת"
+          ],
+          "correctAnswers": [
+            "משורה"
+          ]
         }
       ]
     },
     {
       "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/methodica-science-volume-solid-01-03-04/",
-      "title": "בסיסי 4: מדידת גליל מתכת בשיטת ההצפה",
-      "informationToBot": "מטרת הפריט: יישום שיטת ההצפה - נפח המים שגלשו = נפח הגוף. מה התלמיד אמור להבין/לתרגל: גוף שנכנס למים גורם להצפת מים בכמות זהה לנפח שלו בדיוק. לכן נפח הגליל = 760 מ\"ל (בדיוק כמות המים שנשפכה). כיווני חשיבה ואסטרטגיות: קישור בין נפח המים שנדחקו לנפח הגוף. טעויות נפוצות: חיבור/חיסור עם כמות המים המקורית (לא רלוונטי בשיטת ההצפה כי הכלי מלא), טענה שאי-אפשר לדעת בלי נתונים נוספים. מידע נוסף: choice עם 4 אפשרויות. רמז זמין. צילום מסך: לא צורף.",
-      "contentType": "Practice",
-      "mediaFormat": "Interactive content",
+      "title": "מדידת גליל מתכת בשיטת ההצפה",
+      "informationToBot": "מטרת הפריט: יישום שיטת ההצפה - נפח המים שגלשו שווה לנפח הגוף. מה התלמיד אמור להבין/לתרגל: גוף שנכנס לכלי מלא גורם לגלישה של כמות מים השווה לנפחו, ולכן נפח הגליל הוא 760 מ\"ל. כיווני חשיבה ואסטרטגיות: קישור בין נפח המים שנדחקו לנפח הגוף. טעויות נפוצות: חיסור מכמות המים המקורית (לא רלוונטי כשהכלי מלא), הטענה שאי אפשר לדעת, ושקילה במקום מדידת נפח. מידע נוסף: שאלה אחת עם 4 אפשרויות; שני ניסיונות; רמז זמין. צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
-          "questionId": "q1",
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/methodica-science-volume-solid-01-03-04/q1",
           "questionType": "choice",
           "questionText": "במפעל לייצור מתכות הכניסו גליל מתכת לכלי מלא במים כדי למדוד את הנפח שלו בשיטת ההצפה. נפח המים שגלשו מהכלי היה 760 מ\"ל. מה נפח הגליל?",
-          "answers": ["כמות המים המקורית בכלי פחות 760 מ\"ל", "נפח הגליל הוא 760 מ\"ל", "אי אפשר לדעת מה הנפח של הגליל לפי הנתונים הקיימים", "יש לשקול את הגליל במאזניים כדי לדעת מה הנפח שלו"],
-          "correctAnswers": ["נפח הגליל הוא 760 מ\"ל"]
+          "answers": [
+            "כמות המים המקורית בכלי פחות 760 מ\"ל",
+            "נפח הגליל הוא 760 מ\"ל",
+            "אי אפשר לדעת מה הנפח של הגליל לפי הנתונים הקיימים",
+            "יש לשקול את הגליל במאזניים כדי לדעת מה הנפח שלו"
+          ],
+          "correctAnswers": [
+            "נפח הגליל הוא 760 מ\"ל"
+          ]
         }
       ]
     },
     {
       "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/methodica-science-volume-solid-01-03-05/",
-      "title": "סטנדרטי ב 1: זיהוי אזור עליית המים במשורה",
-      "informationToBot": "מטרת הפריט: זיהוי חזותי במשורה של האזור שעלה בעקבות דחיקת המים על ידי גוף. מה התלמיד אמור להבין/לתרגל: בתמונה א' - הנפח לפני, בתמונה ב' - הנפח אחרי. האזור שהתווסף בתמונה ב' מייצג את נפח הגוף שהוכנס. כיווני חשיבה ואסטרטגיות: לזהות את ההפרש בין המצב ההתחלתי (תמונה א') למצב הסופי (תמונה ב'). טעויות נפוצות: סימון של האזור התחתון (הנפח ההתחלתי) במקום העליון (התוספת). מידע נוסף: פריט אינטראקטיבי - סימון אזור בתמונה. רמז זמין. צילום מסך: לא צורף.",
-      "contentType": "Practice",
-      "mediaFormat": "Interactive content",
+      "title": "זיהוי אזור עליית המים במשורה",
+      "informationToBot": "מטרת הפריט: זיהוי חזותי של האזור שעלה במשורה בעקבות דחיקת המים על ידי גוף. מה התלמיד אמור להבין/לתרגל: בתמונה א' מוצג הנפח לפני ובתמונה ב' הנפח אחרי; האזור שנוסף בתמונה ב' מעל המפלס המקורי מייצג את נפח הגוף. כיווני חשיבה ואסטרטגיות: להשוות בין שני הצילומים ולזהות את ההפרש. טעויות נפוצות: סימון האזור התחתון (הנפח ההתחלתי) או האזור הריק שמעל המים. מידע נוסף: הלומד מסמן אחד משלושה אזורים בתמונה ב' (אזור הריק, אזור העלייה, אזור המים ההתחלתי); הרמז זמין רק אחרי תשובה שגויה ראשונה. צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
-          "questionId": "q1",
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/methodica-science-volume-solid-01-03-05/q1",
           "questionType": "choice",
-          "questionText": "בתמונה א' רואים את נפח המים לפני שהכניסו בובת מפלצת. בתמונה ב' רואים את נפח המים אחרי הכנסת הבובה. סמנו בתמונה ב' את האזור בו ניתן לראות שגובה המים במשורה עלה.",
-          "answers": ["אזור המים ההתחלתי", "אזור העלייה — התוספת שמעל המפלס המקורי", "האזור הריק שמעל מפלס המים"],
-          "correctAnswers": ["אזור העלייה — התוספת שמעל המפלס המקורי"]
+          "questionText": "בתמונה א' ניתן לראות את נפח המים במשורה לפני שהכניסו אליה את בובת המפלצת. בתמונה ב' ניתן לראות את נפח המים במשורה אחרי שהכניסו אליה את בובת המפלצת. סמנו בתמונה ב' את האזור בו ניתן לראות שגובה המים במשורה עלה.",
+          "answers": [
+            "האזור הריק שמעל מפלס המים",
+            "אזור העלייה — התוספת שמעל המפלס המקורי",
+            "אזור המים ההתחלתי"
+          ],
+          "correctAnswers": [
+            "אזור העלייה — התוספת שמעל המפלס המקורי"
+          ]
         }
       ]
     },
     {
       "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/methodica-science-volume-solid-01-03-06/",
-      "title": "סטנדרטי ב 2: מעצבת תכשיטים — נפח חרוז יחיד",
-      "informationToBot": "מטרת הפריט: מדידת נפח של גוף קטן ע\"י מדידה של כמה גופים זהים יחד וחלוקה. מה התלמיד אמור להבין/לתרגל: 3 חרוזים העלו את מפלס המים ב-30 מ\"ל (130-100). לכן נפח כולל = 30 סמ\"ק. חרוז אחד = 30 ÷ 3 = 10 סמ\"ק. כיווני חשיבה ואסטרטגיות: (1) חישוב ההפרש (דחיקה); (2) חלוקה במספר החרוזים. טעויות נפוצות: בחירת 130 (הקריאה הסופית), 30 (הנפח הכולל בלי חלוקה), 'אי אפשר לדעת' (חוסר הבנה שאפשר לפרק לחרוז יחיד). מידע נוסף: choice עם 4 אפשרויות. רמז זמין. צילום מסך: לא צורף.",
-      "contentType": "Practice",
-      "mediaFormat": "Interactive content",
+      "title": "מעצבת תכשיטים — נפח חרוז יחיד",
+      "informationToBot": "מטרת הפריט: מדידת נפח של גוף קטן על ידי מדידת כמה גופים זהים יחד וחלוקה. מה התלמיד אמור להבין/לתרגל: 3 חרוזים העלו את המפלס מ-100 ל-130 מ\"ל, כלומר נפח כולל 30 סמ\"ק, ולכן חרוז אחד הוא 30 ÷ 3 = 10 סמ\"ק. כיווני חשיבה ואסטרטגיות: (1) חישוב ההפרש; (2) חלוקה במספר החרוזים. טעויות נפוצות: בחירה ב-130 (הקריאה הסופית), ב-30 (הנפח הכולל בלי חלוקה) או \"אי אפשר לדעת\". מידע נוסף: שאלה אחת עם 4 אפשרויות; הרמז זמין רק אחרי תשובה שגויה ראשונה. צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
-          "questionId": "q1",
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-03/methodica-science-volume-solid-01-03-06/q1",
           "questionType": "choice",
           "questionText": "מעצבת תכשיטים צריכה לדעת מה נפחו של חרוז קטן. מכיוון שקשה למדוד חרוז אחד במדויק, היא הכניסה למשורה 3 חרוזים זהים. נפח המים לפני המדידה: 100 מ\"ל. נפח המים לאחר הכנסת החרוזים: 130 מ\"ל. מהו נפחו של חרוז אחד?",
-          "answers": ["10 סמ\"ק", "30 סמ\"ק", "אי אפשר לדעת", "130 סמ\"ק"],
-          "correctAnswers": ["10 סמ\"ק"]
+          "answers": [
+            "10 סמ\"ק",
+            "30 סמ\"ק",
+            "אי אפשר לדעת",
+            "130 סמ\"ק"
+          ],
+          "correctAnswers": [
+            "10 סמ\"ק"
+          ]
         }
       ]
     }
