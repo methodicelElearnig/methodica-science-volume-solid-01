@@ -25,3 +25,6 @@ build/
 
 # Metadata sender — contains a live API key once configured; never commit
 docs-and-tools/send-metadata.ps1
+
+# Kata API key (docs-and-tools/kata-api-key.txt or root) — never commit, never ship
+kata-api-key.txt
