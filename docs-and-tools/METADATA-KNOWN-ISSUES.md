@@ -16,16 +16,11 @@ not been pushed before the change, so no rename in the catalogue is needed.
 
 ---
 
-## 2. `send-metadata.ps1` lacks two guards the sibling has — **open**
+## 2. `send-metadata.ps1` lacked two guards the sibling has — **closed 2026-10-20**
 
-This repo's script is 340 lines; the sibling's is 551. Missing:
-
-- **the `uniqueKey` degradation guard** that throws when an id's last segment degrades to something like
-  `"01"` — the exact fault above, which the sibling added *after* hitting it;
-- **`masteryLevel` forwarding.** None of the seven component files declares `masteryLevel` at all, and the
-  sibling discovered it was being silently dropped on push.
-
-Porting both is cheap and prevents a silent recurrence.
+The script was replaced by the reference unit's (uniqueKey degradation guard, `masteryLevel`
+forwarding, key from `-ApiKey` / `$env:KATA_API_KEY` / the git-ignored `kata-api-key.txt`), plus
+`retrieve-metadata.ps1`. Dry run: 1 unit + 7 components + 23 items + 1 link. See [SEND-METADATA.md](SEND-METADATA.md).
 
 ---
 
@@ -62,16 +57,13 @@ item questions in the metadata — a content decision with a metadata push attac
 
 ---
 
-## 6. Part 05 item 01 q1 — `correctAnswers` names the wrong option — **open (audit E1, 2026-10-20)**
+## 6. Part 05 item 01 q1 named the wrong correct option — **closed 2026-10-20**
 
-`metadata/methodica-science-volume-solid-01-05.json` lists `"יעל צודקת. הניסוי מודד רק מים…"` as the
-correct answer; the screen (`main.js` `correctId: 'a'`, the item's own `informationToBot` "יעל טועה")
-grades `"המים שעלו הם ראיה ישירה לכך שהטבעת תופסת מקום במרחב…"` as correct. The screen's options were
-re-ordered to the deck and the metadata took the first option. Until the metadata is fixed, Kata's view
-of 05/q1 inverts right and wrong. Also from the same audit (warnings W1/W2): the two matching questions
-list `correctAnswers` in `answers.target` order while the response is emitted in `answers.source`
-order — the reference unit keeps them in source order. Full report: [METADATA-AUDIT.md](METADATA-AUDIT.md).
-Do not push the metadata to Kata before E1 is resolved.
+Found by the first run of `check-metadata.py` (audit E1): `correctAnswers` listed the first option
+("יעל צודקת…") while the screen grades option `a` ("המים שעלו הם ראיה ישירה…"). Fixed in the metadata
+on the content owner's instruction the same day, together with the two matching questions whose
+`correctAnswers` were in `answers.target` order (W1/W2 — now `answers.source` order, the order the
+response is emitted in). Validator: 0 errors, 0 warnings. Full report: [METADATA-AUDIT.md](METADATA-AUDIT.md).
 
 ---
 

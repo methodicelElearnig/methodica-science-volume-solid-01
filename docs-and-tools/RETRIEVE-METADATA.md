@@ -146,6 +146,6 @@ live `send-metadata.ps1` run, retrieve once with `-FailOnDrift` and record here 
 fields genuinely drift between the catalog and the repo, so later diffs can be read
 quickly. Expected shape: `unit=1 components=7 items=23`.
 
-Before that first push, make sure the `UI vs metadata` mismatch in
-[METADATA-AUDIT.md](METADATA-AUDIT.md) (05/q1's correct answer) is resolved — a retrieve can only tell you that
-KATA holds what `metadata/` says, not that `metadata/` says what the learner sees.
+Before that first push, run `check-metadata.py` once more ([METADATA-AUDIT.md](METADATA-AUDIT.md);
+clean as of 2026-10-20 after the 05/q1 and pair-order fixes) — a retrieve can only tell you that KATA holds
+what `metadata/` says, not that `metadata/` says what the learner sees.

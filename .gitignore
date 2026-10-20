@@ -28,3 +28,6 @@ build/
 
 # Kata API key (docs-and-tools/kata-api-key.txt or root) — never commit, never ship
 kata-api-key.txt
+
+# retrieve-metadata.ps1 output (what Kata holds) — compare, never commit
+metadata-from/

@@ -14,7 +14,7 @@ routes and the v2.5/2.7 field shapes. **Status: dry-run only — this unit has n
 pushed.**
 
 Companions: [`check-metadata.py`](METADATA-AUDIT.md) (run it first — on 2026-10-20 it found a
-wrong correct answer on 05/q1) · [`retrieve-metadata.ps1`](RETRIEVE-METADATA.md) (the other direction).
+wrong correct answer on 05/q1, since fixed) · [`retrieve-metadata.ps1`](RETRIEVE-METADATA.md) (the other direction).
 
 ## Requirements
 
@@ -137,8 +137,9 @@ This unit uses `applying-a-model-or-procedure` (parts 01–04) and `analyzing` (
 
 No enum rejected, no uniqueKey degradation. The dry run does **not** validate the answer
 strings against the UI — that is `check-metadata.py`, which on the same day reported 1
-error (see METADATA-AUDIT.md §1) that should be fixed before the live run, or the catalogue
-will carry a wrong correct answer for 05/q1.
+error (05/q1's correct answer) and 2 warnings (pair order on 01-03/q1 and 02-04/q1); all
+three fixed the same day (METADATA-AUDIT.md §1a), the validator now ends
+`0 error(s), 0 warning(s)`.
 
 ## Going the other way
 

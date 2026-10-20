@@ -7,8 +7,8 @@ compares `answered.result.response` to the metadata's `answers` / `correctAnswer
 xAPI interaction-type formats, so question types and answer strings must match what the
 learner sees byte for byte.
 
-**Nothing in `metadata/` was changed by this audit.** Every mismatch below is a finding for
-the content owner to resolve — in the metadata, or in the screen, whichever is wrong.
+The audit itself changed nothing; **one metadata change was then made on the content
+owner's instruction** (E1 below, logged in §1a). Everything else is a finding.
 
 Validator: `python -I -X utf8 docs-and-tools/check-metadata.py` (exit 0 when clean). It
 re-reads the UI on every run, so re-run it after any change to a question screen or to
@@ -36,16 +36,25 @@ sides once more (NFC, `׳ ’ ʼ` → `'`) before looking the text up in the met
 difference that survives that normalisation makes the `response` fall back to the raw UI
 text and **never match the catalogue**.
 
-## 1. Findings (1 error, 2 warnings, 6 notes)
+## 1. Findings (first run: 1 error, 2 warnings, 6 notes — now 0 errors, 0 warnings)
 
-### ERROR — the strings differ
+### 1a. Changes made
+
+| when | file | item / field | before | after | why |
+|---|---|---|---|---|---|
+| 2026-10-20 | `metadata/methodica-science-volume-solid-01-05.json` | `05-01/q1` → `correctAnswers[0]` (line 42) | `"יעל צודקת. הניסוי מודד רק מים וכדי לקבל ראיה מדעית תקפה לנפח הטבעת חייבים להשתמש בנוסחה מתמטית ולא בניסוי אמפירי"` | `"המים שעלו הם ראיה ישירה לכך שהטבעת תופסת מקום במרחב, ולכן נפח המים שנדחקו מעלה שווה בדיוק לנפח הטבעת"` | E1 — the UI's `correctId: 'a'` is the "המים שעלו" option; the metadata had named the first option in DOM order. Requested by the content owner after the audit. One line changed, formatting (2-space indent, CRLF, UTF-8 without BOM) preserved; validator re-run → `0 error(s)`. |
+| 2026-10-20 | `metadata/methodica-science-volume-solid-01-01.json` | `01-03/q1` → `correctAnswers` (lines 82–103, order only) | pairs listed cup, cube, melon, shell, doll (`answers.target` order) | melon, doll, shell, cube, cup (`answers.source` order) | W1 — `xapiMatchingResponse()` emits `S[.]T` pairs in `answers.source` order; whether Kata compares pairs as a set is unverified, so the metadata now follows the order the response layer was written against (the reference unit's convention). Same five pairs, no string changed, byte length unchanged. |
+| 2026-10-20 | `metadata/methodica-science-volume-solid-01-02.json` | `02-04/q1` → `correctAnswers` (lines 116–129, order only) | cube, shell, goblet (`answers.target` order) | shell, goblet, cube (`answers.source` order) | W2 — same as W1. Validator re-run → `0 error(s), 0 warning(s)`. |
+
+### ERROR — the strings differ (E1 fixed, see §1a)
 
 | # | screen | metadata | UI | what differs |
 |---|---|---|---|---|
 | E1 | 05 `s1` (item `05-01` / `q1`) | [`methodica-science-volume-solid-01-05.json:41-43`](../metadata/methodica-science-volume-solid-01-05.json) `correctAnswers` = `"יעל צודקת. הניסוי מודד רק מים וכדי לקבל ראיה מדעית תקפה לנפח הטבעת חייבים להשתמש בנוסחה מתמטית ולא בניסוי אמפירי"` | [`methodica-science-volume-solid-01-05/js/main.js:377`](../methodica-science-volume-solid-01-05/js/main.js) `correctId: 'a'` → [`index.html:63`](../methodica-science-volume-solid-01-05/index.html) `"המים שעלו הם ראיה ישירה לכך שהטבעת תופסת מקום במרחב, ולכן נפח המים שנדחקו מעלה שווה בדיוק לנפח הטבעת"` | **the metadata names the wrong option as correct.** The screen's options were re-ordered to the deck (slide 114) with the comment "each data-id keeps its own text, so correctId stays 'a'"; the metadata took the *first* option (data-id `b`, "יעל צודקת…") instead. The item's own `informationToBot` (line 27) says "יעל טועה". The four `answers` strings and their DOM order are correct. |
 
-E1 is a content error: a learner who answers correctly is recorded as wrong, and vice
-versa, in the catalogue's view of 05/q1.
+E1 was a content error: a learner who answered correctly would have been recorded as wrong,
+and vice versa, in the catalogue's view of 05/q1. **Fixed 2026-10-20** (§1a); the row above
+is the first-run state.
 
 **Resolved the same day, kept for the record:** 07 `s4` (item `07-01` / `q4`) wraps all
 four options with a `<br />` that has no whitespace on either side
@@ -58,7 +67,7 @@ The main session's response layer found the same thing on its first stub walk an
 mirrors that rule and the strings are equal. The dependency is still noted (below) because
 it is invisible in the HTML.
 
-### WARN — same pairs, different order
+### WARN — same pairs, different order (W1, W2 fixed, see §1a)
 
 | # | screen | metadata | UI | what differs |
 |---|---|---|---|---|
@@ -83,19 +92,19 @@ single-spaced, unique; every `correctAnswers` entry is in its `answers`; every
 `questionId` equals its item id + `qN`; all 30 `questionType`s are `choice` (28) or
 `matching` (2).
 
-### Verified byte-identical (29 of 30 questions)
+### Verified byte-identical (30 of 30 questions after §1a; 29 on the first run)
 
 | screen(s) | what was compared |
 |---|---|
 | 01 `s15` | 4 `.scq-opt-text` (`100 סמ"ק` … `1,000 סמ"ק`); `correctId: 'd'` |
 | 01 `s29` | 4 `.dropdown-opt` (`עלו`, `ירדו`, `נעלמו`, `התקררו`); `correctId: 'a'` |
-| 01 `s28`, 02 `s4` | `items` / `targets` labels and `correctMap` — strings and set of pairs (order: W1, W2) |
+| 01 `s28`, 02 `s4` | `items` / `targets` labels and `correctMap` — strings, pairs and (after §1a) pair order |
 | 02 `s1`, `s2`, `s5` | 4 options each; `correctId` `'c'` / `'a'` / `'d'` |
 | 02 `s3` | image hotspot: 4 `.hotspot-bubble` texts in DOM order (`d, b, c, a`), the text-less `.hotspot-area` rings sharing each `data-id` ignored; `correctId: 'd'` |
 | 03 `s1`, `s2`, `s4`, `s7` | 2–4 options; `correctId` `'b'` / `'b'` / `'b'` / `'a'`; `<span class="nobr">` stripped |
 | 03 `s3` | 4 `.dropdown-opt` (`סרגל`, `משורה`, `מאזניים`, `משקולת`); `correctId: 'b'` |
 | 03 `s6` | 3 `.hotspot-area` `aria-label`s in DOM order (`c, b, a`); `correctId: 'b'` → `"אזור העלייה — התוספת שמעל המפלס המקורי"` |
-| 05 `s2`–`s8` | 4 options each (`s7` in the deck's shuffled DOM order `b, d, a, c`); `correctId` per `registerPractice` |
+| 05 `s1`–`s8` | 4 options each (`s1` DOM order `b, a, c, d`, `s7` `b, d, a, c`); `correctId` per `registerPractice` (`s1` after §1a) |
 | 06 `s1`–`s4` | 4 `.peak-opt` each, `<b>שם:</b>` prefixes stripped to `שם: …`; `PEAK_CORRECT = {1:'b', 2:'a', 3:'a', 4:'b'}` |
 | 07 `s1`–`s4` | 4 `.peak-opt` each (`s2` DOM order `b, c, d, a`, `s4` `c, b, a, d` with `<br />` → space); `PEAK_CORRECT = {1:'a', 2:'a', 3:'b', 4:'a'}` |
 
@@ -203,8 +212,10 @@ CENSUS  graded screens (UI): 30   declared questions (metadata): 30   expected: 
         part 06: 4 graded screens [s1:peakCheck(1), s2:peakCheck(2), s3:peakCheck(3), s4:peakCheck(4)]  /  4 metadata questions
         part 07: 4 graded screens [s1:peakCheck(1), s2:peakCheck(2), s3:peakCheck(3), s4:peakCheck(4)]  /  4 metadata questions
 
-RESULT  1 error(s), 2 warning(s), 6 note(s)
+RESULT  0 error(s), 0 warning(s), 6 note(s)
 ```
+
+(The first run, before §1a, ended `RESULT  1 error(s), 2 warning(s), 6 note(s)` and exit 1.)
 
 What the script checks, beyond the census: R7 on every string; `questionId` == item id +
 qKey; unit id = bare slug, component / item ids = `IRI_BASE` + nested slugs, `learningUnitId`
