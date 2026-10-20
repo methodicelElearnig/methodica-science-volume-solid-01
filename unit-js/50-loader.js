@@ -52,8 +52,12 @@ function bootXAPI() {
   }
 
   /* ── Which library ────────────────────────────────────────────────────
-     -i is the production build (720 guidelines v2.4). -j is -i plus the State API transport that
-     only resume uses, so -i is loaded while RESUME_ENABLED is false.
+     -i is the statements-only build (720 guidelines v2.4), loaded while RESUME_ENABLED is false.
+     -k is -i plus the State API transport (direct XHR to Kata, legible diagnostics) that resume
+     uses, plus — since 2026-09-15, at MOE's request — the mandatory `helpType: "hint"` context
+     extension on every 'requested' (v2.7 p.24). -j is the same code without that extension: a unit
+     on -j does not send helpType, so this unit moved -j → -k on 2026-10-20 together with the
+     per-component State document (v5). Every live 720 unit loads -k.
 
      xapi-720-f.js, which this unit shipped with, is DEPRECATED and must not be reinstated. It
      predates v2.4: no contextActivities.parent, no item-level objectId, no XAPI_DISABLED, no
@@ -63,11 +67,12 @@ function bootXAPI() {
 
      window.XAPI_USING_G tells the components whether item-level statements are available. The regex
      must list every library letter that supports them — miss one and xapiOnScreen() and the video
-     reporting go silent with NO error, because both early-return on that flag. */
-  var LIB720 = CDN + (RESUME_ENABLED ? 'xapi-720-j.js' : 'xapi-720-i.js');
+     reporting go silent with NO error, because both early-return on that flag.
+     ⚠️ Change LIB720 and the regex below IN THE SAME EDIT, every time (guide §3.5). */
+  var LIB720 = CDN + (RESUME_ENABLED ? 'xapi-720-k.js' : 'xapi-720-i.js');
 
   /* On localhost only, ?xapiLib=<same-origin relative path> overrides it — this is how
-     _test/xapi-720-j.js gets loaded for offline verification. Restricted to a relative path so the
+     _test/xapi-720-k.js gets loaded for offline verification. Restricted to a relative path so the
      parameter cannot be used to inject a third-party script. */
   var override = null;
   var isLocal = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
@@ -79,7 +84,7 @@ function bootXAPI() {
   } catch (e) {}
   if (override) LIB720 = override;
 
-  window.XAPI_USING_G = /xapi-720-[ghij]\.js/.test(LIB720);
+  window.XAPI_USING_G = /xapi-720-[ghijk]\.js/.test(LIB720);
 
   /* The library now loads off-platform too — deliberately, and only because the letter changed.
 
@@ -87,7 +92,7 @@ function bootXAPI() {
      which has no XAPI_DISABLED path: with no valid ?slxapi it fell back to a placeholder endpoint
      and retried every statement against it, a request storm that starves the renderer.
 
-     -i and -j disable themselves instead (window.XAPI_DISABLED, set when ?slxapi is absent or
+     -i, -j and -k disable themselves instead (window.XAPI_DISABLED, set when ?slxapi is absent or
      malformed), so every send is a silent no-op and the hazard is gone. Loading anyway buys a real
      local run: window.METADATA is fetched for real, so xapiQ() resolves against the catalog and the
      bug-report form posts real ids — none of which was observable on a dev server before.
@@ -96,7 +101,7 @@ function bootXAPI() {
      into the surrounding try, and it logs '[xAPI] load' once. Degraded but visible, and the lomda
      itself is unaffected.
 
-     ?xapiLib is still how _test/xapi-720-j.js gets loaded, for the statement log and the State API
+     ?xapiLib is still how _test/xapi-720-k.js gets loaded, for the statement log and the State API
      stub. */
 
   loadScript(CDN + 'xapiwrapper.min.js', function () {

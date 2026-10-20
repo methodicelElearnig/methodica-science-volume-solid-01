@@ -45,7 +45,7 @@
   <span style="margin-right:auto; font-size:11px; font-weight:400;">Ctrl+← קדימה &nbsp;|&nbsp; Ctrl+→ אחורה</span>
 </div>
 
-<iframe id="lomda-frame" src="index.html"></iframe>
+<iframe id="lomda-frame" src="index.html?dev=1"></iframe>
 
 <script>
   let cur = 0;
@@ -90,7 +90,7 @@
   // and reloads the lesson from screen 0.
   function resetLomda() {
     cur = 0; input.value = 0; updateLabel();
-    frame.src = 'index.html?resetState';
+    frame.src = 'index.html?dev=1&resetState';
   }
 
   function updateLabel() {

@@ -56,7 +56,7 @@
   const PARTS = ['01', '02', '03', '04', '05', '06', '07'];
   /* ?resetState (unit-js/40-resume.js): without it, resume hops straight back to whichever part the
      saved state names, so picking 03 would land on 01. The lomda strips it after one read. */
-  const partUrl = p => './methodica-science-volume-solid-01-' + p + '/index.html?resetState';
+  const partUrl = p => './methodica-science-volume-solid-01-' + p + '/index.html?dev=1&resetState';
 
   let part = 0;        // index into PARTS
   let cur = 0;

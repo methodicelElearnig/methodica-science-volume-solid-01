@@ -15,7 +15,7 @@
      the slider's own arrows call: it marks THAT panel as seen, and the slider counts as viewed only
      once every panel has been seen, exactly as when paging.
 
-     Reporting and resume run against the local test library (?xapiLib=../_test/xapi-720-j.js):
+     Reporting and resume run against the local test library (?xapiLib=../_test/xapi-720-k.js):
      state and statements live in this tab's sessionStorage. Switching component keeps every
      component's progress: the viewer points the saved document at the component you chose (its
      `part` field) after the frame has unloaded, so the loader does not hop back to the last one. -->
@@ -96,8 +96,8 @@ const PARTS = {
     ['סעיפים', [[1,'סעיף א','163–164'], [2,'סעיף ב','165–166'], [3,'סעיף ג','167–168'], [4,'סעיף ד','169–170']]] ] }
 };
 const PREFIX = 'methodica-science-volume-solid-01-';
-const LIB = 'xapiLib=../_test/xapi-720-j.js';
-const STATE_KEY = '__test_state', LOG_KEY = '__test_statements', FAIL_KEY = '__test_fail_writes';   // _test/xapi-720-j.js
+const LIB = 'xapiLib=../_test/xapi-720-k.js';
+const STATE_KEY = '__test_state', LOG_KEY = '__test_statements', FAIL_KEY = '__test_fail_writes';   // _test/xapi-720-k.js
 const frame = document.getElementById('frame');
 let part = null, cur = 0, ready = false, pending = null, pendingPanel = null, panel = null, panels = 0;
 /* An explicit choice must survive the unit's own resume, which can land AFTER DEV_READY (it waits for

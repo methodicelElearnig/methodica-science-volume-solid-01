@@ -5,26 +5,26 @@ reporting and resume layers can be exercised on a dev server, where there is no 
 
 | File | What it is |
 |---|---|
-| `xapi-720-j.js` | stand-in for the CDN library — statements, State API, console helpers, the sweep oracle |
+| `xapi-720-k.js` | stand-in for the CDN library — statements, State API, console helpers, the sweep oracle |
 | `checks.mjs` | six static gates: identifier collisions, `?v=` equality, `TOTAL_SCREENS` vs markup, metadata id resolution, `SCREEN_TO_SUBCONTENT` coverage, markup structure — over all seven parts |
 | `verify-resume.js` | headless (jsdom) check of the resume painters — see below |
 | `viewer.html` | local QA viewer: jump to any screen of any of the seven components. Not shipped |
 | `baselines/` | sweep output captured at each stage; the acceptance gate for the extraction |
 | `REPORTING-ADDING.superseded.md` | archived — it documents `mass-measure`, not this unit. See its banner |
 
-## `xapi-720-j.js`
+## `xapi-720-k.js`
 
 A stand-in for the CDN library. Loaded only via the query parameter:
 
 ```
-http://localhost:8744/methodica-science-volume-solid-01-01/?xapiLib=../_test/xapi-720-j.js
+http://localhost:8744/methodica-science-volume-solid-01-01/?xapiLib=../_test/xapi-720-k.js
 ```
 
 `unit-js/50-loader.js` honours `?xapiLib` **on localhost only**, and only for a same-origin
 relative path.
 
 > ⚠️ **After editing this stub, add a cache buster** or the browser serves the old copy and your
-> change appears not to work: `?xapiLib=../_test/xapi-720-j.js%3Fv%3D2` (the `?v=` URL-encoded). The
+> change appears not to work: `?xapiLib=../_test/xapi-720-k.js%3Fv%3D2` (the `?v=` URL-encoded). The
 > loader's same-origin check permits it and the `XAPI_USING_G` filename match still holds.
 
 It loads the component and unit metadata **for real**, because `window.METADATA` is what `xapiQ()`
@@ -40,7 +40,7 @@ exercised locally.
 | **A** | no `?xapiLib`; inject the stub after load (see below) | `false` | comparing against `baselines/stage-0.json` — the item layer stays dark, as it was pre-reconstruction |
 | **B** | `?xapiLib=…` | **`true`** | the full pipeline: real metadata, item-level statements live |
 
-Mode B turns the item layer on because the stub's filename ends in `xapi-720-j.js`, which the
+Mode B turns the item layer on because the stub's filename ends in `xapi-720-k.js`, which the
 `XAPI_USING_G` regex matches. **Do not compare mode B output to the Stage 0 baseline.**
 
 Off-platform with no `?xapiLib`, the loader deliberately loads **no** library at all and logs why.
@@ -48,8 +48,8 @@ That is not laziness: `xapi-720-f.js` has no `XAPI_DISABLED` path, so without a 
 retries every statement against a placeholder endpoint. From Stage 3 (`-i`/`-j`) that hazard is gone
 and the restriction can be relaxed.
 
-> ⚠️ **The filename must keep the `xapi-720-j.js` ending.** `50-loader.js` derives
-> `window.XAPI_USING_G` from a regex on the library URL (`/xapi-720-[ghij]\.js/`). Rename the file
+> ⚠️ **The filename must keep the `xapi-720-k.js` ending.** `50-loader.js` derives
+> `window.XAPI_USING_G` from a regex on the library URL (`/xapi-720-[ghijk]\.js/`). Rename the file
 > and item-level `initialized`/`completed` and the video `played`/`paused` all go silent — with no
 > error, because `xapiOnScreen()` and `xapiWireVideos()` early-return on that flag.
 
@@ -94,7 +94,7 @@ dev server up, load a part and run:
 
 ```js
 (async () => {
-  const src = await (await fetch('/_test/xapi-720-j.js')).text();
+  const src = await (await fetch('/_test/xapi-720-k.js')).text();
   (new Function(src))();
   return await window.__sweep();
 })()
@@ -150,7 +150,7 @@ procedure:
 |---|---|
 | a part's `js/main.js` | that part's `js/main.js?v=` |
 | a shared `unit-js/*.js` | that file's `?v=` in **all seven** `index.html` (gate 2 enforces they agree, not that you bumped) |
-| `_test/xapi-720-j.js` | the `?v=` inside the `?xapiLib` value |
+| `_test/xapi-720-k.js` | the `?v=` inside the `?xapiLib` value |
 
 The failure mode is the nastiest one in this codebase: `main.js` loads *after* the shared layer, so a
 cached `main.js` still carrying a part-local copy of an extracted function **wins**, and the

@@ -52,7 +52,7 @@ statement is a silent no-op — while `window.METADATA` still loads for real, so
 form work. To observe statements and exercise the State API, load the local stub:
 
 ```
-?xapiLib=../_test/xapi-720-j.js
+?xapiLib=../_test/xapi-720-k.js
 ```
 
 **Start every local run with `?resetState`** — off-platform there is no `?registration`, so one document

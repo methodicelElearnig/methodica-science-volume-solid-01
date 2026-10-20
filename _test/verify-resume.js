@@ -24,7 +24,7 @@
    production page relies on. `let`/`const` at top level (currentScreen, PEAK_CORRECT) never reach
    window even in a real page, so those are read through an injected expression script.
 
-   The CDN never loads off-platform, so _test/xapi-720-j.js stands in for it — the same local library
+   The CDN never loads off-platform, so _test/xapi-720-k.js stands in for it — the same local library
    ?xapiLib= exists to load. Its state lives in sessionStorage, which is what makes a genuine reload
    testable: the document is copied out of one window and seeded into the next before its scripts
    run.
@@ -119,7 +119,7 @@ function boot(part, opts) {
 
   /* The local stand-in for the CDN library goes FIRST, so saveState720/loadState720 exist by the
      time anything reads them. */
-  exec(fs.readFileSync(path.join(__dirname, 'xapi-720-j.js'), 'utf8'));
+  exec(fs.readFileSync(path.join(__dirname, 'xapi-720-k.js'), 'utf8'));
 
   for (const src of [...w.document.querySelectorAll('script[src]')].map(s => s.getAttribute('src'))) {
     const p = path.resolve(dir, src.split('?')[0]);
