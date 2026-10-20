@@ -206,7 +206,10 @@ function createPointerDnd(opts) {
    free edge rather than dropped on top of the copy.
    ═══════════════════════════════════════════════════════════ */
 function getCharacter() {
-  try { return localStorage.getItem('lomda_selectedCharacter') || 'orange'; }
+  /* The document first, then the per-unit localStorage cache (unit-js/40-resume.js
+     getUnitCharacter) — the part-01 choice reaches the later parts, launched separately by Kata,
+     through that cache. Never the old origin-wide key this unit used before 2026-10-20. */
+  try { return (typeof getUnitCharacter === 'function' ? getUnitCharacter() : null) || 'orange'; }
   catch (e) { return 'orange'; }
 }
 /* Which pose files exist on disk, and in which format. A manifest, not an
@@ -518,15 +521,12 @@ function selectOption(cardEl) {
   cardEl.classList.add('selected');
   cardEl.setAttribute('aria-checked', 'true');
   window.lomdaState.selectedCharacter = cardEl.dataset.value;
-  try { localStorage.setItem('lomda_selectedCharacter', cardEl.dataset.value); } catch (e) {}
+  /* Into this part's State document AND the per-unit localStorage cache (unit-js/40-resume.js), so
+     the later parts — launched separately by Kata — adopt it. Not reported: picking a mascot is
+     decoration, outside the v2.4 §4 selection dictionary and outside the 720 verb list. */
+  try { setUnitCharacter(cardEl.dataset.value); } catch (e) {}
   const cont = document.getElementById('s0-continue');
   if (cont) cont.disabled = false;   // enable FIRST — instant visual feedback
-  /* NOT 'selected'. v2.4 §4 defines a closed dictionary of choice categories — learning-type,
-     practice-decision, is-understood, is-repeat, external-learning — and picking a companion mascot
-     is none of them; REPORT-XAPI.md is explicit that an avatar picker is decoration, not a learning
-     preference. Reporting it as a 'learning-type' selection would be false. Kept as 'interacted' so
-     the datum survives without misrepresenting what it is. */
-  xapiSend('interacted', 'question', { response: cardEl.dataset.value }, { category: 'companion-choice' });
 }
 function advanceFromS0() {
   if (!window.lomdaState.selectedCharacter) return;
@@ -565,14 +565,8 @@ function hookOpenInput() {
 function hookOpenReveal() {
   const ta = document.getElementById('s2-open-text');
   if (ta && ta.value.trim().length === 0) return; // hint gated on input
-  /* 'interacted', not 'answered'. v2.4 reserves 'answered' for a question the component measures,
-     and requires context.contextActivities.parent = the containing ITEM on every one. This applet is
-     not a catalog question — the metadata gives item 02 exactly one question (q1, on s15) — so there
-     is no item question to parent to, and an 'answered' here would both be unmatchable and violate
-     §2. Recording it as an interaction keeps the learning-analytics value honestly.
-     See _test/baselines/stage-4-pattern.md for the open question about whether these SHOULD become
-     catalog items. */
-  xapiSend('interacted', 'question', { response: (ta ? ta.value.trim() : '') }, { category: 'hook-open-question' });
+  /* Not reported: an open hook question is not a catalogue question (item 01 carries none), and
+     'interacted' is outside the 720 verb list (removed 2026-10-20). */
   goTo(3);
 }
 
@@ -594,8 +588,6 @@ function imgqToggle(cardEl) {
   imgqRevealed[id] = true;
   cardEl.classList.add('revealed');
   cardEl.classList.add(IMGQ[id].correct ? 'correct' : 'incorrect');
-  /* Also not a dictionary choice — the learner is revealing a reason, not stating a preference. */
-  xapiSend('interacted', 'question', { response: id }, { category: 'why-measure-volume' });
 }
 function imgqEnter() {
   Object.keys(imgqRevealed).forEach(function (id) {
@@ -641,9 +633,10 @@ function selectPathOption(cardEl) {
   const cont = document.getElementById('s7-continue');
   if (cont) cont.disabled = false;   // enable FIRST — instant visual feedback
   /* The one genuine 'selected' in the unit: comic vs experiments IS a learning-format preference,
-     which is exactly v2.4's `learning-type`. The category is kebab-case per the dictionary table in
-     v2.4 §4 — the camelCase 'learningType' this used to send is not a dictionary value. */
-  xapiSend('selected', 'question', { response: cardEl.dataset.value }, { category: 'learning-type' });
+     which is exactly the selection dictionary's `learning-type` (v2.7 p.24). Synchronous, direct. */
+  if (window.XAPI_USING_G && typeof sendStatement720 === 'function') {
+    try { sendStatement720('selected', 'question', { response: cardEl.dataset.value }, { category: 'learning-type' }); } catch (e) {}
+  }
 }
 function advanceFromPathChoice() {
   const path = window.lomdaState.learningPath;
@@ -1120,10 +1113,7 @@ function comicSliderGo(screenId, i, opts) {
   comicRevealBubbles(screenId, i);
   comicUpdateNav(screenId);
 
-  if (justDone && !st.reported) {
-    st.reported = true;
-    xapiSend('experienced', 'question', null, { category: 'comic-slide-' + cfg.slide });
-  }
+  if (justDone && !st.reported) st.reported = true;   // 'experienced' is outside the 720 verb list — not reported
 }
 
 function comicSliderNext(screenId) { const st = comicState[screenId]; if (st) comicSliderGo(screenId, st.i + 1); }
@@ -1377,7 +1367,6 @@ function dispDrop() {
     const rs = document.getElementById('disp-reset');    if (rs) rs.classList.remove('is-hidden');
     const cont = document.getElementById('s17-continue');  if (cont) cont.disabled = false;
   }, 900);
-  xapiSend('interacted', 'question', { response: '62' }, { category: 'displacement-applet' });
 }
 function dispReset() {
   dispPlaced = false;
@@ -1472,18 +1461,11 @@ function scqCheck(screen) {
   if (!s.sel || s.sel === s.lastWrong) return;   // the retry gate, also against a programmatic or keyboard submit
   s.attempts++;
   const correct = s.sel === cfg.correctId;
-  /* xAPI: resolved at send time — xapiQ() reads window.METADATA, which the library fetches
-     asynchronously while these registrations run during parse. parentId is the containing item
-     (v2.4 §2, mandatory); `response` is the option's visible text and was missing entirely. */
-  const q = xapiQ(cfg.item, cfg.qKey || 'q1');
-  xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question',
-    { response: xapiAnswerText(scqAnswerEl(screen, s.sel)),
-      success: !!correct,
-      score: { scaled: correct ? 1 : 0 } },
-    { questionId: q.questionId, parentId: q.parentId });
-  if (correct || s.attempts >= cfg.maxAttempts) {
-    XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!correct;
-  }
+  /* xAPI (synchronous, unit-js/20-xapi.js): the option's visible text is resolved to the metadata
+     answer string by the response layer; ids come from window.METADATA at send time. XAPI_Q_RESULTS
+     is written inside xapiAnswered, outside its try/catch. */
+  xapiAnswered(cfg.item, cfg.qKey || 'q1', correct, correct || s.attempts >= cfg.maxAttempts,
+    { choices: [xapiAnswerText(scqAnswerEl(screen, s.sel))] });
   if (correct) { s.phase = 'correct'; scqMark(screen, cfg.correctId, 'correct'); scqShowPopup(screen, 'correct'); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) {
     s.phase = 'wrong2';
@@ -1536,7 +1518,7 @@ function scqShowPopup(screen, type) {
 function scqClosePopup(screen) { document.getElementById(screen + '-scq-popup')?.classList.add('hidden'); }
 function scqHint(screen) {
   const s = SCQ_REG[screen]; if (!s || s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) return;
-  xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey || 'q1').questionId });
+  xapiRequestedHint(s.cfg.item, s.cfg.qKey || 'q1');   // once per question per attempt (hints ledger)
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
@@ -1608,7 +1590,6 @@ function aqMeasure() {
   aqMeasured = true;
   aqHintSpent(true);
   scqSetLocked('s15', false);   // unlock the volume question
-  xapiSend('interacted', 'question', { response: '10cm' }, { category: 'aquarium-ruler' });
   /* Flushed, unlike the other applets': measuring here is what UNLOCKS s15's graded question, so
      losing it would leave a learner staring at a question they can no longer answer. The purely
      revealing flags — dispPlaced, floodPlaced, measPoured, measRevealed — stay on the debounce on
@@ -1709,7 +1690,6 @@ function floodDrop() {
     const cont = document.getElementById('s20-continue');  if (cont) cont.disabled = false;
     document.querySelector('#s20 .flood-scene')?.classList.add('drained');
   }, 2600);
-  xapiSend('interacted', 'question', { response: 'overflow' }, { category: 'flooding-applet' });
 }
 function floodReset() {
   floodPlaced = false;
@@ -1744,24 +1724,15 @@ function floodEnter() {
    and its 4-of-5 gate are Part 02. There is no gate here, so the route is fixed.
    ═══════════════════════════════════════════════════════════ */
 const PART_02_SLUG = 'methodica-science-volume-solid-01-02';
-const PART_02_URL = '../' + PART_02_SLUG + '/index.html';
 function goToNextPart() {
-  /* Closes the item the learner is standing on (warm-up 2) before the component is reported, so the
-     two arrive in order. */
-  try { xapiFinishItems(); } catch (e) {}
-
-  /* xAPI: the component 'completed', with an EXPLICIT result. No threshold exists in this component
-     (it always proceeds to Part 02), so — as in parts 03 and 05 — completing it is the success
-     condition and score.scaled carries the performance on its graded questions (item 02's check and
-     the two warm-ups). The library's own aggregate is an all-correct AND, which would report
-     success:false for any partial result. */
-  try {
-    sendCompletedOnce('done', currentPartSlug(), 'onlinelesson',
-      { success: true, score: { scaled: xapiCorrectCount() / 3 } });
-  } catch (e) { console.error('[xAPI] completed component 01', e); }
-
-  if (RESUME_ENABLED) writeForwardState(PART_02_SLUG);
-  window.location.href = PART_02_URL + window.location.search;
+  /* Warm-up 2's "שנמשיך?" is the learner's last click in this component: report and STOP. Kata
+     removes the component on 'completed' and launches the next one by the catalogue. The hop is a
+     dev-only convenience (index_dev.html, ?dev=1 without a registration). */
+  partFinish(document.getElementById(XAPI_END_BTN));
+  if (DEV_NAV) {
+    writeForwardState(PART_02_SLUG);
+    window.location.href = '../' + PART_02_SLUG + '/index.html' + window.location.search;
+  }
 }
 function updateProgressQuestion(container, state) {
   if (!container) return;
@@ -1926,6 +1897,20 @@ function ddqSyncHint(screen) {
   const hint = document.getElementById(screen + '-ddq-hint'); if (!s || !hint) return;
   hint.style.visibility = (s.done || (s.cfg.hintAfterWrong && s.attempts < 1)) ? 'hidden' : '';
 }
+
+/* The learner's pairings as {source, target} LABELS, for xapiAnswered: the response layer resolves
+   each label to the metadata string (answers.source = the dragged items, answers.target = the
+   methods) and emits 'S[.]T[,]S[.]T' in answers.source order. Unplaced items are left out — the
+   response layer emits 'S[.]' for a source with no pair. */
+function ddqPairs(cfg) {
+  return Object.keys(cfg.placement)
+    .filter(function (id) { return cfg.placement[id] && cfg.placement[id] !== 'source'; })
+    .map(function (id) {
+      var it = cfg.items.filter(function (i) { return i.id === id; })[0];
+      var tg = cfg.targets.filter(function (t) { return t.id === cfg.placement[id]; })[0];
+      return { source: it ? it.label : id, target: tg ? tg.label : cfg.placement[id] };
+    });
+}
 function ddqCheck(screen) {
   const s = DDQ_REG[screen], cfg = s.cfg;
   if (s.checked) { if (cfg.onContinue) cfg.onContinue(); else advanceScreen(); return; }
@@ -1935,12 +1920,9 @@ function ddqCheck(screen) {
   /* One matching board = one question, closed by a single 'answered.last'. A wrong non-final check
      is an interim 'answered', the same split as scqCheck. `response` lists the learner's pairings in
      a readable form, since there is no single option element to read. */
-  const q = xapiQ(cfg.item, cfg.qKey || 'q1');
-  xapiSend(final ? 'answered.last' : 'answered', 'question',
-    { response: Object.keys(cfg.placement).map(function (id) { return id + '->' + cfg.placement[id]; }).join(', '),
-      success: !!allCorrect,
-      score: { scaled: allCorrect ? 1 : 0 } },
-    { questionId: q.questionId, parentId: q.parentId });
+  /* xAPI (synchronous): one matching board = one question; `response` is the metadata pairs
+     'S[.]T[,]…' built from the learner's placement BEFORE it is swapped for the model answer below. */
+  xapiAnswered(cfg.item, cfg.qKey || 'q1', !!allCorrect, final, { pairs: ddqPairs(cfg) });
   if (!final) {
     /* Retry: nothing is resolved — no result, no onFinish, the board stays draggable. */
     s.phase = 'retry';
@@ -1951,7 +1933,6 @@ function ddqCheck(screen) {
     try { flushResumeSave(); } catch (e) {}
     return;
   }
-  XAPI_Q_RESULTS[cfg.item + '/' + (cfg.qKey || 'q1')] = !!allCorrect;
   s.checked = true; s.done = true; s.phase = null; s.lastWrong = null;
   /* The learner's own placement used to be overwritten here and lost. QA 2026-08-25 (slide 29)
      asks for a toggle between "התשובה שלי" and "תשובה נכונה" inside the wrong-answer feedback,
@@ -1981,7 +1962,7 @@ function ddqCheck(screen) {
    ids end in -hint-overlay, so goTo() closes them on navigation. */
 function ddqHint(screen) {
   const s = DDQ_REG[screen]; if (!s || s.checked || (s.cfg.hintAfterWrong && s.attempts < 1)) return;
-  xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey || 'q1').questionId });
+  xapiRequestedHint(s.cfg.item, s.cfg.qKey || 'q1');   // once per question per attempt (hints ledger)
   document.getElementById(screen + '-ddq-hint-overlay')?.classList.remove('hidden');
 }
 function ddqCloseHint(screen) { document.getElementById(screen + '-ddq-hint-overlay')?.classList.add('hidden'); }
@@ -2298,7 +2279,6 @@ function guessPick(screen, btn) {
   guessSayToggle(screen, true);
   const cont = document.getElementById(screen + '-continue'); if (cont) cont.disabled = false;
   if (COMIC_DATA[screen]) comicSyncNav(screen);   // inside the comic: unlocks the forward arrow instead
-  xapiSend('interacted', 'question', { response: btn.dataset.id }, { category: 'guess' });
 }
 function guessEnter(screen) {
   syncPathToggle();
@@ -2392,7 +2372,6 @@ function measPourInto(v) {
   if (v !== cfg.correct) { measShowError(); return; }
   measPoured = true;
   measRender();
-  xapiSend('interacted', 'question', { response: 'poured' }, { category: 'measurement-applet' });
 }
 function measDropVessel(v) {
   const cfg = MEAS[measStep];
@@ -2408,7 +2387,6 @@ function measConfirm() {
   const cfg = MEAS[measStep];
   if (!cfg.input) return;
   measRevealed = true;
-  xapiSend('interacted', 'question', { response: mEl('input').value }, { category: 'measurement-applet' });
   if (cfg.last) measDone = true;
   measRender();
   /* Only on completion — the applet's own step-to-step moves navigate, which arms a save anyway. */
@@ -2595,6 +2573,21 @@ var XAPI_EVAL_ITEMS = { '02': 1, '03': 1, '04': 1 };
 
 /* Per-part seam read by unit-js/50-loader.js. */
 var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-01.json';
+
+/* ── The end of this component (2026-10-20, platform owns routing) ──
+   XAPI_END_BTN is the last button the learner clicks; partFinish() reports the component
+   'completed' through xapiEndComponent (unit-js/20-xapi.js) and disables that button — and does
+   NOTHING else: Kata removes the component from the screen when 'completed' arrives (v2.7 p.23)
+   and decides what comes next from the catalogue. restoreEndedButton() keeps the button disabled
+   after a reload (D-8). The hop to the next part lives only under DEV_NAV. */
+var XAPI_END_BTN = 's29-scq-check';
+/* No gate in this component (it always proceeds), so completing it IS the success condition; score.scaled = the three graded questions (item 02's check and the two warm-ups). */
+function xapiPartResult() {
+  return { success: true, score: { scaled: xapiCorrectCount() / 3 } };
+}
+function partFinish(btn) {
+  xapiEndComponent(xapiPartResult(), btn || document.getElementById(XAPI_END_BTN));
+}
 
 /* ═══════════════════════════════════════════════════════════
    RESUME — this component's payload
@@ -2929,9 +2922,9 @@ function ddqRestoreUI(screen) {
    entry every launch passes through) is a reporting-semantics question for Stage 4, not a
    refactoring one. See REPORT-XAPI.md. */
 function onXapiReady() {
-  loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {
-    try { sendStatement720('initialized', 'onlinelesson', null, { scope: 'unit' }); } catch (e) {}
-  });
+  /* Loads the UNIT metadata for the bug-report form. No unit-scope statement: v2.5/v2.7 define
+     initialized/completed at item and component level only (removed 2026-10-20). */
+  loadUnitMetadata('../metadata/methodica-science-volume-solid-01_unit.json', function () {});
 }
 
 /* Magnifier lens on the graduated vessels (QA 2026-10-19): the scales are fine-grained, so pointing

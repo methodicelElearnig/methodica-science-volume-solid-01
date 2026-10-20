@@ -5,7 +5,7 @@
    "חזרתי" on S1 → Part 05.
    ═══════════════════════════════════════════════════════════ */
 
-const NEXT_PART_URL = '../methodica-science-volume-solid-01-05/index.html';
+const NEXT_PART_SLUG = 'methodica-science-volume-solid-01-05';   // dev-only hop target
 
 /* The shared goTo() in unit-js/30-nav.js rejects n >= TOTAL_SCREENS, index_dev.html derives its
    jump range from it, and unit-js/25-report.js reads it to pick the reported page. Was 1 until the
@@ -28,7 +28,10 @@ const TOTAL_SCREENS = 2;
    free edge rather than dropped on top of the copy.
    ═══════════════════════════════════════════════════════════ */
 function getCharacter() {
-  try { return localStorage.getItem('lomda_selectedCharacter') || 'orange'; }
+  /* The document first, then the per-unit localStorage cache (unit-js/40-resume.js
+     getUnitCharacter) — the part-01 choice reaches the later parts, launched separately by Kata,
+     through that cache. Never the old origin-wide key this unit used before 2026-10-20. */
+  try { return (typeof getUnitCharacter === 'function' ? getUnitCharacter() : null) || 'orange'; }
   catch (e) { return 'orange'; }
 }
 /* Which pose files exist on disk, and in which format. A manifest, not an
@@ -113,24 +116,16 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') goBack();
 });
 
-/* The learner presses "חזרתי" when they come back from the off-computer task. */
+/* The learner presses "חזרתי" when they come back from the off-computer task. That click IS the
+   completion: report the component and STOP (Kata removes it and routes). success with NO score —
+   this is an off-computer inquiry task (metadata contentType "Task Inquiry or Project"): nothing
+   about it is measurable in the browser, so a fabricated score would be worse than none. */
 function classTaskDone() {
-  /* Close the item before reporting the component, so the two arrive in order. */
-  try { xapiFinishItems(); } catch (e) {}
-
-  /* xAPI: component 'completed' with success and NO score.
-     Deliberate: this component is an off-computer inquiry task (metadata contentType
-     "Task Inquiry or Project"). Nothing about it is measurable in the browser — there is no answer
-     UI at all, only the "חזרתי" button — so there is no numerator and no denominator to report, and
-     a fabricated score would be worse than none. Reaching this button IS the completion.
-     v2.4 asks for score only where the component contains 'answered' interactions; this one has
-     none. */
-  try {
-    sendCompletedOnce('done', currentPartSlug(), 'onlinelesson', { success: true });
-  } catch (e) { console.error('[xAPI] completed component 04', e); }
-
-  if (RESUME_ENABLED) writeForwardState('methodica-science-volume-solid-01-05');
-  window.location.href = NEXT_PART_URL + window.location.search;
+  partFinish(document.getElementById(XAPI_END_BTN));
+  if (DEV_NAV) {
+    writeForwardState(NEXT_PART_SLUG);
+    window.location.href = '../' + NEXT_PART_SLUG + '/index.html' + window.location.search;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -155,6 +150,21 @@ var XAPI_EVAL_ITEMS = {};
 
 /* Per-part seam read by unit-js/50-loader.js. */
 var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-04.json';
+
+/* ── The end of this component (2026-10-20, platform owns routing) ──
+   XAPI_END_BTN is the last button the learner clicks; partFinish() reports the component
+   'completed' through xapiEndComponent (unit-js/20-xapi.js) and disables that button — and does
+   NOTHING else: Kata removes the component from the screen when 'completed' arrives (v2.7 p.23)
+   and decides what comes next from the catalogue. restoreEndedButton() keeps the button disabled
+   after a reload (D-8). The hop to the next part lives only under DEV_NAV. */
+var XAPI_END_BTN = 's1-continue';
+/* Off-computer class task: completion is the success condition, no score (nothing measurable in the browser). */
+function xapiPartResult() {
+  return { success: true };
+}
+function partFinish(btn) {
+  xapiEndComponent(xapiPartResult(), btn || document.getElementById(XAPI_END_BTN));
+}
 
 /* ═══════════════════════════════════════════════════════════
    RESUME — this component's payload

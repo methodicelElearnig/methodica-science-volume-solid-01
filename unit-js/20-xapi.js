@@ -500,14 +500,3 @@ function xapiWireVideos() {
     v.addEventListener('ended', function () { playing = false; });
   });
 }
-
-/* TEMPORARY (Phase 2 → Phase 3 of the 2026-10-20 upgrade): the deferred fire-and-forget wrapper
-   the parts still call for 'answered' / 'requested' / 'selected' until their call sites move to
-   xapiAnswered / xapiRequestedHint / direct sendStatement720. ⚠️ Never for 'completed' — the
-   deferral outlives applyExecutionState()'s sender stub. Deleted with the last caller. */
-function xapiSend() {
-  var args = arguments;
-  setTimeout(function () {
-    try { sendStatement720.apply(null, args); } catch (e) {}
-  }, 0);
-}

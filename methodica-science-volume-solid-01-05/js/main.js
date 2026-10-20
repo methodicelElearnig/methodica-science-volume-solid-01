@@ -31,7 +31,7 @@ const scenarioBefore = n => SCENARIOS.find(s => s.before === n);
    from SCENARIOS so it follows any change to that table. */
 var DEV_FLOW_ORDER = [0, 1, 2, 3, 4, 5, 6, 7, 8]
   .reduce((o, n) => { const pre = scenarioBefore(n); return o.concat(pre ? [pre.screen, n] : [n]); }, []);
-const NEXT_PART_URL = '../methodica-science-volume-solid-01-06/index.html';
+const NEXT_PART_SLUG = 'methodica-science-volume-solid-01-06';   // dev-only hop target
 window.lomdaState = window.lomdaState || {};
 
 /* Build the empty progress navs from data-count (avoids repeating markup). */
@@ -63,7 +63,10 @@ buildProgressNav();
    free edge rather than dropped on top of the copy.
    ═══════════════════════════════════════════════════════════ */
 function getCharacter() {
-  try { return localStorage.getItem('lomda_selectedCharacter') || 'orange'; }
+  /* The document first, then the per-unit localStorage cache (unit-js/40-resume.js
+     getUnitCharacter) — the part-01 choice reaches the later parts, launched separately by Kata,
+     through that cache. Never the old origin-wide key this unit used before 2026-10-20. */
+  try { return (typeof getUnitCharacter === 'function' ? getUnitCharacter() : null) || 'orange'; }
   catch (e) { return 'orange'; }
 }
 /* Which pose files exist on disk, and in which format. A manifest, not an
@@ -237,21 +240,10 @@ function scqCheck(screen) {
   s.attempts++;
   const correct = s.sel === cfg.correctId;
 
-  /* xAPI: ids resolved HERE, not at registration — xapiQ() reads window.METADATA, which the library
-     fetches asynchronously while registerPractice() runs during parse. parentId is the containing
-     item, mandatory per v2.4 §2. `response` is the option's visible text, which was missing entirely. */
-  const q = xapiQ(cfg.item, cfg.qKey);
-  xapiSend(correct || s.attempts >= cfg.maxAttempts ? 'answered.last' : 'answered', 'question',
-    { response: xapiAnswerText(document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]')),
-      success: !!correct,
-      score: { scaled: correct ? 1 : 0 } },
-    { questionId: q.questionId, parentId: q.parentId });
-
-  /* Outside the send: xapiSend swallows exceptions and the score must not depend on reporting.
-     Recorded only on the closing attempt. */
-  if (correct || s.attempts >= cfg.maxAttempts) {
-    XAPI_Q_RESULTS[cfg.item + '/' + cfg.qKey] = !!correct;
-  }
+  /* xAPI (synchronous): the option's visible text is resolved to the metadata answer string by the
+     response layer (unit-js/20-xapi.js). cfg.qKey is mandatory in this part (items with q1..q3). */
+  xapiAnswered(cfg.item, cfg.qKey, correct, correct || s.attempts >= cfg.maxAttempts,
+    { choices: [xapiAnswerText(document.querySelector('#' + screen + ' .scq-opt[data-id="' + s.sel + '"]'))] });
   if (correct) { s.phase = 'correct'; scqMark(screen, cfg.correctId, 'correct'); renderFeedbackPopup(screen, 'correct', cfg.popups); scqFinish(screen, true); }
   else if (s.attempts >= cfg.maxAttempts) { s.phase = 'wrong2'; scqMark(screen, cfg.correctId, 'correct'); scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'wrong2', cfg.popups); scqFinish(screen, false); }
   else { s.phase = 'retry'; s.lastWrong = s.sel; const gate = document.getElementById(screen + '-scq-check'); if (gate) gate.disabled = true; scqMark(screen, s.sel, 'wrong'); renderFeedbackPopup(screen, 'retry', cfg.popups); scqSyncHint(screen); }
@@ -271,8 +263,7 @@ function scqFinish(screen, ok) {
 }
 function scqHint(screen) {
   const s = SCQ_REG[screen]; if (!s || s.answered || (s.cfg.hintAfterWrong && s.attempts < 1)) return;
-  /* Reported on open. No parentId: v2.4 mandates it for answered/evaluated only. */
-  xapiSend('requested.1', 'question', null, { questionId: xapiQ(s.cfg.item, s.cfg.qKey).questionId });
+  xapiRequestedHint(s.cfg.item, s.cfg.qKey);   // once per question per attempt (hints ledger)
   document.getElementById(screen + '-scq-hint-overlay')?.classList.remove('hidden');
 }
 function scqCloseHint(screen) { document.getElementById(screen + '-scq-hint-overlay')?.classList.add('hidden'); }
@@ -308,23 +299,12 @@ function practiceScore() {
 }
 
 function goToNextPart() {
-  /* Closes item 05 — the last one open. */
-  try { xapiFinishItems(); } catch (e) {}
-
-  /* Explicit result: the library's aggregate is an all-correct AND, which would report failure for
-     any partial pass. Denominator is 8 — the eight answered סעיפים (the
-     bar groups them into five question dots via NAV_GROUP).
-
-     success:true unconditionally, on the same reading confirmed for part 03: this component has no
-     pass threshold anywhere in its code and always proceeds to Part 06, so completing it IS the
-     success condition and score.scaled carries the performance. */
-  try {
-    sendCompletedOnce('done', currentPartSlug(), 'onlinelesson',
-      { success: true, score: { scaled: practiceScore() / 8 } });
-  } catch (e) { console.error('[xAPI] completed component 05', e); }
-
-  if (RESUME_ENABLED) writeForwardState('methodica-science-volume-solid-01-06');
-  window.location.href = NEXT_PART_URL + window.location.search;
+  /* The last סעיף's "שנמשיך?" is the learner's last click: report and STOP (Kata routes). Dev-only hop. */
+  partFinish(document.getElementById(XAPI_END_BTN));
+  if (DEV_NAV) {
+    writeForwardState(NEXT_PART_SLUG);
+    window.location.href = '../' + NEXT_PART_SLUG + '/index.html' + window.location.search;
+  }
 }
 /* The bar counts QUESTIONS, not סעיפים: Liyan's slime (s4–s5) is one question with סעיפים א-ב and
    Gili's marbles (s6–s8) one question with סעיפים א-ג, so the eight answer slots show as five dots.
@@ -475,6 +455,21 @@ var XAPI_ITEM_RESULT = {
 
 /* Per-part seam read by unit-js/50-loader.js. */
 var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-05.json';
+
+/* ── The end of this component (2026-10-20, platform owns routing) ──
+   XAPI_END_BTN is the last button the learner clicks; partFinish() reports the component
+   'completed' through xapiEndComponent (unit-js/20-xapi.js) and disables that button — and does
+   NOTHING else: Kata removes the component from the screen when 'completed' arrives (v2.7 p.23)
+   and decides what comes next from the catalogue. restoreEndedButton() keeps the button disabled
+   after a reload (D-8). The hop to the next part lives only under DEV_NAV. */
+var XAPI_END_BTN = 's8-scq-check';
+/* No pass threshold (always proceeds), so completing it IS the success condition; score.scaled over the eight answered סעיפים. */
+function xapiPartResult() {
+  return { success: true, score: { scaled: practiceScore() / 8 } };
+}
+function partFinish(btn) {
+  xapiEndComponent(xapiPartResult(), btn || document.getElementById(XAPI_END_BTN));
+}
 
 /* ═══════════════════════════════════════════════════════════
    RESUME — this component's payload

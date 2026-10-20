@@ -38,7 +38,10 @@ const PEAK_PARTS = 4, PEAK_PASS = 4;
    free edge rather than dropped on top of the copy.
    ═══════════════════════════════════════════════════════════ */
 function getCharacter() {
-  try { return localStorage.getItem('lomda_selectedCharacter') || 'orange'; }
+  /* The document first, then the per-unit localStorage cache (unit-js/40-resume.js
+     getUnitCharacter) — the part-01 choice reaches the later parts, launched separately by Kata,
+     through that cache. Never the old origin-wide key this unit used before 2026-10-20. */
+  try { return (typeof getUnitCharacter === 'function' ? getUnitCharacter() : null) || 'orange'; }
   catch (e) { return 'orange'; }
 }
 /* Which pose files exist on disk, and in which format. A manifest, not an
@@ -143,7 +146,7 @@ const PEAK_FEEDBACK = {
    This was the worst instance in the unit: the send sat OUTSIDE the `n === 5` test, so it fired on
    BOTH end screens — one pass through the screens produced two component 'completed' statements,
    one claiming success and one claiming failure. `__dupes()` caught it on the very first Stage 0
-   sweep, before any of this work began. Now in peakFinish(), once, synchronously. */
+   sweep, before any of this work began. Now in partFinish(), once, synchronously. */
 function resetScreenState(n) {
   renderCompanion(n);
   if (n >= 1 && n <= PEAK_PARTS) peakPaint(n);
@@ -177,9 +180,8 @@ function peakHint(idx) {
   const ov = document.getElementById('s' + idx + '-hint-overlay');
   const s = ps(idx);
   if (!ov || s.done || s.attempts < 1) return;   // offered only after a first wrong answer
+  xapiRequestedHint(PEAK_ITEM, 'q' + idx);   // once per question per attempt (hints ledger); before the reveal
   ov.classList.remove('hidden');
-  /* Reported on open. No parentId: v2.4 mandates it for answered/evaluated only. */
-  xapiSend('requested.1', 'question', null, { questionId: xapiQ(PEAK_ITEM, 'q' + idx).questionId });
 }
 function peakCloseHint(idx) {
   document.getElementById('s' + idx + '-hint-overlay')?.classList.add('hidden');
@@ -225,25 +227,12 @@ function peakCheck(idx) {
   const correct = s.sel === PEAK_CORRECT[idx];
   const final = correct || s.attempts >= PEAK_MAX_ATTEMPTS;
 
-  /* xAPI. response is the option's visible text (the metadata's `answers` are the full option
-     strings). The closing attempt goes through the doneQ ledger, synchronously: this is an
-     isAssessment component and the retake edge makes it re-enterable, so a graded answer must never
-     be reported twice (sendAnsweredOnce, unit-js/40-resume.js). A first wrong attempt is a plain
-     'answered'. */
-  const q = xapiQ(PEAK_ITEM, 'q' + idx);
-  const result = {
-    response: xapiAnswerText(document.querySelector('#s' + idx + '-opts .peak-opt[data-id="' + s.sel + '"]')),
-    success: correct,
-    score: { scaled: correct ? 1 : 0 }
-  };
-  if (final) {
-    try { sendAnsweredOnce(PEAK_ITEM, 'q' + idx, result, { questionId: q.questionId, parentId: q.parentId }); }
-    catch (e) { console.error('[xAPI] answered q' + idx, e); }
-    /* Outside the send — see the note in part 03's scqCheck. */
-    XAPI_Q_RESULTS[PEAK_ITEM + '/q' + idx] = correct;
-  } else {
-    xapiSend('answered', 'question', result, { questionId: q.questionId, parentId: q.parentId });
-  }
+  /* xAPI (synchronous): the option's visible text is resolved to the metadata answer string by the
+     response layer (unit-js/20-xapi.js). The closing attempt is 'answered.last'. No re-answer ledger
+     any more: under platform routing nothing re-enters this component after its 'completed', and
+     peakState (restored by resume) already locks a resolved סעיף. */
+  xapiAnswered(PEAK_ITEM, 'q' + idx, correct, final,
+    { choices: [xapiAnswerText(document.querySelector('#s' + idx + '-opts .peak-opt[data-id="' + s.sel + '"]'))] });
 
   if (correct) s.phase = 'correct';
   else if (final) s.phase = 'wrong2';
@@ -274,7 +263,7 @@ function peakPaint(idx) {
   const btn = document.getElementById(screen + '-continue');
   if (btn) {
     btn.textContent = s.done ? 'שנמשיך?' : 'צדקתי?';
-    btn.disabled = s.done ? (idx === PEAK_PARTS && unitFinished) : (!s.sel || s.sel === s.lastWrong);
+    btn.disabled = s.done ? (idx === PEAK_PARTS && xapiComponentEnded()) : (!s.sel || s.sel === s.lastWrong);   // D-8: the ledger decides
   }
   /* Hint policy (2026-10-15, as in the practice questions' hintAfterWrong): the hint appears only
      after a first wrong answer and stays until the סעיף resolves; hidden — not disabled — otherwise. */
@@ -303,57 +292,13 @@ function peakClosePopup(screen) {
 /* Draggable, like every other feedback popup in the unit (unit-js/15-ui.js). */
 for (let i = 1; i <= PEAK_PARTS; i++) attachPopupDrag(document.getElementById('s' + i + '-scq-popup'));
 
-/* שנמשיך? on a resolved סעיף. After סעיף ד the unit ends whatever the outcome — מועד ב is the last
-   attempt, and since 2026-10-15 there is no end screen. Report first (synchronously, RESUME.md risk
-   R1), then signal the host. peakFinish() cannot throw. */
+/* "שנמשיך?" on a resolved סעיף. After סעיף ד the learner's click is the component's end: report
+   on EITHER outcome (מועד ב is the last attempt — a learner who fails it has still finished the
+   lomda, and the attempt must be recorded) and disable the button. Nothing else: Kata removes the
+   component on 'completed'. No hop — there is no next part. */
 function peakNext(idx) {
   if (idx < PEAK_PARTS) { goTo(idx + 1); return; }
-  const passed = peakScore() >= PEAK_PASS;
-  peakFinish(passed);
-  unitFinish();
-}
-
-/* Reports the end of מועד ב — and with it the end of the unit, on EVERY path.
-   Called from peakNext() only, synchronously (RESUME.md risk R1).
-
-   Both outcomes end the unit here: there is no third attempt. So unlike part 06, this component
-   closes the unit whether the learner passed or failed — a learner who fails the final attempt has
-   still finished the lomda, and REPORT-XAPI.md is explicit that a component the learner does not
-   clear must still be reported or the whole attempt goes unrecorded. */
-function peakFinish(passed) {
-  try { xapiFinishItems(); } catch (e) {}
-
-  const result = { success: passed, score: { scaled: peakScore() / PEAK_PARTS } };
-
-  try {
-    sendCompletedOnce('done', currentPartSlug(), 'onlinelesson', result);
-  } catch (e) { console.error('[xAPI] completed component 07', e); }
-
-  try {
-    sendCompletedOnce('done', 'unit', 'onlinelesson', result, { scope: 'unit' });
-  } catch (e) { console.error('[xAPI] completed unit (via 07)', e); }
-}
-
-/* ─── End of the unit ─────────────────────────────────────
-   ⚠️ THIS MUST NOT REPORT. peakFinish() already sent the item, the component and (on the paths that
-   own it) the unit `completed`, synchronously, just before this runs. sendCompletedOnce() would
-   dedupe a second call, but sending one would still be wrong: this is an exit signal, not an outcome.
-
-   Called straight from peakNext() since 2026-10-15, when the end screens (and their סיימתי button)
-   were removed. The unit has no documented host-exit contract — 60-devbridge.js's postMessage is the
-   dev wrapper's jump bar, not a production channel — so this is a seam, deliberately small. It runs
-   once, disables סעיף ד's שנמשיך? so a second press cannot double-fire, and announces the finish to
-   a framing host that may or may not be listening. Drop the real handshake in here once the platform
-   partner confirms it; nothing else in the unit needs to change. */
-var unitFinished = false;   // var, not let: peakPaint() reads it and may run first
-function unitFinish() {
-  if (unitFinished) return;
-  unitFinished = true;
-  const btn = document.getElementById('s' + PEAK_PARTS + '-continue');
-  if (btn) btn.disabled = true;
-  if (window.parent !== window) {
-    try { window.parent.postMessage({ type: '720:unit-finished' }, '*'); } catch (e) {}
-  }
+  partFinish(document.getElementById(XAPI_END_BTN));
 }
 
 function peakScore() { let n = 0; for (let i = 1; i <= PEAK_PARTS; i++) { const s = peakState[i]; if (s && s.done && s.sel === PEAK_CORRECT[i]) n++; } return n; }
@@ -368,8 +313,8 @@ var SCREEN_TO_SUBCONTENT = {
   /* The intro is page 0 OF THE ITEM, not a no-item screen. Mapping it to null made the item close
      the moment a learner navigated back to the intro (goBack allows 2->1->0), emitting a premature
      item 'completed' carrying a partial score — which, once the Stage 5a ledger lands, would mark
-     the item done and SUPPRESS the real one from peakFinish(). Keeping the intro inside the item
-     means the item opens on entry and closes only in peakFinish(), whatever route the learner takes. */
+     the item done and SUPPRESS the real one from partFinish(). Keeping the intro inside the item
+     means the item opens on entry and closes only in partFinish(), whatever route the learner takes. */
   0: ['01', 0],       // intro
   1: ['01', 1],       // sub-part 1
   2: ['01', 2],       // sub-part 2
@@ -399,6 +344,21 @@ var XAPI_ITEM_RESULT = {
 
 /* Per-part seam read by unit-js/50-loader.js. */
 var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-07.json';
+
+/* ── The end of this component (2026-10-20, platform owns routing) ──
+   XAPI_END_BTN is the last button the learner clicks; partFinish() reports the component
+   'completed' through xapiEndComponent (unit-js/20-xapi.js) and disables that button — and does
+   NOTHING else: Kata removes the component from the screen when 'completed' arrives (v2.7 p.23)
+   and decides what comes next from the catalogue. restoreEndedButton() keeps the button disabled
+   after a reload (D-8). The hop to the next part lives only under DEV_NAV. */
+var XAPI_END_BTN = 's4-continue';
+/* מועד ב: pass = PEAK_PASS of PEAK_PARTS סעיפים; reported on both outcomes; the final attempt. */
+function xapiPartResult() {
+  return { success: peakScore() >= PEAK_PASS, score: { scaled: peakScore() / PEAK_PARTS } };
+}
+function partFinish(btn) {
+  xapiEndComponent(xapiPartResult(), btn || document.getElementById(XAPI_END_BTN));
+}
 
 /* ═══════════════════════════════════════════════════════════
    RESUME — this component's payload

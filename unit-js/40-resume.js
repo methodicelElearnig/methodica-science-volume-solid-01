@@ -371,15 +371,6 @@ function sendCompletedOnce(ledger, key, objectType, result, opts) {
   sendStatementOnce(ledger, key, 'completed', objectType, result, opts);
 }
 
-/* TEMPORARY shim (Phase 2 → Phase 3 of the 2026-10-20 upgrade): parts 06/07 still call this for
-   their closing peak answers until their call sites move to xapiAnswered(). The `doneQ` ledger it
-   used is gone — under platform routing nothing re-enters מועד א after its 'completed'. Delete with
-   the last caller. */
-function sendAnsweredOnce(item, qKey, result, opts) {
-  if (_restoring) return;
-  sendStatement720('answered.last', 'question', result || null, opts);
-}
-
 /* ═══════════════════ Cross-part back edges — DEV ONLY ═══════════════════
    Part 04 is reachable from both 02 (pass) and 03 (remediation), so a fixed "חזרה" would send
    whoever skipped 03 back into content they never saw. The solution is a map of edges, not a
