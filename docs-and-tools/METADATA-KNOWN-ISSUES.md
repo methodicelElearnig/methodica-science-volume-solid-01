@@ -62,6 +62,19 @@ item questions in the metadata — a content decision with a metadata push attac
 
 ---
 
+## 6. Part 05 item 01 q1 — `correctAnswers` names the wrong option — **open (audit E1, 2026-10-20)**
+
+`metadata/methodica-science-volume-solid-01-05.json` lists `"יעל צודקת. הניסוי מודד רק מים…"` as the
+correct answer; the screen (`main.js` `correctId: 'a'`, the item's own `informationToBot` "יעל טועה")
+grades `"המים שעלו הם ראיה ישירה לכך שהטבעת תופסת מקום במרחב…"` as correct. The screen's options were
+re-ordered to the deck and the metadata took the first option. Until the metadata is fixed, Kata's view
+of 05/q1 inverts right and wrong. Also from the same audit (warnings W1/W2): the two matching questions
+list `correctAnswers` in `answers.target` order while the response is emitted in `answers.source`
+order — the reference unit keeps them in source order. Full report: [METADATA-AUDIT.md](METADATA-AUDIT.md).
+Do not push the metadata to Kata before E1 is resolved.
+
+---
+
 ## Verification available today
 
 `node _test/checks.mjs` gate 4 runs the **real** `xapiItemId`/`xapiQ` from `unit-js/20-xapi.js` against
