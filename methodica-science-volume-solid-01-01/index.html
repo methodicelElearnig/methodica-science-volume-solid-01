@@ -50,6 +50,26 @@
     </symbol>
   </defs>
 </svg>
+<!-- ═══ Boot cover (ADDING-REPORTING-AND-RESUME.md §8.11) ═══
+     Hides screen 0 while a saved position is read and painted, so the learner never sees the
+     first screen flash before the restored one. A SIBLING of #app (scaleApp transforms #app).
+     unit-js/50-loader.js removes it on every exit path (dropBootCover); this inline net removes it
+     after 800 ms regardless — or, while a restore is in flight (window.__resumeInFlight), waits for
+     it up to a hard 6 s. -->
+<div id="boot-cover" style="position:fixed;inset:0;z-index:9999;background:#fff"></div>
+<script>
+(function () {
+  var t0 = Date.now();
+  function tick() {
+    var c = document.getElementById('boot-cover');
+    if (!c || !c.parentNode) return;
+    if (window.__resumeInFlight && Date.now() - t0 < 6000) { setTimeout(tick, 100); return; }
+    c.parentNode.removeChild(c);
+  }
+  setTimeout(tick, 800);
+})();
+</script>
+
 <div id="app">
 
   <!-- ═══════════════════════════════════════════════════════════
@@ -116,7 +136,7 @@
       <h1 class="hook-title">רוני מצאה אוצר?</h1>
       <div class="hook-stage">
         <div class="hook-img-frame">
-          <video id="s1-video" class="hook-video" src="assets/video/s1-roni-hook.mp4"
+          <video id="s1-video" class="hook-video" data-xapi-report="01" src="assets/video/s1-roni-hook.mp4"
                  poster="assets/img/s1-roni-hook.jpg" autoplay muted playsinline controls preload="metadata"
                  aria-label="סרטון: רוני מוצאת תליון זהב על חוף הים"></video>
         </div>

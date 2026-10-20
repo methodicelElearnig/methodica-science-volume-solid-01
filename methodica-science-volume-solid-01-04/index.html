@@ -8,6 +8,26 @@
   <link rel="stylesheet" href="css/style.css?v=100">
 </head>
 <body data-subject-theme="science">
+<!-- ═══ Boot cover (ADDING-REPORTING-AND-RESUME.md §8.11) ═══
+     Hides screen 0 while a saved position is read and painted, so the learner never sees the
+     first screen flash before the restored one. A SIBLING of #app (scaleApp transforms #app).
+     unit-js/50-loader.js removes it on every exit path (dropBootCover); this inline net removes it
+     after 800 ms regardless — or, while a restore is in flight (window.__resumeInFlight), waits for
+     it up to a hard 6 s. -->
+<div id="boot-cover" style="position:fixed;inset:0;z-index:9999;background:#fff"></div>
+<script>
+(function () {
+  var t0 = Date.now();
+  function tick() {
+    var c = document.getElementById('boot-cover');
+    if (!c || !c.parentNode) return;
+    if (window.__resumeInFlight && Date.now() - t0 < 6000) { setTimeout(tick, 100); return; }
+    c.parentNode.removeChild(c);
+  }
+  setTimeout(tick, 800);
+})();
+</script>
+
 <div id="app">
 
   <button class="flag-btn" id="flag-btn" type="button" aria-label="מצאתם בעיה?">
@@ -33,7 +53,7 @@
       </div>
     </div>
     <div class="nav-bar">
-      <button class="btn-back" id="back-to-prev-part" onclick="goBackToPrevPart()" hidden>חזרה</button>
+      <button class="btn-back" id="back-to-prev-part" onclick="goBackToPreviousPart('methodica-science-volume-solid-01-02')" hidden style="display:none" aria-hidden="true">חזרה</button>
       <button class="btn-continue" id="s0-continue" onclick="advanceScreen()">אפשר להתחיל!</button>
     </div>
   </section>
