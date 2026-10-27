@@ -1642,7 +1642,7 @@ scqRegister({
   screen: 's15',
   correctId: 'd',
   startLocked: true,
-  item: '02',
+  item: '04',
   popups: fbPopups('נכון מאוד!', [   /* sb20/22/23 */
     'למדידת נפח של תיבה משתמשים בסרגל: מודדים את אחת מצלעות הקובייה ומכפילים אותו בעצמו שלוש פעמים - פעם אחת לאורך, פעם אחת לרוחב ופעם אחת לגובה.',
     'אורך הצלע במקרה זה הוא 10\u00A0ס"מ וכיוון שכל הצלעות בקובייה זהות:',
@@ -2057,7 +2057,7 @@ function ddqEnter(screen) {
    ═══════════════════════════════════════════════════════════ */
 ddqRegister({
   screen: 's28',
-  item: '03',
+  item: '05',
   items: [
     // Storyboard slide 42 puts a small photo inside each task card. The שדף photo
     // is the shell from standard-practice Q4 (Part 02 s4) — slide 42 illustrates this task with a
@@ -2102,7 +2102,7 @@ attachPopupDrag(document.getElementById('s28-ddq-popup'));
 scqRegister({
   screen: 's29',
   correctId: 'a',
-  item: '04',
+  item: '06',
   popups: fbPopups('נכון מאוד!', [   /* sb48/49 */
     'כשמכניסים גוף מוצק למים, הגוף תופס מקום בתוך המשורה ולכן מפלס המים עולה.',
     'ההפרש בין קריאת הנפח לפני הכנסת הגוף ולאחריה שווה לנפח הגוף.']),
@@ -2492,15 +2492,19 @@ function measEnter() {
    the other four reported one that does not exist.
 
    Item boundaries come from the metadata titles, which describe the pedagogy:
-     01  Motivational  "הוק: רוני מוצאת תליון על החוף"                         — the hook
-     02  Instruction   "הקנייה: שיטות מדידת נפח (פלייליסט: קומיקס / ניסויים)"  — the whole acquisition
-     03  Practice      "חימום 1"                                              — warm-up 1
-     04  Practice      "חימום 2"                                              — warm-up 2
+     01  Motivational  "רוני מוצאת תליון על החוף"           — the hook
+     02  Motivational  "בחירת אופן הלימוד"                  — Archimedes intro + the path choice
+     03  Instruction   "שיטות מדידת נפח (קומיקס)"           — comic path + the shared ending
+     04  Instruction   "שיטות מדידת נפח (ניסויים)"          — experiments path + the shared ending (q1, s15)
+     05  Practice      "חימום 1"                            — warm-up 1
+     06  Practice      "חימום 2"                            — warm-up 2
    (Items 05-09, "סטנדרטי 1-5", moved to Part 02 as its items 01-05 on 2026-10-14.)
 
-   Item 02 is deliberately large: its title names the playlist, so BOTH branches of the path choice
-   belong to it, and it closes only when the learner leaves the merge screen for warm-up 1. That is
-   also why it holds exactly one catalog question (q1, on s15) despite spanning ~19 screens.
+   Split 2026-10-27 (QA/2026-10-26): until then 02 was the whole acquisition, both branches included,
+   and the bot answered about the path the learner had not chosen. The path items' metadata opens with
+   Archimedes, but s5-s6 come BEFORE the choice, so they stay on 02. The shared ending (s22-s27) belongs
+   to the path the learner took: the literal holds the experiments value, and sharedEndingItem() below
+   swaps in 03 for a comic learner. Both path items number the ending as pages 8-13.
 
    Screen ids, DOM order and flow order all follow the storyboard (renumbered 2026-10-14):
      hook          0 → 1 → 2 → 3 → 4
@@ -2520,42 +2524,43 @@ var SCREEN_TO_SUBCONTENT = {
   3:  ['01', 3],      // the pendant
   4:  ['01', 4],      // למה חשוב למדוד נפח של חפץ מוצק?
 
-  /* item 02 — acquisition: the shared opening */
+  /* item 02 — the Archimedes intro and the path choice */
   5:  ['02', 1],      // Archimedes intro
   6:  ['02', 2],
   7:  ['02', 3],      // איך נמדוד נפח של מוצק? — the playlist choice
 
-  /* item 02 — comic branch */
-  8:  ['02', 4],
-  9:  ['02', 5],      // the cube — moved before the guess-Q (QA 2026-10-08); pages follow flow order
-  10: ['02', 6],
-  11: ['02', 7],
-  12: ['02', 8],
-  13: ['02', 9],
-  14: ['02', 10],
+  /* item 03 — comic path */
+  8:  ['03', 1],
+  9:  ['03', 2],      // the cube — moved before the guess-Q (QA 2026-10-08); pages follow flow order
+  10: ['03', 3],
+  11: ['03', 4],
+  12: ['03', 5],
+  13: ['03', 6],
+  14: ['03', 7],
 
-  /* item 02 — experiments branch */
-  15: ['02', 11],     // aquarium ruler + the item's ONLY catalog question (q1)
-  16: ['02', 12],     // guess (sb24)
-  17: ['02', 13],     // displacement applet (sb25)
-  18: ['02', 14],     // displacement result (sb26) — split out of the applet 2026-08-29
-  19: ['02', 15],     // guess
-  20: ['02', 16],     // flooding applet (sb28)
-  21: ['02', 17],     // flooding result (sb29) — split out of the applet
+  /* item 04 — experiments path */
+  15: ['04', 1],      // aquarium ruler + the item's ONLY catalog question (q1)
+  16: ['04', 2],      // guess (sb24)
+  17: ['04', 3],      // displacement applet (sb25)
+  18: ['04', 4],      // displacement result (sb26) — split out of the applet 2026-08-29
+  19: ['04', 5],      // guess
+  20: ['04', 6],      // flooding applet (sb28)
+  21: ['04', 7],      // flooding result (sb29) — split out of the applet
 
-  /* item 02 — the shared ending, walked by both paths (section "סיום הקניה (בשתי הדרכים)") */
-  22: ['02', 18],     // flip cards — real-world uses
-  23: ['02', 19],     // measurement applet — steps 1-2 (sb33-35)
-  24: ['02', 20],     // measurement applet — steps 3-4 (sb36-38)
-  25: ['02', 21],     // overflow can — the question
-  26: ['02', 22],     // overflow can — how it works
+  /* the shared ending, walked by both paths (section "סיום הקניה (בשתי הדרכים)"): 04 here, 03 for a
+     comic learner (sharedEndingItem) */
+  22: ['04', 8],      // flip cards — real-world uses
+  23: ['04', 9],      // measurement applet — steps 1-2 (sb33-35)
+  24: ['04', 10],     // measurement applet — steps 3-4 (sb36-38)
+  25: ['04', 11],     // overflow can — the question
+  26: ['04', 12],     // overflow can — how it works
 
-  /* item 02 ends on the warm-up intro. Page 23, so it never shares a page with s25. */
-  27: ['02', 23],     // מה נשאר לנו בראש? — warm-up intro
+  /* the path item ends on the warm-up intro. Page 13, so it never shares a page with s26. */
+  27: ['04', 13],     // מה נשאר לנו בראש? — warm-up intro
 
-  /* items 03, 04 — the warm-ups */
-  28: ['03', 1],      // חימום 1 — matching (DnD)
-  29: ['04', 1]       // חימום 2 — dropdown
+  /* items 05, 06 — the warm-ups */
+  28: ['05', 1],      // חימום 1 — matching (DnD)
+  29: ['06', 1]       // חימום 2 — dropdown
 
 };
 
@@ -2565,7 +2570,7 @@ var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
 /* Items carrying a graded question IN CODE. Item 01 is absent: it is the hook, walked through rather
    than answered, and the metadata gives it no questions at all. Its open-text screen (s2) records an
    'interacted', not an 'answered' — see the note at hookOpenReveal(). */
-var XAPI_EVAL_ITEMS = { '02': 1, '03': 1, '04': 1 };
+var XAPI_EVAL_ITEMS = { '04': 1, '05': 1, '06': 1 };
 
 /* ═══════════════════ xAPI (720 LMS common host) ═══════════════════
    Loaded from the MOE 720 platform's own common host (not a 3rd-party
@@ -2588,6 +2593,19 @@ function xapiPartResult() {
 function partFinish(btn) {
   xapiEndComponent(xapiPartResult(), btn || document.getElementById(XAPI_END_BTN));
 }
+
+/* The shared ending (s22-s27) reports under the path item the learner took — 03 comic, 04 experiments
+   (the literal's value) — by the same rule as activeLearningPath(). Getters, because the shared layer
+   reads SCREEN_TO_SUBCONTENT[n] at call time (xapiOnScreen, the issue report). Kept out of the config
+   block above, which _test/verify-report.js evaluates as plain data. */
+function sharedEndingItem() { return window.lomdaState.learningPath === 'comic' ? '03' : '04'; }
+SHARED_END_SCREENS.concat([MERGE_SCREEN]).forEach(function (n) {
+  var page = SCREEN_TO_SUBCONTENT[n][1];
+  Object.defineProperty(SCREEN_TO_SUBCONTENT, n, {
+    enumerable: true,
+    get: function () { return [sharedEndingItem(), page]; }
+  });
+});
 
 /* ═══════════════════════════════════════════════════════════
    RESUME — this component's payload
@@ -2730,8 +2748,37 @@ function applyDdqState(ddq) {
 }
 
 /* ⚠️ Everything nested is COPIED, never referenced — see the note in part 04. */
+/* Item split (2026-10-27): state saved before it carries the old suffixes — qResults and the hints
+   ledger ('<item>/<qKey>'), doneItems ('<slug>#<item>'). Old 02 was the whole acquisition: its only
+   question (s15) is experiments, so its question keys go to 04, and its 'completed' marks the learner's
+   path item as well (02 stays — the choice was passed). Old 03/04 → 05/06. Runs once; `ids` marks a
+   payload as already current. */
+var RS_ITEM_IDS = 2;
+function _rsRenumberKeys(map, re, ren) {
+  if (!map) return map;
+  var out = {};
+  Object.keys(map).forEach(function (k) {
+    out[k.replace(re, function (all, pre, item, post) { return pre + (ren[item] || item) + post; })] = map[k];
+  });
+  return out;
+}
+function _rsRenumberItems(st) {
+  if (st.ids === RS_ITEM_IDS) return;
+  var qRen = { '02': '04', '03': '05', '04': '06' };
+  st.qResults = _rsRenumberKeys(st.qResults, /^()(\d{2})(\/.*)$/, qRen);
+  if (typeof _unitState !== 'undefined' && _unitState) {
+    _unitState.hints = _rsRenumberKeys(_unitState.hints, /^()(\d{2})(\/.*)$/, qRen);
+    var d = _rsRenumberKeys(_unitState.doneItems, /^(.*#)(\d{2})()$/, { '03': '05', '04': '06' });
+    var pathItem = (st.lomdaState && st.lomdaState.learningPath === 'comic') ? '03' : '04';
+    if (d && d[itemLedgerKey('02')]) d[itemLedgerKey(pathItem)] = d[itemLedgerKey('02')];
+    if (d) _unitState.doneItems = d;
+  }
+  st.ids = RS_ITEM_IDS;
+}
+
 function capturePartPayload() {
   var st = {
+    ids: RS_ITEM_IDS,
     currentScreen: currentScreen,
     qResults: Object.assign({}, XAPI_Q_RESULTS),
     /* The mascot rides in localStorage across parts, but learningPath is JS-only and decides which
@@ -2762,6 +2809,7 @@ function capturePartPayload() {
 /* The parameter MUST stay named `st` — the eval below assigns through that name, and renaming it
    fails SILENTLY. See unit-js/README.md. */
 function applyResumeVars(st) {
+  _rsRenumberItems(st);
   if (st.qResults) XAPI_Q_RESULTS = Object.assign({}, st.qResults);
   if (st.lomdaState) {
     window.lomdaState.selectedCharacter = st.lomdaState.selectedCharacter;

@@ -87,6 +87,14 @@ the ledgers across page loads and by the library within one.
 learner enters a screen belonging to a *different* item, so `SCREEN_TO_SUBCONTENT` must cover
 **every** screen (gate 5).
 
+**Part 01 path items (split 2026-10-27, QA/2026-10-26).** The bot answered about the learning path the
+learner had not chosen, so the old acquisition item 02 became three: 02 the Archimedes intro + the path
+choice (s5–s7), 03 the comic path (s8–s14), 04 the experiments path (s15–s21, with q1). The shared
+ending s22–s27 reports under the path the learner took (`sharedEndingItem()`, pages 8–13 in both), and
+the warm-ups moved 03/04 → 05/06. Resume state saved before the split is translated once on load
+(`_rsRenumberItems`). The delivered metadata had warm-up 1's `correctAnswers` pairs reordered; the
+original order is kept, since Kata compares the response string (`check-metadata.py` WARN).
+
 ---
 
 ## The finish button — report and stop
@@ -141,7 +149,7 @@ AND. `XAPI_ITEM_RESULT` supplies an item's result where it spans several questio
 
 | component | denominator | why |
 |---|---|---|
-| 01 | 3 | item 02's q1 and the two warm-ups (no gate) |
+| 01 | 3 | item 04's q1 (experiments path) and the two warm-ups, 05 / 06 (no gate) |
 | 02 | **5** | five questions, five dots, `4 מתוך 5` on screen |
 | 03 | 6 | six exercises |
 | 04 | *no score* | an off-computer inquiry task with no answer UI |

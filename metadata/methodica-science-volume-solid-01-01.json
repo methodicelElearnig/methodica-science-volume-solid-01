@@ -17,7 +17,7 @@
     "Hebrew"
   ],
   "skills": [],
-  "estimatedTimeInMinutes": 7,
+  "estimatedTimeInMinutes": 12,
   "createdAt": "2026-10-19T00:00:00.000Z",
   "updatedAt": "2026-10-19T00:00:00.000Z",
   "subContent": [
@@ -31,13 +31,29 @@
     },
     {
       "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-01/methodica-science-volume-solid-01-01-02/",
-      "title": "שיטות מדידת נפח (קומיקס / ניסויים)",
-      "informationToBot": "מטרת הפריט: הקניית שלוש שיטות למדידת נפח - מדידה הנדסית בסרגל, שיטת דחיקת המים (משורה) ושיטת ההצפה (לגוף שאינו נכנס למשורה). מה התלמיד אמור להבין: (1) לגוף הנדסי מודדים ממדים ומחשבים נפח; (2) לגוף לא הנדסי שנכנס למשורה מודדים את עליית מפלס המים - נפח המים הסופי פחות המקורי הוא נפח הגוף; (3) לגוף גדול שאינו נכנס למשורה משתמשים בהצפה - כלי מלא עד הקצה, והמים שגלשו הם נפח הגוף. כיווני חשיבה ואסטרטגיות: הפריט נפתח בסיפור ארכימדס והכתר, ואז הלומד בוחר מסלול למידה - לקרוא קומיקס או לערוך ניסויים (יישומוני סרגל, דחיקת מים והצפה) - ושני המסלולים מתכנסים למסך סיום משותף: קלפי שימושים בעולם האמיתי, יישומון מדידה עם כלי מתאים והסבר על כלי ההצפה המעבדתי. שאלת ההערכה היחידה בפריט היא נפח אקווריום קובייתי, והיא מופיעה במסלול הניסויים (הלומד מודד את הדופן בסרגל). בשני המסלולים יש גם שאלות ניחוש ללא משוב, שאינן מוערכות. טעויות נפוצות: 100 סמ\"ק (שטח הדופן), 40 סמ\"ק (היקף) ו-2,000 סמ\"ק (הכפלה שגויה). מידע נוסף: מוזכרים גם גופים מסיסים (עוטפים בשכבת מגן) וגופים שאינם שוקעים (מחברים משקולת ומחסרים את נפחה). צילום מסך: לא צורף.",
+      "title": "בחירת אופן הלימוד",
+      "informationToBot": "מטרת הפריט: הלומד בוחר כיצד ללמוד את התוכן הבא: קריאת קומיקס או ניסויים. בחירה טכנית - שתי הדרכים מובילות לאותו תוכן לימודי. כיווני חשיבה ואסטרטגיות: אין חשיבה לימודית במסך זה. טעויות נפוצות: אין הערכה בפריט. מידע נוסף: מסך בחירה בין שתי דרכי למידה; הבחירה אינה שאלה מוערכת. צילום מסך: לא צורף.",
+      "contentType": "motivational",
+      "mediaFormat": "interactive-content",
+      "questions": []
+    },
+    {
+      "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-01/methodica-science-volume-solid-01-01-03/",
+      "title": "שיטות מדידת נפח (קומיקס)",
+      "informationToBot": "מטרת הפריט: הקניית שלוש שיטות למדידת נפח - מדידה הנדסית בסרגל, שיטת דחיקת המים (משורה) ושיטת ההצפה (לגוף שאינו נכנס למשורה). מה התלמיד אמור להבין/לתרגל: (1) לגוף הנדסי מודדים ממדים ומחשבים נפח; (2) לגוף לא הנדסי שנכנס למשורה מודדים את עליית מפלס המים - נפח המים הסופי פחות המקורי הוא נפח הגוף; (3) לגוף גדול שאינו נכנס למשורה משתמשים בהצפה - כלי מלא עד הקצה, והמים שגלשו הם נפח הגוף. כיווני חשיבה ואסטרטגיות: הפריט נפתח בסיפור ארכימדס והכתר, ואז הלומד קורא קומיקס שמציג את שלוש השיטות. המסלול מסתיים במסך סיום: קלפי שימושים בעולם האמיתי, יישומון מדידה עם כלי מתאים והסבר על כלי ההצפה המעבדתי. בפריט יש שאלות ניחוש ללא משוב, שאינן מוערכות. טעויות נפוצות: אין הערכה במסלול זה. מידע נוסף: מוזכרים גם גופים מסיסים (עוטפים בשכבת מגן) וגופים שאינם שוקעים (מחברים משקולת ומחסרים את נפחה). צילום מסך: לא צורף.",
+      "contentType": "instruction",
+      "mediaFormat": "text",
+      "questions": []
+    },
+    {
+      "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-01/methodica-science-volume-solid-01-01-04/",
+      "title": "שיטות מדידת נפח (ניסויים)",
+      "informationToBot": "מטרת הפריט: הקניית שלוש שיטות למדידת נפח - מדידה הנדסית בסרגל, שיטת דחיקת המים (משורה) ושיטת ההצפה (לגוף שאינו נכנס למשורה). מה התלמיד אמור להבין/לתרגל: (1) לגוף הנדסי מודדים ממדים ומחשבים נפח; (2) לגוף לא הנדסי שנכנס למשורה מודדים את עליית מפלס המים - נפח המים הסופי פחות המקורי הוא נפח הגוף; (3) לגוף גדול שאינו נכנס למשורה משתמשים בהצפה - כלי מלא עד הקצה, והמים שגלשו הם נפח הגוף. כיווני חשיבה ואסטרטגיות: הפריט נפתח בסיפור ארכימדס והכתר, ואז הלומד עורך ניסויים (יישומוני סרגל, דחיקת מים והצפה). המסלול מסתיים במסך סיום: קלפי שימושים בעולם האמיתי, יישומון מדידה עם כלי מתאים והסבר על כלי ההצפה המעבדתי. שאלת ההערכה היחידה היא נפח אקווריום קובייתי (הלומד מודד את הדופן בסרגל). יש גם שאלות ניחוש ללא משוב, שאינן מוערכות. טעויות נפוצות: 100 סמ\"ק (שטח הדופן), 40 סמ\"ק (היקף) ו-2,000 סמ\"ק (הכפלה שגויה). מידע נוסף: מוזכרים גם גופים מסיסים (עוטפים בשכבת מגן) וגופים שאינם שוקעים (מחברים משקולת ומחסרים את נפחה). צילום מסך: לא צורף.",
       "contentType": "instruction",
       "mediaFormat": "interactive-content",
       "questions": [
         {
-          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-01/methodica-science-volume-solid-01-01-02/q1",
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-01/methodica-science-volume-solid-01-01-04/q1",
           "questionType": "choice",
           "questionText": "לפניכם אקווריום בצורת קובייה. כמה מים צריך כדי למלא אותו עד הקצה?",
           "answers": [
@@ -53,14 +69,14 @@
       ]
     },
     {
-      "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-01/methodica-science-volume-solid-01-01-03/",
+      "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-01/methodica-science-volume-solid-01-01-05/",
       "title": "שאלת חימום: התאמת משימת מדידה לכלי המתאים",
       "informationToBot": "מטרת הפריט: תרגול זיהוי איזו שיטה או איזה כלי מתאימים לאיזו משימת מדידה. מה התלמיד אמור להבין/לתרגל: נוזל נמדד במזיגה למשורה, אורך בסרגל, מסה במאזניים דיגיטליים, נפח גוף לא הנדסי קטן בדחיקת מים, ונפח גוף לא הנדסי גדול בשיטת ההצפה. כיווני חשיבה ואסטרטגיות: (1) לזהות מה מודדים (נוזל / אורך / מסה / נפח מוצק); (2) לשאול אם הגוף הנדסי ואם הוא נכנס למשורה; (3) לגרור את המשימה לשיטה. טעויות נפוצות: בלבול בין מדידת מסה למדידת נפח, שימוש במאזניים לנפח או במשורה לאורך. מידע נוסף: גרירה של 5 משימות ל-5 שיטות, שני ניסיונות, רמז זמין מההתחלה. צילום מסך: לא צורף.",
       "contentType": "practice",
       "mediaFormat": "interactive-content",
       "questions": [
         {
-          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-01/methodica-science-volume-solid-01-01-03/q1",
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-01/methodica-science-volume-solid-01-01-05/q1",
           "questionType": "matching",
           "questionText": "לקבוצת מדענים צעירים נתנו משימות מדידה שונות. התאימו בין משימת המדידה לבין הכלי המתאים לה.",
           "answers": {
@@ -105,14 +121,14 @@
       ]
     },
     {
-      "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-01/methodica-science-volume-solid-01-01-04/",
+      "id": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-01/methodica-science-volume-solid-01-01-06/",
       "title": "שאלת חימום: עיקרון דחיקת המים",
       "informationToBot": "מטרת הפריט: הטמעת עיקרון דחיקת המים - כשמכניסים גוף למים, מפלס המים עולה. מה התלמיד אמור להבין/לתרגל: הגוף תופס מקום ולכן המים עולים, וההפרש בין הקריאה לפני ואחרי הכנסת הגוף שווה לנפחו. כיווני חשיבה ואסטרטגיות: זיהוי שכיוון תזוזת המים הוא כלפי מעלה. טעויות נפוצות: בחירה ב\"ירדו\", \"נעלמו\" או \"התקררו\" - אי-הבנת עיקרון הדחיקה. מידע נוסף: השלמת משפט בתפריט נפתח אחד עם 4 מילים; שני ניסיונות; רמז זמין. צילום מסך: לא צורף.",
       "contentType": "practice",
       "mediaFormat": "interactive-content",
       "questions": [
         {
-          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-01/methodica-science-volume-solid-01-01-04/q1",
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/volume-solid/01/methodica-science-volume-solid-01-01/methodica-science-volume-solid-01-01-06/q1",
           "questionType": "choice",
           "questionText": "עיקרון דחיקת המים — השלימו את המשפט בעזרת תפריט המילים: כדי למדוד נפח של מחדד, נכניס אותו למים שבמשורה ונבדוק כמה הם __.",
           "answers": [
