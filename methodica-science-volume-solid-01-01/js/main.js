@@ -632,21 +632,23 @@ function selectPathOption(cardEl) {
   window.lomdaState.learningPath = cardEl.dataset.value;
   const cont = document.getElementById('s7-continue');
   if (cont) cont.disabled = false;   // enable FIRST — instant visual feedback
-  /* The one genuine 'selected' in the unit: comic vs experiments IS a learning-format preference,
-     which is exactly the selection dictionary's `learning-type` (v2.7 p.24). Synchronous, direct. */
-  if (window.XAPI_USING_G && typeof sendStatement720 === 'function') {
-    try { sendStatement720('selected', 'question', { response: cardEl.dataset.value }, { category: 'learning-type' }); } catch (e) {}
-  }
+  /* No report here: a card click can still change. The confirmed choice reports (below). */
 }
+/* comic vs experiments IS a learning-format preference — the selection dictionary's `learning-type`
+   (v2.7 p.24): 'selected' on the confirmed choice (בחרתי) and on the path toggle, once per distinct path
+   (../unit-js/20-xapi.js xapiSelectedLearningType). Until 02.11.26 it was sent on every card click, with
+   'comic' / 'experiments' as the response. */
 function advanceFromPathChoice() {
   const path = window.lomdaState.learningPath;
   if (!path) return;
+  xapiSelectedLearningType(path);
   goTo(path === 'experiments' ? EXPERIMENTS_ENTRY : COMIC_SCREEN);
 }
 /* Learning-path toggle (comic, experiments and shared-ending screens). Position-locked.
-   Picking the path already shown is a no-op; picking the other one starts that path. */
+   Picking the path already shown is a no-op; picking the other one starts that path (and reports it). */
 function switchLearningPath(path) {
   if (path === activeLearningPath()) { syncPathToggle(); return; }
+  xapiSelectedLearningType(path);
   window.lomdaState.learningPath = path;
   goTo(path === 'experiments' ? EXPERIMENTS_ENTRY : COMIC_ENTRY);
   syncPathToggle();
@@ -2571,6 +2573,9 @@ var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
    than answered, and the metadata gives it no questions at all. Its open-text screen (s2) records an
    'interacted', not an 'answered' — see the note at hookOpenReveal(). */
 var XAPI_EVAL_ITEMS = { '04': 1, '05': 1, '06': 1 };
+/* The s7 learning-path choice ('selected', learning-type — ../unit-js/20-xapi.js xapiSelectedLearningType):
+   lomdaState.learningPath -> the path's item and its catalogue mediaFormat (the statement's response). */
+var XAPI_LEARNING_PATHS = { comic: { item: '03', mediaFormat: 'text' }, experiments: { item: '04', mediaFormat: 'interactive-content' } };
 
 /* ═══════════════════ xAPI (720 LMS common host) ═══════════════════
    Loaded from the MOE 720 platform's own common host (not a 3rd-party

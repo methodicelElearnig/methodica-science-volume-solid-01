@@ -346,6 +346,47 @@ if (JSDOM) for (const c of COMPONENTS) {
     const hints = sent.slice(hBefore).filter((s) => s.verb === 'requested.1');
     ok(c, 'hints: two openings report once, ledger holds the key', hints.length === 1 && doc.hints && doc.hints[firstQ] === true, hints.length + ' / ' + JSON.stringify(doc.hints));
   }
+  /* the s7 learning-path choice (guide §6.3a, 2026-11-02): 'selected', category learning-type, object =
+     the component, response = the chosen path item's catalogue mediaFormat; on בחרתי and the path
+     toggle, never on a card click; once per distinct path; nothing while a restore runs. */
+  if (c === '01') {
+    const paths = r.w.eval('XAPI_LEARNING_PATHS');
+    const sub = Object.fromEntries((META[c].subContent || []).map((s) => [suffixOf(s.id), s]));
+    ok(c, 'XAPI_LEARNING_PATHS: every path item exists and its mediaFormat equals the catalogue',
+       Object.keys(paths).length === 2 && Object.values(paths).every((p) => sub[p.item] && sub[p.item].mediaFormat === p.mediaFormat), JSON.stringify(paths));
+    const map = cfg.SCREEN_TO_SUBCONTENT;
+    ok(c, 'XAPI_LEARNING_PATHS: each path item is the item its entry screen reports (comic s8, experiments s15)',
+       map[8] && map[8][0] === paths.comic.item && map[15] && map[15][0] === paths.experiments.item);
+    const r6 = loadPart(c); const w6 = r6.w; const sel = [];
+    w6.METADATA = META[c]; w6.XAPI_USING_G = true; let doc6 = null;
+    w6.loadState720 = () => doc6; w6.saveState720 = (id, o) => { doc6 = JSON.parse(JSON.stringify(o)); return true; };
+    w6.saveState720Debounced = (id, o) => { doc6 = JSON.parse(JSON.stringify(o)); };
+    w6.sendStatement720 = function (verb, type, result, ctx) { if (verb === 'selected') sel.push({ type, result, ctx }); };
+    w6.readUnitState(); w6._resumeReady = true;
+    const card = (v) => w6.document.querySelector('#s7 .option-card[data-value="' + v + '"]');
+    const cur = () => w6.eval('currentScreen');
+    w6.goTo(7); w6.selectPathOption(card('comic')); w6.selectPathOption(card('experiments'));
+    const onClick = sel.length;
+    w6.advanceFromPathChoice(); const first = sel.slice(); const landed = cur();
+    w6.goTo(7); w6.selectPathOption(card('experiments')); w6.advanceFromPathChoice(); const repick = sel.length;
+    w6.document.querySelector('section.screen.active .path-toggle-opt[data-path="comic"]').click();
+    const toComic = sel.slice(1); const comicScreen = cur();
+    w6.document.querySelector('section.screen.active .path-toggle-opt[data-path="experiments"]').click();
+    const back = sel.length; const expScreen = cur();
+    w6._unitState = w6.emptyUnitState(); sel.length = 0;
+    w6._restoring = true; w6.goTo(7); w6.advanceFromPathChoice(); w6._restoring = false; const restoring = sel.length;
+    const one = (l, f) => l.length === 1 && l[0].type === 'onlinelesson' && l[0].ctx && l[0].ctx.category === 'learning-type'
+      && !l[0].ctx.objectId && !l[0].ctx.questionId && l[0].result && l[0].result.response === f;
+    ok(c, 'choice: a card click sends nothing (only the confirmed choice reports)', onClick === 0, String(onClick));
+    ok(c, 'choice: בחרתי on experiments sends one selected — learning-type, component object, response "' + paths.experiments.mediaFormat + '"',
+       one(first, paths.experiments.mediaFormat) && landed === 15, JSON.stringify(first) + ' landed ' + landed);
+    ok(c, 'choice: re-picking the same path sends nothing', repick === 1, String(repick));
+    ok(c, 'choice: switching to the comic from the toggle sends one selected, response "' + paths.comic.mediaFormat + '"',
+       one(toComic, paths.comic.mediaFormat) && comicScreen === 8, JSON.stringify(toComic) + ' at ' + comicScreen);
+    ok(c, 'choice: switching back to an already-reported path sends nothing', back === 2 && expScreen === 15, back + ' at ' + expScreen);
+    ok(c, 'choice: nothing is sent while a restore runs', restoring === 0, String(restoring));
+    ok(c, 'choice: no console.error', r6.errors.length === 0, r6.errors.slice(0, 2).join(' | '));
+  }
   /* restoreEndedButton after a reload with the ledger */
   const r2 = loadPart(c); const w2 = r2.w;
   w2.METADATA = META[c]; w2.XAPI_USING_G = true; w2.loadState720 = () => doc; w2.saveState720 = () => true; w2.saveState720Debounced = () => {};
