@@ -504,6 +504,82 @@ if (JSDOM) for (const c of COMPONENTS) {
   }
 }
 
+/* ══════════════════ 5. score contract (MOE QA runbook §4 "ציון ומעבר") ══════════════════
+   2026-11-09, fixes 1/2/3/5 of the 08.11 sheet. For a part that promises K of N on its first screen:
+   success and score.scaled come from one count of the N threshold questions only (the harder set never
+   enters), success ⇔ scaled ≥ K/N, and below K the part ends at the gate — one completed success:false,
+   the button disabled, the harder screens never reached — also after a reload. Answers are given by the
+   part's own SCQ calls (scqSelect + scqCheck): right = the correct option, wrong = two wrong ones. */
+const SCORE_CONTRACT = {
+  '03': { K: 3, N: 4, threshold: ['s1', 's2', 's3', 's4'], challenge: ['s6', 's7'], gate: { screen: 4, btn: 's4-scq-check', next: 5 } }
+};
+section('5. score contract');
+function scRecorder(w, c, saved) {
+  const sent = []; let doc = saved ? JSON.parse(JSON.stringify(saved)) : null;
+  w.METADATA = META[c]; w.XAPI_USING_G = true; w.xapiItemAnswered = {}; w.xapiCompletedObjects = {};
+  w.sendStatement720 = (verb, type, result, ctx) => {
+    sent.push({ verb, result: result || null, ctx: ctx || null });
+    if (verb.split('.')[0] === 'answered' && ctx && ctx.parentId) w.xapiItemAnswered[ctx.parentId] = true;
+  };
+  w.loadState720 = () => doc;
+  w.saveState720 = (id, o) => { doc = JSON.parse(JSON.stringify(o)); return true; };
+  w.saveState720Debounced = (id, o) => { doc = JSON.parse(JSON.stringify(o)); };
+  w.readUnitState(); w._resumeReady = true;
+  return { sent, doc: () => doc, comps: () => sent.filter((s) => s.verb === 'completed' && !(s.ctx && s.ctx.objectId)) };
+}
+function scAnswer(w, screen, right) {
+  w.goTo(Number(screen.slice(1)));
+  const reg = w.eval('SCQ_REG')[screen];
+  const ids = [...w.document.querySelectorAll('#' + screen + ' .scq-opt[data-id]')].map((o) => o.dataset.id).filter((v, i, a) => a.indexOf(v) === i);
+  const picks = right ? [reg.cfg.correctId] : ids.filter((id) => id !== reg.cfg.correctId).slice(0, 2);
+  for (const id of picks) { w.scqSelect(screen, id); w.scqCheck(screen); }
+}
+if (JSDOM) for (const c of Object.keys(SCORE_CONTRACT)) {
+  const sc = SCORE_CONTRACT[c];
+  for (let k = 0; k <= sc.N; k++) for (const chal of [false, true]) {
+    const r = loadPart(c); const w = r.w; scRecorder(w, c);
+    sc.threshold.forEach((s, i) => scAnswer(w, s, i < k));
+    sc.challenge.forEach((s) => scAnswer(w, s, chal));
+    const res = w.xapiPartResult();
+    const tag = k + '/' + sc.N + (chal ? ' + harder all right' : ' + harder all wrong');
+    ok(c, 'result ' + tag + ': success = correct ≥ ' + sc.K, res.success === (k >= sc.K), JSON.stringify(res));
+    ok(c, 'result ' + tag + ': scaled = correct / ' + sc.N + ' (harder set not counted)', Math.abs(res.score.scaled - k / sc.N) < 1e-9, JSON.stringify(res));
+    ok(c, 'result ' + tag + ': success ⇔ scaled ≥ K/N', res.success === (res.score.scaled >= sc.K / sc.N - 1e-9));
+    ok(c, 'result ' + tag + ': no console.error', r.errors.length === 0, r.errors.slice(0, 2).join(' | '));
+  }
+  /* the gate, K−1 and K (runbook §4: one round with Y−1 correct, one with Y) */
+  for (const k of [sc.K - 1, sc.K]) {
+    const rg = loadPart(c); const wg = rg.w; const rec = scRecorder(wg, c);
+    sc.threshold.forEach((s, i) => scAnswer(wg, s, i < k));
+    const gs = 's' + sc.gate.screen;
+    const btn = wg.document.getElementById(sc.gate.btn);
+    wg.scqCheck(gs);                                     // "שנמשיך?" on the gate question
+    const at = wg.currentScreen;
+    if (k < sc.K) wg.scqCheck(gs);                       // a second click on the stopped gate
+    const comps = rec.comps();
+    if (k < sc.K) {
+      ok(c, 'gate ' + k + '/' + sc.N + ': exactly one completed for two clicks', comps.length === 1, String(comps.length));
+      ok(c, 'gate ' + k + '/' + sc.N + ': completed success:false, scaled ' + (k / sc.N), comps[0] && comps[0].result.success === false && Math.abs(comps[0].result.score.scaled - k / sc.N) < 1e-9, JSON.stringify(comps[0] && comps[0].result));
+      ok(c, 'gate ' + k + '/' + sc.N + ': stays on the gate screen, harder screens not shown', at === sc.gate.screen, String(at));
+      ok(c, 'gate ' + k + '/' + sc.N + ': button disabled, aria-disabled', btn && btn.disabled && btn.getAttribute('aria-disabled') === 'true');
+      /* reload with the saved document: payload + ledger, applied as 50-loader.js does */
+      const rr = loadPart(c); const wr = rr.w; const rec2 = scRecorder(wr, c, rec.doc());
+      const st = wr.eval('_unitState');
+      ok(c, 'gate resume: the saved document carries the payload and the ledger', !!(st && st.payload) && wr.xapiComponentEnded());
+      wr.applyExecutionState(st && st.payload, sc.gate.screen);
+      ok(c, 'gate resume: answers restored', sc.threshold.filter((s, i) => wr.XAPI_Q_RESULTS[String(i + 1).padStart(2, '0') + '/q1'] === true).length === k);
+      const btnR = wr.document.getElementById(sc.gate.btn);
+      ok(c, 'gate resume: button disabled after a reload with the ledger', btnR && btnR.disabled, btnR && btnR.textContent);
+      wr.scqCheck(gs);
+      ok(c, 'gate resume: no second completed, still on the gate screen', rec2.comps().length === 0 && wr.currentScreen === sc.gate.screen, rec2.comps().length + ' @' + wr.currentScreen);
+      ok(c, 'gate resume: no console.error', rr.errors.length === 0, rr.errors.slice(0, 2).join(' | '));
+    } else {
+      ok(c, 'gate ' + k + '/' + sc.N + ': no completed, continues to screen ' + sc.gate.next, comps.length === 0 && at === sc.gate.next, comps.length + ' @' + at);
+    }
+    ok(c, 'gate ' + k + '/' + sc.N + ': no console.error', rg.errors.length === 0, rg.errors.slice(0, 2).join(' | '));
+  }
+}
+
 /* ═══════════════════════════════ summary ═══════════════════════════════ */
 console.log('\n' + pass + ' passed, ' + failures.length + ' failed' + (skipped ? ', ' + skipped + ' skipped' : ''));
 if (failures.length) { console.log('\nFAILURES'); for (const f of failures) console.log(f); process.exit(1); }

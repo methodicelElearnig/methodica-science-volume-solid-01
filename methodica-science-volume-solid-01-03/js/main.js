@@ -4,6 +4,9 @@
    Reached from Part 02's score branch (<4/5). 6 SingleChoiceQuestions
    with progress dots; on completion → Part 04. Engine + SCQ template +
    progress-dots + report modal + xAPI, ported from Part 01.
+   2026-11-09 (08.11 sheet fixes 1, 2, 3, 5): s0 promises 3 of the 4 basic
+   questions "כדי להתקדם" — the part result is that count, and below 3/4 the
+   part ends at Q4 (xapiGateStopped).
    ═══════════════════════════════════════════════════════════ */
 
 const TOTAL_SCREENS = 8;          // storyboard order (2026-10-14): S0 intro · S1–S4 basic Q1–Q4 · S5 mid transition (sb98) · S6–S7 standard-ב Q5–Q6
@@ -402,6 +405,7 @@ function registerPractice(idx, cfg) {
   cfg.onContinue = function () {
     const next = idx + 1;
     if (next >= practiceProgress.questions.length) { goToNextPart(); return; }
+    if (idx === 3 && xapiGateStopped()) { partFinish(document.getElementById(cfg.screen + '-scq-check')); return; }   // the gate (fix 5)
     practiceProgress.questions[next].visited = true;
     // Q4 → the sb98 transition, which then hands on to Q5.
     goTo(idx === 3 ? 5 : practiceProgress.questions[next].screen);
@@ -503,9 +507,25 @@ var XAPI_METADATA_FILE = '../metadata/methodica-science-volume-solid-01-03.json'
    and decides what comes next from the catalogue. restoreEndedButton() keeps the button disabled
    after a reload (D-8). The hop to the next part lives only under DEV_NAV. */
 var XAPI_END_BTN = 's7-scq-check';
-/* Remediation has no pass threshold (it always proceeds), so completing it IS the success condition; score.scaled over the six exercises promised to the learner. */
+/* תוצאת הרכיב ל-completed. 2026-11-09 (תיקונים 1, 2, 3 בגיליון 08.11): מסך s0 מבטיח "4 שאלות פשוטות
+   יותר … ענו נכון על 3 שאלות ומעלה כדי להתקדם", ולכן success ו-score מאותה ספירה של 4 השאלות הבסיסיות
+   (s1–s4, פריטים 01–04). שני התרגילים ברמת קושי גבוהה (s6–s7, פריטים 05–06) מדווחים answered משלהם
+   ואינם נכנסים לתוצאת הרכיב. עד כה: success:true תמיד ("remediation has no pass threshold"), scaled מתוך 6.
+   השער (תיקון 5, הדפוס של נמרוד מ-16.09.26): ב"שנמשיך?" של Q4, מתחת ל-3/4 → completed עם success:false
+   מיד, הכפתור מושבת, ומסך המעבר ושני התרגילים הקשים לא מוצגים; ללומד לא מוצג טקסט חדש. הספירה
+   מ-XAPI_Q_RESULTS, שמשוחזר ב-resume. */
+var XAPI_THRESHOLD = { K: 3, questions: [['01/q1'], ['02/q1'], ['03/q1'], ['04/q1']] };
+function xapiThresholdCorrect() {
+  return XAPI_THRESHOLD.questions.filter(function (subs) {
+    return subs.every(function (k) { return XAPI_Q_RESULTS[k] === true; });
+  }).length;
+}
+function xapiGateStopped() {
+  return xapiThresholdCorrect() < XAPI_THRESHOLD.K;
+}
 function xapiPartResult() {
-  return { success: true, score: { scaled: practiceScore() / 6 } };
+  var ok = xapiThresholdCorrect();
+  return { success: ok >= XAPI_THRESHOLD.K, score: { scaled: ok / XAPI_THRESHOLD.questions.length } };
 }
 function partFinish(btn) {
   xapiEndComponent(xapiPartResult(), btn || document.getElementById(XAPI_END_BTN));
@@ -658,6 +678,12 @@ function restoreScreenUI(n) {
       if (chk) chk.disabled = !s.sel || s.sel === s.lastWrong;
     }
     scqSyncHint(screen);
+    /* s4 is the part's end when the gate stopped it: once completed was sent, its button stays disabled
+       (restoreEndedButton only knows XAPI_END_BTN, the s7 end). */
+    if (n === 4 && s.done && xapiGateStopped() && xapiComponentEnded()) {
+      var b4 = document.getElementById('s4-scq-check');
+      if (b4) { b4.disabled = true; b4.setAttribute('aria-disabled', 'true'); }
+    }
   } catch (e) { console.error('[resume] restoreScreenUI', e); }
 }
 
