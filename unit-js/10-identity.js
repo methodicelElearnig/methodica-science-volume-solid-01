@@ -37,7 +37,7 @@ function shortId(u) { return String(u || '').replace(/\/+$/, '').split('/').pop(
 /* Resume (Kata xAPI State API) — ON: one State document per component (v5), the four hooks in
    every part's js/main.js, the boot cover in every index.html (docs-and-tools/RESUME.md).
    ⚠️ This flag also changes reporting, not only restoring: it makes 50-loader.js load
-   xapi-720-k.js (the build with the State layer and the helpType extension on 'requested')
+   xapi-720-l.js (-k plus the leave save since 2026-11-13; -k = the State layer and the helpType extension on 'requested')
    instead of xapi-720-i.js. Do not switch it off to debug a restore — use ?resetState.
 
    ⚠️ DEPLOY ALL SEVEN COMPONENT FOLDERS ATOMICALLY when this changes, and on rollback too. */

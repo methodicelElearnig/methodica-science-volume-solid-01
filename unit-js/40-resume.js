@@ -61,6 +61,11 @@ var _leavingToNextPart = false;
    inside a swallowing try/catch — a throw there would drop a real statement in silence. */
 var _unitState = null;
 
+/* A3 (2026-11-13, BOOT-AND-RESUME-HARDENING-2026-11-03.md §2.1): a failed read (401 / 5xx / network /
+   empty 200) is not "nothing saved yet". While this is set no write path writes — an empty document
+   would otherwise overwrite the progress saved on Kata. Cleared by a successful read. */
+var _resumeReadFailed = false;
+
 /* Set by initResumeResetHatch. Needed because the hatch strips ?resetState from the URL at the
    start of boot, while readUnitState runs later (after the library loads) — by then a check on the
    query string would find nothing. */
@@ -143,6 +148,15 @@ function readUnitState() {
     }
     doc = (typeof window.loadState720 === 'function') ? window.loadState720(RESUME_STATE_ID) : null;
   } catch (e) { console.error('[resume] read', e); doc = null; }
+  _resumeReadFailed = false;
+  if (doc === null && typeof window.stateLastResult720 === 'function') {
+    var _lr = null;
+    try { _lr = window.stateLastResult720(); } catch (e) {}
+    if (_lr && _lr.op === 'load' && _lr.ok === false) {
+      _resumeReadFailed = true;
+      console.warn('[resume] state read FAILED (not a 404) — writes stay closed until a read succeeds', _lr);
+    }
+  }
   doc = migrateState(doc);
   if (doc && doc.component && doc.component !== currentPartSlug()) {
     console.warn('[resume] document belongs to "' + doc.component + '", not "' + currentPartSlug() + '" — discarded');
@@ -179,6 +193,10 @@ function captureUnitState() {
    stays alive while the next document loads, long enough for a stale timer to fire and clobber the
    write. Returns whether the synchronous write landed. */
 function persistUnitState(doc) {
+  if (_resumeReadFailed) {   /* A4 */
+    console.warn('[resume] persist refused — the state read failed, writes stay closed');
+    return false;
+  }
   var ok = false;
   try {
     if (typeof window.saveState720Debounced === 'function') window.saveState720Debounced(RESUME_STATE_ID, doc);
@@ -279,8 +297,14 @@ function drainPendingUnitState() {
     _pendingResults = null;
     dirty = true;
   }
+  /* A1 (2026-11-13): the document AS READ — never a live capture of the page. The drain runs before
+     applyExecutionState, so a capture here is of the page not yet restored, and it overwrote the saved
+     payload on Kata (the 03.11 bug). The character and the results sit beside the payload, so nothing
+     is lost. */
   if (dirty) {
-    try { persistUnitState(captureUnitState()); } catch (e) { console.error('[resume] drain', e); }
+    _unitState.v = RESUME_STATE_VERSION;
+    _unitState.component = currentPartSlug();
+    try { persistUnitState(_unitState); } catch (e) { console.error('[resume] drain', e); }
   }
 }
 
@@ -353,6 +377,7 @@ function markSent(ledger, key) {
   if (!_unitState) return;
   _unitState[ledger] = _unitState[ledger] || {};
   _unitState[ledger][key] = true;
+  if (!_resumeReady) return;   /* A2: mark in memory always; persist only after the restore — the key rides the next save */
   try { persistUnitState(captureUnitState()); } catch (e) { console.error('[resume] ledger', e); }
 }
 
@@ -443,7 +468,7 @@ function writeForwardState(destSlug, returnHash) {
 
 /* Screen change — the choke point. Debounced: bounds the loss to one screen. */
 function scheduleResumeSave() {
-  if (!RESUME_ENABLED || !_resumeReady || _restoring) return;
+  if (!RESUME_ENABLED || !_resumeReady || _restoring || _resumeReadFailed) return;
   if (typeof window.saveState720Debounced !== 'function') return;
   try { window.saveState720Debounced(RESUME_STATE_ID, captureUnitState()); } catch (e) {}
 }
@@ -451,9 +476,21 @@ function scheduleResumeSave() {
 /* Answer commit / finish — synchronous. goTo(n) arms a debounced save; the learner clicks
    "המשך" 200 ms later; a deferred write could then land after the page is left. */
 function flushResumeSave() {
-  if (!RESUME_ENABLED || !_resumeReady || _restoring) return;
+  if (!RESUME_ENABLED || !_resumeReady || _restoring || _resumeReadFailed) return;
   if (typeof window.saveState720 !== 'function') return;
   try { window.saveState720(RESUME_STATE_ID, captureUnitState()); } catch (e) {}
+}
+
+/* The leave save (2026-11-13, xapi-720-l.js; hardening doc §2.10). The same guards as flushResumeSave,
+   but through saveState720OnLeave: Chrome refuses saveState720's synchronous PUT during page dismissal,
+   so on -k every leave write failed and the last debounced change (≤ 800 ms) was lost. -l tries the
+   same synchronous PUT first and, only when it throws, sends it again as a keepalive fetch.
+   typeof-guarded: on -k this is flushResumeSave. Answer / finish commits stay on flushResumeSave. */
+function flushResumeSaveLeaving() {
+  if (!RESUME_ENABLED || !_resumeReady || _restoring || _resumeReadFailed) return;
+  var save = (typeof window.saveState720OnLeave === 'function') ? window.saveState720OnLeave : window.saveState720;
+  if (typeof save !== 'function') return;
+  try { save(RESUME_STATE_ID, captureUnitState()); } catch (e) {}
 }
 
 /* beforeunload alone is not enough: it never fires when a mobile tab is backgrounded and then
@@ -461,7 +498,7 @@ function flushResumeSave() {
    cover that. */
 function flushResumeSaveOnLeave() {
   if (_leavingToNextPart) return;
-  flushResumeSave();
+  flushResumeSaveLeaving();
 }
 
 /* Registered from 90-boot.js. */

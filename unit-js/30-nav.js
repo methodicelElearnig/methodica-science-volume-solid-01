@@ -46,6 +46,15 @@ function goTo(n) {
   next.classList.add('active');
   currentScreen = n;
 
+  /* C4 (2026-11-13, BOOT-AND-RESUME-HARDENING §2.3 / §2.8): a hidden <video autoplay> carries its clip in
+     data-src, not src — with src the browser fetched every hidden clip in full at load, ahead of the
+     library the resume restore waits for. The clip moves to src when its screen opens, BEFORE
+     resetScreenState(n): an enter hook may call load() (renderCompanion → startCompanionMedia). Videos only. */
+  next.querySelectorAll('video[data-src]').forEach(function (el) {
+    el.setAttribute('src', el.getAttribute('data-src'));
+    el.removeAttribute('data-src');
+  });
+
   /* Item-level initialized/completed. Dark until the loader requests a library the
      XAPI_USING_G regex matches (Stage 3). */
   try { xapiOnScreen(n); } catch (e) {}

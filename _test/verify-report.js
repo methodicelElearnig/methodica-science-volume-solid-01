@@ -90,9 +90,9 @@ ok('identity', 'no unit-wide document fields left (part / prev / parts)', !/\b(d
 const loader = sharedJs('50-loader');
 const lib = (/\(RESUME_ENABLED \? 'xapi-720-(\w)\.js' : 'xapi-720-(\w)\.js'\)/.exec(loader) || []);
 const gate = (/xapi-720-\[([a-z]+)\]\\\.js/.exec(loader) || [])[1] || '';
-ok('loader', 'library letter is k with resume (i without)', lib[1] === 'k' && lib[2] === 'i', lib.join('/'));
-ok('loader', 'the loaded letters are inside the XAPI_USING_G gate', gate.includes('k') && gate.includes('i'), gate);
-ok('loader', 'the stub carries a gated letter', fs.existsSync(path.join(__dirname, 'xapi-720-k.js')) && new RegExp('xapi-720-[' + gate + ']\\.js$').test('xapi-720-k.js'));
+ok('loader', 'library letter is l with resume (i without; -l since 2026-11-13)', lib[1] === 'l' && lib[2] === 'i', lib.join('/'));
+ok('loader', 'the loaded letters are inside the XAPI_USING_G gate', gate.includes('l') && gate.includes('i'), gate);
+ok('loader', 'the stub carries a gated letter', fs.existsSync(path.join(__dirname, 'xapi-720-l.js')) && new RegExp('xapi-720-[' + gate + ']\\.js$').test('xapi-720-l.js'));
 ok('loader', 'no resume hop to another part', !/location\.replace\(/.test(stripComments(loader)));
 ok('loader', 'two-phase restore: readUnitState before the poll, applyExecutionState after', stripComments(loader).indexOf('readUnitState()') < stripComments(loader).indexOf('pollMetadataReady(function') && stripComments(loader).indexOf('applyExecutionState(') > stripComments(loader).indexOf('pollMetadataReady(function'));
 

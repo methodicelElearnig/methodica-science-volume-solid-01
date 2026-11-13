@@ -88,11 +88,17 @@ function bootXAPI() {
      window.XAPI_USING_G tells the components whether item-level statements are available. The regex
      must list every library letter that supports them — miss one and xapiOnScreen() and the video
      reporting go silent with NO error, because both early-return on that flag.
-     ⚠️ Change LIB720 and the regex below IN THE SAME EDIT, every time (guide §3.5). */
-  var LIB720 = CDN + (RESUME_ENABLED ? 'xapi-720-k.js' : 'xapi-720-i.js');
+     -l (2026-11-13, hardening doc §2.10) is -k plus ONE function, saveState720OnLeave: the leave save
+     that still reaches Kata when Chrome refuses the synchronous PUT during page dismissal (keepalive
+     fallback). -k is unchanged on the CDN. 40-resume.js guards the function with typeof, so the unit
+     still runs on -k (a rollback = the letter, the regex and every part's <head> preload link).
+
+     ⚠️ Change LIB720 and the regex below IN THE SAME EDIT, every time (guide §3.5) — and the preload
+     link in every part's <head> (its href must stay byte-equal to the URL built here). */
+  var LIB720 = CDN + (RESUME_ENABLED ? 'xapi-720-l.js' : 'xapi-720-i.js');
 
   /* On localhost only, ?xapiLib=<same-origin relative path> overrides it — this is how
-     _test/xapi-720-k.js gets loaded for offline verification. Restricted to a relative path so the
+     _test/xapi-720-l.js (or -k.js) gets loaded for offline verification. Restricted to a relative path so the
      parameter cannot be used to inject a third-party script. */
   try {
     if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
@@ -101,7 +107,7 @@ function bootXAPI() {
     }
   } catch (e) {}
 
-  window.XAPI_USING_G = /xapi-720-[ghijk]\.js/.test(LIB720);
+  window.XAPI_USING_G = /xapi-720-[ghijkl]\.js/.test(LIB720);
 
   /* The library loads off-platform too: -i/-j/-k disable themselves (window.XAPI_DISABLED, set when
      ?slxapi is absent or malformed), so every send is a silent no-op and the State layer falls
@@ -129,6 +135,7 @@ function bootXAPI() {
            copies into the document waits in the queue and is persisted in Phase B. */
         var _saved   = null;
         var _payload = null;
+        var _resumed = false;
         if (RESUME_ENABLED) {
           try {
             _saved = readUnitState();
@@ -145,7 +152,9 @@ function bootXAPI() {
                an empty document, hence an empty payload, hence the cover falls here — at the
                earliest possible moment, without waiting for pollMetadataReady. With a payload the
                flag stays on and the cover is held until Phase B. */
-            if (!_payload) dropBootCover();
+            /* B2 (2026-11-13): a failed read is not "nothing to restore" — the cover stays for the
+               second read in Phase B. */
+            if (!_payload && !_resumeReadFailed) dropBootCover();
           } catch (e) {
             console.error('[resume] read', e);
             dropBootCover();
@@ -183,6 +192,24 @@ function bootXAPI() {
                  certainly not silence the reporting. */
               if (RESUME_ENABLED) {
                 try {
+                  /* B3 (2026-11-13, hardening doc §2.2): if the Phase A read failed, read once more.
+                     Failed again → saving stays OFF for this session (statements still go out) and the
+                     progress on Kata is preserved. Succeeded → adopt the character only if none was
+                     picked meanwhile, repaint only screen 0 (resetScreenState on another screen would
+                     wipe UI in mid-work), and take the payload. */
+                  if (_resumeReadFailed) {
+                    _saved = readUnitState();
+                    if (_resumeReadFailed) {
+                      console.error('[resume] state read failed twice — saving is OFF for this session; progress on Kata is preserved',
+                        typeof window.stateLastResult720 === 'function' ? window.stateLastResult720() : null);
+                    } else {
+                      if (!_pendingProfile && adoptUnitCharacter(_saved) && currentScreen === 0) {
+                        try { resetScreenState(0); } catch (e) {}
+                      }
+                      _payload = _saved.payload;
+                    }
+                  }
+                  if (!_resumeReadFailed) {
                   _resumeReady = true;
                   if (!_unitState) _unitState = emptyUnitState();
                   /* A choice made in the window between the phases waits in the queue. Drained
@@ -194,10 +221,15 @@ function bootXAPI() {
                      STATE: we always restore and pass the screen as an override. parseInt, not the
                      raw capture: applyExecutionState checks `typeof === 'number'`. */
                   var _hm = /^#screen=(\d+)$/.exec(window.location.hash);
-                  if (_payload) applyExecutionState(_payload, _hm ? parseInt(_hm[1], 10) : undefined);
+                  if (_payload) {
+                    applyExecutionState(_payload, _hm ? parseInt(_hm[1], 10) : undefined);
+                    _resumed = true;
+                  }
+                  }   /* if (!_resumeReadFailed) */
                 } catch (e) {
                   console.error('[resume] init', e);
-                  _resumeReady = true;
+                  /* B4: a restore that threw does not reopen a session whose read failed. */
+                  _resumeReady = !_resumeReadFailed;
                   if (!_unitState) _unitState = emptyUnitState();
                 }
               }
@@ -216,6 +248,10 @@ function bootXAPI() {
                  set. Letting it emit produced item-then-component on a resumed load and
                  component-then-item on a normal one. */
               try { xapiOnScreen(currentScreen); } catch (e) {}
+              /* B5 (2026-11-13): a screen the learner reached during the window between the phases (and
+                 any ledger key marked in memory meanwhile) gets one debounced save — inert after a
+                 failed read. */
+              if (!_resumed && currentScreen !== 0) { try { scheduleResumeSave(); } catch (e) {} }
 
               if (typeof onXapiReady === 'function') {
                 try { onXapiReady(); } catch (e) { console.error('[xAPI] ready hook', e); }
