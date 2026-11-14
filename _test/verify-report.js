@@ -90,9 +90,9 @@ ok('identity', 'no unit-wide document fields left (part / prev / parts)', !/\b(d
 const loader = sharedJs('50-loader');
 const lib = (/\(RESUME_ENABLED \? 'xapi-720-(\w)\.js' : 'xapi-720-(\w)\.js'\)/.exec(loader) || []);
 const gate = (/xapi-720-\[([a-z]+)\]\\\.js/.exec(loader) || [])[1] || '';
-ok('loader', 'library letter is k with resume (i without)', lib[1] === 'k' && lib[2] === 'i', lib.join('/'));
-ok('loader', 'the loaded letters are inside the XAPI_USING_G gate', gate.includes('k') && gate.includes('i'), gate);
-ok('loader', 'the stub carries a gated letter', fs.existsSync(path.join(__dirname, 'xapi-720-k.js')) && new RegExp('xapi-720-[' + gate + ']\\.js$').test('xapi-720-k.js'));
+ok('loader', 'library letter is l with resume (i without; -l since 2026-11-13)', lib[1] === 'l' && lib[2] === 'i', lib.join('/'));
+ok('loader', 'the loaded letters are inside the XAPI_USING_G gate', gate.includes('l') && gate.includes('i'), gate);
+ok('loader', 'the stub carries a gated letter', fs.existsSync(path.join(__dirname, 'xapi-720-l.js')) && new RegExp('xapi-720-[' + gate + ']\\.js$').test('xapi-720-l.js'));
 ok('loader', 'no resume hop to another part', !/location\.replace\(/.test(stripComments(loader)));
 ok('loader', 'two-phase restore: readUnitState before the poll, applyExecutionState after', stripComments(loader).indexOf('readUnitState()') < stripComments(loader).indexOf('pollMetadataReady(function') && stripComments(loader).indexOf('applyExecutionState(') > stripComments(loader).indexOf('pollMetadataReady(function'));
 
@@ -348,7 +348,8 @@ if (JSDOM) for (const c of COMPONENTS) {
   }
   /* the s7 learning-path choice (guide §6.3a, 2026-11-02): 'selected', category learning-type, object =
      the component, response = the chosen path item's catalogue mediaFormat; on בחרתי and the path
-     toggle, never on a card click; once per distinct path; nothing while a restore runs. */
+     toggle, never on a card click; every confirmed choice and every real switch (T, 2026-11-13); nothing
+     while a restore runs. */
   if (c === '01') {
     const paths = r.w.eval('XAPI_LEARNING_PATHS');
     const sub = Object.fromEntries((META[c].subContent || []).map((s) => [suffixOf(s.id), s]));
@@ -370,9 +371,11 @@ if (JSDOM) for (const c of COMPONENTS) {
     w6.advanceFromPathChoice(); const first = sel.slice(); const landed = cur();
     w6.goTo(7); w6.selectPathOption(card('experiments')); w6.advanceFromPathChoice(); const repick = sel.length;
     w6.document.querySelector('section.screen.active .path-toggle-opt[data-path="comic"]').click();
-    const toComic = sel.slice(1); const comicScreen = cur();
+    const toComic = sel.slice(2); const comicScreen = cur();
     w6.document.querySelector('section.screen.active .path-toggle-opt[data-path="experiments"]').click();
     const back = sel.length; const expScreen = cur();
+    w6.document.querySelector('section.screen.active .path-toggle-opt[data-path="experiments"]').click();
+    const activeTab = sel.length; const activeScreen = cur();
     w6._unitState = w6.emptyUnitState(); sel.length = 0;
     w6._restoring = true; w6.goTo(7); w6.advanceFromPathChoice(); w6._restoring = false; const restoring = sel.length;
     const one = (l, f) => l.length === 1 && l[0].type === 'onlinelesson' && l[0].ctx && l[0].ctx.category === 'learning-type'
@@ -380,10 +383,11 @@ if (JSDOM) for (const c of COMPONENTS) {
     ok(c, 'choice: a card click sends nothing (only the confirmed choice reports)', onClick === 0, String(onClick));
     ok(c, 'choice: בחרתי on experiments sends one selected — learning-type, component object, response "' + paths.experiments.mediaFormat + '"',
        one(first, paths.experiments.mediaFormat) && landed === 15, JSON.stringify(first) + ' landed ' + landed);
-    ok(c, 'choice: re-picking the same path sends nothing', repick === 1, String(repick));
+    ok(c, 'choice: a second confirmed בחרתי reports again (T, 2026-11-13: every confirmed choice)', repick === 2, String(repick));
     ok(c, 'choice: switching to the comic from the toggle sends one selected, response "' + paths.comic.mediaFormat + '"',
        one(toComic, paths.comic.mediaFormat) && comicScreen === 8, JSON.stringify(toComic) + ' at ' + comicScreen);
-    ok(c, 'choice: switching back to an already-reported path sends nothing', back === 2 && expScreen === 15, back + ' at ' + expScreen);
+    ok(c, 'choice: switching back to an already-reported path reports again (T: A -> B -> A = three)', back === 4 && expScreen === 15, back + ' at ' + expScreen);
+    ok(c, 'choice: a click on the tab already shown sends nothing', activeTab === 4 && activeScreen === 15, activeTab + ' at ' + activeScreen);
     ok(c, 'choice: nothing is sent while a restore runs', restoring === 0, String(restoring));
     ok(c, 'choice: no console.error', r6.errors.length === 0, r6.errors.slice(0, 2).join(' | '));
   }
@@ -578,6 +582,71 @@ if (JSDOM) for (const c of Object.keys(SCORE_CONTRACT)) {
     }
     ok(c, 'gate ' + k + '/' + sc.N + ': no console.error', rg.errors.length === 0, rg.errors.slice(0, 2).join(' | '));
   }
+}
+
+/* ══════════════════ 6. Back and path switch (B-2, T — monday 13454123722 / 13451706244, 2026-11-13) ══════════════════
+   B: a Back from a half-answered item sends no item 'completed'; back in, right answer, forward → exactly one,
+   success:true. T: בחרתי comic → toggle experiments → toggle comic → three 'selected' (text, interactive-content,
+   text), and both switches close the item they leave (s15 / s8 are B-2 hubs). */
+section('6. back and path (B-2, T)');
+function bpRecorder(w, c) {
+  const sent = []; let doc = null;
+  w.METADATA = META[c]; w.XAPI_USING_G = true; w.xapiItemAnswered = {}; w.xapiCompletedObjects = {};
+  w.sendStatement720 = (verb, type, result, ctx) => {
+    sent.push({ verb, result: result || null, ctx: ctx || null });
+    if (verb.split('.')[0] === 'answered' && ctx && ctx.parentId) w.xapiItemAnswered[ctx.parentId] = true;
+  };
+  w.loadState720 = () => doc;
+  w.saveState720 = (id, o) => { doc = JSON.parse(JSON.stringify(o)); return true; };
+  w.saveState720Debounced = (id, o) => { doc = JSON.parse(JSON.stringify(o)); };
+  w.readUnitState(); w._resumeReady = true;
+  return { sent, itemDone: (item) => sent.filter((x) => x.verb === 'completed' && x.ctx && x.ctx.objectId === w.xapiItemId(item)) };
+}
+const B_CASES = [['02', 2], ['03', 2], ['05', 2]];
+if (JSDOM) for (const [c, n] of B_CASES) {
+  const r = loadPart(c); const w = r.w; const rec = bpRecorder(w, c);
+  const cfgP = partConfig(c), item = cfgP.SCREEN_TO_SUBCONTENT[n][0], sid = 's' + n, tag = 'B ' + sid + ' (item ' + item + ')';
+  const reg = w.eval('SCQ_REG')[sid];
+  const wrong = [...w.document.querySelectorAll('#' + sid + ' .scq-opt[data-id]')].map((o) => o.dataset.id).find((id) => id !== reg.cfg.correctId);
+  w.goTo(n - 1); w.goTo(n);
+  w.scqSelect(sid, wrong); w.scqCheck(sid);
+  ok(c, tag + ': the wrong first try is recorded', Object.keys(w.XAPI_Q_RESULTS).some((k) => k.split('/')[0] === item), JSON.stringify(w.XAPI_Q_RESULTS));
+  w.goBack();
+  ok(c, tag + ': Back goes to the previous screen', w.eval('currentScreen') === n - 1, String(w.eval('currentScreen')));
+  ok(c, tag + ': no item completed on the Back', rec.itemDone(item).length === 0, JSON.stringify(rec.itemDone(item).map((x) => x.result)));
+  w.goTo(n);
+  w.scqSelect(sid, reg.cfg.correctId); w.scqCheck(sid);
+  w.goTo(n + 1);
+  const done = rec.itemDone(item);
+  ok(c, tag + ': exactly one item completed after the right answer and a forward move', done.length === 1, String(done.length));
+  /* item 'completed' carries no result of its own here (no XAPI_ITEM_RESULT entry): the library scores the item
+     from its 'answered' statements, so the last one must be the right answer, and the completed must not
+     carry a failed result */
+  const ans = rec.sent.filter((x) => x.verb.split('.')[0] === 'answered' && x.ctx && x.ctx.parentId === w.xapiItemId(item));
+  ok(c, tag + ': the completed carries no failed result, and the last answered is success:true',
+     done[0] && !(done[0].result && done[0].result.success === false) && ans.length && ans[ans.length - 1].result.success === true,
+     JSON.stringify(done[0] && done[0].result) + ' / ' + JSON.stringify(ans.map((x) => x.result && x.result.success)));
+  ok(c, tag + ': the item completed comes after the right answer', done[0] && rec.sent.indexOf(done[0]) > rec.sent.indexOf(ans[ans.length - 1]));
+  ok(c, tag + ': no console.error', r.errors.length === 0, r.errors.slice(0, 2).join(' | '));
+}
+if (JSDOM) {
+  const c = '01', r = loadPart(c), w = r.w, rec = bpRecorder(w, c), d = w.document, tag = 'T';
+  const sel = () => rec.sent.filter((x) => x.verb === 'selected').map((x) => x.result && x.result.response);
+  const cur = () => w.eval('currentScreen');
+  const toggle = (p) => d.querySelector('section.screen.active .path-toggle-opt[data-path="' + p + '"]').click();
+  w.goTo(6); w.goTo(7);
+  w.selectPathOption(d.querySelector('#s7 .option-card[data-value="comic"]'));
+  ok(c, tag + ': a card click sends nothing', sel().length === 0);
+  w.advanceFromPathChoice();
+  ok(c, tag + ': בחרתי comic lands on s8', cur() === 8, String(cur()));
+  w.goTo(9); toggle('experiments');
+  ok(c, tag + ': toggle experiments lands on s15 and closes the comic item 03', cur() === 15 && rec.itemDone('03').length === 1, cur() + ' / ' + rec.itemDone('03').length);
+  w.scqSetLocked('s15', false); w.scqSelect('s15', 'd'); w.scqCheck('s15');   // item 04 answered, else B-1 keeps it open
+  w.goTo(16); toggle('comic');
+  ok(c, tag + ': toggle comic (16 -> 8, a lower screen) still closes the experiments item 04 (hub s8)', cur() === 8 && rec.itemDone('04').length === 1, cur() + ' / ' + rec.itemDone('04').length);
+  toggle('comic');
+  ok(c, tag + ': three selected for comic -> experiments -> comic (the active tab adds none)', JSON.stringify(sel()) === JSON.stringify(['text', 'interactive-content', 'text']), JSON.stringify(sel()));
+  ok(c, tag + ': no console.error', r.errors.length === 0, r.errors.slice(0, 2).join(' | '));
 }
 
 /* ═══════════════════════════════ summary ═══════════════════════════════ */

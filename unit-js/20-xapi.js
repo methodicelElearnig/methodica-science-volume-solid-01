@@ -149,16 +149,45 @@ function _xapiSeamsReady() {
   return ok;
 }
 
+/* ── B-2 (monday 13454123722, 2026-11-13): Back never closes an item ──
+   The item closes only on a FORWARD move. A move is backward when the target screen ranks lower than the
+   screen being left. A Back from a half-answered item used to send its 'completed' with the failed result
+   at that moment, and the ledger then swallowed the real one after the learner came back and answered.
+   The forward button is blocked until a question is finished, so the first forward close carries the final
+   result. Rank: a numeric id is its number; a string id is its index in SCREEN_ORDER when the unit has one,
+   else in SCREEN_TO_SUBCONTENT's key order. Screens in XAPI_HUB_SCREENS are never backward — here the
+   entry screen of each learning path (part 01, js/main.js): a switch on the path toggle into the earlier
+   path is a choice, not a Back, and still closes the item it leaves. The item comparison is the fallback
+   for the first call. */
+var _xapiLastScreen = null;
+function _xapiScreenRank(s) {
+  if (s == null) return null;
+  if (typeof s === 'number' || /^\d+$/.test(String(s))) return Number(s);
+  var order = (typeof SCREEN_ORDER !== 'undefined' && Array.isArray(SCREEN_ORDER)) ? SCREEN_ORDER
+    : (typeof SCREEN_TO_SUBCONTENT !== 'undefined' && SCREEN_TO_SUBCONTENT) ? Object.keys(SCREEN_TO_SUBCONTENT) : [];
+  var i = order.indexOf(s);
+  return i < 0 ? null : i;
+}
+function _xapiIsBackward(fromItem, toItem, toScreen, fromScreen) {
+  if (typeof XAPI_HUB_SCREENS !== 'undefined' && XAPI_HUB_SCREENS && XAPI_HUB_SCREENS[toScreen]) return false;
+  var a = _xapiScreenRank(fromScreen), b = _xapiScreenRank(toScreen);
+  if (a != null && b != null) return b < a;
+  return !!(fromItem && toItem && Number(toItem) < Number(fromItem));
+}
+
 /* Item-level initialized/completed pairs, driven from goTo(). Paging inside one item emits
-   nothing; the item closes when the learner enters a screen belonging to a DIFFERENT item.
+   nothing; the item closes when the learner moves FORWARD into a screen belonging to a DIFFERENT
+   item (a Back does not close it — B-2 above).
    'initialized' is deliberately NOT deduped: the spec requires it again on every re-entry. */
 function xapiOnScreen(screen) {
+  var fromScreen = _xapiLastScreen;
+  _xapiLastScreen = screen;
   if (!window.XAPI_USING_G || typeof sendStatement720 !== 'function') return;
   if (!_xapiSeamsReady()) return;
   var map = (typeof SCREEN_TO_SUBCONTENT !== 'undefined') ? SCREEN_TO_SUBCONTENT[screen] : null;
   var item = map ? map[0] : null;
   if (item === xapiCurrentItem) return;
-  if (xapiCurrentItem) _xapiCloseItem(xapiCurrentItem);
+  if (xapiCurrentItem && !_xapiIsBackward(xapiCurrentItem, item, screen, fromScreen)) _xapiCloseItem(xapiCurrentItem);
   xapiCurrentItem = item;
   if (item) {
     try {
@@ -421,18 +450,22 @@ function xapiRequestedHint(item, qKey) {
    monday.com issues of 28.10.26 on the units that never reported it). object = the component;
    result.response = the mediaFormat of the chosen path's item, from the part's XAPI_LEARNING_PATHS
    (agreed deviation from v2.7's contentType; until 02.11.26 this unit sent 'comic' / 'experiments' on
-   every card click). Once per distinct path through the 'picks' ledger: re-picking the same path, a
-   resume or a reload stay silent; switching path reports again. Silent while a painter runs, and behind
-   the XAPI_USING_G guard so the ledger never records a statement that never left.
+   every card click). EVERY confirmed choice and every path switch reports (2026-11-13, monday
+   13451706244; as mass-weight-01 since 04.11): with the old once-per-path 'picks' ledger, comic ->
+   experiments -> comic sent two statements and the platform could not tell which path the learner ended
+   on. Only the actions that call this report — בחרתי on s7 and a real switch on the path toggle
+   (switchLearningPath returns early on the tab already shown); a card click does not. Silent while a
+   painter runs (a resume or a reload is not a choice) and behind the XAPI_USING_G guard.
    Guide: ADDING-REPORTING-AND-RESUME.md §6.3a. */
 function xapiSelectedLearningType(path) {
   var p = (typeof XAPI_LEARNING_PATHS !== 'undefined') && XAPI_LEARNING_PATHS[path];
   if (!p || (typeof resumeIsPainting === 'function' && resumeIsPainting())) return;
+  /* this family has no resumeIsPainting(): _restoring is the painter flag (40-resume.js) — the 'picks'
+     ledger's sendStatementOnce used to supply this exit */
+  if (typeof _restoring !== 'undefined' && _restoring) return;
   if (!window.XAPI_USING_G || typeof sendStatement720 !== 'function') return;
-  var res = { response: p.mediaFormat }, opts = { category: 'learning-type' };
   try {
-    if (typeof sendStatementOnce === 'function') sendStatementOnce('picks', 'learning-type/' + path, 'selected', 'onlinelesson', res, opts);
-    else sendStatement720('selected', 'onlinelesson', res, opts);
+    sendStatement720('selected', 'onlinelesson', { response: p.mediaFormat }, { category: 'learning-type' });
   } catch (e) { console.error('[xAPI] selected learning-type', e); }
 }
 

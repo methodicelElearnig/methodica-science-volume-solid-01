@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק</title>
   <!-- Local fonts only — no external CDN (720 rule). @font-face is in style.css. -->
+  <!-- The xAPI library is loaded by unit-js/50-loader.js from the end of <body>, after the parser has queued every
+       image below; on a slow line its request went out only after the last image, which delayed the resume restore
+       (2026-11-03, BOOT-AND-RESUME-HARDENING §2.3). A preload from <head> puts it first in the queue. The href must be
+       byte-equal to the URL 50-loader.js builds (no ?v=, no crossorigin) or the browser fetches it twice; the library
+       letter here changes together with LIB720 there (the harness checks it). -->
+  <link rel="preload" as="script" fetchpriority="high" href="https://lomdot.education.gov.il/metodica/720active/common/xapiwrapper.min.js">
+  <link rel="preload" as="script" fetchpriority="high" href="https://lomdot.education.gov.il/metodica/720active/common/xapi-720-l.js">
+  <link rel="preconnect" href="https://kata.cet.ac.il">
   <link rel="stylesheet" href="../unit-css/style.css?v=20261020">
   <link rel="stylesheet" href="css/style.css?v=20261020">
 </head>
@@ -59,6 +67,10 @@
 <div id="boot-cover" style="position:fixed;inset:0;z-index:9999;background:#fff"></div>
 <script>
 (function () {
+  /* A Kata launch (registration in the URL) may restore a document: raise the flag HERE, before any script
+     loads. bootXAPI raises it too, but from the last script tag — on a cold cache after the 800 ms below, so
+     the cover fell before the flag existed (2026-11-03). Without a registration (local, dev) nothing changes. */
+  if (/[?&]registration=/.test(location.search)) window.__resumeInFlight = true;
   var t0 = Date.now();
   function tick() {
     var c = document.getElementById('boot-cover');
@@ -136,7 +148,7 @@
       <h1 class="hook-title">רוני מצאה אוצר?</h1>
       <div class="hook-stage">
         <div class="hook-img-frame">
-          <video id="s1-video" class="hook-video" data-xapi-report="01" src="assets/video/s1-roni-hook.mp4"
+          <video id="s1-video" class="hook-video" data-xapi-report="01" data-src="assets/video/s1-roni-hook.mp4"
                  poster="assets/img/s1-roni-hook.jpg" autoplay muted playsinline controls preload="metadata"
                  aria-label="סרטון: רוני מוצאת תליון זהב על חוף הים"></video>
         </div>
@@ -149,7 +161,7 @@
     <div class="companion-say companion-say--right">
       <p class="companion-bubble" style="--bubble-w: 300px;">
         איך רוני יכולה לדעת<br>מה נפח התליון?</p>
-      <video class="companion" src="assets/img/character-orange-examine.mp4?v=2" aria-hidden="true"
+      <video class="companion" data-src="assets/img/character-orange-examine.mp4?v=2" aria-hidden="true"
            data-pose="examine" draggable="false" autoplay loop muted playsinline></video>
     </div>
     <div class="nav-bar">
@@ -168,7 +180,7 @@
     <div class="hook-content">
       <div class="hook-stage">
         <div class="hook-img-frame">
-          <img src="assets/img/s2-roni-think.jpg" alt="רוני מחזיקה את התליון ביד אחת ומשורה עם מים ביד השנייה">
+          <img src="assets/img/s2-roni-think.jpg" alt="רוני מחזיקה את התליון ביד אחת ומשורה עם מים ביד השנייה" loading="lazy">
         </div>
         <div class="hook-narration">
           <p class="hook-open-prompt">חשבו על רעיון או שניים – איך רוני יכולה למדוד את <span style="white-space: nowrap;">נפח התליון?</span></p>
@@ -193,7 +205,7 @@
     <div class="hook-content">
       <div class="hook-stage">
         <div class="hook-img-frame">
-          <img src="assets/img/s3-roni-displacement.jpg" alt="רוני מחזיקה את התליון ומשורה עם מים">
+          <img src="assets/img/s3-roni-displacement.jpg" alt="רוני מחזיקה את התליון ומשורה עם מים" loading="lazy">
         </div>
         <div class="hook-narration">
           <div class="companion-say companion-say--inline companion-say--right">
@@ -201,7 +213,7 @@
               <p>אם נכניס את התליון לתוך כלי עם מים, מפלס המים יעלה.</p>
               <p>ההפרש בין מפלס המים החדש למפלס המים המקורי <strong style="white-space: nowrap;">הוא נפח התליון!</strong></p>
             </div>
-            <video class="companion" src="assets/img/character-orange-cylinder-pendant.mp4?v=2" aria-hidden="true"
+            <video class="companion" data-src="assets/img/character-orange-cylinder-pendant.mp4?v=2" aria-hidden="true"
                  data-pose="cylinder-pendant" draggable="false" autoplay loop muted playsinline style="--cw: 240px;"></video>
           </div>
         </div>
@@ -230,7 +242,7 @@
         <!-- RTL: first in DOM renders rightmost -->
         <button class="imgq-card" type="button" data-value="suitcase" onclick="imgqToggle(this)">
           <div class="imgq-card-img">
-            <img src="assets/img/s4-opt-suitcase.jpg" alt="מזוודה פתוחה עם חפצים">
+            <img src="assets/img/s4-opt-suitcase.jpg" alt="מזוודה פתוחה עם חפצים" loading="lazy">
             <span class="imgq-check" aria-hidden="true"></span>
           </div>
           <span class="imgq-card-caption">כדי לדעת אם הקופסה תיכנס במזוודה</span>
@@ -238,7 +250,7 @@
         </button>
         <button class="imgq-card" type="button" data-value="planter" onclick="imgqToggle(this)">
           <div class="imgq-card-img">
-            <img src="assets/img/s4-opt-planter.jpg" alt="אדנית עם אדמה וצמח">
+            <img src="assets/img/s4-opt-planter.jpg" alt="אדנית עם אדמה וצמח" loading="lazy">
             <span class="imgq-check" aria-hidden="true"></span>
           </div>
           <span class="imgq-card-caption">כדי לדעת כמה אדמה למלא באדנית</span>
@@ -246,7 +258,7 @@
         </button>
         <button class="imgq-card" type="button" data-value="apple" onclick="imgqToggle(this)">
           <div class="imgq-card-img">
-            <img src="assets/img/s4-opt-apple.jpg" alt="תפוח על מאזני מטבח דיגיטליים המציגים גרמים">
+            <img src="assets/img/s4-opt-apple.jpg" alt="תפוח על מאזני מטבח דיגיטליים המציגים גרמים" loading="lazy">
             <span class="imgq-check" aria-hidden="true"></span>
           </div>
           <span class="imgq-card-caption">כדי לדעת מה מסת התפוח</span>
@@ -276,7 +288,7 @@
                   data-zoom-src="assets/img/s5-archimedes-crown.jpg" data-zoom-alt="המלך הירון וארכימדס בוחנים כתר זהב מעוטר, על השולחן משורת מים וקוביות מתכת">
             <svg class="img-zoom-btn__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="2"/><path d="M13.2 13.2L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
-          <img src="assets/img/s5-archimedes-crown.jpg" alt="המלך הירון וארכימדס בוחנים כתר זהב מעוטר">
+          <img src="assets/img/s5-archimedes-crown.jpg" alt="המלך הירון וארכימדס בוחנים כתר זהב מעוטר" loading="lazy">
         </div>
         <!-- QA 2026-10-08: the title lives IN the narration column here (not above the stage), so
              title + text are one block that .hook-stage's align-items:center centres on the image. -->
@@ -307,7 +319,7 @@
          left edge). The bubble hangs from the group's top (the default) so its beak meets him
          near head height and its bottom edge stays clear of the bar's line. -->
     <div class="companion-say companion-say--left" style="left: calc(50% - 560px); bottom: 74px;">
-      <video class="companion" src="assets/img/character-orange-think.mp4?v=4" aria-hidden="true"
+      <video class="companion" data-src="assets/img/character-orange-think.mp4?v=4" aria-hidden="true"
              data-pose="think" draggable="false" style="--cw: 178px;"
              autoplay loop muted playsinline></video>
       <p class="companion-bubble" style="--bubble-w: 500px;">ארכימדס לא היה גאון יוצא דופן שיודע את התשובות לכל דבר, אלא אדם שראה דברים בצורה שונה מאחרים, כמו בדוגמה של מפלס המים העולים באמבטיה.</p>
@@ -319,7 +331,7 @@
                   data-zoom-src="assets/img/s6-archimedes-bath.jpg?v=2" data-zoom-alt="ארכימדס באמבטיה מחזיק כתר, המים גולשים מהאמבט">
             <svg class="img-zoom-btn__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="2"/><path d="M13.2 13.2L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
-          <img src="assets/img/s6-archimedes-bath.jpg?v=2" alt="ארכימדס באמבטיה מחזיק כתר, המים גולשים מהאמבט החוצה">
+          <img src="assets/img/s6-archimedes-bath.jpg?v=2" alt="ארכימדס באמבטיה מחזיק כתר, המים גולשים מהאמבט החוצה" loading="lazy">
           <div class="hook-eureka">אאוריקה!<br>מצאתי!</div>
         </div>
         <div class="hook-narration">
@@ -514,7 +526,7 @@
       </div>
       </div>
       <div class="scq-figure s10-crown">
-        <img src="assets/img/s10-crown.webp?v=2" alt="כתר זהב מעוטר באבני חן">
+        <img src="assets/img/s10-crown.webp?v=2" alt="כתר זהב מעוטר באבני חן" loading="lazy">
       </div>
       </div>
       </div>
@@ -523,7 +535,7 @@
          carousel arrow). QA 2026-10-08: the bubble sits on his physical RIGHT and the beak points
          left at him (--left: sprite first, then bubble). -->
     <div class="companion-say companion-say--left" style="left: 120px; bottom: 88px;">
-      <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
+      <video class="companion" data-src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
            data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 179px;"></video>
       <p class="companion-bubble hidden" id="s10-guess-bubble" style="--bubble-w: 240px;">בהמשך נלמד בדיוק איך עושים את זה!</p>
     </div>
@@ -618,7 +630,7 @@
          Then: bottom 74 = the nav bar's height, so his feet stand on the divider line; sprite
          179 → 215; bubble margin-top 60 drops the beak to mouth height. -->
     <div class="companion-say companion-say--left" style="left: 120px; bottom: 74px;">
-      <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
+      <video class="companion" data-src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
            data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 215px;"></video>
       <p class="companion-bubble hidden" id="s12-guess-bubble" style="--bubble-w: 300px; margin-top: 60px;">בהמשך נלמד בדיוק איך מודדים את הנפח שלהם.</p>
     </div>
@@ -866,7 +878,7 @@
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s16', this)"><span class="scq-opt-text">נעריך אותם לפי העין</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
       <div class="scq-figure s16-figure">
-        <img src="assets/img/s16-nongeometric.jpg?v=2" alt="גולת זכוכית, אגוז, מפתח ישן וחייל צעצוע מונחים בשורה על משטח עץ">
+        <img src="assets/img/s16-nongeometric.jpg?v=2" alt="גולת זכוכית, אגוז, מפתח ישן וחייל צעצוע מונחים בשורה על משטח עץ" loading="lazy">
       </div>
       </div>
     </div>
@@ -880,7 +892,7 @@
          drifts away from the bar as the window widens. s19, the comic-path twin, carries a
          byte-identical style attribute and is deliberately NOT changed — it was not in this QA. -->
     <div class="companion-say companion-say--left" style="left: 14px; bottom: 88px;">
-      <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
+      <video class="companion" data-src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
            data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 252px;"></video>
       <p class="companion-bubble hidden" id="s16-guess-bubble" style="--bubble-w: 240px;">אל תדאגו, לא תישארו סקרנים! עכשיו נלמד איך עושים את זה!</p>
     </div>
@@ -1046,7 +1058,7 @@
         <button class="scq-opt guess-opt" type="button" role="radio" aria-checked="false" data-id="d" onclick="guessPick('s19', this)"><span class="scq-opt-text">לא ניתן למדוד נפח של גופים כאלה</span><span class="scq-radio" aria-hidden="true"></span></button>
       </div>
       <div class="scq-figure s19-figure">
-        <img src="assets/img/s19-large-bodies.jpg" alt="אבן גדולה מונחת ליד משורה קטנה שהיא לא נכנסת לתוכה">
+        <img src="assets/img/s19-large-bodies.jpg" alt="אבן גדולה מונחת ליד משורה קטנה שהיא לא נכנסת לתוכה" loading="lazy">
       </div>
       </div>
     </div>
@@ -1065,7 +1077,7 @@
          from the bar, so 20 put the sprite's lower 54px behind the nav-bar divider and cut his legs
          off. 88 = the bar's 74 plus 14 of air, which is what s16's twin group already uses. -->
     <div class="companion-say companion-say--left" style="left: 14px; bottom: 88px;">
-      <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
+      <video class="companion" data-src="assets/img/character-orange-ask.mp4?v=4" aria-hidden="true"
            data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 252px;"></video>
       <p class="companion-bubble hidden" id="s19-guess-bubble" style="--bubble-w: 260px; margin-left: -60px; margin-top: 20px;">בואו נלמד בדיוק איך לעשות את זה!</p>
     </div>
@@ -1105,7 +1117,7 @@
         <div class="flood-scene">
           <div class="flood-bowl" id="flood-bowl">
             <div class="flood-bowl-water"></div>
-            <img class="flood-sunk-rock" src="assets/img/s20-rock.png" alt="" aria-hidden="true" draggable="false">
+            <img class="flood-sunk-rock" src="assets/img/s20-rock.png" alt="" aria-hidden="true" draggable="false" loading="lazy">
             <span class="flood-stream flood-stream--l"></span>
             <span class="flood-stream flood-stream--r"></span>
             <!-- Overflow animation (s20 only): splash where the rock enters, and drops riding each stream. -->
@@ -1121,7 +1133,7 @@
         </div>
 
         <div class="flood-rock-zone">
-          <img class="flood-rock" id="flood-rock" src="assets/img/s20-rock.png" alt="אבן — נִתנת לגרירה" draggable="false">
+          <img class="flood-rock" id="flood-rock" src="assets/img/s20-rock.png" alt="אבן — נִתנת לגרירה" draggable="false" loading="lazy">
           <p class="flood-hint" id="flood-hint">גררו את האבן לקערה</p>
         </div>
 
@@ -1167,7 +1179,7 @@
             <div class="flood-scene drained" role="img" aria-label="הסלע שקוע בקערה המלאה במים; המים שגלשו ממנה נאספו בכלי האיסוף התחתון, שעליו שנתות למדידת נפח — זה נפח הסלע">
               <div class="flood-bowl flooded">
                 <div class="flood-bowl-water"></div>
-                <img class="flood-sunk-rock" src="assets/img/s20-rock.png" alt="" draggable="false">
+                <img class="flood-sunk-rock" src="assets/img/s20-rock.png" alt="" draggable="false" loading="lazy">
                 <span class="flood-stream flood-stream--l"></span>
                 <span class="flood-stream flood-stream--r"></span>
               </div>
@@ -1219,21 +1231,21 @@
       <div class="flip-grid" id="s22-flip">
         <button class="flip-card" type="button" data-card="metal" aria-pressed="false" onclick="flipCard('s22', this)">
           <span class="flip-inner">
-            <span class="flip-front"><img class="flip-front-img" src="assets/img/s22-card-metal.jpg" alt="ערימות חלקי מתכת מבריקים על רצפת מפעל"></span>
+            <span class="flip-front"><img class="flip-front-img" src="assets/img/s22-card-metal.jpg" alt="ערימות חלקי מתכת מבריקים על רצפת מפעל" loading="lazy"></span>
             <span class="flip-back"><span class="flip-back-text">יצרנים מוודאים שחלקי מתכת עומדים בתקנים על ידי מדידת נפחם בשיטות דחיקת המים וההצפה.</span></span>
           </span>
           <span class="flip-caption">תעשיית המתכות</span>
         </button>
         <button class="flip-card" type="button" data-card="jewelry" aria-pressed="false" onclick="flipCard('s22', this)">
           <span class="flip-inner">
-            <span class="flip-front"><img class="flip-front-img" src="assets/img/s22-card-jewelry.jpg" alt="תכשיטי זהב ומטבעות זהב מונחים זה על זה"></span>
+            <span class="flip-front"><img class="flip-front-img" src="assets/img/s22-card-jewelry.jpg" alt="תכשיטי זהב ומטבעות זהב מונחים זה על זה" loading="lazy"></span>
             <span class="flip-back"><span class="flip-back-text">בחנויות זהב שיטת דחיקת המים מאפשרת למדוד נפח של תכשיטים בעלי צורה מורכבת.</span></span>
           </span>
           <span class="flip-caption">זהב ותכשיטים</span>
         </button>
         <button class="flip-card" type="button" data-card="archaeology" aria-pressed="false" onclick="flipCard('s22', this)">
           <span class="flip-inner">
-            <span class="flip-front"><img class="flip-front-img" src="assets/img/s22-card-archaeology.jpg" alt="שרידי עמודים ואבני בנייה מסודרים באתר חפירות רומי"></span>
+            <span class="flip-front"><img class="flip-front-img" src="assets/img/s22-card-archaeology.jpg" alt="שרידי עמודים ואבני בנייה מסודרים באתר חפירות רומי" loading="lazy"></span>
             <span class="flip-back"><span class="flip-back-text">ארכיאולוגים מודדים נפח של פסלים וחפצים עתיקים בשיטות דחיקת המים וההצפה, מבלי לפגוע בהם.</span></span>
           </span>
           <span class="flip-caption">ארכיאולוגיה</span>
@@ -1293,7 +1305,7 @@
             <span class="meas-vessel-label">משורה</span>
           </div>
           <div class="meas-vessel" id="meas-bowl" data-vessel="bowl">
-            <div class="meas-bowl"><div class="meas-bowl-water" id="meas-bowl-water"></div><div class="meas-scale" aria-hidden="true"><i class="lg" data-v="1000" style="--y:9"></i><i style="--y:19"></i><i class="lg" data-v="800" style="--y:29"></i><i style="--y:39"></i><i class="lg" data-v="600" style="--y:49"></i><i style="--y:59"></i></div><img class="meas-bowl-object" src="assets/img/s23-hammer.png" alt="" aria-hidden="true" draggable="false"></div>
+            <div class="meas-bowl"><div class="meas-bowl-water" id="meas-bowl-water"></div><div class="meas-scale" aria-hidden="true"><i class="lg" data-v="1000" style="--y:9"></i><i style="--y:19"></i><i class="lg" data-v="800" style="--y:29"></i><i style="--y:39"></i><i class="lg" data-v="600" style="--y:49"></i><i style="--y:59"></i></div><img class="meas-bowl-object" src="assets/img/s23-hammer.png" alt="" aria-hidden="true" draggable="false" loading="lazy"></div>
             <!-- Step 4 (storyboard slide 37) makes the tray itself the drag source: the learner
                  pours it into the משורה. It is a child of the bowl vessel, which is also a drop
                  target — harmless, because the drag ghost is pointer-events:none so the drop
@@ -1374,7 +1386,7 @@
             <span class="meas-vessel-label">משורה</span>
           </div>
           <div class="meas-vessel" id="meas2-bowl" data-vessel="bowl">
-            <div class="meas-bowl-wrap"><div class="meas-bowl"><div class="meas-bowl-water" id="meas2-bowl-water"></div><div class="meas-scale" aria-hidden="true"><i class="lg" data-v="1000" style="--y:9"></i><i style="--y:19"></i><i class="lg" data-v="800" style="--y:29"></i><i style="--y:39"></i><i class="lg" data-v="600" style="--y:49"></i><i style="--y:59"></i></div><img class="meas-bowl-object" src="assets/img/s23-hammer.png" alt="" aria-hidden="true" draggable="false"></div><span class="meas-spill-dome" aria-hidden="true"></span><span class="meas-spill meas-spill--l" aria-hidden="true"></span><span class="meas-spill meas-spill--r" aria-hidden="true"></span><span class="meas-spill-drop meas-spill-drop--l" aria-hidden="true"></span><span class="meas-spill-drop meas-spill-drop--l meas-spill-drop--2" aria-hidden="true"></span><span class="meas-spill-drop meas-spill-drop--r" aria-hidden="true"></span><span class="meas-spill-drop meas-spill-drop--r meas-spill-drop--2" aria-hidden="true"></span></div>
+            <div class="meas-bowl-wrap"><div class="meas-bowl"><div class="meas-bowl-water" id="meas2-bowl-water"></div><div class="meas-scale" aria-hidden="true"><i class="lg" data-v="1000" style="--y:9"></i><i style="--y:19"></i><i class="lg" data-v="800" style="--y:29"></i><i style="--y:39"></i><i class="lg" data-v="600" style="--y:49"></i><i style="--y:59"></i></div><img class="meas-bowl-object" src="assets/img/s23-hammer.png" alt="" aria-hidden="true" draggable="false" loading="lazy"></div><span class="meas-spill-dome" aria-hidden="true"></span><span class="meas-spill meas-spill--l" aria-hidden="true"></span><span class="meas-spill meas-spill--r" aria-hidden="true"></span><span class="meas-spill-drop meas-spill-drop--l" aria-hidden="true"></span><span class="meas-spill-drop meas-spill-drop--l meas-spill-drop--2" aria-hidden="true"></span><span class="meas-spill-drop meas-spill-drop--r" aria-hidden="true"></span><span class="meas-spill-drop meas-spill-drop--r meas-spill-drop--2" aria-hidden="true"></span></div>
             <div class="meas-tray" id="meas2-tray"><div class="meas-tray-water" id="meas2-tray-water"></div><div class="meas-scale" aria-hidden="true"><i style="--y:9"></i><i class="lg" data-v="100" style="--y:18"></i><i style="--y:27"></i><i class="lg" data-v="200" style="--y:36"></i><i style="--y:45"></i><i class="lg" data-v="300" style="--y:54"></i></div><div class="meas-tray-level" aria-hidden="true"><span class="meas-cyl-start-text"><b>250 מ"ל</b></span></div></div>
             <span class="meas-vessel-label">קערת הצפה + כלי איסוף</span>
             <svg class="meas-pour-arrow hidden" id="meas2-pour-arrow" viewBox="0 0 90 120" aria-hidden="true"><path d="M78 108 C 40 104, 22 70, 24 22" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M8 34 L24 12 L40 34" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1440,12 +1452,12 @@
            over a figure (QA 2026-08-24, slide 16). The stage centres the figure vertically. -->
       <div class="exp-stage exp-stage--centered">
         <div class="scq-figure" style="width: 700px">
-          <img src="assets/img/s25-overflow-can.jpg?v=2" alt="כלי גלילי ממתכת עם צינורית יוצאת מדופנו, ולידו כוס מדידה מזכוכית עם סימוני מ&quot;ל">
+          <img src="assets/img/s25-overflow-can.jpg?v=2" alt="כלי גלילי ממתכת עם צינורית יוצאת מדופנו, ולידו כוס מדידה מזכוכית עם סימוני מ&quot;ל" loading="lazy">
         </div>
       </div>
     </div>
     <div class="companion-say companion-say--left" style="left: 24px; bottom: 96px;">
-      <video class="companion" src="assets/img/character-orange-ask.mp4?v=4" alt="" aria-hidden="true"
+      <video class="companion" data-src="assets/img/character-orange-ask.mp4?v=4" alt="" aria-hidden="true"
            data-pose="ask" draggable="false" autoplay loop muted playsinline style="--cw: 150px;"></video>
       <p class="companion-bubble" style="--bubble-w: 280px;">במעבדות משתמשים בכלי ייעודי למדידת נפח של מוצק בשיטת ההצפה. בחנו אותו וחשבו: איך הוא עובד?</p>
     </div>
@@ -1485,7 +1497,7 @@
           <li>מודדים! נפח המים שעבר לכלי המדידה הוא בדיוק נפח החפץ.</li>
         </ol>
         <div class="scq-figure" style="width: 325px">
-          <img src="assets/img/s26-overflow-can-steps.jpg" alt="מים זורמים מהצינורית של הכלי המתכתי אל תוך כוס המדידה שמתחתיה">
+          <img src="assets/img/s26-overflow-can-steps.jpg" alt="מים זורמים מהצינורית של הכלי המתכתי אל תוך כוס המדידה שמתחתיה" loading="lazy">
         </div>
       </div>
     </div>
@@ -1558,7 +1570,7 @@
          .scq-opt (dqPick → scqSelect); onFinish colours the trigger. -->
     <div class="dq-question dq-question--withimage">
       <div class="scq-figure">
-        <img src="assets/img/s29-sharpener.jpg" alt="מחדד עפרונות קטן">
+        <img src="assets/img/s29-sharpener.jpg" alt="מחדד עפרונות קטן" loading="lazy">
       </div>
       <!-- Laid out as storyboard slide 46 lays it out: "עיקרון דחיקת המים" is its own blue
            heading, the instruction and the cloze sentence are ordinary text beneath it, and the
@@ -1643,15 +1655,15 @@
   </div>
 
 </div><!-- /#app -->
-<script src="../unit-js/10-identity.js?v=20261020"></script>
+<script src="../unit-js/10-identity.js?v=20261113"></script>
 <script src="../unit-js/15-ui.js?v=20261020"></script>
-<script src="../unit-js/20-xapi.js?v=20261102"></script>
+<script src="../unit-js/20-xapi.js?v=20261113"></script>
 <script src="../unit-js/25-report.js?v=20261020"></script>
-<script src="../unit-js/30-nav.js?v=20261020"></script>
-<script src="../unit-js/40-resume.js?v=20261020"></script>
-<script src="../unit-js/50-loader.js?v=20261020"></script>
+<script src="../unit-js/30-nav.js?v=20261113"></script>
+<script src="../unit-js/40-resume.js?v=20261113"></script>
+<script src="../unit-js/50-loader.js?v=20261113"></script>
 <script src="../unit-js/60-devbridge.js?v=20261020"></script>
-<script src="js/main.js?v=20261109"></script>
+<script src="js/main.js?v=20261113"></script>
 <script src="../unit-js/90-boot.js?v=20261020"></script>
 </body>
 </html>

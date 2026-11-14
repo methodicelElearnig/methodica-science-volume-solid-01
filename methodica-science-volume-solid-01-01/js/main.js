@@ -635,8 +635,8 @@ function selectPathOption(cardEl) {
   /* No report here: a card click can still change. The confirmed choice reports (below). */
 }
 /* comic vs experiments IS a learning-format preference — the selection dictionary's `learning-type`
-   (v2.7 p.24): 'selected' on the confirmed choice (בחרתי) and on the path toggle, once per distinct path
-   (../unit-js/20-xapi.js xapiSelectedLearningType). Until 02.11.26 it was sent on every card click, with
+   (v2.7 p.24): 'selected' on the confirmed choice (בחרתי) and on every real switch on the path toggle,
+   every time (2026-11-13; ../unit-js/20-xapi.js xapiSelectedLearningType). Until 02.11.26 it was sent on every card click, with
    'comic' / 'experiments' as the response. */
 function advanceFromPathChoice() {
   const path = window.lomdaState.learningPath;
@@ -2576,6 +2576,12 @@ var XAPI_EVAL_ITEMS = { '04': 1, '05': 1, '06': 1 };
 /* The s7 learning-path choice ('selected', learning-type — ../unit-js/20-xapi.js xapiSelectedLearningType):
    lomdaState.learningPath -> the path's item and its catalogue mediaFormat (the statement's response). */
 var XAPI_LEARNING_PATHS = { comic: { item: '03', mediaFormat: 'text' }, experiments: { item: '04', mediaFormat: 'interactive-content' } };
+/* B-2 hubs (../unit-js/20-xapi.js _xapiIsBackward, 2026-11-13): the entry screen of each path. A switch on
+   the path toggle from experiments (15–21) or the shared ending (22–26) to the comic lands on s8, a lower
+   screen — but it is a choice, not a Back, and must close the item it leaves, as before. s15 likewise for
+   a switch from the shared ending to experiments. No other forward route in parts 01–07 goes to a lower
+   screen (part 05's scenario screens s10 / s9 sit inside their own items 04 / 05). */
+var XAPI_HUB_SCREENS = { 8: 1, 15: 1 };
 
 /* ═══════════════════ xAPI (720 LMS common host) ═══════════════════
    Loaded from the MOE 720 platform's own common host (not a 3rd-party

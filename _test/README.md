@@ -6,6 +6,8 @@ reporting and resume layers can be exercised on a dev server, where there is no 
 | File | What it is |
 |---|---|
 | `xapi-720-k.js` | stand-in for the CDN library — statements, State API, console helpers, the sweep oracle |
+| `xapi-720-l.js` | the same stand-in plus `saveState720OnLeave` (the `-l` leave save) and `__leaveWrites()` — the letter the loader loads since 2026-11-13; `-k` stays for the rollback path |
+| `write-guard.js` | jsdom: no write before the restore, a failed read closes the writes, the leave save, every part's boot markup (hardening 2026-11-03 §2.6 a–p, §2.10 s–t; C4 clips). `NODE_PATH=… node _test/write-guard.js [baseDir]` — against the 2026-11-09 package 58 checks fail |
 | `checks.mjs` | six static gates: identifier collisions, `?v=` equality, `TOTAL_SCREENS` vs markup, metadata id resolution, `SCREEN_TO_SUBCONTENT` coverage, markup structure — over all seven parts |
 | `verify-report.js` | headless (jsdom) + static check of the reporting/resume layer: identity, wiring, routing/devnav, response layer H1–H13, shared-layer invariants, statement flow, document shape, character — see below |
 | `verify-resume.js` | headless (jsdom) check of the resume painters — see below |

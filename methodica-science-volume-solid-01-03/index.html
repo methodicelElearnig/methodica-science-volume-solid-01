@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לומדה — מדידת נפח מוצק · תרגול בסיסי</title>
+  <!-- The xAPI library is loaded by unit-js/50-loader.js from the end of <body>, after the parser has queued every
+       image below; on a slow line its request went out only after the last image, which delayed the resume restore
+       (2026-11-03, BOOT-AND-RESUME-HARDENING §2.3). A preload from <head> puts it first in the queue. The href must be
+       byte-equal to the URL 50-loader.js builds (no ?v=, no crossorigin) or the browser fetches it twice; the library
+       letter here changes together with LIB720 there (the harness checks it). -->
+  <link rel="preload" as="script" fetchpriority="high" href="https://lomdot.education.gov.il/metodica/720active/common/xapiwrapper.min.js">
+  <link rel="preload" as="script" fetchpriority="high" href="https://lomdot.education.gov.il/metodica/720active/common/xapi-720-l.js">
+  <link rel="preconnect" href="https://kata.cet.ac.il">
   <link rel="stylesheet" href="../unit-css/style.css?v=20261020">
   <link rel="stylesheet" href="css/style.css?v=20261020">
 </head>
@@ -17,6 +25,10 @@
 <div id="boot-cover" style="position:fixed;inset:0;z-index:9999;background:#fff"></div>
 <script>
 (function () {
+  /* A Kata launch (registration in the URL) may restore a document: raise the flag HERE, before any script
+     loads. bootXAPI raises it too, but from the last script tag — on a cold cache after the 800 ms below, so
+     the cover fell before the flag existed (2026-11-03). Without a registration (local, dev) nothing changes. */
+  if (/[?&]registration=/.test(location.search)) window.__resumeInFlight = true;
   var t0 = Date.now();
   function tick() {
     var c = document.getElementById('boot-cover');
@@ -74,7 +86,7 @@
     </nav>
     <div class="scq-question scq-question--withimage">
       <div class="scq-figure">
-        <img src="assets/img/s1-bodies.jpg" alt="ארבעה גופים על שולחן: לבנה, מפלצת פלסטלינה, קופסת קרטון וקוביית עץ">
+        <img src="assets/img/s1-bodies.jpg" alt="ארבעה גופים על שולחן: לבנה, מפלצת פלסטלינה, קופסת קרטון וקוביית עץ" loading="lazy">
       </div>
       <div class="scq-side">
       <p class="scq-qtext">איזה מהגופים שבתמונה אינו בעל צורה הנדסית מוגדרת?</p>
@@ -117,7 +129,7 @@
            as stem text. -->
       <div class="scq-figure-frame" style="position: relative; flex: 0 0 470px; align-self: center; margin-left: 60px;">
         <div class="scq-figure" style="width: 100%">
-          <img src="assets/img/s2-tom-shirley.jpg" alt="שני ילדים בחלוקי מעבדה עומדים משני צדי שולחן ועליו מפלצת פלסטלינה ירוקה">
+          <img src="assets/img/s2-tom-shirley.jpg" alt="שני ילדים בחלוקי מעבדה עומדים משני צדי שולחן ועליו מפלצת פלסטלינה ירוקה" loading="lazy">
         </div>
         <div class="speech-bubble" style="left: -10%; top: -40%; width: 57%">
           <div class="speech-bubble__frame"><p class="speech-bubble__text">שירלי: כדי למדוד נפח של גוף ללא צורה הנדסית מוגדרת, יש להשתמש בשיטת דחיקת המים.</p></div>
@@ -218,7 +230,7 @@
          The question block above is lifted to top:112px to open the band he stands in; see the
          note in css/style.css for what that band costs in canvas height. -->
     <div class="companion-say companion-say--left hidden" id="s4-say" style="left: 16px; bottom: 244px;">
-      <video class="companion" src="assets/img/character-orange-think.mp4?v=3" aria-hidden="true"
+      <video class="companion" data-src="assets/img/character-orange-think.mp4?v=3" aria-hidden="true"
            data-pose="think" draggable="false" autoplay loop muted playsinline style="--cw: 160px;"></video>
       <p class="companion-bubble" style="--bubble-w: 280px;">האם בעקבות השאלה תוכלו לנסות לזכור כלל או עיקרון שאפשר להשתמש בו כשמודדים&nbsp;נפח?</p>
     </div>
@@ -248,7 +260,7 @@
       <p class="transition-sub">נחזור ל-2 תרגילים ברמת קושי גבוהה יותר.</p>
       <div class="companion-say companion-say--right">
         <p class="companion-bubble" style="--bubble-w: 240px;">ברור לי שתצליחו!</p>
-        <video class="companion" src="assets/img/character-orange-start-line.mp4?v=3" aria-hidden="true"
+        <video class="companion" data-src="assets/img/character-orange-start-line.mp4?v=3" aria-hidden="true"
              data-pose="start-line" draggable="false" autoplay loop muted playsinline
              style="--ca: 700 / 640;"></video>
       </div>
@@ -301,11 +313,11 @@
       <p class="scq-qtext scq-qtext--mixed">בתמונה א' ניתן לראות את נפח המים במשורה <b>לפני</b> שהכניסו אליה את בובת המפלצת.<br />בתמונה ב' ניתן לראות את נפח המים במשורה <b>אחרי</b> שהכניסו אליה את בובת המפלצת.<br />סמנו בתמונה ב' את האזור בו ניתן לראות שגובה המים במשורה עלה.</p>
       <div class="hotspot-pair" role="radiogroup" aria-label="סמנו בתמונה ב' את האזור שבו גובה המים עלה">
         <div class="scq-figure scq-figure--square" style="width: 359px">
-          <img src="assets/img/s6-cylinder-before.jpg?v=5" alt="משורה עם מים, ולידה בובת מפלצת ירוקה קטנה">
+          <img src="assets/img/s6-cylinder-before.jpg?v=5" alt="משורה עם מים, ולידה בובת מפלצת ירוקה קטנה" loading="lazy">
           <span class="scq-figure__label">תמונה א'</span>
         </div>
         <div class="hotspot-photo hotspot-photo--square" style="width: 359px">
-          <img src="assets/img/s6-cylinder-after.jpg?v=5" alt="אותה משורה לאחר שבובת המפלצת הוכנסה למים">
+          <img src="assets/img/s6-cylinder-after.jpg?v=5" alt="אותה משורה לאחר שבובת המפלצת הוכנסה למים" loading="lazy">
           <span class="scq-figure__label">תמונה ב'</span>
           <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="c" onclick="scqSelect('s6','c')" aria-label="האזור הריק שמעל מפלס המים" style="--x:46.7%;--y:19%;--w:19%;--h:8%"></button>
           <button class="scq-opt hotspot-area" type="button" role="radio" aria-checked="false" data-id="b" onclick="scqSelect('s6','b')" aria-label="אזור העלייה — התוספת שמעל המפלס המקורי" style="--x:46.7%;--y:34.7%;--w:19%;--h:8%"></button>
@@ -399,15 +411,15 @@
   </div>
 
 </div><!-- /#app -->
-<script src="../unit-js/10-identity.js?v=20261020"></script>
+<script src="../unit-js/10-identity.js?v=20261113"></script>
 <script src="../unit-js/15-ui.js?v=20261020"></script>
-<script src="../unit-js/20-xapi.js?v=20261102"></script>
+<script src="../unit-js/20-xapi.js?v=20261113"></script>
 <script src="../unit-js/25-report.js?v=20261020"></script>
-<script src="../unit-js/30-nav.js?v=20261020"></script>
-<script src="../unit-js/40-resume.js?v=20261020"></script>
-<script src="../unit-js/50-loader.js?v=20261020"></script>
+<script src="../unit-js/30-nav.js?v=20261113"></script>
+<script src="../unit-js/40-resume.js?v=20261113"></script>
+<script src="../unit-js/50-loader.js?v=20261113"></script>
 <script src="../unit-js/60-devbridge.js?v=20261020"></script>
-<script src="js/main.js?v=20261109"></script>
+<script src="js/main.js?v=20261113"></script>
 <script src="../unit-js/90-boot.js?v=20261020"></script>
 </body>
 </html>
