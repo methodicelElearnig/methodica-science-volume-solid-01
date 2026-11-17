@@ -645,11 +645,14 @@ function advanceFromPathChoice() {
   goTo(path === 'experiments' ? EXPERIMENTS_ENTRY : COMIC_SCREEN);
 }
 /* Learning-path toggle (comic, experiments and shared-ending screens). Position-locked.
-   Picking the path already shown is a no-op; picking the other one starts that path (and reports it). */
+   Picking the path already shown is a no-op; picking the other one starts that path (and reports it).
+   A switch is a choice but not a forward move: xapiPathSwitch() keeps the item it leaves open (monday
+   13451740972, 2026-11-17); the path item closes on the forward move out of it (s27 -> s28). */
 function switchLearningPath(path) {
   if (path === activeLearningPath()) { syncPathToggle(); return; }
   xapiSelectedLearningType(path);
   window.lomdaState.learningPath = path;
+  xapiPathSwitch();
   goTo(path === 'experiments' ? EXPERIMENTS_ENTRY : COMIC_ENTRY);
   syncPathToggle();
 }
@@ -2576,12 +2579,10 @@ var XAPI_EVAL_ITEMS = { '04': 1, '05': 1, '06': 1 };
 /* The s7 learning-path choice ('selected', learning-type — ../unit-js/20-xapi.js xapiSelectedLearningType):
    lomdaState.learningPath -> the path's item and its catalogue mediaFormat (the statement's response). */
 var XAPI_LEARNING_PATHS = { comic: { item: '03', mediaFormat: 'text' }, experiments: { item: '04', mediaFormat: 'interactive-content' } };
-/* B-2 hubs (../unit-js/20-xapi.js _xapiIsBackward, 2026-11-13): the entry screen of each path. A switch on
-   the path toggle from experiments (15–21) or the shared ending (22–26) to the comic lands on s8, a lower
-   screen — but it is a choice, not a Back, and must close the item it leaves, as before. s15 likewise for
-   a switch from the shared ending to experiments. No other forward route in parts 01–07 goes to a lower
-   screen (part 05's scenario screens s10 / s9 sit inside their own items 04 / 05). */
-var XAPI_HUB_SCREENS = { 8: 1, 15: 1 };
+/* No B-2 hubs here (monday 13451740972, 2026-11-17): a switch on the path toggle (switchLearningPath) is marked
+   with xapiPathSwitch() and closes nothing; the path item closes on the forward move out of it. No other
+   forward route in parts 01–07 goes to a lower screen (part 05's scenario screens s10 / s9 sit inside their
+   own items 04 / 05). */
 
 /* ═══════════════════ xAPI (720 LMS common host) ═══════════════════
    Loaded from the MOE 720 platform's own common host (not a 3rd-party
