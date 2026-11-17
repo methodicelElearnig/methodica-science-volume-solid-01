@@ -175,19 +175,28 @@ function _xapiIsBackward(fromItem, toItem, toScreen, fromScreen) {
   return !!(fromItem && toItem && Number(toItem) < Number(fromItem));
 }
 
+/* monday 13451740972 (2026-11-17): a learning-path switch never closes the item it leaves.
+   The path toggle's handler (part 01 switchLearningPath) calls xapiPathSwitch() right before its goTo; the
+   next xapiOnScreen skips the close. A path item closes like any other item: on a forward move out of it,
+   or in xapiFinishItems. Until 17.11 a switch closed the item it left, so "switch and back" sent
+   'completed' for both path items without either being used. */
+var _xapiPathSwitching = false;
+function xapiPathSwitch() { _xapiPathSwitching = true; }
+
 /* Item-level initialized/completed pairs, driven from goTo(). Paging inside one item emits
    nothing; the item closes when the learner moves FORWARD into a screen belonging to a DIFFERENT
-   item (a Back does not close it — B-2 above).
+   item (a Back does not close it — B-2 above; a switch on the path toggle does not either — above).
    'initialized' is deliberately NOT deduped: the spec requires it again on every re-entry. */
 function xapiOnScreen(screen) {
   var fromScreen = _xapiLastScreen;
   _xapiLastScreen = screen;
+  var switching = _xapiPathSwitching; _xapiPathSwitching = false;
   if (!window.XAPI_USING_G || typeof sendStatement720 !== 'function') return;
   if (!_xapiSeamsReady()) return;
   var map = (typeof SCREEN_TO_SUBCONTENT !== 'undefined') ? SCREEN_TO_SUBCONTENT[screen] : null;
   var item = map ? map[0] : null;
   if (item === xapiCurrentItem) return;
-  if (xapiCurrentItem && !_xapiIsBackward(xapiCurrentItem, item, screen, fromScreen)) _xapiCloseItem(xapiCurrentItem);
+  if (xapiCurrentItem && !switching && !_xapiIsBackward(xapiCurrentItem, item, screen, fromScreen)) _xapiCloseItem(xapiCurrentItem);
   xapiCurrentItem = item;
   if (item) {
     try {

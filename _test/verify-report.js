@@ -640,12 +640,24 @@ if (JSDOM) {
   w.advanceFromPathChoice();
   ok(c, tag + ': בחרתי comic lands on s8', cur() === 8, String(cur()));
   w.goTo(9); toggle('experiments');
-  ok(c, tag + ': toggle experiments lands on s15 and closes the comic item 03', cur() === 15 && rec.itemDone('03').length === 1, cur() + ' / ' + rec.itemDone('03').length);
+  /* S (monday 13451740972, 2026-11-17): a switch on the toggle sends no item completed, in either direction */
+  ok(c, tag + ': S: toggle experiments lands on s15 and sends no completed for the comic item 03', cur() === 15 && rec.itemDone('03').length === 0, cur() + ' / ' + rec.itemDone('03').length);
   w.scqSetLocked('s15', false); w.scqSelect('s15', 'd'); w.scqCheck('s15');   // item 04 answered, else B-1 keeps it open
   w.goTo(16); toggle('comic');
-  ok(c, tag + ': toggle comic (16 -> 8, a lower screen) still closes the experiments item 04 (hub s8)', cur() === 8 && rec.itemDone('04').length === 1, cur() + ' / ' + rec.itemDone('04').length);
+  ok(c, tag + ': S: toggle comic (16 -> 8, a lower screen) sends no completed for the experiments item 04', cur() === 8 && rec.itemDone('04').length === 0, cur() + ' / ' + rec.itemDone('04').length);
   toggle('comic');
   ok(c, tag + ': three selected for comic -> experiments -> comic (the active tab adds none)', JSON.stringify(sel()) === JSON.stringify(['text', 'interactive-content', 'text']), JSON.stringify(sel()));
+  ok(c, tag + ': S: the path entries are not B-2 hubs any more', w.eval('typeof XAPI_HUB_SCREENS') === 'undefined');
+  /* S: the path item closes like any other, on the forward move out of it (comic 8..14, shared ending 22..27, then s28) */
+  for (const n of [9, 10, 11, 12, 13, 14, 22, 23, 24]) w.goTo(n);
+  ok(c, tag + ': S: the shared ending stays inside the comic item (nothing closed yet)', rec.itemDone('03').length === 0 && rec.itemDone('04').length === 0);
+  /* S: a switch on a shared-ending screen closes nothing either; back on the comic, the forward exit closes 03 only */
+  toggle('experiments');
+  ok(c, tag + ': S: toggle experiments from the shared ending (24 -> 15) sends no completed', cur() === 15 && rec.itemDone('03').length === 0 && rec.itemDone('04').length === 0, String(cur()));
+  toggle('comic');
+  for (const n of [14, 22, 23, 24, 25, 26, 27, 28]) w.goTo(n);
+  ok(c, tag + ': S: the forward move out of the path (27 -> 28) closes the comic item 03 once; 04 is never completed',
+    rec.itemDone('03').length === 1 && rec.itemDone('04').length === 0, rec.itemDone('03').length + ' / ' + rec.itemDone('04').length);
   ok(c, tag + ': no console.error', r.errors.length === 0, r.errors.slice(0, 2).join(' | '));
 }
 
